@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "Evara AI",
+  "short_name": "Evara",
+  "description": "Evara AI is your calm, emotionally intelligent AI companion.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/evara-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons/evara-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
+
