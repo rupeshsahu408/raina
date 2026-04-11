@@ -106,6 +106,28 @@ function persistConversationId(id: string) {
   localStorage.setItem(CONVERSATION_ID_KEY, v);
 }
 
+const CONV_CACHE_KEY = "evara_conv_cache_v1";
+
+function loadConvCache(uid: string): ConversationItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(`${CONV_CACHE_KEY}_${uid}`);
+    return raw ? (JSON.parse(raw) as ConversationItem[]) : [];
+  } catch { return []; }
+}
+
+function saveConvCache(uid: string, list: ConversationItem[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(`${CONV_CACHE_KEY}_${uid}`, JSON.stringify(list.slice(0, 100)));
+  } catch { /* quota */ }
+}
+
+function removeFromConvCache(uid: string, conversationId: string) {
+  const list = loadConvCache(uid);
+  saveConvCache(uid, list.filter((c) => c.conversationId !== conversationId));
+}
+
 function getConversationId() {
   const existing = readStoredConversationId();
   if (existing) return existing;
@@ -334,18 +356,29 @@ export default function ChatPage() {
         : `Network error loading conversations.\n${msg}\nAPI: ${API_BASE_URL}\n${url}`;
       setConversationsLoadError(full);
       console.error("[chat] loadConversations fetch failed:", { url, error: msg });
-      return [];
+      const cached = loadConvCache(authUser.uid);
+      if (cached.length) setConversations(cached);
+      return cached;
     }
     if (!resp.ok) {
       if (resp.status === 401) router.replace("/login");
       const detail = await readFetchErrorDetail(resp);
       setConversationsLoadError(`Failed to load conversation list (${url}).\n${detail}`);
       console.error("[chat] loadConversations HTTP error:", detail);
-      return [];
+      const cached = loadConvCache(authUser.uid);
+      if (cached.length) setConversations(cached);
+      return cached;
     }
     setConversationsLoadError(null);
     const data: { conversations?: ConversationItem[] } = await resp.json();
     const list = Array.isArray(data.conversations) ? data.conversations : [];
+    if (!query.trim()) {
+      const cached = loadConvCache(authUser.uid);
+      const merged = list.length ? list : cached;
+      setConversations(merged);
+      saveConvCache(authUser.uid, merged);
+      return merged;
+    }
     setConversations(list);
     return list;
   }, [router]);
@@ -365,7 +398,12 @@ export default function ChatPage() {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
       setLoading(false);
-      if (!u) router.replace("/login");
+      if (!u) {
+        router.replace("/login");
+      } else {
+        const cached = loadConvCache(u.uid);
+        if (cached.length) setConversations(cached);
+      }
     });
     return () => unsub();
   }, [router]);
@@ -563,14 +601,16 @@ export default function ChatPage() {
     setConversationId((prev) => prev === activeConversationId ? prev : activeConversationId);
     setInput("");
     setMessages((prev) => [...prev, { id: makeId(), role: "user", content: text }]);
-    setConversations((prev) =>
-      upsertConversation(prev, {
+    setConversations((prev) => {
+      const next = upsertConversation(prev, {
         conversationId: activeConversationId,
         title: titleFromPreview(text),
         preview: text,
         lastMessageAt: new Date().toISOString(),
-      })
-    );
+      });
+      if (user) saveConvCache(user.uid, next);
+      return next;
+    });
     setIsTyping(true);
     try {
       const token = await user.getIdToken();
@@ -606,14 +646,16 @@ export default function ChatPage() {
       }
       if (data.usage) setUsage({ messagesLeft: data.usage.messagesLeft, webSearchLeft: data.usage.webSearchLeft });
       setMessages((prev) => [...prev, { id: makeId(), role: "ai", content: data.reply ?? "I'm here with you. Tell me more.", sources: data.sources ?? [] }]);
-      setConversations((prev) =>
-        upsertConversation(prev, {
+      setConversations((prev) => {
+        const next = upsertConversation(prev, {
           conversationId: data.conversationId ?? activeConversationId,
           title: titleFromPreview(data.reply ?? text),
           preview: data.reply ?? text,
           lastMessageAt: new Date().toISOString(),
-        })
-      );
+        });
+        saveConvCache(user.uid, next);
+        return next;
+      });
       try { await loadConversations(user); } catch { /* keep local */ }
     } catch (err) {
       const errorText = err instanceof Error ? err.message : "Something went wrong. Please try again.";
@@ -640,6 +682,8 @@ export default function ChatPage() {
 
     const confirmDelete = async () => {
       await deleteConversation(c.conversationId);
+      if (user) removeFromConvCache(user.uid, c.conversationId);
+      setConversations((prev) => prev.filter((x) => x.conversationId !== c.conversationId));
       if (c.conversationId === conversationId) startNewChat();
       setDeletingConversationId(null);
       setActiveMenuConversationId(null);
@@ -647,23 +691,23 @@ export default function ChatPage() {
     };
 
     return (
-      <div className="group relative mb-0.5">
+      <div className="group relative">
         {/* ── Inline delete confirmation ── */}
         {isDeleting ? (
-          <div className="flex flex-col gap-2 rounded-2xl bg-white/[0.05] px-4 py-3">
-            <p className="text-[12px] text-zinc-300 leading-snug">Delete &ldquo;{c.title || "this chat"}&rdquo;?</p>
-            <div className="flex gap-2">
+          <div className="mx-1 mb-0.5 flex flex-col gap-2 rounded-xl bg-white/[0.05] px-3 py-2.5">
+            <p className="text-[11.5px] text-zinc-300 leading-snug">Delete &ldquo;{c.title || "this chat"}&rdquo;?</p>
+            <div className="flex gap-1.5">
               <button
                 type="button"
                 onClick={confirmDelete}
-                className="flex-1 rounded-xl bg-red-500/20 py-1.5 text-[11.5px] font-medium text-red-400 hover:bg-red-500/30 transition"
+                className="flex-1 rounded-lg bg-red-500/20 py-1.5 text-[11px] font-medium text-red-400 hover:bg-red-500/30 transition"
               >
                 Delete
               </button>
               <button
                 type="button"
                 onClick={() => setDeletingConversationId(null)}
-                className="flex-1 rounded-xl bg-white/[0.05] py-1.5 text-[11.5px] font-medium text-zinc-400 hover:bg-white/[0.09] transition"
+                className="flex-1 rounded-lg bg-white/[0.05] py-1.5 text-[11px] font-medium text-zinc-400 hover:bg-white/[0.08] transition"
               >
                 Cancel
               </button>
@@ -681,10 +725,10 @@ export default function ChatPage() {
                 setActiveMenuConversationId(null);
               }}
               className={[
-                "w-full rounded-2xl px-4 py-2.5 pr-9 text-left text-[13px] transition-colors",
+                "w-full rounded-xl px-3 py-2 pr-8 text-left text-[13px] transition-colors",
                 isActive
-                  ? "bg-white/[0.09] text-white"
-                  : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200",
+                  ? "bg-white/[0.08] text-zinc-100"
+                  : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200",
               ].join(" ")}
             >
               {isRenaming ? (
@@ -697,12 +741,12 @@ export default function ChatPage() {
                     if (e.key === "Enter") commitRename();
                     if (e.key === "Escape") { setRenamingConversationId(null); setActiveMenuConversationId(null); }
                   }}
-                  className="w-full bg-transparent text-[13px] text-zinc-100 outline-none border-b border-violet-500/60"
+                  className="w-full bg-transparent text-[13px] text-zinc-100 outline-none border-b border-violet-500/50 pb-px"
                   onClick={(e) => e.stopPropagation()}
                 />
               ) : (
                 <span className="block truncate leading-snug">
-                  {c.pinned && <span className="mr-1.5 text-[10px] text-amber-400">📌</span>}
+                  {c.pinned && <span className="mr-1 text-[10px] text-amber-400">📌</span>}
                   {c.title || c.preview || "Untitled chat"}
                 </span>
               )}
@@ -712,8 +756,8 @@ export default function ChatPage() {
             <button
               type="button"
               className={[
-                "absolute right-1.5 top-1/2 -translate-y-1/2 rounded-xl p-1 transition",
-                "text-zinc-600 hover:bg-white/[0.08] hover:text-zinc-300",
+                "absolute right-1 top-1/2 -translate-y-1/2 rounded-lg p-1 transition",
+                "text-zinc-600 hover:bg-white/[0.07] hover:text-zinc-300",
                 isActive || isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100",
               ].join(" ")}
               onClick={(e) => {
@@ -721,15 +765,15 @@ export default function ChatPage() {
                 setActiveMenuConversationId((prev) => prev === c.conversationId ? null : c.conversationId);
               }}
             >
-              <IconDots size={14} />
+              <IconDots size={13} />
             </button>
 
             {/* Dropdown menu */}
             {isMenuOpen && (
-              <div className="absolute right-1 top-10 z-30 w-40 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#1c1c1c] py-1.5 text-[12.5px] shadow-2xl shadow-black/50">
+              <div className="absolute right-1 top-9 z-30 w-38 overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1a] py-1 text-[12px] shadow-2xl shadow-black/60">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-zinc-300 hover:bg-white/[0.06] transition"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-zinc-300 hover:bg-white/[0.06] transition"
                   onClick={(e) => {
                     e.stopPropagation();
                     setRenamingConversationId(c.conversationId);
@@ -737,12 +781,12 @@ export default function ChatPage() {
                     setActiveMenuConversationId(null);
                   }}
                 >
-                  <IconEdit size={13} className="text-zinc-500" />
+                  <IconEdit size={12} className="text-zinc-500" />
                   Rename
                 </button>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-zinc-300 hover:bg-white/[0.06] transition"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-zinc-300 hover:bg-white/[0.06] transition"
                   onClick={async (e) => {
                     e.stopPropagation();
                     await patchConversation(c.conversationId, { pinned: !c.pinned });
@@ -750,20 +794,20 @@ export default function ChatPage() {
                     if (user) await loadConversations(user, searchQuery);
                   }}
                 >
-                  <IconPin size={13} className="text-zinc-500" />
+                  <IconPin size={12} className="text-zinc-500" />
                   {c.pinned ? "Unpin" : "Pin"}
                 </button>
-                <div className="my-1 mx-3 border-t border-white/[0.06]" />
+                <div className="my-1 mx-2 border-t border-white/[0.06]" />
                 <button
                   type="button"
-                  className="flex w-full items-center gap-3 px-4 py-2.5 text-red-400 hover:bg-white/[0.06] transition"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-red-400 hover:bg-white/[0.06] transition"
                   onClick={(e) => {
                     e.stopPropagation();
                     setDeletingConversationId(c.conversationId);
                     setActiveMenuConversationId(null);
                   }}
                 >
-                  <IconTrash size={13} />
+                  <IconTrash size={12} />
                   Delete
                 </button>
               </div>
@@ -790,61 +834,50 @@ export default function ChatPage() {
           SIDEBAR
       ══════════════════════════════════════════ */}
       <aside className={[
-        "fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col bg-[#0f0f0f] transition-transform duration-300",
+        "fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-white/[0.05] bg-[#0a0a0a] transition-transform duration-300",
         "lg:static lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full",
       ].join(" ")}>
 
         {/* ── Header ── */}
-        <div className="flex items-center justify-between px-4 pt-5 pb-4">
+        <div className="flex items-center justify-between px-3 pt-4 pb-2">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 text-sm font-bold text-white shadow-lg shadow-violet-900/30">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 text-sm font-bold text-white shadow-lg shadow-violet-900/30">
               E
             </div>
-            <span className="text-[15px] font-semibold tracking-tight text-white">Evara AI</span>
+            <span className="text-[14px] font-semibold tracking-tight text-zinc-100">Evara AI</span>
           </div>
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
-            className="rounded-lg p-1.5 text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 lg:hidden"
+            className="rounded-lg p-1.5 text-zinc-500 hover:bg-white/[0.07] hover:text-zinc-300 lg:hidden transition"
           >
-            <IconX size={16} />
+            <IconX size={15} />
           </button>
         </div>
 
-        {/* ── Primary actions ── */}
-        <div className="px-3 space-y-1 pb-3">
-          {/* New chat */}
+        {/* ── New chat ── */}
+        <div className="px-3 pb-2 pt-1">
           <button
             type="button"
             onClick={startNewChat}
             disabled={loading || isTyping}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-[13.5px] font-medium text-zinc-300 transition hover:bg-white/[0.06] hover:text-white disabled:opacity-40"
+            className="flex w-full items-center gap-3 rounded-xl border border-white/[0.07] px-3.5 py-2.5 text-[13px] font-medium text-zinc-300 transition hover:bg-white/[0.06] hover:text-white disabled:opacity-40"
           >
-            <IconPlus size={17} className="shrink-0 text-zinc-400" />
+            <IconPlus size={15} className="shrink-0 text-zinc-400" />
             New chat
           </button>
-
-          {/* Bihar AI */}
-          <a
-            href="/bihar-ai"
-            onClick={() => setSidebarOpen(false)}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-[13.5px] font-medium text-zinc-300 transition hover:bg-white/[0.06] hover:text-white"
-          >
-            <span className="flex h-[17px] w-[17px] shrink-0 items-center justify-center text-[13px] leading-none">🟡</span>
-            Bihar AI
-          </a>
         </div>
 
         {/* ── Personality toggle ── */}
-        <div className="mx-3 mb-3 flex gap-1 rounded-2xl bg-white/[0.04] p-1">
+        <div className="mx-3 mb-2 flex gap-1 rounded-xl bg-white/[0.04] p-1">
           {(["Simi", "Loa"] as Personality[]).map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => setPersonality(p)}
               className={[
-                "flex-1 rounded-xl py-1.5 text-[12px] font-medium transition",
+                "flex-1 rounded-lg py-1.5 text-[12px] font-medium transition",
                 personality === p
                   ? "bg-violet-600 text-white shadow shadow-violet-900/40"
                   : "text-zinc-500 hover:text-zinc-300",
@@ -856,22 +889,50 @@ export default function ChatPage() {
         </div>
 
         {/* ── Search ── */}
-        <div className="px-3 pb-3">
-          <div className="flex items-center gap-2 rounded-2xl bg-white/[0.05] px-3.5 py-2.5">
-            <IconSearch size={14} className="shrink-0 text-zinc-500" />
+        <div className="px-3 pb-2">
+          <div className="flex items-center gap-2 rounded-xl bg-white/[0.05] px-3 py-2">
+            <IconSearch size={13} className="shrink-0 text-zinc-600" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search chats…"
               className="flex-1 bg-transparent text-[12.5px] text-zinc-300 outline-none placeholder:text-zinc-600"
             />
+            {searchQuery && (
+              <button type="button" onClick={() => setSearchQuery("")} className="text-zinc-600 hover:text-zinc-400 transition">
+                <IconX size={12} />
+              </button>
+            )}
           </div>
         </div>
 
+        {/* ── Bihar AI link ── */}
+        <div className="px-3 pb-1">
+          <a
+            href="/bihar-ai"
+            onClick={() => setSidebarOpen(false)}
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-[13px] font-medium text-zinc-400 transition hover:bg-white/[0.05] hover:text-zinc-200"
+          >
+            <span className="shrink-0 text-[13px] leading-none">🟡</span>
+            Bihar AI
+          </a>
+        </div>
+
+        {/* ── Divider ── */}
+        <div className="mx-3 mb-1 border-t border-white/[0.05]" />
+
         {/* ── Conversation list ── */}
-        <div className="flex-1 overflow-y-auto px-3">
+        <div className="flex-1 overflow-y-auto px-2 py-1">
           {conversations.length === 0 ? (
-            <p className="px-2 py-4 text-[12px] text-zinc-600">No chats yet. Start a new conversation!</p>
+            <div className="flex flex-col items-center justify-center gap-2 py-12 px-4 text-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] text-zinc-600">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <p className="text-[12.5px] font-medium text-zinc-500">No conversations yet</p>
+              <p className="text-[11.5px] text-zinc-700 leading-relaxed">Start a new chat to see your history here</p>
+            </div>
           ) : (() => {
             const pinned = conversations.filter((c) => c.pinned);
             const unpinned = conversations.filter((c) => !c.pinned);
@@ -905,16 +966,16 @@ export default function ChatPage() {
             }
 
             return (
-              <div>
+              <div className="space-y-0.5">
                 {pinned.length > 0 && (
-                  <>
-                    <p className="px-2 pt-1 pb-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">Pinned</p>
+                  <div className="mb-1">
+                    <p className="px-2 pt-1 pb-1 text-[10.5px] font-semibold uppercase tracking-widest text-zinc-600">Pinned</p>
                     {pinned.map((c) => <ConvItem key={c.conversationId} c={c} />)}
-                  </>
+                  </div>
                 )}
                 {groups.filter((g) => g.items.length > 0).map((g) => (
                   <div key={g.label}>
-                    <p className="px-2 pt-4 pb-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wide first:pt-2">{g.label}</p>
+                    <p className="px-2 pt-3 pb-1 text-[10.5px] font-semibold uppercase tracking-widest text-zinc-600 first:pt-1">{g.label}</p>
                     {g.items.map((c) => <ConvItem key={c.conversationId} c={c} />)}
                   </div>
                 ))}
@@ -924,51 +985,53 @@ export default function ChatPage() {
         </div>
 
         {/* ── Bottom: usage + user ── */}
-        <div className="px-3 py-3 space-y-1">
-          {/* Usage */}
-          <div className="rounded-2xl bg-white/[0.04] px-4 py-3 text-[11.5px] space-y-2.5 mb-1">
-            <p className="font-semibold text-zinc-400">Today&apos;s usage</p>
-            <div className="space-y-2">
-              <div>
-                <div className="mb-1.5 flex justify-between text-zinc-500">
-                  <span>Messages</span>
-                  <span className={isLow(messageLeft) ? "text-amber-400 font-medium" : "text-zinc-500"}>
-                    {typeof messageLeft === "number" ? `${messageLeft} left` : "—"}
-                  </span>
+        <div className="shrink-0 border-t border-white/[0.05] px-2 py-2 space-y-0.5">
+          {/* Usage (compact) */}
+          {(typeof messageLeft === "number" || typeof webLeft === "number") && (
+            <div className="rounded-xl bg-white/[0.03] px-3 py-2.5 text-[11px] space-y-2 mb-1">
+              <p className="font-medium text-zinc-500">Today&apos;s usage</p>
+              <div className="space-y-1.5">
+                <div>
+                  <div className="mb-1 flex justify-between text-zinc-600">
+                    <span>Messages</span>
+                    <span className={isLow(messageLeft) ? "text-amber-400 font-medium" : ""}>
+                      {typeof messageLeft === "number" ? `${messageLeft} left` : "—"}
+                    </span>
+                  </div>
+                  <div className="h-[2px] overflow-hidden rounded-full bg-zinc-800">
+                    <div className={["h-full rounded-full transition-all", isLow(messageLeft) ? "bg-amber-400" : "bg-violet-500"].join(" ")}
+                      style={{ width: `${messagePercent}%` }} />
+                  </div>
                 </div>
-                <div className="h-[3px] overflow-hidden rounded-full bg-zinc-800">
-                  <div className={["h-full rounded-full transition-all", isLow(messageLeft) ? "bg-amber-400" : "bg-violet-500"].join(" ")}
-                    style={{ width: `${messagePercent}%` }} />
-                </div>
-              </div>
-              <div>
-                <div className="mb-1.5 flex justify-between text-zinc-500">
-                  <span>Web searches</span>
-                  <span className={isLow(webLeft) ? "text-amber-400 font-medium" : "text-zinc-500"}>
-                    {typeof webLeft === "number" ? `${webLeft} left` : "—"}
-                  </span>
-                </div>
-                <div className="h-[3px] overflow-hidden rounded-full bg-zinc-800">
-                  <div className={["h-full rounded-full transition-all", isLow(webLeft) ? "bg-amber-400" : "bg-sky-500"].join(" ")}
-                    style={{ width: `${webPercent}%` }} />
+                <div>
+                  <div className="mb-1 flex justify-between text-zinc-600">
+                    <span>Web searches</span>
+                    <span className={isLow(webLeft) ? "text-amber-400 font-medium" : ""}>
+                      {typeof webLeft === "number" ? `${webLeft} left` : "—"}
+                    </span>
+                  </div>
+                  <div className="h-[2px] overflow-hidden rounded-full bg-zinc-800">
+                    <div className={["h-full rounded-full transition-all", isLow(webLeft) ? "bg-amber-400" : "bg-sky-500"].join(" ")}
+                      style={{ width: `${webPercent}%` }} />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Settings */}
           <button
             type="button"
             onClick={() => router.push("/settings")}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-[13.5px] font-medium text-zinc-400 transition hover:bg-white/[0.06] hover:text-zinc-200"
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13px] text-zinc-400 transition hover:bg-white/[0.06] hover:text-zinc-200"
           >
-            <IconSettings size={17} className="shrink-0" />
+            <IconSettings size={15} className="shrink-0" />
             Settings
           </button>
 
           {/* User row */}
-          <div className="flex items-center gap-3 rounded-2xl px-4 py-2.5 hover:bg-white/[0.04] transition cursor-default group">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700 text-[11px] font-bold text-zinc-200">
+          <div className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 hover:bg-white/[0.04] transition cursor-default group">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-700 text-[11px] font-bold text-white">
               {avatarInitial}
             </div>
             <span className="flex-1 truncate text-[13px] text-zinc-300">{displayName}</span>
@@ -976,9 +1039,9 @@ export default function ChatPage() {
               type="button"
               title="Sign out"
               onClick={async () => { const auth = getFirebaseAuth(); await signOut(auth); router.replace("/login"); }}
-              className="rounded-lg p-1 text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-red-400 transition"
+              className="rounded-lg p-1 text-zinc-700 opacity-0 group-hover:opacity-100 hover:text-red-400 transition"
             >
-              <IconLogout size={14} />
+              <IconLogout size={13} />
             </button>
           </div>
         </div>
