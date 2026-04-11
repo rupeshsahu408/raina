@@ -186,8 +186,13 @@ function TypingDots() {
 
 function BiharAvatar() {
   return (
-    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-500 text-[11px] font-bold text-zinc-900 shadow">
-      B
+    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden">
+      <img
+        src="/evara-logo.png"
+        alt="Evara"
+        className="h-full w-full object-contain p-0.5"
+        draggable={false}
+      />
     </div>
   );
 }

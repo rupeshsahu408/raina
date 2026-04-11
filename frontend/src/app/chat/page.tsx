@@ -300,15 +300,15 @@ function TypingDots() {
 }
 
 // ── AI Avatar ───────────────────────────────────────────────────────────────
-function EvaraAvatar({ personality }: { personality: Personality }) {
+function EvaraAvatar(_: { personality: Personality }) {
   return (
-    <div className={[
-      "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold",
-      personality === "Simi"
-        ? "bg-gradient-to-br from-violet-500 to-purple-700 text-white"
-        : "bg-gradient-to-br from-rose-500 to-orange-600 text-white",
-    ].join(" ")}>
-      {personality === "Simi" ? "S" : "L"}
+    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden">
+      <img
+        src="/evara-logo.png"
+        alt="Evara"
+        className="h-full w-full object-contain p-0.5"
+        draggable={false}
+      />
     </div>
   );
 }
@@ -931,8 +931,8 @@ export default function ChatPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-3 pt-4 pb-2">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 text-sm font-bold text-white shadow-lg shadow-violet-900/30">
-              E
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden shadow-lg shadow-violet-900/20">
+              <img src="/evara-logo.png" alt="Evara AI" className="h-full w-full object-contain p-1" draggable={false} />
             </div>
             <span className="text-[14px] font-semibold tracking-tight text-zinc-100">Evara AI</span>
           </div>
