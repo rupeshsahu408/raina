@@ -1,0 +1,111 @@
+**Project Brief: WhatsApp AI Business Assistant (Evara AI Extension)**
+
+## Overview
+
+We are building a WhatsApp-based AI assistant that can automatically respond to customer messages on behalf of a business. The goal is to create a simple, fast, and scalable system that helps businesses handle customer queries without manual intervention.
+
+---
+
+## Core Idea
+
+The system will connect with WhatsApp and automatically reply to incoming customer messages using AI.
+The AI should generate responses based on the business information provided by the user.
+
+A key focus is simplicity, usability, and multilingual support for Indian users.
+
+---
+
+## Key Features (MVP)
+
+1. **WhatsApp Integration**
+
+   * Connect business WhatsApp using WhatsApp Cloud API
+   * Ability to receive and send messages automatically
+
+2. **AI Auto Reply System**
+
+   * Automatically respond to incoming messages
+   * Responses should be short, natural, and human-like
+
+3. **Business Information Setup**
+
+   * Users can input structured business details such as:
+
+     * Business name
+     * Type
+     * Working hours
+     * Location
+     * Services/products
+
+4. **Business Knowledge Book (Important Feature)**
+
+   * A large input area where users can describe their business in detail
+   * AI should use this as the primary knowledge source for generating responses
+   * This allows flexible, dynamic, and intelligent replies
+
+5. **Multi-language Support (Critical)**
+
+   * The AI must detect and respond in the user’s language automatically
+   * Support for Hindi, English, Hinglish, and regional Indian languages (Marathi, Telugu, Tamil, etc.)
+
+6. **Basic Chat Logs**
+
+   * Display conversation history between customers and AI
+   * Useful for monitoring responses
+
+7. **Basic Controls**
+
+   * Toggle auto-reply ON/OFF
+   * Select tone (friendly/professional)
+   * Language preference (auto/manual)
+
+---
+
+## Admin / Business Owner Capabilities
+
+* Connect/disconnect WhatsApp
+* Configure business details
+* Write and update Business Knowledge Book
+* View chat logs
+* Control AI behavior (on/off, tone, language)
+
+---
+
+## Technical Direction (High-Level)
+
+* Use WhatsApp Cloud API for messaging
+* Backend should handle webhook events from WhatsApp
+* AI response generation will be handled by the existing Evara AI system
+* Store business data and chat logs in database
+* Ensure scalability and clean architecture
+
+---
+
+## Design & Implementation Flexibility
+
+* The developer/team has full freedom in terms of UI/UX, layout, and structure
+* Wireframes are not fixed — feel free to design the best possible experience
+* Focus should be on usability, clarity, and performance
+
+---
+
+## Goal
+
+To build a simple but powerful AI assistant that can:
+
+* Save time for businesses
+* Improve response speed
+* Handle multilingual conversations
+* Act as a virtual customer support agent on WhatsApp
+
+---
+
+## Notes
+
+* Start with a clean MVP (avoid overbuilding)
+* Advanced features can be added in later phases
+* Priority: reliability, speed, and simplicity
+
+---
+
+**End of Brief**

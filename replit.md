@@ -35,6 +35,7 @@ Frontend proxies all `/v1/*` and `/health` requests to the backend via Next.js r
 - MongoDB memory system (short-term + long-term profile)
 - NVIDIA AI API integration (`openai/gpt-oss-20b`)
 - Serper web search integration
+- WhatsApp AI Business Assistant landing flow at `/whatsapp-ai`
 - Mode system: Personal, Web Search, Study, Thinking, Business (Evara); Education, Politics, News, Culture, Student Help, Jobs, Agriculture, District (Bihar)
 - Personality switching: Simi (calm/caring) and Loa (confident/playful)
 - PWA (installable on mobile/desktop)
@@ -52,3 +53,4 @@ Frontend proxies all `/v1/*` and `/health` requests to the backend via Next.js r
 - Backend runs `tsx watch` for hot-reload in dev mode
 - Cookie preferences are stored in localStorage under `evara_cookie_prefs`
 - Voice transcription uses browser SpeechRecognition API (works best in Chrome on direct URL, not inside Replit iframe)
+- WhatsApp assistant credentials must be configured as server-side environment variables/secrets: `WHATSAPP_CLOUD_API_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN`, and `NVIDIA_API_KEY`. The frontend only receives readiness booleans, never secret values.

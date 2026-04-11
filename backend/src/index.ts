@@ -165,7 +165,7 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "2mb" }));
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "evara-backend" });
@@ -730,6 +730,251 @@ app.post("/v1/demo-chat", (req, res) => {
       session.updatedAt = now;
       return res.json({ reply: fallback });
     });
+});
+
+type WhatsAppBusinessConfig = {
+  businessName: string;
+  businessType: string;
+  workingHours: string;
+  location: string;
+  services: string;
+  knowledgeBook: string;
+  tone: "friendly" | "professional";
+  languageMode: "auto" | "english" | "hindi" | "hinglish";
+  autoReplyEnabled: boolean;
+};
+
+type WhatsAppLogItem = {
+  id: string;
+  from: string;
+  customerMessage: string;
+  aiReply: string;
+  createdAt: string;
+};
+
+const whatsappLogs: WhatsAppLogItem[] = [];
+
+let whatsappBusinessConfig: WhatsAppBusinessConfig = {
+  businessName: process.env.EVARA_BUSINESS_NAME || "Evara Business",
+  businessType: process.env.EVARA_BUSINESS_TYPE || "Indian business",
+  workingHours: process.env.EVARA_BUSINESS_HOURS || "Business hours not provided",
+  location: process.env.EVARA_BUSINESS_LOCATION || "India",
+  services: process.env.EVARA_BUSINESS_SERVICES || "Customer support, bookings, product information",
+  knowledgeBook:
+    process.env.EVARA_BUSINESS_KNOWLEDGE_BOOK ||
+    "Answer customer questions briefly and politely using the available business information. If something is not known, ask a short follow-up question or tell the customer the team will confirm.",
+  tone:
+    process.env.EVARA_BUSINESS_TONE === "friendly" ? "friendly" : "professional",
+  languageMode:
+    process.env.EVARA_BUSINESS_LANGUAGE_MODE === "english" ||
+    process.env.EVARA_BUSINESS_LANGUAGE_MODE === "hindi" ||
+    process.env.EVARA_BUSINESS_LANGUAGE_MODE === "hinglish"
+      ? process.env.EVARA_BUSINESS_LANGUAGE_MODE
+      : "auto",
+  autoReplyEnabled: process.env.EVARA_WHATSAPP_AUTO_REPLY !== "false",
+};
+
+function sanitizeBusinessConfig(input: Partial<WhatsAppBusinessConfig>): WhatsAppBusinessConfig {
+  const tone = input.tone === "friendly" ? "friendly" : "professional";
+  const languageMode =
+    input.languageMode === "english" ||
+    input.languageMode === "hindi" ||
+    input.languageMode === "hinglish"
+      ? input.languageMode
+      : "auto";
+
+  return {
+    businessName: String(input.businessName || "").trim().slice(0, 120) || "Business",
+    businessType: String(input.businessType || "").trim().slice(0, 120) || "Business",
+    workingHours: String(input.workingHours || "").trim().slice(0, 180),
+    location: String(input.location || "").trim().slice(0, 180),
+    services: String(input.services || "").trim().slice(0, 2500),
+    knowledgeBook: String(input.knowledgeBook || "").trim().slice(0, 12000),
+    tone,
+    languageMode,
+    autoReplyEnabled: input.autoReplyEnabled !== false,
+  };
+}
+
+function detectCustomerLanguage(text: string, mode: WhatsAppBusinessConfig["languageMode"]) {
+  if (mode === "english") return "English";
+  if (mode === "hindi") return "Hindi";
+  if (mode === "hinglish") return "Hinglish";
+  if (/[\u0900-\u097F]/.test(text)) return "Hindi";
+  if (/(kya|hai|nahi|kaise|kitna|price|delivery|bata|chahiye|karna|hoga)/i.test(text)) {
+    return "Hinglish";
+  }
+  return "English";
+}
+
+function buildWhatsAppFallbackReply(config: WhatsAppBusinessConfig, customerMessage: string) {
+  const language = detectCustomerLanguage(customerMessage, config.languageMode);
+  const name = config.businessName || "our business";
+  if (language === "Hindi") {
+    return `Namaste! ${name} se contact karne ke liye dhanyavaad. Hum aapki query dekh rahe hain. Kripya apni requirement thodi detail mein bata dijiye.`;
+  }
+  if (language === "Hinglish") {
+    return `Namaste! ${name} ko message karne ke liye thanks. Aapki query mil gayi hai. Please thoda detail bata dijiye, hum help karte hain.`;
+  }
+  return `Hello! Thanks for contacting ${name}. We received your message and can help with details, availability, pricing, or booking. Could you share a little more?`;
+}
+
+function buildWhatsAppSystemPrompt(config: WhatsAppBusinessConfig, customerMessage: string) {
+  const language = detectCustomerLanguage(customerMessage, config.languageMode);
+  return [
+    "You are an AI WhatsApp business assistant for Indian customers.",
+    "Reply naturally, briefly, and professionally. Keep most replies under 70 words.",
+    "Use the same language as the customer when language mode is auto. Support Hindi, English, Hinglish, and Indian regional-language style when detected.",
+    "Never invent exact pricing, policies, or availability if not present in the business knowledge. Ask one short follow-up question when needed.",
+    `Tone: ${config.tone}.`,
+    `Detected/selected language: ${language}.`,
+    "",
+    "Business details:",
+    `Name: ${config.businessName}`,
+    `Type: ${config.businessType}`,
+    `Working hours: ${config.workingHours || "Not provided"}`,
+    `Location: ${config.location || "Not provided"}`,
+    `Services/products: ${config.services || "Not provided"}`,
+    "",
+    "Business Knowledge Book:",
+    config.knowledgeBook || "No extra knowledge provided.",
+  ].join("\n");
+}
+
+async function generateWhatsAppBusinessReply(config: WhatsAppBusinessConfig, customerMessage: string) {
+  const fallback = buildWhatsAppFallbackReply(config, customerMessage);
+  const apiKey = process.env.NVIDIA_API_KEY;
+  if (!apiKey) return fallback;
+
+  const reply = await callNvidiaChatCompletions({
+    apiKey,
+    messages: [
+      { role: "system", content: buildWhatsAppSystemPrompt(config, customerMessage) },
+      { role: "user", content: customerMessage },
+    ],
+    temperature: 0.45,
+    max_tokens: 260,
+  });
+
+  return reply || fallback;
+}
+
+async function sendWhatsAppText(to: string, body: string) {
+  const token = process.env.WHATSAPP_CLOUD_API_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  if (!token || !phoneNumberId) {
+    throw new Error("WhatsApp credentials not configured");
+  }
+
+  const response = await fetch(`https://graph.facebook.com/v20.0/${phoneNumberId}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to,
+      type: "text",
+      text: { preview_url: false, body },
+    }),
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => "");
+    throw new Error(`WhatsApp send failed (${response.status}): ${detail || response.statusText}`);
+  }
+}
+
+app.get("/v1/whatsapp/status", (_req, res) => {
+  res.json({
+    whatsappApiToken: Boolean(process.env.WHATSAPP_CLOUD_API_TOKEN),
+    whatsappPhoneNumberId: Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID),
+    whatsappVerifyToken: Boolean(process.env.WHATSAPP_VERIFY_TOKEN),
+    aiApiKey: Boolean(process.env.NVIDIA_API_KEY),
+    autoReplyEnabled: whatsappBusinessConfig.autoReplyEnabled,
+  });
+});
+
+app.get("/v1/whatsapp/config", (_req, res) => {
+  res.json(whatsappBusinessConfig);
+});
+
+app.put("/v1/whatsapp/config", (req, res) => {
+  whatsappBusinessConfig = sanitizeBusinessConfig(req.body || {});
+  res.json({ ok: true, config: whatsappBusinessConfig });
+});
+
+app.get("/v1/whatsapp/logs", (_req, res) => {
+  res.json({ logs: whatsappLogs.slice(0, 50) });
+});
+
+app.post("/v1/whatsapp/preview-reply", async (req, res) => {
+  const customerMessage = String(req.body?.customerMessage || "").trim();
+  if (!customerMessage) {
+    return res.status(400).json({ error: "customerMessage is required" });
+  }
+
+  const config = sanitizeBusinessConfig(req.body || whatsappBusinessConfig);
+  try {
+    const reply = await generateWhatsAppBusinessReply(config, customerMessage);
+    res.json({
+      reply,
+      language: detectCustomerLanguage(customerMessage, config.languageMode),
+      usedAi: Boolean(process.env.NVIDIA_API_KEY),
+    });
+  } catch {
+    res.json({
+      reply: buildWhatsAppFallbackReply(config, customerMessage),
+      language: detectCustomerLanguage(customerMessage, config.languageMode),
+      usedAi: false,
+    });
+  }
+});
+
+app.get("/v1/whatsapp/webhook", (req, res) => {
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+  if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+    return res.status(200).send(String(challenge || ""));
+  }
+  return res.sendStatus(403);
+});
+
+app.post("/v1/whatsapp/webhook", async (req, res) => {
+  res.sendStatus(200);
+
+  if (!whatsappBusinessConfig.autoReplyEnabled) return;
+
+  try {
+    const entries = Array.isArray(req.body?.entry) ? req.body.entry : [];
+    for (const entry of entries) {
+      const changes = Array.isArray(entry?.changes) ? entry.changes : [];
+      for (const change of changes) {
+        const messages = Array.isArray(change?.value?.messages) ? change.value.messages : [];
+        for (const message of messages) {
+          const from = String(message?.from || "");
+          const text = String(message?.text?.body || "").trim();
+          if (!from || !text) continue;
+
+          const reply = await generateWhatsAppBusinessReply(whatsappBusinessConfig, text);
+          whatsappLogs.unshift({
+            id: crypto.randomUUID(),
+            from,
+            customerMessage: text,
+            aiReply: reply,
+            createdAt: new Date().toISOString(),
+          });
+          if (whatsappLogs.length > 100) whatsappLogs.pop();
+
+          await sendWhatsAppText(from, reply);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[whatsapp] webhook processing failed:", err);
+  }
 });
 
 app.get("/v1/profile", requireFirebaseAuth, async (req, res) => {

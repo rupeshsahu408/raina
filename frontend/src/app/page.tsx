@@ -26,6 +26,12 @@ export default function Home() {
           <nav className="flex items-center gap-2 sm:gap-3">
             <InstallPrompt label="Get App" />
             <a
+              href="/whatsapp-ai"
+              className="hidden rounded-full border border-emerald-400/40 bg-emerald-400/10 px-4 py-2 text-xs font-semibold text-emerald-200 transition hover:border-emerald-300 hover:bg-emerald-400/15 sm:inline-flex"
+            >
+              WhatsApp AI
+            </a>
+            <a
               href="/login"
               className="rounded-full border border-zinc-700/90 px-4 py-2 text-xs font-medium text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-900"
             >
@@ -65,6 +71,12 @@ export default function Home() {
                   className="rounded-full bg-zinc-100 px-5 py-2.5 text-sm font-semibold text-black transition hover:bg-white"
                 >
                   Try Evara Now
+                </a>
+                <a
+                  href="/whatsapp-ai"
+                  className="rounded-full bg-gradient-to-r from-emerald-300 via-teal-300 to-cyan-300 px-5 py-2.5 text-sm font-semibold text-black shadow-lg shadow-emerald-500/20 transition hover:scale-[1.02]"
+                >
+                  Build WhatsApp Business Assistant
                 </a>
                 <InstallPrompt
                   label="Download App"
