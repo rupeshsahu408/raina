@@ -186,7 +186,7 @@ function TypingDots() {
 
 function BiharAvatar() {
   return (
-    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden">
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden">
       <img
         src="/evara-logo.png"
         alt="Evara"
@@ -505,8 +505,8 @@ export default function BiharAiPage() {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/[0.05] px-4 pt-5 pb-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 text-xs font-bold text-zinc-900 shadow-lg">
-              B
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden shadow-lg shadow-amber-900/20">
+              <img src="/evara-logo.png" alt="Bihar AI" className="h-full w-full object-contain p-1" draggable={false} />
             </div>
             <div>
               <p className="text-[14px] font-semibold text-amber-300 leading-tight">Bihar AI</p>

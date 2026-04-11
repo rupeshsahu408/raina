@@ -28,7 +28,7 @@ export default function LoginPage() {
       </header>
       <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center">
         <div className="mb-7 flex flex-col items-center gap-3">
-          <div className="relative h-20 w-20 overflow-hidden rounded-2xl bg-[#0d0d14] ring-1 ring-white/[0.08] shadow-lg shadow-violet-900/20">
+          <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-[#0d0d14] ring-1 ring-white/[0.08] shadow-lg shadow-violet-900/20">
             <img
               src="/evara-logo.png"
               alt="Evara AI"

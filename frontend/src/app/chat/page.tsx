@@ -302,7 +302,7 @@ function TypingDots() {
 // ── AI Avatar ───────────────────────────────────────────────────────────────
 function EvaraAvatar(_: { personality: Personality }) {
   return (
-    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden">
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden">
       <img
         src="/evara-logo.png"
         alt="Evara"
@@ -931,7 +931,7 @@ export default function ChatPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-3 pt-4 pb-2">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden shadow-lg shadow-violet-900/20">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden shadow-lg shadow-violet-900/20">
               <img src="/evara-logo.png" alt="Evara AI" className="h-full w-full object-contain p-1" draggable={false} />
             </div>
             <span className="text-[14px] font-semibold tracking-tight text-zinc-100">Evara AI</span>
