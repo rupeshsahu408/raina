@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.callNvidiaChatCompletions = callNvidiaChatCompletions;
 async function callNvidiaChatCompletions(args) {
-    const { apiKey, baseUrl = "https://integrate.api.nvidia.com/v1", model = "openai/gpt-oss-20b", messages, temperature = 0.7, top_p = 0.9, max_tokens = 700, } = args;
+    const { apiKey, baseUrl = "https://integrate.api.nvidia.com/v1", model = "openai/gpt-oss-20b", messages, temperature = 0.7, top_p = 0.9, max_tokens = 1200, } = args;
     const url = `${baseUrl.replace(/\/$/, "")}/chat/completions`;
     const res = await fetch(url, {
         method: "POST",

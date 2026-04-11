@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: evara-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: SERPER_API_KEY
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: DAILY_MESSAGE_LIMIT
+        value: "120"
+      - key: DAILY_WEB_SEARCH_LIMIT
+        value: "25"

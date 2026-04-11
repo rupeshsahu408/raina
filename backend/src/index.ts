@@ -138,12 +138,25 @@ async function requireFirebaseAuth(
   }
 }
 
-const corsOriginRaw = process.env.CORS_ORIGIN;
-const corsOrigin =
-  corsOriginRaw === "true" || corsOriginRaw === "*"
-    ? true
-    : corsOriginRaw ||
-      (process.env.NODE_ENV === "production" ? true : "http://localhost:3000");
+const isProduction = process.env.NODE_ENV === "production";
+
+function buildCorsOrigin(): string | string[] | boolean {
+  const raw = process.env.CORS_ORIGIN;
+  if (!raw) {
+    if (isProduction) {
+      console.warn(
+        "[cors] CORS_ORIGIN not set in production — all origins allowed. Set CORS_ORIGIN to your Vercel URL."
+      );
+      return true;
+    }
+    return ["http://localhost:3000", "http://localhost:5000"];
+  }
+  if (raw === "*" || raw === "true") return true;
+  const origins = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  return origins.length === 1 ? origins[0] : origins;
+}
+
+const corsOrigin = buildCorsOrigin();
 
 app.use(
   cors({
@@ -156,6 +169,10 @@ app.use(express.json({ limit: "1mb" }));
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "evara-backend" });
+});
+
+app.get("/api/health", (_req, res) => {
+  res.status(200).send("OK");
 });
 
 // ── Voice transcription via NVIDIA Whisper ─────────────────────────────────
@@ -186,7 +203,7 @@ app.post("/v1/transcribe", audioUpload.single("audio"), async (req, res) => {
         Authorization: `Bearer ${apiKey}`,
         ...form.getHeaders(),
       },
-      body: form.getBuffer(),
+      body: form.getBuffer() as unknown as BodyInit,
     });
 
     if (!nvidiaRes.ok) {
@@ -2150,10 +2167,21 @@ Category mode: ${categoryAuto ? "auto" : "user-locked"}`;
   }
 });
 
-const port = Number(process.env.PORT || 8081);
+const port = Number(process.env.PORT || 8080);
 
-app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`[evara-backend] listening on http://localhost:${port}`);
+const server = app.listen(port, () => {
+  console.log(`[evara-backend] listening on port ${port}`);
+});
+
+server.on("error", (err) => {
+  console.error("[evara-backend] failed to start:", err);
+  process.exit(1);
+});
+
+process.on("SIGTERM", () => {
+  server.close(() => {
+    console.log("[evara-backend] graceful shutdown complete");
+    process.exit(0);
+  });
 });
 
