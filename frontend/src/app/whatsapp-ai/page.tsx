@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 const STORAGE_KEY = "evara_whatsapp_business_setup_v1";
+const PROFILE_ID_KEY = "evara_whatsapp_business_id_v1";
 
 type Status = {
   whatsappApiToken: boolean;
@@ -27,6 +28,7 @@ type BusinessConfig = {
 
 type LogItem = {
   id: string;
+  from?: string;
   customerName: string;
   customerMessage: string;
   aiReply: string;
@@ -49,6 +51,15 @@ const DEFAULT_CONFIG: BusinessConfig = {
 
 function makeId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function readBusinessId() {
+  if (typeof window === "undefined") return "";
+  const existing = localStorage.getItem(PROFILE_ID_KEY);
+  if (existing?.trim()) return existing.trim();
+  const id = `biz_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+  localStorage.setItem(PROFILE_ID_KEY, id);
+  return id;
 }
 
 function StatusPill({ ok, label }: { ok: boolean; label: string }) {
@@ -94,6 +105,7 @@ function Field({
 }
 
 export default function WhatsAppAIPage() {
+  const [businessId, setBusinessId] = useState("");
   const [config, setConfig] = useState<BusinessConfig>(DEFAULT_CONFIG);
   const [status, setStatus] = useState<Status | null>(null);
   const [saving, setSaving] = useState(false);
@@ -124,12 +136,16 @@ export default function WhatsAppAIPage() {
   }, [status]);
 
   useEffect(() => {
+    const id = readBusinessId();
+    setBusinessId(id);
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) setConfig({ ...DEFAULT_CONFIG, ...(JSON.parse(raw) as Partial<BusinessConfig>) });
     } catch {}
 
     void refreshStatus();
+    void loadPersistedSetup(id);
+    void loadLogs(id);
   }, []);
 
   async function refreshStatus() {
@@ -148,6 +164,32 @@ export default function WhatsAppAIPage() {
     }
   }
 
+  async function loadPersistedSetup(id = businessId) {
+    if (!id) return;
+    try {
+      const res = await fetch(`${API}/v1/whatsapp/config?businessId=${encodeURIComponent(id)}`);
+      if (!res.ok) return;
+      const data: { config?: Partial<BusinessConfig>; persisted?: boolean } = await res.json();
+      if (data.config) {
+        const nextConfig = { ...DEFAULT_CONFIG, ...data.config };
+        setConfig(nextConfig);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextConfig));
+      }
+    } catch {}
+  }
+
+  async function loadLogs(id = businessId) {
+    if (!id) return;
+    try {
+      const res = await fetch(`${API}/v1/whatsapp/logs?businessId=${encodeURIComponent(id)}`);
+      if (!res.ok) return;
+      const data: { logs?: LogItem[] } = await res.json();
+      if (Array.isArray(data.logs) && data.logs.length > 0) {
+        setLogs(data.logs);
+      }
+    } catch {}
+  }
+
   async function saveSetup() {
     setSaving(true);
     setToast("");
@@ -156,11 +198,17 @@ export default function WhatsAppAIPage() {
       const res = await fetch(`${API}/v1/whatsapp/config`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify({ businessId, ...config }),
       });
       if (!res.ok) throw new Error("Save failed");
-      setToast("Business setup saved. Webhook replies will use this knowledge while the server is running.");
+      const data: { persisted?: boolean } = await res.json();
+      setToast(
+        data.persisted
+          ? "Business setup saved to the database and will survive server restarts."
+          : "Business setup saved in memory. Add MongoDB connection to persist it permanently."
+      );
       await refreshStatus();
+      await loadLogs();
     } catch {
       setToast("Saved locally. Start the backend to sync this setup with the webhook.");
     } finally {
@@ -177,7 +225,7 @@ export default function WhatsAppAIPage() {
       const res = await fetch(`${API}/v1/whatsapp/preview-reply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...config, customerMessage: text }),
+        body: JSON.stringify({ businessId, ...config, customerMessage: text }),
       });
       if (!res.ok) throw new Error("Preview failed");
       const data: { reply?: string; language?: string } = await res.json();
@@ -193,6 +241,7 @@ export default function WhatsAppAIPage() {
         ...prev,
       ]);
       setToast("AI preview generated from your business knowledge book.");
+      void loadLogs();
     } catch {
       const fallback = `Thanks for messaging ${config.businessName || "us"}. We received your question and will help you shortly.`;
       setLogs((prev) => [
@@ -255,6 +304,9 @@ export default function WhatsAppAIPage() {
               </h1>
               <p className="mt-5 max-w-2xl text-sm leading-7 text-zinc-300 sm:text-base">
                 Configure your business details, paste a knowledge book, test realistic customer messages, and connect WhatsApp credentials through secure server environment variables.
+              </p>
+              <p className="mt-4 inline-flex max-w-full rounded-full border border-white/10 bg-black/20 px-4 py-2 text-xs text-zinc-400">
+                Profile ID: <span className="ml-2 truncate text-emerald-200">{businessId || "loading"}</span>
               </p>
 
               <div className="mt-7 grid gap-3 sm:grid-cols-3">

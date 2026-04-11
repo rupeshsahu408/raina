@@ -23,6 +23,8 @@ import { callNvidiaChatCompletions, type ChatMessage } from "./ai/nvidiaClient";
 import { UserProfile } from "./models/UserProfile";
 import { ConversationMessage } from "./models/ConversationMessage";
 import { Conversation } from "./models/Conversation";
+import { WhatsAppBusinessProfile } from "./models/WhatsAppBusinessProfile";
+import { WhatsAppChatLog } from "./models/WhatsAppChatLog";
 
 dotenv.config();
 
@@ -747,12 +749,15 @@ type WhatsAppBusinessConfig = {
 type WhatsAppLogItem = {
   id: string;
   from: string;
+  customerName?: string | null;
   customerMessage: string;
   aiReply: string;
+  language?: string | null;
   createdAt: string;
 };
 
 const whatsappLogs: WhatsAppLogItem[] = [];
+const DEFAULT_WHATSAPP_BUSINESS_ID = process.env.EVARA_WHATSAPP_BUSINESS_ID || "default-business";
 
 let whatsappBusinessConfig: WhatsAppBusinessConfig = {
   businessName: process.env.EVARA_BUSINESS_NAME || "Evara Business",
@@ -794,6 +799,69 @@ function sanitizeBusinessConfig(input: Partial<WhatsAppBusinessConfig>): WhatsAp
     languageMode,
     autoReplyEnabled: input.autoReplyEnabled !== false,
   };
+}
+
+function sanitizeBusinessId(input: unknown) {
+  const raw = String(input || "").trim().toLowerCase();
+  const safe = raw.replace(/[^a-z0-9_-]/g, "").slice(0, 80);
+  return safe || DEFAULT_WHATSAPP_BUSINESS_ID;
+}
+
+function configToProfileUpdate(config: WhatsAppBusinessConfig) {
+  return {
+    businessName: config.businessName,
+    businessType: config.businessType,
+    workingHours: config.workingHours,
+    location: config.location,
+    services: config.services,
+    knowledgeBook: config.knowledgeBook,
+    tone: config.tone,
+    languageMode: config.languageMode,
+    autoReplyEnabled: config.autoReplyEnabled,
+  };
+}
+
+function profileToBusinessConfig(profile: any): WhatsAppBusinessConfig {
+  return sanitizeBusinessConfig({
+    businessName: profile?.businessName,
+    businessType: profile?.businessType,
+    workingHours: profile?.workingHours,
+    location: profile?.location,
+    services: profile?.services,
+    knowledgeBook: profile?.knowledgeBook,
+    tone: profile?.tone,
+    languageMode: profile?.languageMode,
+    autoReplyEnabled: profile?.autoReplyEnabled,
+  });
+}
+
+async function loadBusinessProfileConfig(businessId: string) {
+  await connectMongo();
+  const profile = await WhatsAppBusinessProfile.findOne({ businessId }).lean();
+  if (!profile) return whatsappBusinessConfig;
+  return profileToBusinessConfig(profile);
+}
+
+async function saveBusinessProfileConfig(businessId: string, config: WhatsAppBusinessConfig) {
+  await connectMongo();
+  await WhatsAppBusinessProfile.findOneAndUpdate(
+    { businessId },
+    { $set: configToProfileUpdate(config) },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+}
+
+async function createWhatsAppLog(args: {
+  businessId: string;
+  from: string;
+  customerName?: string | null;
+  customerMessage: string;
+  aiReply: string;
+  language: string;
+  source: "preview" | "whatsapp";
+}) {
+  await connectMongo();
+  await WhatsAppChatLog.create(args);
 }
 
 function detectCustomerLanguage(text: string, mode: WhatsAppBusinessConfig["languageMode"]) {
@@ -896,20 +964,55 @@ app.get("/v1/whatsapp/status", (_req, res) => {
   });
 });
 
-app.get("/v1/whatsapp/config", (_req, res) => {
-  res.json(whatsappBusinessConfig);
+app.get("/v1/whatsapp/config", async (req, res) => {
+  const businessId = sanitizeBusinessId(req.query.businessId);
+  try {
+    const config = await loadBusinessProfileConfig(businessId);
+    res.json({ businessId, config, persisted: true });
+  } catch {
+    res.json({ businessId, config: whatsappBusinessConfig, persisted: false });
+  }
 });
 
-app.put("/v1/whatsapp/config", (req, res) => {
+app.put("/v1/whatsapp/config", async (req, res) => {
+  const businessId = sanitizeBusinessId(req.body?.businessId);
   whatsappBusinessConfig = sanitizeBusinessConfig(req.body || {});
-  res.json({ ok: true, config: whatsappBusinessConfig });
+  try {
+    await saveBusinessProfileConfig(businessId, whatsappBusinessConfig);
+    res.json({ ok: true, businessId, config: whatsappBusinessConfig, persisted: true });
+  } catch {
+    res.json({ ok: true, businessId, config: whatsappBusinessConfig, persisted: false });
+  }
 });
 
-app.get("/v1/whatsapp/logs", (_req, res) => {
-  res.json({ logs: whatsappLogs.slice(0, 50) });
+app.get("/v1/whatsapp/logs", async (req, res) => {
+  const businessId = sanitizeBusinessId(req.query.businessId);
+  try {
+    await connectMongo();
+    const logs = await WhatsAppChatLog.find({ businessId })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+    res.json({
+      businessId,
+      persisted: true,
+      logs: logs.map((log) => ({
+        id: String(log._id),
+        from: log.from,
+        customerName: log.customerName || "Customer",
+        customerMessage: log.customerMessage,
+        aiReply: log.aiReply,
+        language: log.language || "Auto",
+        createdAt: log.createdAt,
+      })),
+    });
+  } catch {
+    res.json({ businessId, persisted: false, logs: whatsappLogs.slice(0, 50) });
+  }
 });
 
 app.post("/v1/whatsapp/preview-reply", async (req, res) => {
+  const businessId = sanitizeBusinessId(req.body?.businessId);
   const customerMessage = String(req.body?.customerMessage || "").trim();
   if (!customerMessage) {
     return res.status(400).json({ error: "customerMessage is required" });
@@ -918,15 +1021,28 @@ app.post("/v1/whatsapp/preview-reply", async (req, res) => {
   const config = sanitizeBusinessConfig(req.body || whatsappBusinessConfig);
   try {
     const reply = await generateWhatsAppBusinessReply(config, customerMessage);
+    const language = detectCustomerLanguage(customerMessage, config.languageMode);
+    try {
+      await createWhatsAppLog({
+        businessId,
+        from: "preview",
+        customerName: "Preview customer",
+        customerMessage,
+        aiReply: reply,
+        language,
+        source: "preview",
+      });
+    } catch {}
     res.json({
       reply,
-      language: detectCustomerLanguage(customerMessage, config.languageMode),
+      language,
       usedAi: Boolean(process.env.NVIDIA_API_KEY),
     });
   } catch {
+    const language = detectCustomerLanguage(customerMessage, config.languageMode);
     res.json({
       reply: buildWhatsAppFallbackReply(config, customerMessage),
-      language: detectCustomerLanguage(customerMessage, config.languageMode),
+      language,
       usedAi: false,
     });
   }
@@ -948,6 +1064,10 @@ app.post("/v1/whatsapp/webhook", async (req, res) => {
   if (!whatsappBusinessConfig.autoReplyEnabled) return;
 
   try {
+    const businessId = sanitizeBusinessId(process.env.EVARA_WHATSAPP_BUSINESS_ID);
+    const activeConfig = await loadBusinessProfileConfig(businessId).catch(() => whatsappBusinessConfig);
+    if (!activeConfig.autoReplyEnabled) return;
+
     const entries = Array.isArray(req.body?.entry) ? req.body.entry : [];
     for (const entry of entries) {
       const changes = Array.isArray(entry?.changes) ? entry.changes : [];
@@ -958,16 +1078,28 @@ app.post("/v1/whatsapp/webhook", async (req, res) => {
           const text = String(message?.text?.body || "").trim();
           if (!from || !text) continue;
 
-          const reply = await generateWhatsAppBusinessReply(whatsappBusinessConfig, text);
+          const reply = await generateWhatsAppBusinessReply(activeConfig, text);
+          const language = detectCustomerLanguage(text, activeConfig.languageMode);
           whatsappLogs.unshift({
             id: crypto.randomUUID(),
             from,
+            customerName: from,
             customerMessage: text,
             aiReply: reply,
+            language,
             createdAt: new Date().toISOString(),
           });
           if (whatsappLogs.length > 100) whatsappLogs.pop();
 
+          await createWhatsAppLog({
+            businessId,
+            from,
+            customerName: from,
+            customerMessage: text,
+            aiReply: reply,
+            language,
+            source: "whatsapp",
+          }).catch(() => undefined);
           await sendWhatsAppText(from, reply);
         }
       }
