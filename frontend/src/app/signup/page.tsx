@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { AuthProviderButtons } from "@/components/AuthProviderButtons";
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next") || "/chat";
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +24,7 @@ export default function SignupPage() {
           Evara AI
         </p>
         <a
-          href="/login"
+          href={`/login?next=${encodeURIComponent(nextPath)}`}
           className="text-xs text-zinc-400 underline underline-offset-4"
         >
           Already have an account?
@@ -39,7 +42,7 @@ export default function SignupPage() {
         </div>
         <h1 className="text-xl font-semibold">Create your space</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          A gentle companion, tuned to your emotional world.
+          Sign up to get started.
         </p>
 
         {error ? (
@@ -64,7 +67,7 @@ export default function SignupPage() {
               if (name.trim()) {
                 await updateProfile(cred.user, { displayName: name.trim() });
               }
-              router.replace("/chat");
+              router.replace(nextPath);
             } catch (err) {
               setError(
                 err instanceof Error
@@ -85,8 +88,8 @@ export default function SignupPage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500"
-              placeholder="How should Evara call you?"
+              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500 transition-colors"
+              placeholder="Your name"
               autoComplete="name"
             />
           </div>
@@ -99,7 +102,7 @@ export default function SignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500"
+              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500 transition-colors"
               placeholder="you@example.com"
               autoComplete="email"
             />
@@ -113,7 +116,7 @@ export default function SignupPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500"
+              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500 transition-colors"
               placeholder="••••••••"
               autoComplete="new-password"
             />
@@ -121,7 +124,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 h-11 w-full rounded-2xl bg-zinc-100 text-sm font-medium text-black disabled:opacity-60"
+            className="mt-4 h-11 w-full rounded-2xl bg-zinc-100 text-sm font-medium text-black transition-opacity disabled:opacity-60 hover:opacity-90"
           >
             {loading ? "Creating..." : "Create account"}
           </button>
@@ -130,7 +133,7 @@ export default function SignupPage() {
         <AuthProviderButtons
           mode="signup"
           onSuccess={() => {
-            router.replace("/chat");
+            router.replace(nextPath);
           }}
         />
       </main>
@@ -138,3 +141,10 @@ export default function SignupPage() {
   );
 }
 
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <SignupForm />
+    </Suspense>
+  );
+}

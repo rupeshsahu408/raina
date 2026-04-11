@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { AuthProviderButtons } from "@/components/AuthProviderButtons";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next") || "/chat";
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -20,7 +23,7 @@ export default function LoginPage() {
           Evara AI
         </p>
         <a
-          href="/signup"
+          href={`/signup?next=${encodeURIComponent(nextPath)}`}
           className="text-xs text-zinc-400 underline underline-offset-4"
         >
           Need an account?
@@ -38,7 +41,7 @@ export default function LoginPage() {
         </div>
         <h1 className="text-xl font-semibold">Welcome back</h1>
         <p className="mt-1 text-sm text-zinc-400">
-          Sign in to continue your conversation with Evara.
+          Sign in to continue.
         </p>
 
         {error ? (
@@ -56,7 +59,7 @@ export default function LoginPage() {
             try {
               const auth = getFirebaseAuth();
               await signInWithEmailAndPassword(auth, email, password);
-              router.replace("/chat");
+              router.replace(nextPath);
             } catch (err) {
               setError(
                 err instanceof Error
@@ -77,7 +80,7 @@ export default function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500"
+              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500 transition-colors"
               placeholder="you@example.com"
               autoComplete="email"
             />
@@ -91,7 +94,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500"
+              className="h-10 w-full rounded-xl border border-zinc-800 bg-zinc-950 px-3 text-sm outline-none ring-0 focus:border-zinc-500 transition-colors"
               placeholder="••••••••"
               autoComplete="current-password"
             />
@@ -99,7 +102,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-4 h-11 w-full rounded-2xl bg-zinc-100 text-sm font-medium text-black disabled:opacity-60"
+            className="mt-4 h-11 w-full rounded-2xl bg-zinc-100 text-sm font-medium text-black transition-opacity disabled:opacity-60 hover:opacity-90"
           >
             {loading ? "Signing in..." : "Sign in"}
           </button>
@@ -108,7 +111,7 @@ export default function LoginPage() {
         <AuthProviderButtons
           mode="login"
           onSuccess={() => {
-            router.replace("/chat");
+            router.replace(nextPath);
           }}
         />
       </main>
@@ -116,3 +119,10 @@ export default function LoginPage() {
   );
 }
 
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-black" />}>
+      <LoginForm />
+    </Suspense>
+  );
+}

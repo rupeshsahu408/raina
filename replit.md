@@ -35,7 +35,7 @@ Frontend proxies all `/v1/*` and `/health` requests to the backend via Next.js r
 - MongoDB memory system (short-term + long-term profile)
 - NVIDIA AI API integration (`openai/gpt-oss-20b`)
 - Serper web search integration
-- WhatsApp AI Business Assistant landing flow at `/whatsapp-ai`
+- WhatsApp AI Business Assistant flow: premium 3D product landing page at `/whatsapp-ai`, authenticated business dashboard at `/whatsapp-ai/dashboard`, and login/signup redirect support through `?next=/whatsapp-ai/dashboard`
 - Persistent WhatsApp business profiles and chat logs in MongoDB
 - Mode system: Personal, Web Search, Study, Thinking, Business (Evara); Education, Politics, News, Culture, Student Help, Jobs, Agriculture, District (Bihar)
 - Personality switching: Simi (calm/caring) and Loa (confident/playful)
