@@ -28,14 +28,12 @@ export default function LoginPage() {
       </header>
       <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center">
         <div className="mb-7 flex flex-col items-center gap-3">
-          <div className="relative h-24 w-24 overflow-hidden rounded-2xl bg-[#0d0d14] ring-1 ring-white/[0.08] shadow-lg shadow-violet-900/20">
-            <img
-              src="/evara-logo.png"
-              alt="Evara AI"
-              className="h-full w-full object-contain p-2"
-              draggable={false}
-            />
-          </div>
+          <img
+            src="/evara-logo.png"
+            alt="Evara AI"
+            className="h-24 w-24 object-contain"
+            draggable={false}
+          />
           <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-600">Evara AI</span>
         </div>
         <h1 className="text-xl font-semibold">Welcome back</h1>

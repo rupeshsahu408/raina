@@ -482,9 +482,7 @@ export default function SettingsPage() {
       {/* ── Sidebar nav ── */}
       <aside className="w-56 shrink-0 border-r border-white/[0.06] bg-[#0f0f0f] flex flex-col py-6 px-3 gap-1 hidden md:flex">
         <div className="flex items-center gap-2.5 px-3 pb-4">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden shadow-lg shadow-violet-900/20">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-full w-full object-contain p-1" draggable={false} />
-          </div>
+          <img src="/evara-logo.png" alt="Evara AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
           <span className="text-[14px] font-semibold tracking-tight text-zinc-100">Settings</span>
         </div>
         <a href="/chat" className="flex items-center gap-2 px-3 pb-5 text-[13px] text-zinc-500 hover:text-zinc-300 transition">

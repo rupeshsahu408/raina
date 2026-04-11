@@ -12,9 +12,7 @@ export default function Home() {
       <div className="relative mx-auto flex w-full max-w-7xl flex-col px-4 pb-10 pt-6 sm:px-6 lg:px-10">
         <header className="flex items-center justify-between rounded-2xl border border-zinc-800/80 bg-zinc-950/55 px-3 py-3 backdrop-blur-md sm:px-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#0d0d14] ring-1 ring-white/[0.08] overflow-hidden shadow-lg shadow-violet-900/20">
-              <img src="/evara-logo.png" alt="Evara AI" className="h-full w-full object-contain p-1" draggable={false} />
-            </div>
+            <img src="/evara-logo.png" alt="Evara AI" className="h-12 w-12 shrink-0 object-contain" draggable={false} />
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-300">
                 Evara AI
