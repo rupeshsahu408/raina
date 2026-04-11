@@ -4,6 +4,8 @@ import express from "express";
 import admin from "firebase-admin";
 import crypto from "crypto";
 import cookieParser from "cookie-parser";
+import multer from "multer";
+import FormData from "form-data";
 import { connectMongo } from "./db";
 import {
   buildBiharSystemPrompt,
@@ -154,6 +156,53 @@ app.use(express.json({ limit: "1mb" }));
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "evara-backend" });
+});
+
+// ── Voice transcription via NVIDIA Whisper ─────────────────────────────────
+const audioUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
+app.post("/v1/transcribe", audioUpload.single("audio"), async (req, res) => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ error: "No audio file provided" });
+      return;
+    }
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) {
+      res.status(500).json({ error: "NVIDIA_API_KEY not configured" });
+      return;
+    }
+
+    const form = new FormData();
+    form.append("file", req.file.buffer, {
+      filename: "audio.webm",
+      contentType: req.file.mimetype || "audio/webm",
+    });
+    form.append("model", "nvidia/canary-1b");
+
+    const nvidiaRes = await fetch("https://ai.api.nvidia.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        ...form.getHeaders(),
+      },
+      body: form.getBuffer(),
+    });
+
+    if (!nvidiaRes.ok) {
+      const errText = await nvidiaRes.text().catch(() => "");
+      console.error("[transcribe] NVIDIA error:", nvidiaRes.status, errText);
+      res.status(502).json({ error: `Transcription service error (${nvidiaRes.status})` });
+      return;
+    }
+
+    const data: any = await nvidiaRes.json();
+    const transcript: string = data?.text ?? data?.transcript ?? "";
+    res.json({ transcript });
+  } catch (err) {
+    console.error("[transcribe] error:", err);
+    res.status(500).json({ error: "Transcription failed" });
+  }
 });
 
 function detectMood(text: string) {

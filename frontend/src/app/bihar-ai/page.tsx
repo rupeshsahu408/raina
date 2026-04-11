@@ -313,70 +313,58 @@ export default function BiharAiPage() {
     } catch { /* ignore */ }
   };
 
-  const handleMicToggle = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      setMicError("Not supported in this browser. Use Chrome or Edge.");
-      return;
-    }
+  const handleMicToggle = async () => {
     if (isListening) {
       recognitionRef.current?.stop();
-      setIsListening(false);
       return;
     }
     setMicError(null);
-    const recognition = new SR();
-    recognition.lang = "hi-IN";
-    recognition.interimResults = true;
-    recognition.continuous = false;
-    recognition.maxAlternatives = 1;
-
-    let finalTranscript = "";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onresult = (event: any) => {
-      let interim = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript;
-        } else {
-          interim += result[0].transcript;
-        }
-      }
-      setInput((prev) => {
-        const base = prev.replace(/\u200B.*$/, "").trimEnd();
-        const display = finalTranscript || interim;
-        if (!display) return base;
-        return base ? base + " " + display : display;
-      });
-    };
-    recognition.onerror = (event: { error: string }) => {
-      const msgs: Record<string, string> = {
-        "network": "Network error — speech recognition requires internet access.",
-        "not-allowed": "Microphone blocked — please allow access in browser settings.",
-        "audio-capture": "No microphone detected.",
-        "service-not-allowed": "Speech service not allowed. Try a different browser.",
-        "no-speech": "No speech detected. Try speaking again.",
-      };
-      setMicError(msgs[event.error] ?? `Error: ${event.error}`);
-      setIsListening(false);
-    };
-    recognition.onend = () => {
-      if (finalTranscript) {
-        setInput((prev) => {
-          const base = prev.replace(/\u200B.*$/, "").trimEnd();
-          return base ? base + " " + finalTranscript : finalTranscript;
-        });
-      }
-      setIsListening(false);
-    };
-    recognitionRef.current = recognition;
     try {
-      recognition.start();
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+        ? "audio/webm;codecs=opus"
+        : MediaRecorder.isTypeSupported("audio/webm")
+        ? "audio/webm"
+        : "audio/ogg";
+      const recorder = new MediaRecorder(stream, { mimeType });
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        setIsListening(false);
+        if (chunks.length === 0) return;
+        const blob = new Blob(chunks, { type: mimeType });
+        if (blob.size < 1000) {
+          setMicError("Recording too short — please speak for at least a second.");
+          return;
+        }
+        setMicError(null);
+        try {
+          const fd = new FormData();
+          fd.append("audio", blob, "audio.webm");
+          const resp = await fetch("/v1/transcribe", { method: "POST", body: fd });
+          const data: { transcript?: string; error?: string } = await resp.json();
+          if (!resp.ok || data.error) {
+            setMicError(data.error ?? "Transcription failed. Please try again.");
+            return;
+          }
+          const transcript = (data.transcript ?? "").trim();
+          if (transcript) setInput((prev) => prev ? prev + " " + transcript : transcript);
+          else setMicError("Could not understand audio. Please try again.");
+        } catch {
+          setMicError("Could not reach transcription service. Check your connection.");
+        }
+      };
+      recognitionRef.current = recorder;
+      recorder.start();
       setIsListening(true);
-    } catch {
-      setMicError("Could not start microphone. Please try again.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.toLowerCase().includes("permission") || msg.toLowerCase().includes("denied") || msg.toLowerCase().includes("notallowed")) {
+        setMicError("Microphone access denied. Please allow it in your browser settings.");
+      } else {
+        setMicError("Could not access microphone. " + msg);
+      }
     }
   };
 
