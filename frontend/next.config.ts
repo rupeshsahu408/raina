@@ -13,6 +13,22 @@ if (process.env.REPLIT_DEV_DOMAIN) {
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  transpilePackages: [
+    "firebase",
+    "@firebase/app",
+    "@firebase/auth",
+    "@firebase/firestore",
+    "@firebase/storage",
+    "@firebase/analytics",
+    "@firebase/functions",
+    "@firebase/messaging",
+    "@firebase/performance",
+    "@firebase/remote-config",
+    "@firebase/util",
+    "@firebase/logger",
+    "@firebase/component",
+    "@firebase/installations",
+  ],
   allowedDevOrigins: allowedDevOrigins.length > 0 ? allowedDevOrigins : undefined,
   ...(isCapacitorExport
     ? {
