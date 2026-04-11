@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "auto";
 
@@ -33,7 +33,7 @@ function applyTheme(theme: Theme) {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const stored = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "dark";
     setThemeState(stored);
     applyTheme(stored);

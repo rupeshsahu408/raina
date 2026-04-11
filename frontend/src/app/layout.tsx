@@ -19,17 +19,14 @@ export const metadata: Metadata = {
     "Evara AI – a calm, emotionally intelligent AI companion in your pocket.",
 };
 
-const themeScript = `(function(){try{var t=localStorage.getItem('evara_theme')||'dark';var r=t==='auto'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;document.documentElement.setAttribute('data-theme',r);}catch(e){}})();`;
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} data-theme="dark" suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -41,7 +38,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/evara-192.svg" />
         <link rel="manifest" href="/manifest.webmanifest" />
       </head>
-      <body className="min-h-screen antialiased">
+      <body className="min-h-screen antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <div className="min-h-screen">{children}</div>
         </ThemeProvider>
