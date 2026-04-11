@@ -339,6 +339,7 @@ export default function ChatPage() {
   const [showIncognitoToast, setShowIncognitoToast] = useState(false);
   const [showTopMenu, setShowTopMenu] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [micError, setMicError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -578,7 +579,7 @@ export default function ChatPage() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) {
-      alert("Speech recognition is not supported in this browser. Try Chrome or Edge.");
+      setMicError("Not supported in this browser. Use Chrome or Edge.");
       return;
     }
     if (isListening) {
@@ -586,20 +587,59 @@ export default function ChatPage() {
       setIsListening(false);
       return;
     }
+    setMicError(null);
     const recognition = new SR();
     recognition.lang = "en-US";
-    recognition.interimResults = false;
+    recognition.interimResults = true;
+    recognition.continuous = false;
     recognition.maxAlternatives = 1;
-    recognition.onresult = (event: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => {
-      const transcript = event.results[0][0].transcript;
-      setInput((prev) => (prev ? prev + " " + transcript : transcript));
+
+    let finalTranscript = "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        if (result.isFinal) {
+          finalTranscript += result[0].transcript;
+        } else {
+          interim += result[0].transcript;
+        }
+      }
+      setInput((prev) => {
+        const base = prev.replace(/\u200B.*$/, "").trimEnd();
+        const display = finalTranscript || interim;
+        if (!display) return base;
+        return base ? base + " " + display : display;
+      });
+    };
+    recognition.onerror = (event: { error: string }) => {
+      const msgs: Record<string, string> = {
+        "network": "Network error — speech recognition requires internet access.",
+        "not-allowed": "Microphone blocked — please allow access in browser settings.",
+        "audio-capture": "No microphone detected.",
+        "service-not-allowed": "Speech service not allowed. Try a different browser.",
+        "no-speech": "No speech detected. Try speaking again.",
+      };
+      setMicError(msgs[event.error] ?? `Error: ${event.error}`);
       setIsListening(false);
     };
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
+    recognition.onend = () => {
+      if (finalTranscript) {
+        setInput((prev) => {
+          const base = prev.replace(/\u200B.*$/, "").trimEnd();
+          return base ? base + " " + finalTranscript : finalTranscript;
+        });
+      }
+      setIsListening(false);
+    };
     recognitionRef.current = recognition;
-    recognition.start();
-    setIsListening(true);
+    try {
+      recognition.start();
+      setIsListening(true);
+    } catch {
+      setMicError("Could not start microphone. Please try again.");
+    }
   };
 
   const patchConversation = async (targetId: string, payload: { title?: string; pinned?: boolean }) => {
@@ -1327,7 +1367,10 @@ export default function ChatPage() {
                     </div>
                   </div>
                 </form>
-                <p className="mt-2 text-center text-[11px] text-zinc-700">
+                {micError && (
+                  <p className="mt-1.5 text-center text-[11px] text-red-400">{micError}</p>
+                )}
+                <p className="mt-1 text-center text-[11px] text-zinc-700">
                   Evara can make mistakes. Verify important information.
                 </p>
               </div>
