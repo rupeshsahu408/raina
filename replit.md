@@ -40,6 +40,15 @@ Frontend proxies all `/v1/*` and `/health` requests to the backend via Next.js r
 - PWA (installable on mobile/desktop)
 - Three.js 3D background with WebGL graceful fallback
 
+## Components
+- `VoiceRecordingBar` — live waveform during voice recording (MediaRecorder + AudioContext + SpeechRecognition)
+- `CookiePreferencesModal` — full cookie consent modal (Essential/Analytics/Marketing toggles, Accept All / Reject All / Save, success toast)
+
+## Hooks
+- `useCookiePreferences` — loads/saves cookie prefs to localStorage, applies analytics/marketing script logic reactively
+
 ## Notes
 - The ThreeBackground 3D animation requires WebGL — it gracefully skips if WebGL is unavailable
 - Backend runs `tsx watch` for hot-reload in dev mode
+- Cookie preferences are stored in localStorage under `evara_cookie_prefs`
+- Voice transcription uses browser SpeechRecognition API (works best in Chrome on direct URL, not inside Replit iframe)

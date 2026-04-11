@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { VoiceRecordingBar } from "@/components/VoiceRecordingBar";
+import { CookiePreferencesModal } from "@/components/CookiePreferencesModal";
 
 type Personality = "Simi" | "Loa";
 type Mode = "personal" | "web" | "study" | "thinking" | "business";
@@ -342,6 +343,7 @@ export default function ChatPage() {
   const [isListening, setIsListening] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
+  const [showCookieModal, setShowCookieModal] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -1392,13 +1394,22 @@ export default function ChatPage() {
                   <p className="mt-1.5 text-center text-[11px] text-red-400">{micError}</p>
                 )}
                 <p className="mt-1 text-center text-[11px] text-zinc-700">
-                  Evara can make mistakes. Verify important information.
+                  Evara can make mistakes. Verify important information.{" "}
+                  <button
+                    type="button"
+                    onClick={() => setShowCookieModal(true)}
+                    className="underline underline-offset-2 transition hover:text-zinc-500"
+                  >
+                    Cookie Preferences
+                  </button>
                 </p>
               </div>
             </div>
           </div>
         )}
       </div>
+
+      <CookiePreferencesModal open={showCookieModal} onClose={() => setShowCookieModal(false)} />
 
       {/* ══════════════════════════════════════════
           MODE SELECTOR MODAL
