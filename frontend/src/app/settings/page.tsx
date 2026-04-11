@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut, updateEmail, updatePassword } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { useTheme } from "@/components/ThemeProvider";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
@@ -169,6 +170,7 @@ const BTN_PRIMARY = "rounded-xl bg-violet-600 px-4 py-2 text-[13px] font-semibol
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { setTheme } = useTheme();
   const [activeSection, setActiveSection] = useState<Section>("profile");
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ msg: string; type: "success" | "error" } | null>(null);
@@ -434,6 +436,7 @@ export default function SettingsPage() {
         const resp = await fetch(`${API}/v1/profile`, { headers: { Authorization: `Bearer ${token}` } });
         if (resp.ok) {
           const d = await resp.json();
+          const loadedTheme: "auto" | "dark" | "light" = d.personalization?.theme ?? "auto";
           setProfile({
             name: d.name ?? "",
             photoUrl: d.photoUrl ?? "",
@@ -446,7 +449,7 @@ export default function SettingsPage() {
               moreAboutYou: d.about?.moreAboutYou ?? "",
             },
             personalization: {
-              theme: d.personalization?.theme ?? "auto",
+              theme: loadedTheme,
               accentColor: d.personalization?.accentColor ?? "#7c3aed",
               fontSize: d.personalization?.fontSize ?? "medium",
               bubbleStyle: d.personalization?.bubbleStyle ?? "rounded",
@@ -458,6 +461,7 @@ export default function SettingsPage() {
             },
             privacy: { incognitoChatMode: d.privacy?.incognitoChatMode ?? false },
           });
+          setTheme(loadedTheme);
         }
       } finally {
         setLoading(false);
@@ -608,7 +612,15 @@ export default function SettingsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[12px] text-zinc-500 mb-1.5 block">Theme</label>
-                  <select value={profile.personalization.theme} onChange={(e) => patchPersonalization({ theme: e.target.value as never })} className={SELECTS}>
+                  <select
+                    value={profile.personalization.theme}
+                    onChange={(e) => {
+                      const t = e.target.value as "auto" | "dark" | "light";
+                      patchPersonalization({ theme: t });
+                      setTheme(t);
+                    }}
+                    className={SELECTS}
+                  >
                     <option value="auto">Auto</option>
                     <option value="dark">Dark</option>
                     <option value="light">Light</option>

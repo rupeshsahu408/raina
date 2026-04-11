@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,14 +19,17 @@ export const metadata: Metadata = {
     "Evara AI – a calm, emotionally intelligent AI companion in your pocket.",
 };
 
+const themeScript = `(function(){try{var t=localStorage.getItem('evara_theme')||'dark';var r=t==='auto'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;document.documentElement.setAttribute('data-theme',r);}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} data-theme="dark" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -37,8 +41,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/evara-192.svg" />
         <link rel="manifest" href="/manifest.webmanifest" />
       </head>
-      <body className="min-h-screen bg-black text-zinc-50 antialiased">
-        <div className="min-h-screen bg-zinc-950">{children}</div>
+      <body className="min-h-screen antialiased">
+        <ThemeProvider>
+          <div className="min-h-screen">{children}</div>
+        </ThemeProvider>
       </body>
     </html>
   );
