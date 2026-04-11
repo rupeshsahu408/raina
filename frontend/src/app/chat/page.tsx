@@ -338,8 +338,11 @@ export default function ChatPage() {
   const [incognitoActive, setIncognitoActive] = useState(false);
   const [showIncognitoToast, setShowIncognitoToast] = useState(false);
   const [showTopMenu, setShowTopMenu] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
 
   const loadConversations = useCallback(async (authUser: User, query = "") => {
     const token = await authUser.getIdToken();
@@ -569,6 +572,34 @@ export default function ChatPage() {
       setCopiedMessageId(id);
       window.setTimeout(() => setCopiedMessageId((prev) => (prev === id ? null : prev)), 1500);
     } catch { /* ignore */ }
+  };
+
+  const handleMicToggle = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      alert("Speech recognition is not supported in this browser. Try Chrome or Edge.");
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+    const recognition = new SR();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => {
+      const transcript = event.results[0][0].transcript;
+      setInput((prev) => (prev ? prev + " " + transcript : transcript));
+      setIsListening(false);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
   };
 
   const patchConversation = async (targetId: string, payload: { title?: string; pinned?: boolean }) => {
@@ -1274,9 +1305,15 @@ export default function ChatPage() {
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.06] text-zinc-500 transition hover:border-white/10 hover:text-zinc-300"
-                        aria-label="Voice input (coming soon)"
-                        title="Voice input coming soon"
+                        onClick={handleMicToggle}
+                        className={[
+                          "flex h-8 w-8 items-center justify-center rounded-xl border transition",
+                          isListening
+                            ? "border-red-500/60 bg-red-500/10 text-red-400 animate-pulse"
+                            : "border-white/[0.06] text-zinc-500 hover:border-white/10 hover:text-zinc-300",
+                        ].join(" ")}
+                        aria-label={isListening ? "Stop listening" : "Start voice input"}
+                        title={isListening ? "Tap to stop" : "Voice input"}
                       >
                         <IconMic size={14} />
                       </button>

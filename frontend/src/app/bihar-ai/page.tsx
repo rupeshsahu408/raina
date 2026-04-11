@@ -162,6 +162,14 @@ function IconCheck({ size = 12 }: { size?: number }) {
     </svg>
   );
 }
+function IconMic({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="9" y="2" width="6" height="12" rx="3" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M5 10a7 7 0 0 0 14 0M12 19v3M9 22h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 function TypingDots() {
   return (
@@ -204,8 +212,11 @@ export default function BiharAiPage() {
   const [usage, setUsage] = useState<{ messagesLeft?: number; webSearchLeft?: number }>({});
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
+  const [isListening, setIsListening] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -299,6 +310,34 @@ export default function BiharAiPage() {
       setCopiedMessageId(id);
       window.setTimeout(() => setCopiedMessageId((prev) => (prev === id ? null : prev)), 1500);
     } catch { /* ignore */ }
+  };
+
+  const handleMicToggle = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) {
+      alert("Speech recognition is not supported in this browser. Try Chrome or Edge.");
+      return;
+    }
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+    const recognition = new SR();
+    recognition.lang = "hi-IN";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onresult = (event: { results: { [key: number]: { [key: number]: { transcript: string } } } }) => {
+      const transcript = event.results[0][0].transcript;
+      setInput((prev) => (prev ? prev + " " + transcript : transcript));
+      setIsListening(false);
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -673,13 +712,29 @@ export default function BiharAiPage() {
                     </button>
                   ))}
                 </div>
-                <button
-                  type="submit"
-                  disabled={isTyping || input.trim().length === 0}
-                  className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-zinc-900 shadow-lg transition hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <IconSend size={14} />
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleMicToggle}
+                    className={[
+                      "flex h-8 w-8 items-center justify-center rounded-xl border transition",
+                      isListening
+                        ? "border-red-500/60 bg-red-500/10 text-red-400 animate-pulse"
+                        : "border-white/[0.06] text-zinc-500 hover:border-white/10 hover:text-zinc-300",
+                    ].join(" ")}
+                    aria-label={isListening ? "Stop listening" : "Start voice input"}
+                    title={isListening ? "Tap to stop" : "Voice input"}
+                  >
+                    <IconMic size={14} />
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isTyping || input.trim().length === 0}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-zinc-900 shadow-lg transition hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <IconSend size={14} />
+                  </button>
+                </div>
               </div>
             </form>
             <p className="mt-2 text-center text-[11px] text-zinc-700">
