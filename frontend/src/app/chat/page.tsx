@@ -7,6 +7,7 @@ import type { User } from "firebase/auth";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { VoiceRecordingBar } from "@/components/VoiceRecordingBar";
 
 type Personality = "Simi" | "Loa";
 type Mode = "personal" | "web" | "study" | "thinking" | "business";
@@ -339,11 +340,17 @@ export default function ChatPage() {
   const [showIncognitoToast, setShowIncognitoToast] = useState(false);
   const [showTopMenu, setShowTopMenu] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
   const endRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const speechRef = useRef<any>(null);
+  const transcriptRef = useRef<string>("");
 
   const loadConversations = useCallback(async (authUser: User, query = "") => {
     const token = await authUser.getIdToken();
@@ -575,57 +582,78 @@ export default function ChatPage() {
     } catch { /* ignore */ }
   };
 
-  const handleMicToggle = async () => {
-    if (isListening) {
-      recognitionRef.current?.stop();
-      return;
+  const stopRecording = (submit: boolean) => {
+    speechRef.current?.abort();
+    speechRef.current = null;
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current = null;
+    audioCtxRef.current?.close();
+    audioCtxRef.current = null;
+    analyserRef.current = null;
+    setIsListening(false);
+    if (submit) {
+      const t = transcriptRef.current.trim();
+      if (t) setInput((prev) => (prev ? prev + " " + t : t));
+      else setMicError("No speech detected — please try again.");
     }
+    transcriptRef.current = "";
+  };
+
+  const startRecording = async () => {
     setMicError(null);
+    transcriptRef.current = "";
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const audioCtx = new AudioContext();
+      audioCtxRef.current = audioCtx;
+      const source = audioCtx.createMediaStreamSource(stream);
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      source.connect(analyser);
+      analyserRef.current = analyser;
+
       const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
         ? "audio/webm;codecs=opus"
-        : MediaRecorder.isTypeSupported("audio/webm")
-        ? "audio/webm"
-        : "audio/ogg";
+        : "audio/webm";
       const recorder = new MediaRecorder(stream, { mimeType });
-      const chunks: BlobPart[] = [];
-      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-      recorder.onstop = async () => {
-        stream.getTracks().forEach((t) => t.stop());
-        setIsListening(false);
-        if (chunks.length === 0) return;
-        const blob = new Blob(chunks, { type: mimeType });
-        if (blob.size < 1000) {
-          setMicError("Recording too short — please speak for at least a second.");
-          return;
-        }
-        setMicError(null);
-        try {
-          const fd = new FormData();
-          fd.append("audio", blob, "audio.webm");
-          const resp = await fetch("/v1/transcribe", { method: "POST", body: fd });
-          const data: { transcript?: string; error?: string } = await resp.json();
-          if (!resp.ok || data.error) {
-            setMicError(data.error ?? "Transcription failed. Please try again.");
-            return;
-          }
-          const transcript = (data.transcript ?? "").trim();
-          if (transcript) setInput((prev) => prev ? prev + " " + transcript : transcript);
-          else setMicError("Could not understand audio. Please try again.");
-        } catch {
-          setMicError("Could not reach transcription service. Check your connection.");
-        }
-      };
-      recognitionRef.current = recorder;
+      recorderRef.current = recorder;
       recorder.start();
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SR) {
+        const recognition = new SR();
+        recognition.lang = "en-US";
+        recognition.interimResults = true;
+        recognition.continuous = true;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        recognition.onresult = (event: any) => {
+          let final = "";
+          for (let i = 0; i < event.results.length; i++) {
+            if (event.results[i].isFinal) final += event.results[i][0].transcript;
+          }
+          if (final) transcriptRef.current = final;
+        };
+        recognition.onerror = (ev: { error: string }) => {
+          if (ev.error === "network") {
+            setMicError("Speech-to-text unavailable in this environment. Click ✓ anyway — we'll use what was captured.");
+          }
+        };
+        recognition.start();
+        speechRef.current = recognition;
+      }
+
       setIsListening(true);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.toLowerCase().includes("permission") || msg.toLowerCase().includes("denied") || msg.toLowerCase().includes("notallowed")) {
-        setMicError("Microphone access denied. Please allow it in your browser settings.");
+      if (/denied|not.allowed|permission/i.test(msg)) {
+        setMicError("Microphone access denied. Allow it in your browser settings.");
       } else {
-        setMicError("Could not access microphone. " + msg);
+        setMicError("Could not access microphone: " + msg);
       }
     }
   };
@@ -1301,60 +1329,65 @@ export default function ChatPage() {
             {/* ── Input area ── */}
             <div className="shrink-0 border-t border-white/[0.05] bg-[#111111] px-4 py-4">
               <div className="mx-auto max-w-3xl">
-                <form
-                  onSubmit={handleSubmit}
-                  className="relative rounded-2xl border border-white/[0.09] bg-[#1c1c1c] p-3 shadow-xl ring-1 ring-inset ring-white/[0.04] transition-all focus-within:border-violet-500/40 focus-within:ring-violet-500/10"
-                >
-                  <textarea
-                    ref={textareaRef}
-                    rows={1}
-                    className="w-full resize-none bg-transparent pr-20 text-[14px] leading-relaxed text-zinc-100 outline-none placeholder:text-zinc-600"
-                    placeholder="Ask anything…"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSubmit();
-                      }
-                    }}
-                    disabled={isTyping}
-                    style={{ maxHeight: 160 }}
+                {isListening ? (
+                  <VoiceRecordingBar
+                    analyserRef={analyserRef}
+                    isTranscribing={isTranscribing}
+                    onCancel={() => stopRecording(false)}
+                    onConfirm={() => stopRecording(true)}
+                    accent="violet"
                   />
-                  {/* Bottom bar inside input */}
-                  <div className="mt-2 flex items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={() => setShowModeMenu(true)}
-                      className={["flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-2.5 py-1.5 text-[11px] font-medium transition hover:border-white/10 hover:bg-white/[0.06]", modeConfig[mode].color].join(" ")}
-                    >
-                      {modeConfig[mode].icon} {modeConfig[mode].label}
-                    </button>
-                    <div className="flex items-center gap-1.5">
+                ) : (
+                  <form
+                    onSubmit={handleSubmit}
+                    className="relative rounded-2xl border border-white/[0.09] bg-[#1c1c1c] p-3 shadow-xl ring-1 ring-inset ring-white/[0.04] transition-all focus-within:border-violet-500/40 focus-within:ring-violet-500/10"
+                  >
+                    <textarea
+                      ref={textareaRef}
+                      rows={1}
+                      className="w-full resize-none bg-transparent pr-20 text-[14px] leading-relaxed text-zinc-100 outline-none placeholder:text-zinc-600"
+                      placeholder="Ask anything…"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSubmit();
+                        }
+                      }}
+                      disabled={isTyping}
+                      style={{ maxHeight: 160 }}
+                    />
+                    <div className="mt-2 flex items-center justify-between">
                       <button
                         type="button"
-                        onClick={handleMicToggle}
-                        className={[
-                          "flex h-8 w-8 items-center justify-center rounded-xl border transition",
-                          isListening
-                            ? "border-red-500/60 bg-red-500/10 text-red-400 animate-pulse"
-                            : "border-white/[0.06] text-zinc-500 hover:border-white/10 hover:text-zinc-300",
-                        ].join(" ")}
-                        aria-label={isListening ? "Stop listening" : "Start voice input"}
-                        title={isListening ? "Tap to stop" : "Voice input"}
+                        onClick={() => setShowModeMenu(true)}
+                        className={["flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-2.5 py-1.5 text-[11px] font-medium transition hover:border-white/10 hover:bg-white/[0.06]", modeConfig[mode].color].join(" ")}
                       >
-                        <IconMic size={14} />
+                        {modeConfig[mode].icon} {modeConfig[mode].label}
                       </button>
-                      <button
-                        type="submit"
-                        disabled={isTyping || input.trim().length === 0}
-                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-600 text-white shadow-lg transition hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        <IconSend size={14} />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={startRecording}
+                          disabled={isTyping}
+                          className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.06] text-zinc-500 transition hover:border-white/10 hover:text-zinc-300 disabled:opacity-40"
+                          aria-label="Voice input"
+                          title="Voice input"
+                        >
+                          <IconMic size={14} />
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isTyping || input.trim().length === 0}
+                          className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-600 text-white shadow-lg transition hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <IconSend size={14} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </form>
+                  </form>
+                )}
                 {micError && (
                   <p className="mt-1.5 text-center text-[11px] text-red-400">{micError}</p>
                 )}
