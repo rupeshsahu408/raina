@@ -32,7 +32,6 @@ type ConversationItem = {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8081";
 
-/** Readable server error for UI + console (never swallows status or body). */
 async function readFetchErrorDetail(resp: Response): Promise<string> {
   const code = `${resp.status} ${resp.statusText}`.trim();
   const raw = await resp.text().catch(() => "");
@@ -49,7 +48,6 @@ async function readFetchErrorDetail(resp: Response): Promise<string> {
   }
 }
 
-/** Browser could not open a TCP connection to the API (backend down, wrong host/port, etc.). */
 function isUnreachableApiError(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
   const m = err.message.toLowerCase();
@@ -81,20 +79,14 @@ function formatUnreachableApiHelp(apiBase: string, technical: string, url?: stri
   return lines.join("\n");
 }
 
-const DAILY_MESSAGE_LIMIT = Number(
-  process.env.NEXT_PUBLIC_DAILY_MESSAGE_LIMIT ?? "120"
-);
-const DAILY_WEB_SEARCH_LIMIT = Number(
-  process.env.NEXT_PUBLIC_DAILY_WEB_SEARCH_LIMIT ?? "25"
-);
-
+const DAILY_MESSAGE_LIMIT = Number(process.env.NEXT_PUBLIC_DAILY_MESSAGE_LIMIT ?? "120");
+const DAILY_WEB_SEARCH_LIMIT = Number(process.env.NEXT_PUBLIC_DAILY_WEB_SEARCH_LIMIT ?? "25");
 const CONVERSATION_ID_KEY = "evara_conversation_id";
 
 function makeId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-/** Survives refresh; localStorage also survives new tabs (sessionStorage does not). */
 function readStoredConversationId(): string | null {
   if (typeof window === "undefined") return null;
   const fromSession = sessionStorage.getItem(CONVERSATION_ID_KEY);
@@ -130,7 +122,7 @@ function greetingMessage(): ChatMessage {
   return {
     id: "greeting",
     role: "ai",
-    content: "Hi, I’m Evara. Tell me what you need right now—gently.",
+    content: "Hi, I'm Evara. Tell me what you need right now—gently.",
   };
 }
 
@@ -153,6 +145,132 @@ function titleFromPreview(preview: string) {
   return t.length > 48 ? `${t.slice(0, 47)}…` : t;
 }
 
+// ── SVG Icons ──────────────────────────────────────────────────────────────
+function IconPlus({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+    </svg>
+  );
+}
+function IconSend({ size = 17 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function IconMic({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="9" y="2" width="6" height="12" rx="3" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M5 10a7 7 0 0 0 14 0M12 19v3M9 22h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+function IconSettings({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke="currentColor" strokeWidth="1.8" />
+    </svg>
+  );
+}
+function IconLogout({ size = 15 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function IconDots({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="currentColor">
+      <circle cx="8" cy="3" r="1.3" /><circle cx="8" cy="8" r="1.3" /><circle cx="8" cy="13" r="1.3" />
+    </svg>
+  );
+}
+function IconPin({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function IconSearch({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="11" cy="11" r="8" stroke="currentColor" strokeWidth="1.8" />
+      <path d="m21 21-4.35-4.35" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+function IconCopy({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+function IconCheck({ size = 13 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M20 6L9 17l-5-5" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function IconMenu({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+function IconX({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+function IconChevronDown({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <path d="m6 9 6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+// ── Typing Indicator ────────────────────────────────────────────────────────
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-1 px-1 py-1">
+      {[0, 1, 2].map((i) => (
+        <span
+          key={i}
+          className="typing-dot inline-block h-2 w-2 rounded-full bg-zinc-400"
+          style={{ animationDelay: `${i * 0.18}s` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ── AI Avatar ───────────────────────────────────────────────────────────────
+function EvaraAvatar({ personality }: { personality: Personality }) {
+  return (
+    <div className={[
+      "flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold",
+      personality === "Simi"
+        ? "bg-gradient-to-br from-violet-500 to-purple-700 text-white"
+        : "bg-gradient-to-br from-rose-500 to-orange-600 text-white",
+    ].join(" ")}>
+      {personality === "Simi" ? "S" : "L"}
+    </div>
+  );
+}
+
 export default function ChatPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -170,9 +288,7 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyFetchError, setHistoryFetchError] = useState<string | null>(null);
-  const [conversationsLoadError, setConversationsLoadError] = useState<string | null>(
-    null
-  );
+  const [conversationsLoadError, setConversationsLoadError] = useState<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeMenuConversationId, setActiveMenuConversationId] = useState<string | null>(null);
@@ -182,6 +298,8 @@ export default function ChatPage() {
   const [showIncognitoToast, setShowIncognitoToast] = useState(false);
   const [showTopMenu, setShowTopMenu] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
   const loadConversations = useCallback(async (authUser: User, query = "") => {
     const token = await authUser.getIdToken();
     const url = query.trim()
@@ -189,9 +307,7 @@ export default function ChatPage() {
       : `${API_BASE_URL}/v1/conversations`;
     let resp: Response;
     try {
-      resp = await fetch(url, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      resp = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       const full = isUnreachableApiError(err)
@@ -202,13 +318,9 @@ export default function ChatPage() {
       return [];
     }
     if (!resp.ok) {
-      if (resp.status === 401) {
-        router.replace("/login");
-      }
+      if (resp.status === 401) router.replace("/login");
       const detail = await readFetchErrorDetail(resp);
-      setConversationsLoadError(
-        `Failed to load conversation list (${url}).\n${detail}`
-      );
+      setConversationsLoadError(`Failed to load conversation list (${url}).\n${detail}`);
       console.error("[chat] loadConversations HTTP error:", detail);
       return [];
     }
@@ -218,6 +330,7 @@ export default function ChatPage() {
     setConversations(list);
     return list;
   }, [router]);
+
   const startNewChat = () => {
     const nextConversationId = createConversationId();
     persistConversationId(nextConversationId);
@@ -225,6 +338,7 @@ export default function ChatPage() {
     setMessages([greetingMessage()]);
     setInput("");
     setShowModeMenu(false);
+    setSidebarOpen(false);
   };
 
   useEffect(() => {
@@ -238,11 +352,14 @@ export default function ChatPage() {
   }, [router]);
 
   const displayName = useMemo(() => {
-    if (!user) return "Evara";
-    return user.displayName || "Evara";
+    if (!user) return "User";
+    return user.displayName || user.email?.split("@")[0] || "User";
   }, [user]);
 
-  // Once per login: restore active chat from server + durable storage (not on personality change).
+  const avatarInitial = useMemo(() => {
+    return displayName.charAt(0).toUpperCase();
+  }, [displayName]);
+
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -270,8 +387,7 @@ export default function ChatPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (profileResp.ok) {
-          const profileData: { privacy?: { incognitoChatMode?: boolean } } =
-            await profileResp.json();
+          const profileData: { privacy?: { incognitoChatMode?: boolean } } = await profileResp.json();
           setIncognitoActive(Boolean(profileData.privacy?.incognitoChatMode));
         }
       } catch (err) {
@@ -287,14 +403,9 @@ export default function ChatPage() {
         const token = await user.getIdToken();
         await fetch(`${API_BASE_URL}/v1/profile`, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
-            ...(user.displayName?.trim()
-              ? { name: user.displayName.trim() }
-              : {}),
+            ...(user.displayName?.trim() ? { name: user.displayName.trim() } : {}),
             selectedPersonality: personality,
           }),
         });
@@ -312,9 +423,7 @@ export default function ChatPage() {
         setHistoryLoading(true);
         setHistoryFetchError(null);
         const token = await user.getIdToken();
-        const resp = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const resp = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
         if (!resp.ok) {
           const detail = await readFetchErrorDetail(resp);
           const full = `GET ${url}\nConversation: ${conversationId}\n\n${detail}`;
@@ -322,18 +431,10 @@ export default function ChatPage() {
           console.error("[chat] messages fetch failed:", full);
           return;
         }
-        const data: {
-          messages?: Array<{ id: string; role: Role; content: string }>;
-        } = await resp.json();
+        const data: { messages?: Array<{ id: string; role: Role; content: string }> } = await resp.json();
         setHistoryFetchError(null);
         if (Array.isArray(data.messages) && data.messages.length) {
-          setMessages(
-            data.messages.map((m) => ({
-              id: m.id || makeId(),
-              role: m.role,
-              content: m.content,
-            }))
-          );
+          setMessages(data.messages.map((m) => ({ id: m.id || makeId(), role: m.role, content: m.content })));
         } else {
           setMessages([greetingMessage()]);
         }
@@ -353,29 +454,19 @@ export default function ChatPage() {
   useEffect(() => {
     if (!user) return;
     const timer = window.setTimeout(() => {
-      loadConversations(user, searchQuery).catch(() => {
-        // no-op: keep local list
-      });
+      loadConversations(user, searchQuery).catch(() => {});
     }, 220);
     return () => window.clearTimeout(timer);
   }, [user, searchQuery, loadConversations]);
 
   useEffect(() => {
     const saved = sessionStorage.getItem("evara_mode");
-    if (
-      saved === "personal" ||
-      saved === "web" ||
-      saved === "study" ||
-      saved === "thinking" ||
-      saved === "business"
-    ) {
+    if (saved === "personal" || saved === "web" || saved === "study" || saved === "thinking" || saved === "business") {
       setMode(saved);
     }
   }, []);
 
-  useEffect(() => {
-    sessionStorage.setItem("evara_mode", mode);
-  }, [mode]);
+  useEffect(() => { sessionStorage.setItem("evara_mode", mode); }, [mode]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -391,914 +482,693 @@ export default function ChatPage() {
     return () => window.clearTimeout(timer);
   }, [incognitoActive]);
 
-  const modeLabel: Record<Mode, string> = {
-    personal: "Personal",
-    web: "Web Search",
-    study: "Study",
-    thinking: "Thinking",
-    business: "Business",
-  };
-  const modeIcon: Record<Mode, string> = {
-    personal: "❤️",
-    web: "🌐",
-    study: "🎓",
-    thinking: "🧠",
-    business: "💼",
+  // Auto-grow textarea
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = Math.min(ta.scrollHeight, 160) + "px";
+  }, [input]);
+
+  const modeConfig: Record<Mode, { label: string; icon: string; color: string }> = {
+    personal:  { label: "Personal",   icon: "❤️",  color: "text-rose-400" },
+    web:       { label: "Web Search", icon: "🌐",  color: "text-sky-400" },
+    study:     { label: "Study",      icon: "🎓",  color: "text-emerald-400" },
+    thinking:  { label: "Thinking",   icon: "🧠",  color: "text-violet-400" },
+    business:  { label: "Business",   icon: "💼",  color: "text-amber-400" },
   };
 
   const messageLeft = usage.messagesLeft;
   const webLeft = usage.webSearchLeft;
-  const messageUsed =
-    typeof messageLeft === "number" ? DAILY_MESSAGE_LIMIT - messageLeft : 0;
-  const webUsed =
-    typeof webLeft === "number" ? DAILY_WEB_SEARCH_LIMIT - webLeft : 0;
-  const messagePercent = Math.max(
-    0,
-    Math.min(100, (messageUsed / DAILY_MESSAGE_LIMIT) * 100)
-  );
-  const webPercent = Math.max(
-    0,
-    Math.min(100, (webUsed / DAILY_WEB_SEARCH_LIMIT) * 100)
-  );
-
+  const messageUsed = typeof messageLeft === "number" ? DAILY_MESSAGE_LIMIT - messageLeft : 0;
+  const webUsed = typeof webLeft === "number" ? DAILY_WEB_SEARCH_LIMIT - webLeft : 0;
+  const messagePercent = Math.max(0, Math.min(100, (messageUsed / DAILY_MESSAGE_LIMIT) * 100));
+  const webPercent = Math.max(0, Math.min(100, (webUsed / DAILY_WEB_SEARCH_LIMIT) * 100));
   const isLow = (val?: number) => typeof val === "number" && val <= 10;
+
   const copyMessage = async (id: string, content: string) => {
     try {
       await navigator.clipboard.writeText(content);
       setCopiedMessageId(id);
-      window.setTimeout(() => setCopiedMessageId((prev) => (prev === id ? null : prev)), 1200);
-    } catch {
-      // ignore clipboard failures
+      window.setTimeout(() => setCopiedMessageId((prev) => (prev === id ? null : prev)), 1500);
+    } catch { /* ignore */ }
+  };
+
+  const patchConversation = async (targetId: string, payload: { title?: string; pinned?: boolean }) => {
+    if (!user) return false;
+    const token = await user.getIdToken();
+    const resp = await fetch(`${API_BASE_URL}/v1/conversations/${encodeURIComponent(targetId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+    });
+    return resp.ok;
+  };
+
+  const deleteConversation = async (targetId: string) => {
+    if (!user) return false;
+    const token = await user.getIdToken();
+    const resp = await fetch(`${API_BASE_URL}/v1/conversations/${encodeURIComponent(targetId)}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return resp.ok;
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!user || isTyping) return;
+    const text = input.trim();
+    if (!text) return;
+    const activeConversationId = getConversationId();
+    setConversationId((prev) => prev === activeConversationId ? prev : activeConversationId);
+    setInput("");
+    setMessages((prev) => [...prev, { id: makeId(), role: "user", content: text }]);
+    setConversations((prev) =>
+      upsertConversation(prev, {
+        conversationId: activeConversationId,
+        title: titleFromPreview(text),
+        preview: text,
+        lastMessageAt: new Date().toISOString(),
+      })
+    );
+    setIsTyping(true);
+    try {
+      const token = await user.getIdToken();
+      const resp = await fetch(`${API_BASE_URL}/v1/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ message: text, personality, mode, conversationId: activeConversationId }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => null);
+        const backendMessage: string = err?.error ?? `Chat failed (${resp.status})`;
+        if (err?.usage) setUsage({ messagesLeft: err.usage.messagesLeft, webSearchLeft: err.usage.webSearchLeft });
+        const norm = backendMessage.toLowerCase();
+        if (norm.includes("firebase admin missing") || norm.includes("auth not configured") ||
+          norm.includes("mongodb not configured") || norm.includes("mongo") || norm.includes("database unavailable")) {
+          const demoResp = await fetch(`${API_BASE_URL}/v1/demo-chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text, personality, mode }),
+          });
+          if (demoResp.ok) {
+            const demoData: { reply?: string } = await demoResp.json();
+            setMessages((prev) => [...prev, { id: makeId(), role: "ai", content: demoData.reply ?? "I'm here with you." }]);
+            return;
+          }
+        }
+        throw new Error(backendMessage);
+      }
+      const data: { reply?: string; sources?: Array<{ title: string; link: string }>; usage?: UsageInfo; conversationId?: string } = await resp.json();
+      if (data.conversationId && data.conversationId !== conversationId) {
+        persistConversationId(data.conversationId);
+        setConversationId(data.conversationId);
+      }
+      if (data.usage) setUsage({ messagesLeft: data.usage.messagesLeft, webSearchLeft: data.usage.webSearchLeft });
+      setMessages((prev) => [...prev, { id: makeId(), role: "ai", content: data.reply ?? "I'm here with you. Tell me more.", sources: data.sources ?? [] }]);
+      setConversations((prev) =>
+        upsertConversation(prev, {
+          conversationId: data.conversationId ?? activeConversationId,
+          title: titleFromPreview(data.reply ?? text),
+          preview: data.reply ?? text,
+          lastMessageAt: new Date().toISOString(),
+        })
+      );
+      try { await loadConversations(user); } catch { /* keep local */ }
+    } catch (err) {
+      const errorText = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setMessages((prev) => [...prev, { id: makeId(), role: "ai", content: `I couldn't process that yet: ${errorText}` }]);
+    } finally {
+      setIsTyping(false);
     }
   };
-  const patchConversation = async (
-    targetConversationId: string,
-    payload: { title?: string; pinned?: boolean }
-  ) => {
-    if (!user) return false;
-    const token = await user.getIdToken();
-    const resp = await fetch(
-      `${API_BASE_URL}/v1/conversations/${encodeURIComponent(targetConversationId)}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      }
-    );
-    return resp.ok;
-  };
 
-  const deleteConversation = async (targetConversationId: string) => {
-    if (!user) return false;
-    const token = await user.getIdToken();
-    const resp = await fetch(
-      `${API_BASE_URL}/v1/conversations/${encodeURIComponent(targetConversationId)}`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      }
+  // ── Conversation item ──────────────────────────────────────────────────
+  function ConvItem({ c }: { c: ConversationItem }) {
+    const isActive = c.conversationId === conversationId;
+    const isMenuOpen = activeMenuConversationId === c.conversationId;
+    return (
+      <div className="group relative">
+        <button
+          type="button"
+          onClick={() => {
+            persistConversationId(c.conversationId);
+            setConversationId(c.conversationId);
+            setSidebarOpen(false);
+          }}
+          className={[
+            "w-full rounded-xl px-3 py-2.5 pr-9 text-left text-[13px] transition-colors",
+            isActive
+              ? "bg-white/[0.07] text-zinc-100"
+              : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200",
+          ].join(" ")}
+        >
+          {renamingConversationId === c.conversationId ? (
+            <input
+              autoFocus
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onBlur={async () => {
+                const t = renameValue.trim();
+                if (t) await patchConversation(c.conversationId, { title: t });
+                setRenamingConversationId(null);
+                setActiveMenuConversationId(null);
+                if (user) await loadConversations(user, searchQuery);
+              }}
+              onKeyDown={async (e) => {
+                if (e.key === "Enter") {
+                  const t = renameValue.trim();
+                  if (t) await patchConversation(c.conversationId, { title: t });
+                  setRenamingConversationId(null);
+                  setActiveMenuConversationId(null);
+                  if (user) await loadConversations(user, searchQuery);
+                }
+              }}
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-xs text-zinc-100 outline-none focus:border-violet-500"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <span className="block truncate leading-snug">
+              {c.pinned && <span className="mr-1 text-[10px] text-amber-400">📌</span>}
+              {c.title || c.preview || "Untitled chat"}
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-zinc-600 opacity-0 transition group-hover:opacity-100 hover:bg-white/10 hover:text-zinc-300"
+          onClick={(e) => {
+            e.stopPropagation();
+            setActiveMenuConversationId((prev) => prev === c.conversationId ? null : c.conversationId);
+          }}
+        >
+          <IconDots size={14} />
+        </button>
+        {isMenuOpen && (
+          <div className="absolute right-1 top-9 z-20 w-32 overflow-hidden rounded-xl border border-zinc-700/60 bg-zinc-900 py-1 text-[12px] shadow-2xl">
+            <button type="button" className="flex w-full items-center gap-2 px-3 py-1.5 text-zinc-300 hover:bg-white/[0.06]"
+              onClick={() => { setRenamingConversationId(c.conversationId); setRenameValue(c.title || c.preview || ""); }}>
+              Rename
+            </button>
+            <button type="button" className="flex w-full items-center gap-2 px-3 py-1.5 text-zinc-300 hover:bg-white/[0.06]"
+              onClick={async () => {
+                await patchConversation(c.conversationId, { pinned: !c.pinned });
+                setActiveMenuConversationId(null);
+                if (user) await loadConversations(user, searchQuery);
+              }}>
+              {c.pinned ? "Unpin" : "Pin"}
+            </button>
+            <div className="my-1 border-t border-zinc-800" />
+            <button type="button" className="flex w-full items-center gap-2 px-3 py-1.5 text-red-400 hover:bg-white/[0.06]"
+              onClick={async () => {
+                if (!window.confirm("Delete this chat?")) return;
+                await deleteConversation(c.conversationId);
+                if (c.conversationId === conversationId) startNewChat();
+                setActiveMenuConversationId(null);
+                if (user) await loadConversations(user, searchQuery);
+              }}>
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
     );
-    return resp.ok;
-  };
+  }
 
+  // ── RENDER ──────────────────────────────────────────────────────────────
   return (
-    <div className="flex min-h-screen bg-[#0f0f0f] text-zinc-100">
-      <aside
-        className={[
-          "fixed inset-y-0 left-0 z-40 w-72 border-r border-zinc-800 bg-zinc-950/95 p-4 transition-transform lg:static lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full",
-        ].join(" ")}
-      >
-        <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-400">
-            Evara AI
-          </p>
+    <div className="flex h-screen overflow-hidden bg-[#111111] text-zinc-100">
+
+      {/* ── Mobile sidebar overlay ── */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* ══════════════════════════════════════════
+          SIDEBAR
+      ══════════════════════════════════════════ */}
+      <aside className={[
+        "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/[0.06] bg-[#0d0d0d] transition-transform duration-300",
+        "lg:static lg:translate-x-0",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full",
+      ].join(" ")}>
+
+        {/* Logo row */}
+        <div className="flex items-center justify-between px-4 pt-5 pb-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 text-xs font-bold text-white shadow-lg">
+              E
+            </div>
+            <span className="text-[15px] font-semibold tracking-tight text-zinc-100">Evara AI</span>
+          </div>
           <button
             type="button"
-            className="rounded-lg border border-zinc-800 px-2 py-1 text-xs lg:hidden"
             onClick={() => setSidebarOpen(false)}
+            className="rounded-lg p-1 text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 lg:hidden"
           >
-            Close
+            <IconX size={15} />
           </button>
         </div>
 
-        <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-3">
-          <p className="text-xs text-zinc-400">
-            {loading ? "Signing you in…" : `Welcome, ${displayName}`}
-          </p>
-          <div className="mt-3 flex items-center gap-2">
-            {(["Simi", "Loa"] as Personality[]).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPersonality(p)}
-                className={[
-                  "rounded-full border px-3 py-1 text-xs transition",
-                  personality === p
-                    ? "border-purple-500 bg-purple-500/15"
-                    : "border-zinc-800",
-                ].join(" ")}
-              >
-                {p}
-              </button>
-            ))}
+        {/* New Chat button */}
+        <div className="px-3 pb-3">
+          <button
+            type="button"
+            onClick={startNewChat}
+            disabled={loading || isTyping}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.05] py-2.5 text-[13px] font-medium text-zinc-200 transition hover:bg-white/[0.09] hover:text-white disabled:opacity-50"
+          >
+            <IconPlus size={14} />
+            New chat
+          </button>
+        </div>
+
+        {/* Bihar AI link */}
+        <div className="px-3 pb-3">
+          <a
+            href="/bihar-ai"
+            onClick={() => setSidebarOpen(false)}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] py-2 text-[13px] font-medium text-amber-300/90 transition hover:bg-amber-500/[0.12] hover:text-amber-200"
+          >
+            <span className="text-[15px]" aria-hidden>🟡</span>
+            Bihar AI
+          </a>
+        </div>
+
+        {/* Personality toggle */}
+        <div className="mx-3 mb-3 flex gap-1 rounded-xl border border-white/[0.06] bg-white/[0.03] p-1">
+          {(["Simi", "Loa"] as Personality[]).map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => setPersonality(p)}
+              className={[
+                "flex-1 rounded-lg py-1.5 text-[12px] font-medium transition",
+                personality === p
+                  ? "bg-violet-600/80 text-white shadow"
+                  : "text-zinc-500 hover:text-zinc-300",
+              ].join(" ")}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="px-3 pb-2">
+          <div className="flex items-center gap-2 rounded-xl border border-white/[0.07] bg-white/[0.04] px-3 py-2">
+            <IconSearch size={13} />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search chats..."
+              className="flex-1 bg-transparent text-[12px] text-zinc-300 outline-none placeholder:text-zinc-600"
+            />
           </div>
         </div>
 
-        <a
-          href="/bihar-ai"
-          onClick={() => setSidebarOpen(false)}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-500/45 bg-amber-500/10 px-3 py-2.5 text-sm font-medium text-amber-200 transition hover:bg-amber-500/18"
-        >
-          <span aria-hidden>🟡</span>
-          Bihar AI
-        </a>
-
-        <div className="mt-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-2">
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search chats..."
-            className="mb-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-2 py-1.5 text-xs outline-none focus:border-zinc-600"
-          />
-          <div className="max-h-52 space-y-2 overflow-y-auto">
-            {conversations.length === 0 ? (
-              <p className="px-2 py-1 text-xs text-zinc-500">No chat history yet.</p>
-            ) : (
-              <>
-                {conversations.some((c) => c.pinned) ? (
-                  <p className="px-2 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
-                    Pinned
-                  </p>
-                ) : null}
-                {conversations
-                  .filter((c) => c.pinned)
-                  .map((c) => (
-                    <div key={c.conversationId} className="relative">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          persistConversationId(c.conversationId);
-                          setConversationId(c.conversationId);
-                          setSidebarOpen(false);
-                        }}
-                        className={[
-                          "w-full rounded-lg px-2 py-2 pr-8 text-left text-xs transition",
-                          c.conversationId === conversationId
-                            ? "bg-zinc-800 text-zinc-100"
-                            : "text-zinc-300 hover:bg-zinc-800/60",
-                        ].join(" ")}
-                      >
-                        {renamingConversationId === c.conversationId ? (
-                          <input
-                            autoFocus
-                            value={renameValue}
-                            onChange={(e) => setRenameValue(e.target.value)}
-                            onBlur={async () => {
-                              const nextTitle = renameValue.trim();
-                              if (nextTitle) await patchConversation(c.conversationId, { title: nextTitle });
-                              setRenamingConversationId(null);
-                              setActiveMenuConversationId(null);
-                              if (user) await loadConversations(user, searchQuery);
-                            }}
-                            onKeyDown={async (e) => {
-                              if (e.key === "Enter") {
-                                const nextTitle = renameValue.trim();
-                                if (nextTitle) await patchConversation(c.conversationId, { title: nextTitle });
-                                setRenamingConversationId(null);
-                                setActiveMenuConversationId(null);
-                                if (user) await loadConversations(user, searchQuery);
-                              }
-                            }}
-                            className="w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 outline-none"
-                          />
-                        ) : (
-                          <div className="truncate">📌 {c.title || c.preview || "Untitled chat"}</div>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        className="absolute right-1 top-1 rounded-md px-1 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                        onClick={() =>
-                          setActiveMenuConversationId((prev) =>
-                            prev === c.conversationId ? null : c.conversationId
-                          )
-                        }
-                      >
-                        ⋮
-                      </button>
-                      {activeMenuConversationId === c.conversationId ? (
-                        <div className="absolute right-1 top-7 z-20 w-28 rounded-lg border border-zinc-700 bg-zinc-900 p-1 text-xs shadow-xl">
-                          <button
-                            type="button"
-                            className="block w-full rounded px-2 py-1 text-left hover:bg-zinc-800"
-                            onClick={() => {
-                              setRenamingConversationId(c.conversationId);
-                              setRenameValue(c.title || c.preview || "");
-                            }}
-                          >
-                            Rename
-                          </button>
-                          <button
-                            type="button"
-                            className="block w-full rounded px-2 py-1 text-left hover:bg-zinc-800"
-                            onClick={async () => {
-                              await patchConversation(c.conversationId, { pinned: false });
-                              setActiveMenuConversationId(null);
-                              if (user) await loadConversations(user, searchQuery);
-                            }}
-                          >
-                            Unpin
-                          </button>
-                          <button
-                            type="button"
-                            className="block w-full rounded px-2 py-1 text-left text-red-300 hover:bg-zinc-800"
-                            onClick={async () => {
-                              if (!window.confirm("Delete this chat?")) return;
-                              await deleteConversation(c.conversationId);
-                              if (c.conversationId === conversationId) startNewChat();
-                              setActiveMenuConversationId(null);
-                              if (user) await loadConversations(user, searchQuery);
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
-
-                {conversations.some((c) => !c.pinned) ? (
-                  <p className="px-2 pt-1 text-[11px] font-medium uppercase tracking-wide text-zinc-500">
-                    Recent
-                  </p>
-                ) : null}
-                {conversations
-                  .filter((c) => !c.pinned)
-                  .map((c) => (
-                    <div key={c.conversationId} className="relative">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          persistConversationId(c.conversationId);
-                          setConversationId(c.conversationId);
-                          setSidebarOpen(false);
-                        }}
-                        className={[
-                          "w-full rounded-lg px-2 py-2 pr-8 text-left text-xs transition",
-                          c.conversationId === conversationId
-                            ? "bg-zinc-800 text-zinc-100"
-                            : "text-zinc-300 hover:bg-zinc-800/60",
-                        ].join(" ")}
-                      >
-                        {renamingConversationId === c.conversationId ? (
-                          <input
-                            autoFocus
-                            value={renameValue}
-                            onChange={(e) => setRenameValue(e.target.value)}
-                            onBlur={async () => {
-                              const nextTitle = renameValue.trim();
-                              if (nextTitle) await patchConversation(c.conversationId, { title: nextTitle });
-                              setRenamingConversationId(null);
-                              setActiveMenuConversationId(null);
-                              if (user) await loadConversations(user, searchQuery);
-                            }}
-                            onKeyDown={async (e) => {
-                              if (e.key === "Enter") {
-                                const nextTitle = renameValue.trim();
-                                if (nextTitle) await patchConversation(c.conversationId, { title: nextTitle });
-                                setRenamingConversationId(null);
-                                setActiveMenuConversationId(null);
-                                if (user) await loadConversations(user, searchQuery);
-                              }
-                            }}
-                            className="w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 outline-none"
-                          />
-                        ) : (
-                          <div className="truncate">{c.title || c.preview || "Untitled chat"}</div>
-                        )}
-                      </button>
-                      <button
-                        type="button"
-                        className="absolute right-1 top-1 rounded-md px-1 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                        onClick={() =>
-                          setActiveMenuConversationId((prev) =>
-                            prev === c.conversationId ? null : c.conversationId
-                          )
-                        }
-                      >
-                        ⋮
-                      </button>
-                      {activeMenuConversationId === c.conversationId ? (
-                        <div className="absolute right-1 top-7 z-20 w-28 rounded-lg border border-zinc-700 bg-zinc-900 p-1 text-xs shadow-xl">
-                          <button
-                            type="button"
-                            className="block w-full rounded px-2 py-1 text-left hover:bg-zinc-800"
-                            onClick={() => {
-                              setRenamingConversationId(c.conversationId);
-                              setRenameValue(c.title || c.preview || "");
-                            }}
-                          >
-                            Rename
-                          </button>
-                          <button
-                            type="button"
-                            className="block w-full rounded px-2 py-1 text-left hover:bg-zinc-800"
-                            onClick={async () => {
-                              await patchConversation(c.conversationId, { pinned: true });
-                              setActiveMenuConversationId(null);
-                              if (user) await loadConversations(user, searchQuery);
-                            }}
-                          >
-                            Pin
-                          </button>
-                          <button
-                            type="button"
-                            className="block w-full rounded px-2 py-1 text-left text-red-300 hover:bg-zinc-800"
-                            onClick={async () => {
-                              if (!window.confirm("Delete this chat?")) return;
-                              await deleteConversation(c.conversationId);
-                              if (c.conversationId === conversationId) startNewChat();
-                              setActiveMenuConversationId(null);
-                              if (user) await loadConversations(user, searchQuery);
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
-              </>
-            )}
-          </div>
+        {/* Conversation list */}
+        <div className="flex-1 overflow-y-auto px-2">
+          {conversations.length === 0 ? (
+            <p className="px-3 py-2 text-[12px] text-zinc-600">No chat history yet.</p>
+          ) : (
+            <div className="space-y-0.5">
+              {conversations.some((c) => c.pinned) && (
+                <p className="px-3 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">Pinned</p>
+              )}
+              {conversations.filter((c) => c.pinned).map((c) => <ConvItem key={c.conversationId} c={c} />)}
+              {conversations.some((c) => !c.pinned) && (
+                <p className="px-3 pt-2 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">Recent</p>
+              )}
+              {conversations.filter((c) => !c.pinned).map((c) => <ConvItem key={c.conversationId} c={c} />)}
+            </div>
+          )}
         </div>
 
-        <div className="mt-4 space-y-2">
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-3 py-3 text-xs text-zinc-300">
-            <p className="font-medium text-zinc-200">Today usage</p>
-            <div className="mt-2 space-y-3">
+        {/* Bottom section: usage + user */}
+        <div className="border-t border-white/[0.06] px-3 py-3 space-y-3">
+          {/* Usage bars */}
+          <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2.5 text-[11px]">
+            <p className="mb-2 font-medium text-zinc-400">Today&apos;s usage</p>
+            <div className="space-y-2">
               <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-zinc-400">Messages</span>
-                  <span
-                    className={isLow(messageLeft) ? "text-amber-300" : "text-zinc-300"}
-                  >
-                    {typeof messageLeft === "number" ? messageLeft : "—"} left
+                <div className="mb-1 flex justify-between text-zinc-500">
+                  <span>Messages</span>
+                  <span className={isLow(messageLeft) ? "text-amber-400" : "text-zinc-400"}>
+                    {typeof messageLeft === "number" ? `${messageLeft} left` : "—"}
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
-                  <div
-                    className={[
-                      "h-full rounded-full transition-all",
-                      isLow(messageLeft) ? "bg-amber-400" : "bg-sky-400",
-                    ].join(" ")}
-                    style={{ width: `${messagePercent}%` }}
-                  />
+                <div className="h-1 overflow-hidden rounded-full bg-zinc-800">
+                  <div className={["h-full rounded-full transition-all", isLow(messageLeft) ? "bg-amber-400" : "bg-violet-500"].join(" ")}
+                    style={{ width: `${messagePercent}%` }} />
                 </div>
               </div>
               <div>
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-zinc-400">Web searches</span>
-                  <span className={isLow(webLeft) ? "text-amber-300" : "text-zinc-300"}>
-                    {typeof webLeft === "number" ? webLeft : "—"} left
+                <div className="mb-1 flex justify-between text-zinc-500">
+                  <span>Web searches</span>
+                  <span className={isLow(webLeft) ? "text-amber-400" : "text-zinc-400"}>
+                    {typeof webLeft === "number" ? `${webLeft} left` : "—"}
                   </span>
                 </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-zinc-800">
-                  <div
-                    className={[
-                      "h-full rounded-full transition-all",
-                      isLow(webLeft) ? "bg-amber-400" : "bg-purple-400",
-                    ].join(" ")}
-                    style={{ width: `${webPercent}%` }}
-                  />
+                <div className="h-1 overflow-hidden rounded-full bg-zinc-800">
+                  <div className={["h-full rounded-full transition-all", isLow(webLeft) ? "bg-amber-400" : "bg-sky-500"].join(" ")}
+                    style={{ width: `${webPercent}%` }} />
                 </div>
               </div>
             </div>
-            <p className="mt-3 text-[11px] text-zinc-500">
-              Daily counters reset at midnight (UTC).
-            </p>
           </div>
-          <a
-            href="/settings"
-            className="block rounded-xl border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-200 hover:border-zinc-600"
-          >
-            Settings
-          </a>
-          <button
-            type="button"
-            className="w-full rounded-xl border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-left text-sm text-zinc-200 hover:border-zinc-600"
-            onClick={startNewChat}
-            disabled={loading || isTyping}
-          >
-            New chat
-          </button>
-          <button
-            type="button"
-            className="w-full rounded-xl border border-zinc-800 bg-zinc-900/50 px-3 py-2 text-left text-sm text-zinc-200 hover:border-zinc-600"
-            onClick={async () => {
-              const auth = getFirebaseAuth();
-              await signOut(auth);
-              router.replace("/login");
-            }}
-            disabled={loading}
-          >
-            Sign out
-          </button>
+
+          {/* User row */}
+          <div className="flex items-center gap-2 rounded-xl px-2 py-2 hover:bg-white/[0.04] transition cursor-default">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700 text-[11px] font-bold text-zinc-200">
+              {avatarInitial}
+            </div>
+            <span className="flex-1 truncate text-[12px] text-zinc-300">{displayName}</span>
+            <button
+              type="button"
+              title="Settings"
+              onClick={() => router.push("/settings")}
+              className="rounded-lg p-1 text-zinc-500 hover:text-zinc-200"
+            >
+              <IconSettings size={14} />
+            </button>
+            <button
+              type="button"
+              title="Sign out"
+              onClick={async () => { const auth = getFirebaseAuth(); await signOut(auth); router.replace("/login"); }}
+              className="rounded-lg p-1 text-zinc-500 hover:text-red-400"
+            >
+              <IconLogout size={14} />
+            </button>
+          </div>
         </div>
       </aside>
 
-      <div className="flex min-h-screen flex-1 flex-col">
-        <header className="sticky top-0 z-30 border-b border-zinc-800 bg-[#0f0f0f]/95 px-4 py-3 backdrop-blur-md">
-          <div className="mx-auto flex w-full max-w-4xl items-center justify-between">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="rounded-lg border border-zinc-800 px-2 py-1 text-xs lg:hidden"
-                onClick={() => setSidebarOpen(true)}
-              >
-                Menu
-              </button>
-              <p className="text-sm font-semibold">Evara AI</p>
-              <a
-                href="/bihar-ai"
-                className="inline-block rounded-full border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-200 hover:bg-amber-500/20"
-              >
-                Bihar AI
-              </a>
-              <div className="hidden items-center gap-1 md:flex">
-                {(["Simi", "Loa"] as const).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPersonality(p)}
-                    className={[
-                      "rounded-full border px-2 py-0.5 text-[10px] transition",
-                      personality === p
-                        ? "border-purple-500 bg-purple-500/15 text-zinc-100"
-                        : "border-zinc-700 text-zinc-300 hover:border-zinc-500",
-                    ].join(" ")}
-                  >
-                    {p}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="relative flex items-center gap-2">
-              <button
-                type="button"
-                onClick={startNewChat}
-                disabled={loading || isTyping}
-                className="rounded-full border border-zinc-700 bg-zinc-900/70 px-3 py-1 text-[10px] text-zinc-200 hover:border-zinc-500 disabled:opacity-50"
-              >
-                New chat
-              </button>
-              {process.env.NODE_ENV !== "production" ? (
-                <div className="rounded-full border border-emerald-800/70 bg-emerald-950/40 px-3 py-1 text-[10px] text-emerald-300">
-                  chatId: {conversationId.slice(-8)}
-                </div>
-              ) : null}
-              <div className="rounded-full border border-zinc-800 bg-zinc-900/50 px-3 py-1 text-[10px] text-zinc-300">
-                Mode: {modeIcon[mode]} {modeLabel[mode]}
-              </div>
-              {incognitoActive ? (
-                <div className="rounded-full border border-amber-600/60 bg-amber-500/15 px-3 py-1 text-[10px] text-amber-300">
-                  Incognito active
-                </div>
-              ) : null}
+      {/* ══════════════════════════════════════════
+          MAIN CONTENT
+      ══════════════════════════════════════════ */}
+      <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
+
+        {/* ── Header ── */}
+        <header className="flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#111111]/95 px-4 py-3 backdrop-blur-md">
+          <div className="flex items-center gap-3">
+            {/* Mobile hamburger */}
+            <button
+              type="button"
+              onClick={() => setSidebarOpen(true)}
+              className="rounded-xl p-1.5 text-zinc-500 hover:bg-white/[0.07] hover:text-zinc-200 lg:hidden"
+            >
+              <IconMenu size={18} />
+            </button>
+
+            {/* Mode selector button */}
+            <button
+              type="button"
+              onClick={() => setShowModeMenu((v) => !v)}
+              className="flex items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.04] px-3 py-1.5 text-[12px] font-medium text-zinc-300 transition hover:bg-white/[0.08] hover:text-zinc-100"
+            >
+              <span>{modeConfig[mode].icon}</span>
+              <span>{modeConfig[mode].label}</span>
+              <IconChevronDown size={11} />
+            </button>
+
+            {incognitoActive && (
+              <span className="rounded-xl border border-amber-500/30 bg-amber-500/[0.08] px-2.5 py-1 text-[11px] text-amber-300">
+                Incognito
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={startNewChat}
+              disabled={loading || isTyping}
+              className="hidden items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.04] px-3 py-1.5 text-[12px] text-zinc-400 transition hover:bg-white/[0.08] hover:text-zinc-100 disabled:opacity-40 sm:flex"
+            >
+              <IconPlus size={12} />
+              New chat
+            </button>
+
+            {/* Profile menu */}
+            <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowTopMenu((v) => !v)}
-                className="rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1 text-[10px] text-zinc-300 hover:border-zinc-600"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700 text-[12px] font-bold text-zinc-200 hover:ring-2 hover:ring-violet-500/40 transition"
               >
-                ⚙️ Profile
+                {avatarInitial}
               </button>
-              {showTopMenu ? (
-                <div className="absolute right-0 top-8 z-40 w-44 rounded-xl border border-zinc-700 bg-zinc-900 p-1 text-xs shadow-2xl">
-                  <a
-                    href="/settings"
-                    className="block rounded-lg px-3 py-2 text-zinc-200 hover:bg-zinc-800"
-                  >
-                    Profile
-                  </a>
-                  <a
-                    href="/settings"
-                    className="block rounded-lg px-3 py-2 text-zinc-200 hover:bg-zinc-800"
-                  >
-                    Settings
-                  </a>
-                  <a
-                    href="/settings#personalization"
-                    className="block rounded-lg px-3 py-2 text-zinc-200 hover:bg-zinc-800"
-                  >
-                    Personalization
-                  </a>
-                  <a
-                    href="/settings#upgrade"
-                    className="block rounded-lg px-3 py-2 text-zinc-200 hover:bg-zinc-800"
-                  >
-                    Upgrade Plan
-                  </a>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      const auth = getFirebaseAuth();
-                      await signOut(auth);
-                      router.replace("/login");
-                    }}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-zinc-200 hover:bg-zinc-800"
-                  >
-                    Logout
-                  </button>
+              {showTopMenu && (
+                <div className="absolute right-0 top-10 z-50 w-44 overflow-hidden rounded-2xl border border-white/[0.07] bg-zinc-900/95 py-1.5 shadow-2xl backdrop-blur-xl">
+                  <div className="border-b border-white/[0.06] px-4 py-2.5">
+                    <p className="text-[13px] font-medium text-zinc-200">{displayName}</p>
+                    <p className="text-[11px] text-zinc-500 truncate">{user?.email ?? ""}</p>
+                  </div>
+                  {[
+                    { label: "Profile", href: "/settings" },
+                    { label: "Settings", href: "/settings" },
+                    { label: "Personalization", href: "/settings#personalization" },
+                    { label: "Upgrade Plan", href: "/settings#upgrade" },
+                  ].map((item) => (
+                    <a key={item.label} href={item.href}
+                      className="block px-4 py-2 text-[13px] text-zinc-300 hover:bg-white/[0.05] hover:text-white">
+                      {item.label}
+                    </a>
+                  ))}
+                  <div className="border-t border-white/[0.06] mt-1 pt-1">
+                    <button type="button"
+                      onClick={async () => { const auth = getFirebaseAuth(); await signOut(auth); router.replace("/login"); }}
+                      className="flex w-full items-center gap-2 px-4 py-2 text-[13px] text-red-400 hover:bg-white/[0.05]">
+                      <IconLogout size={13} />
+                      Sign out
+                    </button>
+                  </div>
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
         </header>
 
-        {conversationsLoadError ? (
-          <div
-            role="alert"
-            className="border-b border-amber-600/40 bg-amber-950/90 px-4 py-3 text-sm text-amber-100"
-          >
-            <div className="mx-auto flex w-full max-w-4xl items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-amber-50">Conversation list error</p>
-                <p className="mt-0.5 text-xs text-amber-200/85">
-                  If you see &quot;Failed to fetch&quot; or &quot;Cannot reach the API&quot;, start the backend (
-                  <code className="rounded bg-amber-900/60 px-1">cd backend; npm run dev</code>
-                  ) and open{" "}
-                  <code className="rounded bg-amber-900/60 px-1">{API_BASE_URL}/health</code>.
-                </p>
-                <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-xs text-amber-200/95">
-                  {conversationsLoadError}
-                </pre>
+        {/* ── Error banners ── */}
+        {conversationsLoadError && (
+          <div role="alert" className="shrink-0 border-b border-amber-600/30 bg-amber-950/80 px-4 py-2.5 text-[12px] text-amber-200">
+            <div className="mx-auto flex max-w-3xl items-start justify-between gap-3">
+              <div className="min-w-0">
+                <span className="font-semibold">Conversation list error — </span>
+                Make sure the backend is running and MongoDB Atlas IP whitelist includes your IP (or 0.0.0.0/0).
               </div>
-              <button
-                type="button"
-                className="shrink-0 rounded-lg border border-amber-600/50 px-2 py-1 text-xs text-amber-100 hover:bg-amber-900/60"
-                onClick={() => setConversationsLoadError(null)}
-              >
-                Dismiss
+              <button type="button" onClick={() => setConversationsLoadError(null)} className="shrink-0 rounded-lg text-amber-400 hover:text-amber-200">
+                <IconX size={14} />
               </button>
             </div>
           </div>
-        ) : null}
-
-        {historyFetchError ? (
-          <div
-            role="alert"
-            className="border-b border-red-500/50 bg-red-950/95 px-4 py-3 text-sm text-red-100"
-          >
-            <div className="mx-auto flex w-full max-w-4xl items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-red-50">Could not load chat history</p>
-                <p className="mt-0.5 text-xs text-red-200/90">
-                  <span className="block">
-                    If the details say &quot;Failed to fetch&quot; or &quot;Cannot reach the API&quot;, the Node
-                    backend is not running — run{" "}
-                    <code className="rounded bg-red-900/80 px-1">npm run dev</code> in{" "}
-                    <code className="rounded bg-red-900/80 px-1">evara/backend</code> and check{" "}
-                    <code className="rounded bg-red-900/80 px-1">{API_BASE_URL}/health</code>.
-                  </span>
-                  <span className="mt-1 block">
-                    If you see MongoDB / Atlas errors, fix IP whitelist and{" "}
-                    <code className="rounded bg-red-900/80 px-1">MONGODB_URI</code> in backend{" "}
-                    <code className="rounded bg-red-900/80 px-1">.env</code>.
-                  </span>
-                </p>
-                <pre className="mt-2 max-h-52 overflow-auto whitespace-pre-wrap break-words font-mono text-xs text-red-200/95">
-                  {historyFetchError}
-                </pre>
+        )}
+        {historyFetchError && (
+          <div role="alert" className="shrink-0 border-b border-red-500/30 bg-red-950/80 px-4 py-2.5 text-[12px] text-red-200">
+            <div className="mx-auto flex max-w-3xl items-start justify-between gap-3">
+              <div className="min-w-0">
+                <span className="font-semibold">Could not load chat history — </span>
+                Check that the backend is running and your MongoDB Atlas IP whitelist is open.
               </div>
-              <button
-                type="button"
-                className="shrink-0 rounded-lg border border-red-500/50 px-2 py-1 text-xs text-red-100 hover:bg-red-900/60"
-                onClick={() => setHistoryFetchError(null)}
-              >
-                Dismiss
+              <button type="button" onClick={() => setHistoryFetchError(null)} className="shrink-0 text-red-400 hover:text-red-200">
+                <IconX size={14} />
               </button>
             </div>
           </div>
-        ) : null}
+        )}
 
+        {/* ── Messages area ── */}
         {loading ? (
-          <main className="mx-auto flex w-full max-w-4xl flex-1 items-center justify-center px-4 py-6 text-sm text-zinc-400">
-            {historyLoading ? "Loading chat history…" : "Loading…"}
-          </main>
+          <div className="flex flex-1 items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 shadow-lg">
+                <span className="text-sm font-bold text-white">E</span>
+              </div>
+              <p className="text-[13px] text-zinc-500">
+                {historyLoading ? "Loading chat history…" : "Loading…"}
+              </p>
+            </div>
+          </div>
         ) : (
-          <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-3 pb-4 pt-4 sm:px-4">
-            <div className="flex-1 space-y-4 overflow-y-auto pb-4">
-              {messages.map((m) => (
-                <div
-                  key={m.id}
-                  className={[
-                    m.role === "user" ? "flex justify-end" : "flex",
-                    "animate-[evaraMessageIn_220ms_ease-out]",
-                  ].join(" ")}
-                >
-                  <div className={m.role === "ai" ? "flex max-w-[92%] gap-2 sm:max-w-[85%]" : "max-w-[92%] sm:max-w-[85%]"}>
-                    {m.role === "ai" ? (
-                      <div className="mt-1 h-7 w-7 shrink-0 rounded-full border border-purple-500/40 bg-purple-500/20 text-center text-xs leading-7 text-purple-200">
-                        E
-                      </div>
-                    ) : null}
-                    <div
-                      className={[
-                        "group rounded-2xl px-4 py-3 text-sm leading-relaxed",
-                        m.role === "user"
-                          ? "bg-zinc-100 text-black shadow-sm"
-                          : "border border-zinc-800 bg-gradient-to-b from-[#1b1b1b] to-[#171717] text-zinc-100",
-                      ].join(" ")}
-                    >
-                      <div className="chat-markdown whitespace-pre-wrap">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {m.content}
-                        </ReactMarkdown>
-                      </div>
-                      {m.sources?.length ? (
-                        <div className="mt-3 space-y-1 text-xs text-zinc-300">
-                          <p className="text-zinc-400">Sources:</p>
-                          {m.sources.map((s) => (
-                            <a
-                              key={`${s.link}-${s.title}`}
-                              href={s.link}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="block truncate underline decoration-zinc-600 underline-offset-2 hover:text-zinc-100"
-                            >
-                              {s.title}
-                            </a>
-                          ))}
+          <div className="flex flex-1 flex-col min-h-0">
+            <div className="flex-1 overflow-y-auto">
+              <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
+                {messages.map((m) => (
+                  <div key={m.id} className={["msg-in", m.role === "user" ? "flex justify-end" : "flex items-start gap-3"].join(" ")}>
+                    {m.role === "ai" && <EvaraAvatar personality={personality} />}
+                    <div className={[
+                      "group relative",
+                      m.role === "user"
+                        ? "max-w-[80%] rounded-2xl rounded-br-sm bg-white/[0.08] px-4 py-3 text-[14px] leading-relaxed text-zinc-100"
+                        : "flex-1 min-w-0",
+                    ].join(" ")}>
+                      {m.role === "ai" ? (
+                        <div className="text-[14px] text-zinc-100">
+                          <div className="chat-markdown">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                          </div>
+                          {m.sources && m.sources.length > 0 && (
+                            <div className="mt-3 space-y-1 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[12px]">
+                              <p className="font-medium text-zinc-400 mb-1">Sources</p>
+                              {m.sources.map((s) => (
+                                <a key={`${s.link}-${s.title}`} href={s.link} target="_blank" rel="noreferrer"
+                                  className="block truncate text-sky-400 underline decoration-sky-400/40 underline-offset-2 hover:text-sky-300">
+                                  {s.title}
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => copyMessage(m.id, m.content)}
+                            className="mt-1.5 flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] text-zinc-600 opacity-0 transition hover:bg-white/[0.06] hover:text-zinc-300 group-hover:opacity-100"
+                          >
+                            {copiedMessageId === m.id ? <><IconCheck size={11} /><span className="text-emerald-400">Copied</span></> : <><IconCopy size={11} />Copy</>}
+                          </button>
                         </div>
-                      ) : null}
-                      <div className="mt-2 flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => copyMessage(m.id, m.content)}
-                          className="rounded-md border border-zinc-700/60 px-2 py-0.5 text-[11px] text-zinc-300 opacity-0 transition hover:border-zinc-500 hover:text-zinc-100 group-hover:opacity-100"
-                        >
-                          {copiedMessageId === m.id ? "Copied" : "Copy"}
-                        </button>
-                      </div>
+                      ) : (
+                        <>
+                          <div className="whitespace-pre-wrap">{m.content}</div>
+                          <button
+                            type="button"
+                            onClick={() => copyMessage(m.id, m.content)}
+                            className="mt-1.5 flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] text-zinc-600 opacity-0 transition hover:text-zinc-300 group-hover:opacity-100"
+                          >
+                            {copiedMessageId === m.id ? <><IconCheck size={11} /><span className="text-emerald-400">Copied</span></> : <><IconCopy size={11} />Copy</>}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
-              {isTyping ? (
-                <div className="flex">
-                  <div className="rounded-2xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-zinc-100">
-                    {mode === "thinking" ? "Thinking…" : "Evara is typing…"}
+                ))}
+
+                {/* Typing indicator */}
+                {isTyping && (
+                  <div className="msg-in flex items-start gap-3">
+                    <EvaraAvatar personality={personality} />
+                    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
+                      <TypingDots />
+                    </div>
                   </div>
-                </div>
-              ) : null}
-              <div ref={endRef} />
+                )}
+                <div ref={endRef} />
+              </div>
             </div>
 
-            <form
-              className="sticky bottom-0 mt-2 rounded-[22px] border border-zinc-700/70 bg-[#1a1a1a]/95 p-2 backdrop-blur-md"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                if (!user || isTyping) return;
-
-                const text = input.trim();
-                if (!text) return;
-                const activeConversationId = getConversationId();
-                setConversationId((prev) =>
-                  prev === activeConversationId ? prev : activeConversationId
-                );
-
-                setInput("");
-                setMessages((prev) => [
-                  ...prev,
-                  { id: makeId(), role: "user", content: text },
-                ]);
-                setConversations((prev) =>
-                  upsertConversation(prev, {
-                    conversationId: activeConversationId,
-                    title: titleFromPreview(text),
-                    preview: text,
-                    lastMessageAt: new Date().toISOString(),
-                  })
-                );
-                setIsTyping(true);
-
-                try {
-                  const token = await user.getIdToken();
-                  const resp = await fetch(`${API_BASE_URL}/v1/chat`, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                      message: text,
-                      personality,
-                      mode,
-                      conversationId: activeConversationId,
-                    }),
-                  });
-
-                  if (!resp.ok) {
-                    const err = await resp.json().catch(() => null);
-                    const backendMessage: string =
-                      err?.error ?? `Chat failed (${resp.status})`;
-                    if (err?.usage) {
-                      setUsage({
-                        messagesLeft: err.usage.messagesLeft,
-                        webSearchLeft: err.usage.webSearchLeft,
-                      });
-                    }
-
-                    const normalizedBackendMessage = backendMessage.toLowerCase();
-                    if (
-                      normalizedBackendMessage.includes("firebase admin missing") ||
-                      normalizedBackendMessage.includes("auth not configured") ||
-                      normalizedBackendMessage.includes("mongodb not configured") ||
-                      normalizedBackendMessage.includes("mongo") ||
-                      normalizedBackendMessage.includes("database unavailable")
-                    ) {
-                      const demoResp = await fetch(`${API_BASE_URL}/v1/demo-chat`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ message: text, personality, mode }),
-                      });
-                      if (demoResp.ok) {
-                        const demoData: { reply?: string } = await demoResp.json();
-                        setMessages((prev) => [
-                          ...prev,
-                          {
-                            id: makeId(),
-                            role: "ai",
-                            content:
-                              demoData.reply ??
-                              "I’m here with you. Tell me more about what you’re feeling.",
-                          },
-                        ]);
-                        return;
+            {/* ── Input area ── */}
+            <div className="shrink-0 border-t border-white/[0.05] bg-[#111111] px-4 py-4">
+              <div className="mx-auto max-w-3xl">
+                <form
+                  onSubmit={handleSubmit}
+                  className="relative rounded-2xl border border-white/[0.09] bg-[#1c1c1c] p-3 shadow-xl ring-1 ring-inset ring-white/[0.04] transition-all focus-within:border-violet-500/40 focus-within:ring-violet-500/10"
+                >
+                  <textarea
+                    ref={textareaRef}
+                    rows={1}
+                    className="w-full resize-none bg-transparent pr-20 text-[14px] leading-relaxed text-zinc-100 outline-none placeholder:text-zinc-600"
+                    placeholder="Ask anything…"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmit();
                       }
-                    }
-                    throw new Error(backendMessage);
-                  }
-
-                  const data: {
-                    reply?: string;
-                    sources?: Array<{ title: string; link: string }>;
-                    usage?: UsageInfo;
-                    conversationId?: string;
-                  } = await resp.json();
-                  if (data.conversationId && data.conversationId !== conversationId) {
-                    persistConversationId(data.conversationId);
-                    setConversationId(data.conversationId);
-                  }
-                  if (data.usage) {
-                    setUsage({
-                      messagesLeft: data.usage.messagesLeft,
-                      webSearchLeft: data.usage.webSearchLeft,
-                    });
-                  }
-                  setMessages((prev) => [
-                    ...prev,
-                    {
-                      id: makeId(),
-                      role: "ai",
-                      content: data.reply ?? "I’m here with you. Tell me more.",
-                      sources: data.sources ?? [],
-                    },
-                  ]);
-                  setConversations((prev) =>
-                    upsertConversation(prev, {
-                      conversationId: data.conversationId ?? activeConversationId,
-                      title: titleFromPreview(data.reply ?? text),
-                      preview: data.reply ?? text,
-                      lastMessageAt: new Date().toISOString(),
-                    })
-                  );
-                  try {
-                    await loadConversations(user);
-                  } catch {
-                    // Keep optimistic local history if server refresh fails.
-                  }
-                } catch (err) {
-                  const errorText =
-                    err instanceof Error
-                      ? err.message
-                      : "Something went wrong. Please try again.";
-                  setMessages((prev) => [
-                    ...prev,
-                    {
-                      id: makeId(),
-                      role: "ai",
-                      content: `I couldn't process that yet: ${errorText}`,
-                    },
-                  ]);
-                } finally {
-                  setIsTyping(false);
-                }
-              }}
-            >
-              <div className="flex items-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModeMenu(true)}
-                  className="h-11 w-11 rounded-full border border-zinc-700 bg-zinc-900/70 text-base transition hover:scale-105 hover:border-zinc-500"
-                  aria-label="Open mode selector"
-                >
-                  +
-                </button>
-                <textarea
-                  rows={1}
-                  className="max-h-28 flex-1 resize-none rounded-full border border-zinc-700 bg-[#1a1a1a] px-4 py-3 text-sm outline-none focus:border-zinc-500"
-                  placeholder="Ask anything..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      const form = e.currentTarget.form;
-                      if (form) form.requestSubmit();
-                    }
-                  }}
-                  disabled={isTyping}
-                />
-                <button
-                  type="button"
-                  className="h-11 w-11 rounded-full border border-zinc-700 bg-zinc-900/70 text-base text-zinc-300 transition hover:border-zinc-500"
-                  aria-label="Voice input (coming soon)"
-                  title="Voice input coming soon"
-                >
-                  🎤
-                </button>
-                <button
-                  type="submit"
-                  className="h-11 rounded-full bg-purple-600 px-4 text-sm font-semibold text-white transition hover:bg-purple-500 disabled:opacity-60"
-                  disabled={isTyping || input.trim().length === 0}
-                >
-                  ➤
-                </button>
+                    }}
+                    disabled={isTyping}
+                    style={{ maxHeight: 160 }}
+                  />
+                  {/* Bottom bar inside input */}
+                  <div className="mt-2 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setShowModeMenu(true)}
+                      className={["flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-2.5 py-1.5 text-[11px] font-medium transition hover:border-white/10 hover:bg-white/[0.06]", modeConfig[mode].color].join(" ")}
+                    >
+                      {modeConfig[mode].icon} {modeConfig[mode].label}
+                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.06] text-zinc-500 transition hover:border-white/10 hover:text-zinc-300"
+                        aria-label="Voice input (coming soon)"
+                        title="Voice input coming soon"
+                      >
+                        <IconMic size={14} />
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isTyping || input.trim().length === 0}
+                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-600 text-white shadow-lg transition hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        <IconSend size={14} />
+                      </button>
+                    </div>
+                  </div>
+                </form>
+                <p className="mt-2 text-center text-[11px] text-zinc-700">
+                  Evara can make mistakes. Verify important information.
+                </p>
               </div>
-            </form>
-          </main>
+            </div>
+          </div>
         )}
       </div>
 
-      {showModeMenu ? (
+      {/* ══════════════════════════════════════════
+          MODE SELECTOR MODAL
+      ══════════════════════════════════════════ */}
+      {showModeMenu && (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-black/70 p-4 sm:items-center sm:justify-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center"
           onClick={() => setShowModeMenu(false)}
         >
           <div
-            className="w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950/95 p-4 backdrop-blur-md"
+            className="w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.08] bg-[#161616] shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <p className="text-sm font-semibold text-zinc-100">Choose mode</p>
-            <p className="mt-1 text-xs text-zinc-400">
-              Switch behavior instantly without losing memory.
-            </p>
-            <div className="mt-3 space-y-2">
-              {(
-                [
-                  ["personal", "❤️", "Personal"],
-                  ["web", "🌐", "Web Search"],
-                  ["study", "🎓", "Study"],
-                  ["thinking", "🧠", "Thinking"],
-                  ["business", "💼", "Business"],
-                ] as const
-              ).map(([key, icon, label]) => (
+            <div className="border-b border-white/[0.06] px-5 py-4">
+              <p className="font-semibold text-zinc-100">Choose mode</p>
+              <p className="mt-0.5 text-[12px] text-zinc-500">Switch behavior instantly without losing memory.</p>
+            </div>
+            <div className="p-3 space-y-1">
+              {(Object.entries(modeConfig) as [Mode, typeof modeConfig[Mode]][]).map(([key, cfg]) => (
                 <button
                   key={key}
                   type="button"
-                  onClick={() => {
-                    setMode(key);
-                    setShowModeMenu(false);
-                  }}
+                  onClick={() => { setMode(key); setShowModeMenu(false); }}
                   className={[
-                    "flex h-11 w-full items-center justify-between rounded-2xl border px-4 text-sm transition",
+                    "flex w-full items-center justify-between rounded-2xl px-4 py-3 text-[13px] transition",
                     mode === key
-                      ? "border-purple-500 bg-purple-500/15 text-zinc-50"
-                      : "border-zinc-800 bg-zinc-900/60 text-zinc-200 hover:border-zinc-600",
+                      ? "bg-violet-600/20 text-violet-200 ring-1 ring-inset ring-violet-500/30"
+                      : "text-zinc-300 hover:bg-white/[0.05]",
                   ].join(" ")}
                 >
-                  <span>
-                    {icon} {label}
+                  <span className="flex items-center gap-2.5">
+                    <span className="text-[16px]">{cfg.icon}</span>
+                    <span className="font-medium">{cfg.label}</span>
                   </span>
-                  {mode === key ? <span className="text-xs">Active</span> : null}
+                  {mode === key && (
+                    <span className="rounded-full bg-violet-500/20 px-2 py-0.5 text-[10px] font-semibold text-violet-300">Active</span>
+                  )}
                 </button>
               ))}
             </div>
           </div>
         </div>
-      ) : null}
+      )}
 
-      {showIncognitoToast ? (
-        <div className="fixed bottom-24 left-1/2 z-[70] w-[92%] max-w-md -translate-x-1/2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-200 shadow-xl backdrop-blur-sm">
-          Incognito is ON - this chat won&apos;t be saved.
+      {/* ── Incognito toast ── */}
+      {showIncognitoToast && (
+        <div className="fixed bottom-28 left-1/2 z-[70] -translate-x-1/2 rounded-2xl border border-amber-500/30 bg-amber-950/90 px-4 py-2.5 text-[13px] text-amber-200 shadow-xl backdrop-blur-md">
+          Incognito is ON — this chat won&apos;t be saved.
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
-
