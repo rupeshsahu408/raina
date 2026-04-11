@@ -470,9 +470,7 @@ export default function BiharAiPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#111111]">
         <div className="flex flex-col items-center gap-4">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg">
-            <span className="text-sm font-bold text-zinc-900">B</span>
-          </div>
+          <img src="/evara-logo.png" alt="Evara AI" className="h-12 w-12 object-contain" draggable={false} />
           <p className="text-[13px] text-zinc-500">Loading…</p>
         </div>
       </div>

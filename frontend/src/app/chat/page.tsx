@@ -1250,9 +1250,7 @@ export default function ChatPage() {
         {loading ? (
           <div className="flex flex-1 items-center justify-center">
             <div className="flex flex-col items-center gap-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 shadow-lg">
-                <span className="text-sm font-bold text-white">E</span>
-              </div>
+              <img src="/evara-logo.png" alt="Evara AI" className="h-12 w-12 object-contain" draggable={false} />
               <p className="text-[13px] text-zinc-500">
                 {historyLoading ? "Loading chat history…" : "Loading…"}
               </p>
