@@ -1,0 +1,57 @@
+I have built a PWA AI app on Replit with two types of AI:
+
+Evara AI
+Bihar AI
+
+Both AIs are completely separate from each other.
+
+My goal is to make both of them very sharp, intelligent, and capable of giving high-quality answers like ChatGPT. I want you to improve and optimize them in the following ways:
+
+🔹 Core Improvements Required
+Make both AIs more intelligent, fast, and accurate in responses
+Improve their answer quality to match ChatGPT/Gemini level
+Enhance reasoning and contextual understanding
+🧠 Memory System (Very Important)
+The AI should remember user information within the same chat
+It should also maintain summary-based memory of past conversations
+Example:
+If user says: “My name is Kavi”
+Later asks: “What is my name?”
+The AI should correctly answer: “Your name is Kavi”
+Memory should work:
+✅ Within the same chat (short-term memory)
+✅ Across chats (long-term summarized memory)
+🎛️ Mode System Optimization
+
+Both AIs have multiple modes:
+
+Evara AI modes: Personal, Web Search, Study, Thinking, Business
+Bihar AI modes: Education, Politics, News, Culture, Student Help, Jobs, Agriculture, District
+
+Requirements:
+
+AI should give answers based on the selected mode
+Each mode should influence:
+Tone
+Depth
+Structure of response
+🤖 Smart / Self-Adaptive Intelligence
+AI should be self-intelligent and adaptive
+If the user is in one mode but asking something from another domain:
+The AI should automatically adjust or switch modes internally
+Example:
+User is in Personal mode but asks an education-related question
+AI should respond like Education mode
+If needed, AI should:
+Automatically decide when to use web search
+Adjust response style without explicit user input
+🎯 Final Goal
+
+I want my AI to be:
+
+As smart, fast, and accurate as ChatGPT, Gemini, etc.
+Capable of understanding user intent deeply
+Able to remember, adapt, and respond intelligently
+Consistent, natural, and human-like in conversations
+
+If needed, you can redesign or improve anything, but the final goal is to make both AIs top-level intelligent assistants.

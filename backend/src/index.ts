@@ -136,11 +136,16 @@ async function requireFirebaseAuth(
   }
 }
 
+const corsOriginRaw = process.env.CORS_ORIGIN;
+const corsOrigin =
+  corsOriginRaw === "true" || corsOriginRaw === "*"
+    ? true
+    : corsOriginRaw ||
+      (process.env.NODE_ENV === "production" ? true : "http://localhost:3000");
+
 app.use(
   cors({
-    origin:
-      process.env.CORS_ORIGIN ||
-      (process.env.NODE_ENV === "production" ? true : "http://localhost:3000"),
+    origin: corsOrigin,
     credentials: true,
   })
 );
@@ -1294,10 +1299,6 @@ app.post("/v1/chat", requireFirebaseAuth, async (req, res) => {
 
     let sources: Array<{ title: string; link: string }> = [];
 
-    // Debug: verify conversation thread key used for this request.
-    // eslint-disable-next-line no-console
-    console.log("[chat] conversationId:", resolvedConversationId);
-
     const isIncognito = profile?.privacy?.incognitoChatMode === true;
 
     // Save current user message first (so fetch includes latest turn) unless incognito.
@@ -1348,13 +1349,6 @@ app.post("/v1/chat", requireFirebaseAuth, async (req, res) => {
         { upsert: true, new: true }
       );
     }
-    // eslint-disable-next-line no-console
-    console.log("[chat] savedUserMessage:", {
-      id: savedUserMessage ? String(savedUserMessage._id) : "incognito",
-      conversationId: savedUserMessage?.conversationId ?? resolvedConversationId,
-      role: savedUserMessage?.role ?? "user",
-    });
-
     // Fetch recent turns in correct order: oldest -> newest.
     const shortTerm = !isIncognito && referenceChatHistory
       ? await ConversationMessage.aggregate<{
@@ -1369,13 +1363,6 @@ app.post("/v1/chat", requireFirebaseAuth, async (req, res) => {
           { $project: { role: 1, content: 1, createdAt: 1 } },
         ])
       : [];
-    // eslint-disable-next-line no-console
-    console.log(
-      "[chat] historyCount/order:",
-      shortTerm.length,
-      shortTerm.map((m) => `${m.role}:${m.content.slice(0, 40)}`)
-    );
-
     // Pull recent user messages from older chats for cross-chat continuity.
     const pastUserMessages = !isIncognito && referenceChatHistory
       ? await ConversationMessage.find({
@@ -1576,35 +1563,21 @@ app.post("/v1/chat", requireFirebaseAuth, async (req, res) => {
           content: m.content,
         })),
       ];
-      // Debug checklist request: log messages before AI call.
-      const messages = nvidiaMessages;
-      // eslint-disable-next-line no-console
-      console.log(messages);
 
       try {
         const ai = await callNvidiaChatCompletions({
           apiKey: nvidiaKey,
           messages: nvidiaMessages,
-          max_tokens: 1400,
+          max_tokens: 2000,
           temperature: 0.72,
           top_p: 0.9,
         });
-        if (
-          ai &&
-          !(
-            (isAskingOwnName(cleanedMessage) && knownName) ||
-            (isAskingOwnRole(cleanedMessage) && knownOccupation)
-          )
-        ) {
+        if (ai) {
           reply = ai;
         }
       } catch {
         reply = fallback;
       }
-    }
-
-    if (effectiveMode === "thinking") {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
     }
 
     // Update long-term memory fields
@@ -2022,7 +1995,7 @@ Category mode: ${categoryAuto ? "auto" : "user-locked"}`;
         const ai = await callNvidiaChatCompletions({
           apiKey: nvidiaKey,
           messages: nvidiaMessages,
-          max_tokens: 900,
+          max_tokens: 1800,
           temperature: 0.68,
           top_p: 0.88,
         });

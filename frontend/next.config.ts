@@ -3,14 +3,36 @@ import withPWA from "next-pwa";
 
 const isCapacitorExport = process.env.CAPACITOR_EXPORT === "true";
 
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+
+// Allow Replit dev proxy origins
+const allowedDevOrigins: string[] = [];
+if (process.env.REPLIT_DEV_DOMAIN) {
+  allowedDevOrigins.push(process.env.REPLIT_DEV_DOMAIN);
+}
+
 const nextConfig: NextConfig = {
   turbopack: {},
+  allowedDevOrigins: allowedDevOrigins.length > 0 ? allowedDevOrigins : undefined,
   ...(isCapacitorExport
     ? {
         output: "export",
         images: { unoptimized: true },
       }
-    : {}),
+    : {
+        async rewrites() {
+          return [
+            {
+              source: "/v1/:path*",
+              destination: `${BACKEND_URL}/v1/:path*`,
+            },
+            {
+              source: "/health",
+              destination: `${BACKEND_URL}/health`,
+            },
+          ];
+        },
+      }),
 };
 
 const withPwaConfig = withPWA({

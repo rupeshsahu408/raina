@@ -13,7 +13,19 @@ export function ThreeBackground() {
     const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")
       .matches;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    // Check WebGL availability before attempting to create renderer
+    const testCanvas = document.createElement("canvas");
+    const hasWebGL =
+      !!(testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl"));
+    if (!hasWebGL) return;
+
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    } catch {
+      return;
+    }
+
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
     const scene = new THREE.Scene();
@@ -121,4 +133,3 @@ export function ThreeBackground() {
 
   return <div ref={hostRef} className="absolute inset-0 z-0" />;
 }
-
