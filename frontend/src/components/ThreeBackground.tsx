@@ -19,12 +19,13 @@ export function ThreeBackground() {
       !!(testCanvas.getContext("webgl") || testCanvas.getContext("experimental-webgl"));
     if (!hasWebGL) return;
 
-    let renderer: THREE.WebGLRenderer;
+    let renderer: ReturnType<typeof THREE.WebGLRenderer.prototype.constructor> | null = null;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     } catch {
       return;
     }
+    if (!renderer) return;
 
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
