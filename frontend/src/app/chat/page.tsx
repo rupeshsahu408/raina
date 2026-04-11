@@ -241,6 +241,24 @@ function IconChevronDown({ size = 12 }: { size?: number }) {
     </svg>
   );
 }
+function IconEdit({ size = 13, className }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+function IconTrash({ size = 13, className }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+      <polyline points="3 6 5 6 21 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
 
 // ── Typing Indicator ────────────────────────────────────────────────────────
 function TypingDots() {
@@ -294,6 +312,7 @@ export default function ChatPage() {
   const [activeMenuConversationId, setActiveMenuConversationId] = useState<string | null>(null);
   const [renamingConversationId, setRenamingConversationId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [deletingConversationId, setDeletingConversationId] = useState<string | null>(null);
   const [incognitoActive, setIncognitoActive] = useState(false);
   const [showIncognitoToast, setShowIncognitoToast] = useState(false);
   const [showTopMenu, setShowTopMenu] = useState(false);
@@ -608,89 +627,148 @@ export default function ChatPage() {
   function ConvItem({ c }: { c: ConversationItem }) {
     const isActive = c.conversationId === conversationId;
     const isMenuOpen = activeMenuConversationId === c.conversationId;
+    const isDeleting = deletingConversationId === c.conversationId;
+    const isRenaming = renamingConversationId === c.conversationId;
+
+    const commitRename = async () => {
+      const t = renameValue.trim();
+      if (t && t !== c.title) await patchConversation(c.conversationId, { title: t });
+      setRenamingConversationId(null);
+      setActiveMenuConversationId(null);
+      if (user) await loadConversations(user, searchQuery);
+    };
+
+    const confirmDelete = async () => {
+      await deleteConversation(c.conversationId);
+      if (c.conversationId === conversationId) startNewChat();
+      setDeletingConversationId(null);
+      setActiveMenuConversationId(null);
+      if (user) await loadConversations(user, searchQuery);
+    };
+
     return (
-      <div className="group relative">
-        <button
-          type="button"
-          onClick={() => {
-            persistConversationId(c.conversationId);
-            setConversationId(c.conversationId);
-            setSidebarOpen(false);
-          }}
-          className={[
-            "w-full rounded-2xl px-4 py-2.5 pr-8 text-left text-[13px] transition-colors",
-            isActive
-              ? "bg-white/[0.09] text-white"
-              : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200",
-          ].join(" ")}
-        >
-          {renamingConversationId === c.conversationId ? (
-            <input
-              autoFocus
-              value={renameValue}
-              onChange={(e) => setRenameValue(e.target.value)}
-              onBlur={async () => {
-                const t = renameValue.trim();
-                if (t) await patchConversation(c.conversationId, { title: t });
-                setRenamingConversationId(null);
-                setActiveMenuConversationId(null);
-                if (user) await loadConversations(user, searchQuery);
-              }}
-              onKeyDown={async (e) => {
-                if (e.key === "Enter") {
-                  const t = renameValue.trim();
-                  if (t) await patchConversation(c.conversationId, { title: t });
-                  setRenamingConversationId(null);
-                  setActiveMenuConversationId(null);
-                  if (user) await loadConversations(user, searchQuery);
-                }
-              }}
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-xs text-zinc-100 outline-none focus:border-violet-500"
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <span className="block truncate leading-snug">
-              {c.pinned && <span className="mr-1.5 text-[10px] text-amber-400">📌</span>}
-              {c.title || c.preview || "Untitled chat"}
-            </span>
-          )}
-        </button>
-        <button
-          type="button"
-          className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-xl p-1 text-zinc-600 opacity-0 transition group-hover:opacity-100 hover:bg-white/[0.08] hover:text-zinc-300"
-          onClick={(e) => {
-            e.stopPropagation();
-            setActiveMenuConversationId((prev) => prev === c.conversationId ? null : c.conversationId);
-          }}
-        >
-          <IconDots size={14} />
-        </button>
-        {isMenuOpen && (
-          <div className="absolute right-1 top-10 z-20 w-36 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#1a1a1a] py-1.5 text-[12.5px] shadow-2xl shadow-black/40">
-            <button type="button" className="flex w-full items-center gap-2.5 px-4 py-2 text-zinc-300 hover:bg-white/[0.06] transition"
-              onClick={() => { setRenamingConversationId(c.conversationId); setRenameValue(c.title || c.preview || ""); }}>
-              Rename
-            </button>
-            <button type="button" className="flex w-full items-center gap-2.5 px-4 py-2 text-zinc-300 hover:bg-white/[0.06] transition"
-              onClick={async () => {
-                await patchConversation(c.conversationId, { pinned: !c.pinned });
-                setActiveMenuConversationId(null);
-                if (user) await loadConversations(user, searchQuery);
-              }}>
-              {c.pinned ? "Unpin" : "Pin"}
-            </button>
-            <div className="my-1 mx-3 border-t border-white/[0.06]" />
-            <button type="button" className="flex w-full items-center gap-2.5 px-4 py-2 text-red-400 hover:bg-white/[0.06] transition"
-              onClick={async () => {
-                if (!window.confirm("Delete this chat?")) return;
-                await deleteConversation(c.conversationId);
-                if (c.conversationId === conversationId) startNewChat();
-                setActiveMenuConversationId(null);
-                if (user) await loadConversations(user, searchQuery);
-              }}>
-              Delete
-            </button>
+      <div className="group relative mb-0.5">
+        {/* ── Inline delete confirmation ── */}
+        {isDeleting ? (
+          <div className="flex flex-col gap-2 rounded-2xl bg-white/[0.05] px-4 py-3">
+            <p className="text-[12px] text-zinc-300 leading-snug">Delete &ldquo;{c.title || "this chat"}&rdquo;?</p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={confirmDelete}
+                className="flex-1 rounded-xl bg-red-500/20 py-1.5 text-[11.5px] font-medium text-red-400 hover:bg-red-500/30 transition"
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                onClick={() => setDeletingConversationId(null)}
+                className="flex-1 rounded-xl bg-white/[0.05] py-1.5 text-[11.5px] font-medium text-zinc-400 hover:bg-white/[0.09] transition"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                if (isRenaming) return;
+                persistConversationId(c.conversationId);
+                setConversationId(c.conversationId);
+                setSidebarOpen(false);
+                setActiveMenuConversationId(null);
+              }}
+              className={[
+                "w-full rounded-2xl px-4 py-2.5 pr-9 text-left text-[13px] transition-colors",
+                isActive
+                  ? "bg-white/[0.09] text-white"
+                  : "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-200",
+              ].join(" ")}
+            >
+              {isRenaming ? (
+                <input
+                  autoFocus
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onBlur={commitRename}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") commitRename();
+                    if (e.key === "Escape") { setRenamingConversationId(null); setActiveMenuConversationId(null); }
+                  }}
+                  className="w-full bg-transparent text-[13px] text-zinc-100 outline-none border-b border-violet-500/60"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <span className="block truncate leading-snug">
+                  {c.pinned && <span className="mr-1.5 text-[10px] text-amber-400">📌</span>}
+                  {c.title || c.preview || "Untitled chat"}
+                </span>
+              )}
+            </button>
+
+            {/* Three-dot menu trigger */}
+            <button
+              type="button"
+              className={[
+                "absolute right-1.5 top-1/2 -translate-y-1/2 rounded-xl p-1 transition",
+                "text-zinc-600 hover:bg-white/[0.08] hover:text-zinc-300",
+                isActive || isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+              ].join(" ")}
+              onClick={(e) => {
+                e.stopPropagation();
+                setActiveMenuConversationId((prev) => prev === c.conversationId ? null : c.conversationId);
+              }}
+            >
+              <IconDots size={14} />
+            </button>
+
+            {/* Dropdown menu */}
+            {isMenuOpen && (
+              <div className="absolute right-1 top-10 z-30 w-40 overflow-hidden rounded-2xl border border-white/[0.08] bg-[#1c1c1c] py-1.5 text-[12.5px] shadow-2xl shadow-black/50">
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-zinc-300 hover:bg-white/[0.06] transition"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRenamingConversationId(c.conversationId);
+                    setRenameValue(c.title || c.preview || "");
+                    setActiveMenuConversationId(null);
+                  }}
+                >
+                  <IconEdit size={13} className="text-zinc-500" />
+                  Rename
+                </button>
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-zinc-300 hover:bg-white/[0.06] transition"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    await patchConversation(c.conversationId, { pinned: !c.pinned });
+                    setActiveMenuConversationId(null);
+                    if (user) await loadConversations(user, searchQuery);
+                  }}
+                >
+                  <IconPin size={13} className="text-zinc-500" />
+                  {c.pinned ? "Unpin" : "Pin"}
+                </button>
+                <div className="my-1 mx-3 border-t border-white/[0.06]" />
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-red-400 hover:bg-white/[0.06] transition"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeletingConversationId(c.conversationId);
+                    setActiveMenuConversationId(null);
+                  }}
+                >
+                  <IconTrash size={13} />
+                  Delete
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     );
@@ -793,23 +871,56 @@ export default function ChatPage() {
         {/* ── Conversation list ── */}
         <div className="flex-1 overflow-y-auto px-3">
           {conversations.length === 0 ? (
-            <p className="px-2 py-3 text-[12px] text-zinc-600">No chats yet.</p>
-          ) : (
-            <div>
-              {conversations.some((c) => c.pinned) && (
-                <>
-                  <p className="px-2 pt-1 pb-1 text-[11px] font-semibold text-zinc-500">Pinned</p>
-                  {conversations.filter((c) => c.pinned).map((c) => <ConvItem key={c.conversationId} c={c} />)}
-                </>
-              )}
-              {conversations.some((c) => !c.pinned) && (
-                <>
-                  <p className="px-2 pt-3 pb-1 text-[11px] font-semibold text-zinc-500">Chats</p>
-                  {conversations.filter((c) => !c.pinned).map((c) => <ConvItem key={c.conversationId} c={c} />)}
-                </>
-              )}
-            </div>
-          )}
+            <p className="px-2 py-4 text-[12px] text-zinc-600">No chats yet. Start a new conversation!</p>
+          ) : (() => {
+            const pinned = conversations.filter((c) => c.pinned);
+            const unpinned = conversations.filter((c) => !c.pinned);
+
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const startOfYesterday = new Date(startOfToday); startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+            const startOf7Days = new Date(startOfToday); startOf7Days.setDate(startOf7Days.getDate() - 7);
+            const startOf30Days = new Date(startOfToday); startOf30Days.setDate(startOf30Days.getDate() - 30);
+
+            const dateGroup = (c: ConversationItem) => {
+              const d = new Date(c.lastMessageAt);
+              if (d >= startOfToday) return "Today";
+              if (d >= startOfYesterday) return "Yesterday";
+              if (d >= startOf7Days) return "Previous 7 days";
+              if (d >= startOf30Days) return "Previous 30 days";
+              return "Older";
+            };
+
+            const groups: { label: string; items: ConversationItem[] }[] = [
+              { label: "Today", items: [] },
+              { label: "Yesterday", items: [] },
+              { label: "Previous 7 days", items: [] },
+              { label: "Previous 30 days", items: [] },
+              { label: "Older", items: [] },
+            ];
+
+            for (const c of unpinned) {
+              const g = groups.find((g) => g.label === dateGroup(c));
+              if (g) g.items.push(c);
+            }
+
+            return (
+              <div>
+                {pinned.length > 0 && (
+                  <>
+                    <p className="px-2 pt-1 pb-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wide">Pinned</p>
+                    {pinned.map((c) => <ConvItem key={c.conversationId} c={c} />)}
+                  </>
+                )}
+                {groups.filter((g) => g.items.length > 0).map((g) => (
+                  <div key={g.label}>
+                    <p className="px-2 pt-4 pb-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wide first:pt-2">{g.label}</p>
+                    {g.items.map((c) => <ConvItem key={c.conversationId} c={c} />)}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
 
         {/* ── Bottom: usage + user ── */}
