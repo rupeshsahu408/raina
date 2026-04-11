@@ -1164,6 +1164,37 @@ app.post("/v1/auth/logout-all-devices", requireFirebaseAuth, async (req, res) =>
   }
 });
 
+app.get("/v1/export", requireFirebaseAuth, async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = req.user?.uid;
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    const conversations = await Conversation.find({ uid }).sort({ updatedAt: -1 }).lean();
+    const result = await Promise.all(
+      conversations.map(async (conv) => {
+        const messages = await ConversationMessage.find({ uid, conversationId: conv.conversationId })
+          .sort({ createdAt: 1 })
+          .lean();
+        return {
+          conversationId: conv.conversationId,
+          title: conv.title,
+          pinned: conv.pinned,
+          createdAt: conv.createdAt,
+          updatedAt: conv.updatedAt,
+          messages: messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+            createdAt: m.createdAt,
+          })),
+        };
+      })
+    );
+    return res.json({ exportedAt: new Date().toISOString(), conversations: result });
+  } catch {
+    return res.status(500).json({ error: "Could not export data." });
+  }
+});
+
 app.get("/v1/conversations/:conversationId/messages", requireFirebaseAuth, async (req, res) => {
   try {
     await connectMongo();
