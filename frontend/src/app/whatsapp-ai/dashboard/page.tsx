@@ -1,27 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 const STORAGE_KEY = "evara_whatsapp_business_setup_v1";
 const PROFILE_ID_KEY = "evara_whatsapp_business_id_v1";
-
-type Status = {
-  whatsappApiToken: boolean;
-  whatsappPhoneNumberId: boolean;
-  whatsappVerifyToken: boolean;
-  aiApiKey: boolean;
-  autoReplyEnabled: boolean;
-  connected?: boolean;
-  credentialSource?: "database" | "env" | "none";
-  callbackUrl?: string;
-  lastTestAt?: string | null;
-  lastError?: string | null;
-  tokenLast4?: string | null;
-  oauthReady?: boolean;
-};
 
 type BusinessConfig = {
   businessName: string;
@@ -43,12 +28,6 @@ type LogItem = {
   aiReply: string;
   language: string;
   createdAt: string;
-};
-
-type CredentialForm = {
-  apiToken: string;
-  phoneNumberId: string;
-  verifyToken: string;
 };
 
 const DEFAULT_CONFIG: BusinessConfig = {
@@ -103,58 +82,18 @@ function Field({
   );
 }
 
-function SecretField({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-}) {
-  return (
-    <label className="block">
-      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-        {label}
-      </span>
-      <input
-        type="password"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoComplete="off"
-        className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-900 outline-none transition focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-      />
-    </label>
-  );
-}
-
 export default function DashboardPage() {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
   
   const [businessId, setBusinessId] = useState("");
   const [config, setConfig] = useState<BusinessConfig>(DEFAULT_CONFIG);
-  const [status, setStatus] = useState<Status | null>(null);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [toast, setToast] = useState("");
   const [testMessage, setTestMessage] = useState("Namaste, kya aap delivery aur pricing bata sakte ho?");
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [activeTab, setActiveTab] = useState<"setup" | "preview" | "logs">("setup");
-  const [connectOpen, setConnectOpen] = useState(false);
-  const [connectStep, setConnectStep] = useState<1 | 2 | 3>(1);
-  const [credentialSaving, setCredentialSaving] = useState(false);
-  const [connectionTesting, setConnectionTesting] = useState(false);
-  const [connectionMessage, setConnectionMessage] = useState("");
-  const [credentials, setCredentials] = useState<CredentialForm>({
-    apiToken: "",
-    phoneNumberId: "",
-    verifyToken: "evara_ai_secure_2026",
-  });
-
   useEffect(() => {
     const auth = getFirebaseAuth();
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -167,18 +106,6 @@ export default function DashboardPage() {
     return () => unsubscribe();
   }, [router]);
 
-  const readiness = useMemo(() => {
-    if (!status) return 0;
-    const checks = [
-      status.whatsappApiToken,
-      status.whatsappPhoneNumberId,
-      status.whatsappVerifyToken,
-      status.aiApiKey,
-      status.autoReplyEnabled,
-    ];
-    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-  }, [status]);
-
   useEffect(() => {
     if (!authChecked) return;
     const id = readBusinessId();
@@ -188,29 +115,9 @@ export default function DashboardPage() {
       if (raw) setConfig({ ...DEFAULT_CONFIG, ...(JSON.parse(raw) as Partial<BusinessConfig>) });
     } catch {}
 
-    void refreshStatus(id);
     void loadPersistedSetup(id);
     void loadLogs(id);
   }, [authChecked]);
-
-  async function refreshStatus(id = businessId) {
-    try {
-      const qs = id ? `?businessId=${encodeURIComponent(id)}` : "";
-      const res = await fetch(`${API}/v1/whatsapp/status${qs}`);
-      const data = await res.json();
-      setStatus(data);
-    } catch {
-      setStatus({
-        whatsappApiToken: false,
-        whatsappPhoneNumberId: false,
-        whatsappVerifyToken: false,
-        aiApiKey: false,
-        autoReplyEnabled: false,
-        connected: false,
-        credentialSource: "none",
-      });
-    }
-  }
 
   async function loadPersistedSetup(id = businessId) {
     if (!id) return;
@@ -251,7 +158,6 @@ export default function DashboardPage() {
       if (!res.ok) throw new Error("Save failed");
       await res.json();
       setToast("Business setup saved successfully.");
-      await refreshStatus(businessId);
       await loadLogs();
       setTimeout(() => setToast(""), 3000);
     } catch {
@@ -306,54 +212,6 @@ export default function DashboardPage() {
     }
   }
 
-  async function saveCredentials() {
-    if (!credentials.apiToken.trim() || !credentials.phoneNumberId.trim() || !credentials.verifyToken.trim()) {
-      setConnectionMessage("Enter all three credentials before continuing.");
-      return;
-    }
-
-    setCredentialSaving(true);
-    setConnectionMessage("");
-    try {
-      const res = await fetch(`${API}/v1/whatsapp/credentials`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId, ...credentials }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || "Could not save credentials");
-      if (data.status) setStatus(data.status);
-      setCredentials((prev) => ({ ...prev, apiToken: "" }));
-      setConnectionMessage("Credentials saved securely. Now test the connection.");
-      setConnectStep(3);
-    } catch (err) {
-      setConnectionMessage(err instanceof Error ? err.message : "Could not save credentials.");
-    } finally {
-      setCredentialSaving(false);
-    }
-  }
-
-  async function testConnection() {
-    setConnectionTesting(true);
-    setConnectionMessage("");
-    try {
-      const res = await fetch(`${API}/v1/whatsapp/test-connection`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ businessId }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (data.status) setStatus(data.status);
-      if (!res.ok) throw new Error(data?.error || "Connection test failed");
-      setConnectionMessage("Connected successfully. WhatsApp Cloud API is ready.");
-      await refreshStatus(businessId);
-    } catch (err) {
-      setConnectionMessage(err instanceof Error ? err.message : "Connection test failed.");
-    } finally {
-      setConnectionTesting(false);
-    }
-  }
-
   if (!authChecked) {
     return <div className="min-h-screen bg-[#FAFAFA]" />;
   }
@@ -389,14 +247,6 @@ export default function DashboardPage() {
         {/* Desktop Sidebar / Mobile Tabs */}
         <aside className="md:col-span-3">
           <div className="sticky top-24 hidden md:block space-y-1">
-            <div className="mb-6 px-3">
-              <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Health</p>
-              <div className="mt-2 flex items-center gap-2">
-                <div className={`h-2 w-2 rounded-full ${readiness === 100 ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                <span className="text-sm font-medium">{readiness}% Ready</span>
-              </div>
-            </div>
-            
             {(["setup", "preview", "logs"] as const).map((tab) => (
               <button
                 key={tab}
@@ -493,178 +343,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 className="text-lg font-bold">WhatsApp Connection</h2>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className={`rounded-full px-3 py-1 text-xs font-bold ${
-                      status?.connected ? "bg-emerald-100 text-emerald-800" : "bg-zinc-100 text-zinc-600"
-                    }`}>
-                      {status?.connected ? "Connected" : "Not Connected"}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setConnectOpen(true);
-                        setConnectStep(status?.whatsappApiToken ? 3 : 1);
-                      }}
-                      className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                    >
-                      Connect WhatsApp
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
-                  <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">Pre-configured webhook</p>
-                  {status?.callbackUrl && (
-                    <p className="mt-1 break-all text-sm font-medium text-emerald-950">
-                      {status.callbackUrl}
-                    </p>
-                  )}
-                  <p className="mt-2 text-xs text-emerald-800">
-                    Verify token is validated automatically on the backend. Stored credentials are never returned to this dashboard.
-                  </p>
-                </div>
-
-                {connectOpen && (
-                  <div className="mt-5 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 sm:p-5">
-                    <div className="grid gap-2 sm:grid-cols-3">
-                      {[
-                        { id: 1, title: "Step 1", label: "API Token" },
-                        { id: 2, title: "Step 2", label: "Phone ID" },
-                        { id: 3, title: "Step 3", label: "Verify & Test" },
-                      ].map((step) => (
-                        <button
-                          key={step.id}
-                          onClick={() => setConnectStep(step.id as 1 | 2 | 3)}
-                          className={`rounded-xl border px-4 py-3 text-left transition ${
-                            connectStep === step.id
-                              ? "border-emerald-500 bg-white shadow-sm"
-                              : "border-zinc-200 bg-white/60"
-                          }`}
-                        >
-                          <span className="block text-[10px] font-bold uppercase tracking-widest text-zinc-500">{step.title}</span>
-                          <span className="block text-sm font-semibold text-zinc-900">{step.label}</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_280px]">
-                      <div className="rounded-2xl bg-white p-4 shadow-sm">
-                        {connectStep === 1 && (
-                          <div className="space-y-4">
-                            <SecretField
-                              label="WhatsApp Cloud API Token"
-                              value={credentials.apiToken}
-                              onChange={(value) => setCredentials((prev) => ({ ...prev, apiToken: value }))}
-                              placeholder="Paste token starting with EA..."
-                            />
-                            <button
-                              onClick={() => setConnectStep(2)}
-                              disabled={!credentials.apiToken.trim()}
-                              className="w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40 sm:w-auto"
-                            >
-                              Continue
-                            </button>
-                          </div>
-                        )}
-
-                        {connectStep === 2 && (
-                          <div className="space-y-4">
-                            <Field
-                              label="Phone Number ID"
-                              value={credentials.phoneNumberId}
-                              onChange={(value) => setCredentials((prev) => ({ ...prev, phoneNumberId: value }))}
-                              placeholder="Example: 1043854315484140"
-                            />
-                            <div className="flex flex-col gap-2 sm:flex-row">
-                              <button
-                                onClick={() => setConnectStep(1)}
-                                className="rounded-xl border border-zinc-200 px-4 py-3 text-sm font-semibold text-zinc-700"
-                              >
-                                Back
-                              </button>
-                              <button
-                                onClick={() => setConnectStep(3)}
-                                disabled={!credentials.phoneNumberId.trim()}
-                                className="rounded-xl bg-zinc-900 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40"
-                              >
-                                Continue
-                              </button>
-                            </div>
-                          </div>
-                        )}
-
-                        {connectStep === 3 && (
-                          <div className="space-y-4">
-                            <SecretField
-                              label="Verify Token"
-                              value={credentials.verifyToken}
-                              onChange={(value) => setCredentials((prev) => ({ ...prev, verifyToken: value }))}
-                              placeholder="evara_ai_secure_2026"
-                            />
-                            <div className="grid gap-2 sm:grid-cols-2">
-                              <button
-                                onClick={saveCredentials}
-                                disabled={credentialSaving || !credentials.verifyToken.trim()}
-                                className="rounded-xl bg-zinc-900 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40"
-                              >
-                                {credentialSaving ? "Saving..." : "Save Securely"}
-                              </button>
-                              <button
-                                onClick={testConnection}
-                                disabled={connectionTesting || !(status?.whatsappApiToken && status?.whatsappPhoneNumberId && status?.whatsappVerifyToken)}
-                                className="rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white disabled:opacity-40"
-                              >
-                                {connectionTesting ? "Testing..." : "Test Connection"}
-                              </button>
-                            </div>
-                            {connectionMessage && (
-                              <p className={`rounded-xl px-4 py-3 text-sm ${
-                                status?.connected ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"
-                              }`}>
-                                {connectionMessage}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="rounded-2xl border border-zinc-200 bg-white p-4">
-                        <h3 className="font-semibold">How to get credentials</h3>
-                        <ol className="mt-3 space-y-2 text-sm text-zinc-600">
-                          <li>1. Open Meta Developers and select your WhatsApp app.</li>
-                          <li>2. Copy the Cloud API access token from API Setup.</li>
-                          <li>3. Copy the Phone Number ID from the same page.</li>
-                          <li>4. Use the verify token shown for your webhook setup.</li>
-                        </ol>
-                        <div className="mt-4 rounded-xl bg-zinc-50 p-3 text-xs text-zinc-500">
-                          Current source: {status?.credentialSource || "none"}
-                          {status?.lastTestAt ? ` · Last tested ${new Date(status.lastTestAt).toLocaleString()}` : ""}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="mt-5 space-y-3">
-                  {[
-                    { key: "whatsappApiToken", label: "WhatsApp API Token", ok: status?.whatsappApiToken },
-                    { key: "whatsappPhoneNumberId", label: "Phone Number ID", ok: status?.whatsappPhoneNumberId },
-                    { key: "whatsappVerifyToken", label: "Webhook Verify Token", ok: status?.whatsappVerifyToken },
-                    { key: "aiApiKey", label: "AI API Key", ok: status?.aiApiKey },
-                  ].map((s) => (
-                    <div key={s.key} className="flex items-center justify-between rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3">
-                      <span className="text-sm font-medium text-zinc-700">{s.label}</span>
-                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-md ${s.ok ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-red-800'}`}>
-                        {s.ok ? 'Ready' : 'Missing'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           )}
 
