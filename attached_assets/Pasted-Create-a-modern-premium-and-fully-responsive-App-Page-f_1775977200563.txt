@@ -1,0 +1,134 @@
+Create a modern, premium, and fully responsive **App Page** for an AI SaaS platform named "Evara AI".
+
+This page should promote the mobile app experience and guide users on how to access and install the app across different devices.
+
+---
+
+### Core Goal:
+
+* Promote Evara AI as a mobile-friendly platform
+* Clearly guide users for Android (PWA install) and iOS (Add to Home Screen)
+* Show that Play Store and App Store versions are coming soon
+
+---
+
+### Structure and Sections to Include:
+
+#### 1. Hero Section
+
+* Heading: “Evara AI App”
+* Subtitle:
+  Example: “Experience powerful AI on your mobile device”
+* Highlight:
+
+  * Fast
+  * Lightweight
+  * Always accessible
+
+---
+
+#### 2. App Availability Section
+
+Clearly show:
+
+* 🚧 “Coming Soon on Google Play Store”
+* 🚧 “Coming Soon on Apple App Store”
+
+Use badges (disabled or labeled as coming soon)
+
+---
+
+#### 3. Android Users (IMPORTANT)
+
+Create a dedicated section for Android users:
+
+* Explain that the app is available as a **PWA (Progressive Web App)**
+* Add a **“Download App” button**
+
+Explain steps clearly:
+
+1. Open Evara AI in browser (Chrome recommended)
+2. Tap on menu (3 dots)
+3. Click “Install App” or “Add to Home Screen”
+4. App will be installed like a native app
+
+Make this section visually clear and easy to follow
+
+---
+
+#### 4. iOS Users (IMPORTANT)
+
+Create a separate section for iOS users:
+
+* Explain that users can use **Add to Home Screen**
+
+Steps:
+
+1. Open Evara AI in Safari
+2. Tap the Share icon
+3. Select “Add to Home Screen”
+4. Confirm and add
+
+Make instructions simple and beginner-friendly
+
+---
+
+#### 5. Why Use the App
+
+Highlight benefits:
+
+* Faster access
+* App-like experience
+* No need to install from store
+* Works on all devices
+* Lightweight and secure
+
+---
+
+#### 6. Features Preview (Optional)
+
+* Short highlight of:
+
+  * AI chat (Evara AI)
+  * WhatsApp automation
+  * Smart responses
+
+---
+
+#### 7. Call to Action
+
+* “🚀 Open App Now”
+* “📲 Install on Your Device”
+
+---
+
+### Design Requirements:
+
+* Create a dedicated page: /app
+* Use modern SaaS UI (clean + premium)
+* Add icons and step visuals
+* Use cards or sections for Android/iOS guides
+* Highlight install buttons clearly
+* Add smooth hover effects
+* Fully responsive
+
+---
+
+### Important Notes:
+
+* Focus on clarity for non-technical users
+* Make installation steps very easy to understand
+* Keep UI clean and not cluttered
+* Do NOT include backend logic (frontend only)
+
+---
+
+### &#x20;Also, make sure to include this—it is very important.  
+
+* Add device mockups (phone UI preview)
+* Add animation for install steps
+* Add “Already installed? Open App” button
+
+---
+
+This is a frontend-only page. Focus on guiding users to easily access and install the Evara AI app across devices.
