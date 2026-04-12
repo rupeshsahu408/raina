@@ -1,0 +1,191 @@
+Create a comprehensive, long-form, and legally structured **Terms of Service (Terms & Conditions)** page for an AI SaaS platform named "Vercal AI".
+
+This document must be detailed, formal, and legally styled, similar to terms used by major technology platforms. It should be written in professional legal English and be sufficiently long and complex to cover all aspects of platform usage, responsibilities, and limitations.
+
+The Terms of Service must clearly cover TWO services within the same document:
+
+1. Ivana AI (Web/App AI assistant)
+2. WhatsApp AI (Automation via WhatsApp Business API)
+
+---
+
+### Structure and Sections to Include:
+
+#### 1. Introduction
+
+* Overview of Vercal AI services
+* Scope of terms (applies to both Ivana AI and WhatsApp AI)
+* Legal agreement statement (binding terms)
+
+---
+
+#### 2. Definitions
+
+Clearly define key terms such as:
+
+* “Service”
+* “User”
+* “Platform”
+* “Content”
+* “AI Output”
+* “Third-party Services”
+* “WhatsApp Integration”
+
+---
+
+#### 3. Eligibility and Account Registration
+
+* Minimum age requirement (18+ or legal authority)
+* Account creation requirements
+* Responsibility for account security
+* Accuracy of information
+
+---
+
+#### 4. Description of Services
+
+##### 4.1 Ivana AI
+
+* AI chatbot functionality
+* Nature of AI-generated responses
+* Limitations of AI accuracy
+
+##### 4.2 WhatsApp AI
+
+* Integration with WhatsApp Business API
+* Dependency on Meta platform policies
+* Automation features and limitations
+
+---
+
+#### 5. Acceptable Use Policy
+
+Users must NOT:
+
+* Use the service for illegal purposes
+* Send spam or unauthorized messages
+* Violate WhatsApp/Meta policies
+* Abuse, exploit, or reverse-engineer the system
+* Generate harmful, misleading, or fraudulent content
+
+---
+
+#### 6. User Responsibilities
+
+* Compliance with applicable laws
+* Responsibility for AI-generated content usage
+* Responsibility for customer consent (especially for WhatsApp AI)
+* Proper business verification where required
+
+---
+
+#### 7. AI Output Disclaimer
+
+* AI responses may be inaccurate or incomplete
+* No guarantee of correctness or reliability
+* Users must verify critical information before use
+
+---
+
+#### 8. Payments, Subscriptions, and Billing
+
+* Pricing structure (if applicable)
+* Subscription plans
+* Refund policy (if applicable)
+* Payment failures and service suspension
+
+---
+
+#### 9. Intellectual Property Rights
+
+* Ownership of platform and technology
+* User ownership of their input data
+* License granted to use the service
+* Restrictions on copying or redistributing platform content
+
+---
+
+#### 10. Third-Party Services
+
+* Integration with third-party providers (e.g., WhatsApp/Meta APIs)
+* No control over third-party services
+* Users must comply with third-party terms
+
+---
+
+#### 11. Data Usage Reference
+
+* Reference Privacy Policy
+* Clarify that data handling is governed by Privacy Policy
+
+---
+
+#### 12. Service Availability and Modifications
+
+* Right to modify or discontinue services
+* No guarantee of uninterrupted availability
+* Maintenance and downtime
+
+---
+
+#### 13. Termination and Suspension
+
+* Grounds for termination (policy violation, misuse, etc.)
+* Right to suspend or terminate accounts
+* Effect of termination
+
+---
+
+#### 14. Limitation of Liability
+
+* No liability for indirect or consequential damages
+* Limitation on total liability
+* Use at user's own risk
+
+---
+
+#### 15. Indemnification
+
+* Users agree to indemnify and protect Vercal AI from claims, damages, or losses resulting from misuse
+
+---
+
+#### 16. Governing Law
+
+* Specify applicable jurisdiction (e.g., India)
+* Legal dispute handling
+
+---
+
+#### 17. Changes to Terms
+
+* Right to update terms
+* Continued use implies acceptance
+
+---
+
+#### 18. Contact Information
+
+* Email: [support@vercal.app](mailto:support@vercal.app)
+
+---
+
+### Design Requirements:
+
+* Create a dedicated page: /terms
+* Use clear typography and spacing
+* Add table of contents with anchor navigation
+* Use structured headings and subheadings
+* Make the page easy to scroll despite long content
+
+---
+
+### Important Notes:
+
+* The document must be VERY detailed and long-form
+* Maintain formal legal tone throughout
+* Clearly separate Ivana AI and WhatsApp AI sections
+* Ensure compliance-friendly structure (similar to global SaaS platforms)
+* Do not copy from other sources — generate original content
+
+
