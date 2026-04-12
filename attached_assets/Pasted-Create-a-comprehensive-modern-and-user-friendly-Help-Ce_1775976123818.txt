@@ -1,0 +1,127 @@
+Create a comprehensive, modern, and user-friendly **Help Center** page for an AI SaaS platform named "Evara AI".
+
+The Help Center should be designed to provide quick solutions, reduce support load, and improve user experience. It must be well-structured, scalable, and suitable for long-term growth.
+
+---
+
+### Core Instruction:
+
+* Design the Help Center based on analysis of the platform (Ivana AI and WhatsApp AI)
+* Focus on usability, clarity, and fast problem resolution
+* Keep it scalable for future content expansion
+
+---
+
+### Structure and Sections to Include:
+
+#### 1. Hero Section
+
+* Heading: “Help Center” or “How can we help you?”
+* Search bar (IMPORTANT)
+
+  * Users should be able to search for help topics instantly
+
+---
+
+#### 2. Help Categories Section
+
+Create structured categories such as:
+
+* Getting Started
+* Account & Setup
+* Ivana AI (AI assistant help)
+* WhatsApp AI (automation help)
+* Billing & Subscriptions
+* Technical Issues
+* API / Integration Help
+
+---
+
+#### 3. Popular Articles / FAQs
+
+* Show most common questions
+* Quick answers for users
+* Expandable/collapsible format preferred
+
+---
+
+#### 4. Detailed Help Articles Section
+
+* Structured article system
+* Clean reading layout
+* SEO-friendly structure
+
+---
+
+#### 5. AI-Specific Help (IMPORTANT)
+
+Separate help for:
+
+* **Ivana AI**
+
+  * How to use AI
+  * Chat features
+  * Common issues
+
+* **WhatsApp AI**
+
+  * Setup guide
+  * API integration
+  * Common errors and fixes
+
+---
+
+#### 6. Search & Navigation
+
+* Smart search functionality
+* Category filtering
+* Easy navigation between topics
+
+---
+
+#### 7. Contact Support Section
+
+* “Still need help?” section
+* Link to Contact page → /contact
+* Short message:
+  “Our support team is here to help you.”
+
+---
+
+#### 8. CTA Section
+
+* “🚀 Start Using Evara AI”
+* “💬 Try AI Now”
+
+---
+
+### Design Requirements:
+
+* Create a dedicated page: /help
+* Clean, modern, and minimal UI
+* Focus on readability and fast navigation
+* Use cards, accordions, or sections
+* Add hover effects and smooth interactions
+* Fully responsive (mobile + desktop)
+
+---
+
+### Important Notes:
+
+* The Help Center must be scalable (future articles can be added easily)
+* Focus on reducing user confusion
+* Keep UI clean and not cluttered
+* Ensure fast performance and loading
+* Do NOT include backend logic (frontend structure only)
+
+---
+
+### Extra (Optional but Recommended):
+
+* Add “Recently Viewed Articles”
+* Add “Recommended Articles”
+* Add feedback option: “Was this helpful?”
+
+---
+
+This is a frontend-focused implementation. The goal is to create a powerful Help Center that improves user experience and reduces support dependency.
