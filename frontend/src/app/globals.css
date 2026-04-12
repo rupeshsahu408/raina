@@ -442,3 +442,13 @@ html[data-theme="light"] .evara-premium-landing .text-zinc-500 {
 html[data-theme="light"] .evara-premium-landing .text-zinc-600 {
   color: #52525b !important;
 }
+
+html[data-theme="light"] .evara-premium-landing .vercal-footer-input {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] .evara-premium-landing .vercal-footer-input::placeholder {
+  color: #52525b !important;
+}

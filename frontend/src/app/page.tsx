@@ -42,6 +42,91 @@ function GlobeIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <path d="M17.5 6.5h.01" />
+    </svg>
+  );
+}
+
+function LinkedInIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-13h4v2" />
+      <path d="M2 9h4v12H2z" />
+      <circle cx="4" cy="4" r="2" />
+    </svg>
+  );
+}
+
+function XIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M4 4l16 16" />
+      <path d="M20 4 4 20" />
+    </svg>
+  );
+}
+
+function YouTubeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M22 12s0-3.4-.44-5.02a2.82 2.82 0 0 0-1.98-1.98C17.96 4.56 12 4.56 12 4.56s-5.96 0-7.58.44a2.82 2.82 0 0 0-1.98 1.98C2 8.6 2 12 2 12s0 3.4.44 5.02a2.82 2.82 0 0 0 1.98 1.98c1.62.44 7.58.44 7.58.44s5.96 0 7.58-.44a2.82 2.82 0 0 0 1.98-1.98C22 15.4 22 12 22 12Z" />
+      <path d="m10 15 5-3-5-3v6Z" />
+    </svg>
+  );
+}
+
+const footerColumns = [
+  {
+    title: "Product",
+    links: [
+      ["Home", "/"],
+      ["Features", "/features"],
+      ["App", "/app"],
+      ["Pricing", "/pricing"],
+      ["Try AI / Demo", "/demo"],
+    ],
+  },
+  {
+    title: "Resources",
+    links: [
+      ["Blog", "/blog"],
+      ["Help Center", "/help"],
+      ["API Docs", "/docs"],
+      ["Tutorials / Guides", "/guides"],
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      ["About Us", "/about"],
+      ["Partners", "/partners"],
+      ["Careers", "/careers"],
+      ["Contact", "/contact"],
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      ["Privacy Policy", "/privacy-policy"],
+      ["Terms of Service", "/terms"],
+      ["Cookie Policy", "/cookies"],
+      ["Disclaimer", "/disclaimer"],
+    ],
+  },
+];
+
+const socialLinks = [
+  { label: "Instagram", href: "https://www.instagram.com/", Icon: InstagramIcon },
+  { label: "LinkedIn", href: "https://www.linkedin.com/", Icon: LinkedInIcon },
+  { label: "Twitter X", href: "https://x.com/", Icon: XIcon },
+  { label: "YouTube", href: "https://www.youtube.com/", Icon: YouTubeIcon },
+];
+
 export default function Home() {
   return (
     <div className="evara-premium-landing relative min-h-screen bg-black text-zinc-100 selection:bg-purple-500/30">
@@ -256,51 +341,100 @@ export default function Home() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-white/10 bg-black py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <div className="flex items-center gap-3">
-                <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
-                <span className="text-sm font-bold tracking-widest text-zinc-100 uppercase">Evara AI</span>
+      <footer className="relative z-10 overflow-hidden border-t border-white/10 bg-black">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(168,85,247,0.18),transparent_34%),radial-gradient(circle_at_90%_15%,rgba(56,189,248,0.12),transparent_30%),linear-gradient(180deg,rgba(24,24,27,0.78),rgba(0,0,0,1))]" />
+        <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+        <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+          <div className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-5 shadow-2xl shadow-purple-950/20 backdrop-blur-2xl sm:p-8 lg:p-10">
+            <div className="grid gap-10 lg:grid-cols-[1.15fr_1.65fr_1fr]">
+              <div className="space-y-6">
+                <Link href="/" className="group inline-flex items-center gap-3">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-lg shadow-purple-500/10 transition group-hover:scale-105 group-hover:border-purple-300/50">
+                    <img src="/evara-logo.png" alt="Vercal AI" className="h-7 w-7 object-contain" />
+                  </span>
+                  <span>
+                    <span className="block text-base font-bold tracking-[0.22em] text-white uppercase">Vercal AI</span>
+                    <span className="mt-1 block text-xs font-medium text-purple-200">Smart AI Automation Platform</span>
+                  </span>
+                </Link>
+                <p className="max-w-sm text-sm leading-6 text-zinc-400">
+                  AI automation for smarter workflows, faster customer support, and intelligent business growth.
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
+                  <Link href="/signup" className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-black shadow-lg shadow-white/10 transition hover:-translate-y-0.5 hover:bg-zinc-200">
+                    🚀 Start Free
+                  </Link>
+                  <Link href="/chat" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-purple-300/40 hover:bg-white/10">
+                    💬 Chat with AI
+                  </Link>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {["Secure", "Fast", "Reliable"].map((badge) => (
+                    <span key={badge} className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+                      {badge}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <p className="mt-4 text-sm leading-relaxed text-zinc-500">
-                Emotional intelligence, beautifully designed. Built for the future of human-computer interaction.
+
+              <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+                {footerColumns.map((column) => (
+                  <div key={column.title}>
+                    <h3 className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-100">{column.title}</h3>
+                    <ul className="mt-4 space-y-3">
+                      {column.links.map(([label, href]) => (
+                        <li key={href}>
+                          <Link href={href} className="group inline-flex items-center gap-1 text-sm text-zinc-400 transition hover:translate-x-1 hover:text-white">
+                            <span className="h-px w-0 bg-purple-300 transition-all group-hover:w-3" />
+                            {label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-3xl border border-white/10 bg-black/35 p-5 backdrop-blur-xl">
+                <h3 className="text-sm font-bold text-white">Get latest AI updates & features</h3>
+                <p className="mt-2 text-sm leading-6 text-zinc-500">
+                  Product updates, automation ideas, and practical AI workflows.
+                </p>
+                <form className="mt-5 flex flex-col gap-3">
+                  <label htmlFor="footer-email" className="sr-only">Email address</label>
+                  <input
+                    id="footer-email"
+                    type="email"
+                    placeholder="you@example.com"
+                    className="vercal-footer-input min-h-12 rounded-2xl border border-white/10 bg-white/[0.06] px-4 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-purple-300/50 focus:bg-white/[0.08] focus:ring-4 focus:ring-purple-500/10"
+                  />
+                  <button type="button" className="min-h-12 rounded-2xl bg-gradient-to-r from-purple-300 via-fuchsia-300 to-sky-300 px-5 text-sm font-bold text-black shadow-lg shadow-purple-500/20 transition hover:-translate-y-0.5 hover:shadow-purple-500/30">
+                    Subscribe
+                  </button>
+                </form>
+                <div className="mt-6 flex items-center gap-3">
+                  {socialLinks.map(({ label, href, Icon }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-zinc-400 transition hover:-translate-y-1 hover:border-purple-300/50 hover:bg-white/10 hover:text-white"
+                    >
+                      <Icon className="h-[18px] w-[18px]" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
+              <p>© 2026 Vercal.app</p>
+              <p>
+                Built by <span className="font-semibold text-zinc-300">Rupesh Sahu</span>
               </p>
             </div>
-            
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-100">Products</h4>
-              <ul className="mt-4 space-y-3">
-                <li><Link href="/login" className="text-sm text-zinc-400 transition hover:text-white">Evara Personal</Link></li>
-                <li><Link href="/whatsapp-ai" className="text-sm text-zinc-400 transition hover:text-white">WhatsApp Business</Link></li>
-                <li><Link href="/bihar-ai" className="text-sm text-zinc-400 transition hover:text-white">Bihar AI</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-100">Legal</h4>
-              <ul className="mt-4 space-y-3">
-                <li><Link href="/privacy-policy" className="text-sm text-zinc-400 transition hover:text-white">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="text-sm text-zinc-400 transition hover:text-white">Terms of Service</Link></li>
-                <li><Link href="/data-deletion" className="text-sm text-zinc-400 transition hover:text-white">Data Deletion</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-100">Company</h4>
-              <ul className="mt-4 space-y-3">
-                <li><a href="mailto:support.studyhelp@gmail.com" className="text-sm text-zinc-400 transition hover:text-white">Contact Support</a></li>
-                <li className="text-sm text-zinc-600">Built in India</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 sm:flex-row">
-            <p className="text-xs text-zinc-600">
-              © {new Date().getFullYear()} Evara AI. All rights reserved.
-            </p>
           </div>
         </div>
       </footer>
