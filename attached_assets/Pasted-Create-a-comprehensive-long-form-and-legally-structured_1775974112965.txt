@@ -1,0 +1,146 @@
+Create a comprehensive, long-form, and legally structured **Cookie Policy** page for an AI SaaS platform named "Vercal AI".
+
+This Cookie Policy must be detailed, professional, and written in formal legal English, similar to policies used by major technology platforms. It should clearly explain how cookies and tracking technologies are used across the platform.
+
+The Cookie Policy must cover both services within the same page:
+
+1. Ivana AI (Web/App AI assistant)
+2. WhatsApp AI (Automation via WhatsApp Business API, where applicable)
+
+---
+
+### Structure and Sections to Include:
+
+#### 1. Introduction
+
+* Overview of Vercal AI
+* Purpose of Cookie Policy
+* Relationship with Privacy Policy
+
+---
+
+#### 2. What Are Cookies
+
+* Definition of cookies
+* Types of cookies (session vs persistent)
+* Explanation of similar technologies (pixels, local storage, trackers)
+
+---
+
+#### 3. Types of Cookies We Use
+
+Break into categories:
+
+* **Essential Cookies**
+  Required for basic functionality (login, security, session management)
+
+* **Performance and Analytics Cookies**
+  Used to measure traffic, usage patterns, and improve performance
+
+* **Functionality Cookies**
+  Remember user preferences (language, settings, UI customization)
+
+* **Advertising and Tracking Cookies** *(if applicable)*
+  Used for marketing, retargeting, and user behavior analysis
+
+---
+
+#### 4. How We Use Cookies
+
+* To ensure platform functionality
+* To improve user experience
+* To analyze performance and usage
+* To personalize content
+* To maintain security
+
+---
+
+#### 5. Ivana AI Specific Cookie Usage
+
+* Cookies used for chat sessions
+* Storing temporary interaction states
+* Enhancing AI response performance
+* Session continuity and preferences
+
+---
+
+#### 6. WhatsApp AI and Tracking
+
+* Limited or indirect cookie usage
+* Data flow through WhatsApp Business API
+* Clarification that WhatsApp/Meta may use its own tracking technologies
+* No direct control over third-party tracking
+
+---
+
+#### 7. Third-Party Cookies
+
+* Analytics providers (e.g., traffic monitoring tools)
+* Hosting/CDN services
+* Third-party integrations
+* Disclaimer about external control
+
+---
+
+#### 8. Cookie Duration
+
+* Session cookies vs persistent cookies
+* Retention duration explanation
+
+---
+
+#### 9. Managing Cookies
+
+* How users can control cookies via browser settings
+* Option to disable or delete cookies
+* Impact of disabling cookies on functionality
+
+---
+
+#### 10. Consent and Control
+
+* Cookie consent banner (if applicable)
+* User ability to accept/reject cookies
+* Regional compliance (GDPR-style consent where applicable)
+
+---
+
+#### 11. Data Protection and Privacy
+
+* Link to Privacy Policy
+* Assurance of responsible data usage
+
+---
+
+#### 12. Updates to This Policy
+
+* Right to update cookie policy
+* Notification of changes
+
+---
+
+#### 13. Contact Information
+
+* Email: [support@vercal.app](mailto:support@vercal.app)
+
+---
+
+### Design Requirements:
+
+* Create a dedicated page: /cookies
+* Clean typography and readable layout
+* Add table of contents with anchor links
+* Proper spacing and section hierarchy
+* Make it scroll-friendly and structured
+
+---
+
+### Important Notes:
+
+* The document must be detailed and long-form
+* Use formal legal tone
+* Clearly differentiate Ivana AI and WhatsApp AI sections
+* Ensure compliance-friendly structure (GDPR-style where possible)
+* Do not copy from other websites — generate original content
+
+This is a frontend-only page. Focus on structured content and professional readability.
