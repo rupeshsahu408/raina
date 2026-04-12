@@ -455,6 +455,17 @@ export default function Home() {
 
             <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
               <p>© 2026 Raina Jet</p>
+              <a
+                href="https://vercal.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-400 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-zinc-200"
+              >
+                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white p-0.5">
+                  <img src="/vercal-logo.png" alt="Vercal" className="h-full w-full rounded-full object-contain" />
+                </span>
+                Powered by Vercal
+              </a>
               <p>
                 Built by <span className="font-semibold text-zinc-300">Riley Parker &amp; Rupesh Sahu</span>
               </p>
