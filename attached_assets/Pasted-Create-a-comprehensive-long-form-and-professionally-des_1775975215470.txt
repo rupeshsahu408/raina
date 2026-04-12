@@ -1,0 +1,137 @@
+Create a comprehensive, long-form, and professionally designed **Partners** page for an AI SaaS platform named "Evara AI".
+
+The page should be modern, premium, and trust-building, similar to top SaaS and AI startup partner pages. It must be long, detailed, and visually appealing.
+
+---
+
+### Structure and Sections to Include:
+
+#### 1. Hero Section
+
+* Heading: “Our Partners” or “Trusted Partnerships”
+* Subtitle:
+  Example: “Collaborating with innovative companies to build the future of AI.”
+
+---
+
+#### 2. Introduction Section
+
+* Short overview explaining:
+
+  * Importance of partnerships
+  * How Evara AI works with partners to deliver better services
+  * Focus on innovation, scalability, and reliability
+
+---
+
+#### 3. Featured Partner Section (IMPORTANT)
+
+Highlight the main partner:
+
+**Sendora.me**
+
+* Display partner logo (developer will add)
+
+* Add a detailed description:
+
+  * Strategic partner supporting Evara AI infrastructure/services
+  * Focus on reliability, communication, or technology support
+  * Emphasize trust, collaboration, and long-term vision
+
+* Add a short tagline:
+  Example: “Powering innovation together”
+
+---
+
+#### 4. Partnership Benefits Section
+
+Explain why partnerships matter:
+
+* Stronger infrastructure
+* Better performance
+* Scalable solutions
+* Faster innovation
+* Improved user experience
+
+---
+
+#### 5. Collaboration Areas
+
+Describe how Evara AI collaborates with partners:
+
+* Technology integration
+* API and automation support
+* AI development and scaling
+* Business growth and expansion
+
+---
+
+#### 6. AI Ecosystem Section (Premium Touch)
+
+Explain how partners help improve:
+
+* Ivana AI (AI assistant capabilities)
+* WhatsApp AI (automation and communication)
+* Platform performance and reliability
+
+---
+
+#### 7. Future Partnerships
+
+* Mention openness to new collaborations
+* Encourage businesses to partner
+
+Example text:
+“We are continuously looking to collaborate with innovative companies to expand the Evara AI ecosystem.”
+
+---
+
+#### 8. Partnership CTA Section
+
+* “Become a Partner” button
+* “Contact Us for Collaboration”
+
+Link to: /contact
+
+---
+
+#### 9. Trust & Credibility Section
+
+Add elements like:
+
+* “Trusted by growing businesses”
+* “Reliable and secure platform”
+* “Built for scalability”
+
+---
+
+### Design Requirements:
+
+* Create a dedicated page: /partners
+* Use clean, modern UI (dark + premium style)
+* Highlight partner logos prominently
+* Use cards or sections for layout
+* Add subtle hover animations
+* Maintain proper spacing and alignment
+* Fully responsive (mobile + desktop)
+
+---
+
+### Important Notes:
+
+* The page must be LONG and detailed
+* Use professional and inspiring tone
+* Highlight Sendora.me positively
+* Do NOT include too many partners (focus on quality over quantity)
+* Keep design premium, not cluttered
+* Do NOT copy content from other websites
+
+---
+
+### Extra (Optional but Recommended):
+
+* Add animated logos section
+* Add testimonials (future use)
+* Add “Powered by Partners” section
+
+This is a frontend-only page. Focus on storytelling, trust, and premium presentation.
