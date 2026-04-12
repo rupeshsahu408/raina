@@ -1,0 +1,164 @@
+Create a comprehensive, long-form, and legally structured Privacy Policy page for an AI SaaS platform named "Vercal AI".
+
+This Privacy Policy must be detailed, professional, and complex, similar to policies used by major tech companies. It should be written in formal legal English and be long enough to thoroughly cover all aspects of data handling.
+
+The Privacy Policy must clearly cover TWO services within the same page:
+
+1. Ivana AI (Web/App AI assistant)
+2. WhatsApp AI (Automation via WhatsApp Business API)
+
+---
+
+### Structure and Sections to Include:
+
+#### 1. Introduction
+
+* Overview of Vercal AI
+* Scope of policy (covers both Ivana AI and WhatsApp AI)
+* Acceptance of terms
+
+#### 2. Definitions
+
+Define key terms like:
+
+* “Service”
+* “User”
+* “Personal Data”
+* “Processing”
+* “Third-party Services”
+* “WhatsApp Integration”
+
+---
+
+#### 3. Information We Collect
+
+Break into categories:
+
+* Personal Information (name, email, phone number)
+* Business Information (company name, documents for verification)
+* Usage Data (logs, device info, IP, browser)
+* AI Interaction Data (messages, prompts, responses)
+* WhatsApp Data (chat messages, metadata, contact info via API)
+
+---
+
+#### 4. How We Use Information
+
+* To provide AI responses
+* To improve models and services
+* For analytics and performance
+* For customer support
+* For security and fraud prevention
+* For business verification (Meta compliance)
+
+---
+
+#### 5. Ivana AI Specific Privacy
+
+* Data used for AI conversations
+* Storage of prompts/responses
+* Model training or non-training clarification
+* Temporary vs permanent storage
+* User control over chats (delete/export)
+
+---
+
+#### 6. WhatsApp AI Specific Privacy
+
+* Integration with WhatsApp Business API
+* Data shared with Meta platforms
+* Message handling and automation
+* User responsibility for consent from their customers
+* Compliance with WhatsApp policies
+
+---
+
+#### 7. Data Sharing and Disclosure
+
+* Third-party services (hosting, analytics, APIs)
+* Legal requirements
+* Business transfers
+* No selling of personal data (if applicable)
+
+---
+
+#### 8. Data Retention
+
+* How long data is stored
+* Conditions for deletion
+* Backup and logs retention
+
+---
+
+#### 9. Data Security
+
+* Encryption practices
+* Secure storage
+* Access control
+* Limitations (no system is 100% secure)
+
+---
+
+#### 10. User Rights
+
+* Access data
+* Request deletion
+* Correct information
+* Withdraw consent
+
+---
+
+#### 11. Cookies and Tracking
+
+* Use of cookies
+* Analytics tools
+* Tracking technologies
+
+---
+
+#### 12. Children’s Privacy
+
+* Not intended for users under 13 (or applicable age)
+
+---
+
+#### 13. International Data Transfers
+
+* Cross-border data handling
+* Cloud infrastructure
+
+---
+
+#### 14. Changes to Privacy Policy
+
+* Right to update
+* Notification to users
+
+---
+
+#### 15. Contact Information
+
+* Email: [support@vercal.app](mailto:support@vercal.app)
+
+---
+
+### Design Requirements:
+
+* Create a dedicated page: /privacy-policy
+* Use clean typography and proper spacing
+* Add table of contents with anchor links (for long content)
+* Section headings must be clearly visible
+* Make it scroll-friendly and readable despite being long
+
+---
+
+### Important Notes:
+
+* The document must be VERY detailed and long-form
+* Use formal legal tone (not casual language)
+* Clearly separate Ivana AI and WhatsApp AI privacy sections
+* Avoid copying from other websites; generate original content
+* Ensure compliance-friendly structure (GDPR-style where possible)  
+
+
+
