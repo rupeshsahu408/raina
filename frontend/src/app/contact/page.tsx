@@ -93,8 +93,8 @@ const contactRoutes = [
   },
   {
     id: "ivana",
-    label: "Ivana AI",
-    description: "Questions or issues with the Ivana AI web/app assistant",
+    label: "Evara AI",
+    description: "Questions or issues with the Evara AI web/app assistant",
     icon: <BrainIcon className="h-5 w-5" />,
     color: "text-pink-300",
     border: "border-pink-500/30",
@@ -363,7 +363,7 @@ export default function ContactPage() {
                         selectedRoute === "whatsapp"
                           ? "Describe your issue in detail. Include your business phone number or WhatsApp Business Account ID if relevant…"
                           : selectedRoute === "ivana"
-                          ? "Describe the issue you're experiencing with Ivana AI. Include any steps to reproduce or example prompts if helpful…"
+                          ? "Describe the issue you're experiencing with Evara AI. Include any steps to reproduce or example prompts if helpful…"
                           : "Describe your question or issue in as much detail as possible. The more context you provide, the faster we can help…"
                       }
                       value={form.message}
@@ -504,7 +504,7 @@ export default function ContactPage() {
 
       <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Raina Jet. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/privacy-policy" className="transition hover:text-zinc-400">Privacy Policy</Link>
             <Link href="/terms" className="transition hover:text-zinc-400">Terms of Service</Link>

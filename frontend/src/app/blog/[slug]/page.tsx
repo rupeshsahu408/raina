@@ -254,7 +254,7 @@ export default async function BlogPostPage({ params }: Props) {
             <div className="mt-8 flex items-center gap-3">
               <span className="text-xs font-semibold text-zinc-600 uppercase tracking-widest">Share</span>
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent("https://vercal.app/blog/" + post.slug)}`}
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent("https://rainajet.com/blog/" + post.slug)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs text-zinc-400 transition hover:bg-white/10 hover:text-white"
@@ -318,7 +318,7 @@ export default async function BlogPostPage({ params }: Props) {
             <div className="rounded-2xl border border-purple-500/20 bg-purple-500/[0.07] p-5 backdrop-blur-xl">
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400 mb-3">Try Evara AI</p>
               <p className="text-sm text-zinc-400 leading-6">
-                Put the ideas from this article into practice with Ivana AI and WhatsApp AI.
+                Put the ideas from this article into practice with Evara AI and WhatsApp AI.
               </p>
               <Link href="/signup" className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-black transition hover:bg-zinc-100">
                 Start Free
@@ -364,7 +364,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8 mt-10">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Raina Jet. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/blog" className="transition hover:text-zinc-400">Blog</Link>
             <Link href="/about" className="transition hover:text-zinc-400">About</Link>

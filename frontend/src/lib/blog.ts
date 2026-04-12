@@ -105,7 +105,7 @@ You will need a verified WhatsApp Business account. This is different from the s
 Because the WhatsApp Business Platform is operated by Meta, you will need a verified Meta developer account with an active app configured for WhatsApp integration.
 
 **3. An Evara AI Account**
-Create or log in to your Evara AI account at Vercal.app. Ensure you have access to the WhatsApp AI dashboard.
+Create or log in to your Evara AI account at rainajet.com. Ensure you have access to the WhatsApp AI dashboard.
 
 **4. A Dedicated Business Phone Number**
 You will need a phone number that is not already registered on a personal WhatsApp account. This number will be your business WhatsApp number.
@@ -192,8 +192,8 @@ If you run into any issues during setup, the Evara AI support team is available 
   },
   {
     slug: "ivana-ai-vs-traditional-search-engines",
-    title: "Ivana AI vs Traditional Search: Why Conversational AI is Replacing How We Find Answers",
-    excerpt: "Search engines return ten blue links. Ivana AI returns a direct, contextual answer. Here's why conversational AI is fundamentally changing how we access information.",
+    title: "Evara AI vs Traditional Search: Why Conversational AI is Replacing How We Find Answers",
+    excerpt: "Search engines return ten blue links. Evara AI returns a direct, contextual answer. Here's why conversational AI is fundamentally changing how we access information.",
     content: `
 ## The Problem with Traditional Search
 
@@ -203,23 +203,23 @@ This model made sense in the early internet era, when the primary challenge was 
 
 ## What Conversational AI Does Differently
 
-Ivana AI, and conversational AI more broadly, approaches information access from a fundamentally different perspective. Instead of returning a list of sources, it synthesizes information and delivers a direct, contextual response to your specific question.
+Evara AI, and conversational AI more broadly, approaches information access from a fundamentally different perspective. Instead of returning a list of sources, it synthesizes information and delivers a direct, contextual response to your specific question.
 
 Consider the difference in these two scenarios:
 
 **Traditional Search**: You search "how to improve customer response time in a small business." You receive a list of articles. You click the top result, which is a 3,000-word blog post. The relevant section is buried in paragraph eight. You skim, miss it, click back, try another link, repeat.
 
-**Ivana AI**: You ask "how can I improve customer response time for my 5-person e-commerce team?" Ivana responds with a concise, prioritized list of actionable recommendations tailored to your specific context — small team, e-commerce — without you having to wade through irrelevant content.
+**Evara AI**: You ask "how can I improve customer response time for my 5-person e-commerce team?" Ivana responds with a concise, prioritized list of actionable recommendations tailored to your specific context — small team, e-commerce — without you having to wade through irrelevant content.
 
 ## The Key Advantages of Conversational AI for Information Access
 
-**Contextual Understanding**: Ivana AI understands your question in context. You can follow up, ask for clarification, request more detail on a specific point, or redirect the conversation — all within the same dialogue. This mirrors how humans naturally seek information from knowledgeable colleagues.
+**Contextual Understanding**: Evara AI understands your question in context. You can follow up, ask for clarification, request more detail on a specific point, or redirect the conversation — all within the same dialogue. This mirrors how humans naturally seek information from knowledgeable colleagues.
 
 **Synthesis Over Retrieval**: Rather than pointing you toward information, Ivana synthesizes it. For questions that require drawing from multiple knowledge domains, this is vastly more efficient than reading through multiple source documents and constructing your own synthesis.
 
 **No Advertising Influence**: Traditional search results are shaped by SEO practices and advertising budgets. The most visible results are not necessarily the most accurate or helpful — they are the ones best optimized for search ranking. Conversational AI outputs are not filtered through this economic lens.
 
-**Iterative Refinement**: With a search engine, each new query starts from scratch. With Ivana AI, each message builds on the conversation that preceded it, allowing you to progressively narrow in on exactly the information you need.
+**Iterative Refinement**: With a search engine, each new query starts from scratch. With Evara AI, each message builds on the conversation that preceded it, allowing you to progressively narrow in on exactly the information you need.
 
 ## Where Traditional Search Still Has an Edge
 
@@ -233,13 +233,13 @@ In the interest of balance, there are scenarios where traditional search engines
 
 ## The Emerging Hybrid Model
 
-The most effective information strategy in 2026 is increasingly a hybrid one. Use conversational AI like Ivana AI for complex questions, synthesis tasks, and iterative research. Use search engines for source verification, breaking news, and targeted resource discovery.
+The most effective information strategy in 2026 is increasingly a hybrid one. Use conversational AI like Evara AI for complex questions, synthesis tasks, and iterative research. Use search engines for source verification, breaking news, and targeted resource discovery.
 
 The two approaches complement rather than replace each other — at least for now. As conversational AI continues to improve its integration of real-time information, the scenarios where traditional search holds a clear advantage will continue to narrow.
 
 ## Conclusion
 
-The shift from search-and-click to ask-and-answer represents one of the most significant changes in how people access information since the invention of the web browser. Ivana AI is built to be part of that shift — providing direct, contextual, high-quality answers to the questions that matter to you, without the friction of the traditional search experience.
+The shift from search-and-click to ask-and-answer represents one of the most significant changes in how people access information since the invention of the web browser. Evara AI is built to be part of that shift — providing direct, contextual, high-quality answers to the questions that matter to you, without the friction of the traditional search experience.
 
 The question is not whether conversational AI will change how we access information. It already has. The question is how quickly individuals and businesses will adapt their workflows to take full advantage.
     `,
@@ -251,7 +251,7 @@ The question is not whether conversational AI will change how we access informat
     publishedAt: "2026-04-08",
     readingTime: 7,
     featured: false,
-    tags: ["Ivana AI", "Search", "Conversational AI", "Productivity"],
+    tags: ["Evara AI", "Search", "Conversational AI", "Productivity"],
   },
   {
     slug: "10-business-tasks-you-can-automate-with-ai-today",
@@ -277,16 +277,16 @@ For service-based businesses — salons, clinics, consultants — missed appoint
 When a new customer contacts your business through WhatsApp, AI can ask qualifying questions, gather basic information, and assess the lead's fit before routing it to your sales team. Your salespeople then spend their time only on qualified, ready-to-buy prospects.
 
 **5. Product Recommendations**
-Based on what a customer tells you about their needs, Ivana AI and WhatsApp AI can provide personalized product recommendations drawn from your catalog — mimicking the experience of speaking with an informed sales associate.
+Based on what a customer tells you about their needs, Evara AI and WhatsApp AI can provide personalized product recommendations drawn from your catalog — mimicking the experience of speaking with an informed sales associate.
 
 **6. After-Hours Support**
 Your team goes home. Your customers' questions do not stop. AI-powered support means your business is always available, even at 2am on a Sunday. Critical issues can still be flagged for human follow-up the next morning, while routine inquiries are resolved immediately.
 
 **7. Content Drafting and Editing**
-Using Ivana AI, team members can dramatically accelerate content production — drafting product descriptions, marketing emails, social captions, and business proposals in a fraction of the time it would take to write from scratch.
+Using Evara AI, team members can dramatically accelerate content production — drafting product descriptions, marketing emails, social captions, and business proposals in a fraction of the time it would take to write from scratch.
 
 **8. Meeting Summaries and Action Items**
-After internal meetings, team members can paste notes or transcripts into Ivana AI and receive structured summaries, identified action items, and owner assignments — eliminating the need for someone to spend an hour writing up meeting notes.
+After internal meetings, team members can paste notes or transcripts into Evara AI and receive structured summaries, identified action items, and owner assignments — eliminating the need for someone to spend an hour writing up meeting notes.
 
 **9. Policy and Compliance Queries**
 Internal HR, compliance, and policy questions can be answered by AI trained on your internal documentation — reducing the load on HR teams for routine queries about leave policies, expense procedures, or onboarding steps.
@@ -298,7 +298,7 @@ When a new customer signs up or makes a first purchase, WhatsApp AI can guide th
 
 Each of these use cases is achievable with Evara AI today. The key is to start with the one that will have the highest impact on your specific business, implement it thoroughly, and then expand. Businesses that try to automate everything at once often end up with mediocre automation across the board. Start focused, execute well, and scale.
 
-Log in to your Evara AI account or sign up at Vercal.app to begin.
+Log in to your Evara AI account or sign up at rainajet.com to begin.
     `,
     category: "business-growth",
     author: "Riley Parker",
@@ -313,7 +313,7 @@ Log in to your Evara AI account or sign up at Vercal.app to begin.
   {
     slug: "how-to-write-effective-ai-prompts",
     title: "How to Write Effective AI Prompts: A Practical Guide for Better Results",
-    excerpt: "The quality of what you get from an AI assistant is directly tied to the quality of what you put in. Here's how to prompt Ivana AI for consistently excellent results.",
+    excerpt: "The quality of what you get from an AI assistant is directly tied to the quality of what you put in. Here's how to prompt Evara AI for consistently excellent results.",
     content: `
 ## The Prompt Is the Interface
 
@@ -323,7 +323,7 @@ When someone says "AI doesn't work for me," the problem is almost always not the
 
 ## The Four Elements of a High-Quality Prompt
 
-Every effective prompt for Ivana AI contains some combination of four elements:
+Every effective prompt for Evara AI contains some combination of four elements:
 
 **1. Context** — Who you are, what situation you are in, and what background information is relevant.
 
@@ -354,7 +354,7 @@ The first response is often a solid starting point, not a finished product. If i
 
 ## Advanced Techniques
 
-**Role Assignment**: Ask Ivana AI to take on a specific perspective. "As an experienced e-commerce consultant, review the following product page copy and identify three improvements." Role assignment significantly sharpens the relevance and depth of responses.
+**Role Assignment**: Ask Evara AI to take on a specific perspective. "As an experienced e-commerce consultant, review the following product page copy and identify three improvements." Role assignment significantly sharpens the relevance and depth of responses.
 
 **Chain of Thought**: For complex reasoning tasks, ask the AI to show its reasoning. "Think through this step by step before giving your final recommendation." This produces more considered and accurate outputs for analytical tasks.
 
@@ -364,7 +364,7 @@ The first response is often a solid starting point, not a finished product. If i
 
 ## Building a Personal Prompt Library
 
-As you discover prompts that consistently produce excellent results, save them. Build a personal prompt library — a collection of templates for your most frequent use cases. Over time, these become powerful reusable assets that dramatically accelerate your work with Ivana AI.
+As you discover prompts that consistently produce excellent results, save them. Build a personal prompt library — a collection of templates for your most frequent use cases. Over time, these become powerful reusable assets that dramatically accelerate your work with Evara AI.
 
 Effective prompting is the single highest-leverage skill for getting maximum value from conversational AI. Invest the time to develop it.
     `,
@@ -376,7 +376,7 @@ Effective prompting is the single highest-leverage skill for getting maximum val
     publishedAt: "2026-04-04",
     readingTime: 7,
     featured: false,
-    tags: ["Prompt Engineering", "Ivana AI", "Productivity", "Tips"],
+    tags: ["Prompt Engineering", "Evara AI", "Productivity", "Tips"],
   },
   {
     slug: "bihar-ai-regional-intelligence-for-local-communities",
@@ -493,7 +493,7 @@ The combination of the WhatsApp Business API and Evara AI's intelligence layer i
 
 Getting access to the WhatsApp Business API requires a verified Meta Business account and, in most cases, a Business Verification submission to Meta. The process typically takes a few business days.
 
-Once you have API access, Evara AI's WhatsApp AI makes the integration straightforward — no custom development required. Visit Vercal.app to connect your WhatsApp Business API account to Evara AI and have your first automated response live within hours.
+Once you have API access, Evara AI's WhatsApp AI makes the integration straightforward — no custom development required. Visit rainajet.com to connect your WhatsApp Business API account to Evara AI and have your first automated response live within hours.
     `,
     category: "whatsapp-automation",
     author: "Rupesh Sahu",
@@ -581,7 +581,7 @@ Every conversation handled by WhatsApp AI generates data about what your custome
 
 ## Getting Started
 
-If you are a small business owner interested in deploying AI-powered customer support, Evara AI's WhatsApp AI is designed specifically to be accessible to businesses without large technical teams. Visit Vercal.app to learn more or start a free account.
+If you are a small business owner interested in deploying AI-powered customer support, Evara AI's WhatsApp AI is designed specifically to be accessible to businesses without large technical teams. Visit rainajet.com to learn more or start a free account.
     `,
     category: "business-growth",
     author: "Riley Parker",
@@ -622,7 +622,7 @@ However, plausibility and accuracy are different things. A language model does n
 
 **Verify critical information independently**: For any information that will be used in a consequential decision, verify it through authoritative sources. Never rely solely on AI output for medical, legal, financial, or safety-critical information.
 
-**Ask the AI to flag uncertainty**: Prompt Ivana AI to indicate when it is uncertain: "Answer this question, and explicitly flag any claims you are not fully confident about." While not foolproof, this can surface uncertainty that might otherwise be hidden.
+**Ask the AI to flag uncertainty**: Prompt Evara AI to indicate when it is uncertain: "Answer this question, and explicitly flag any claims you are not fully confident about." While not foolproof, this can surface uncertainty that might otherwise be hidden.
 
 **Prefer retrieval-augmented queries**: Where possible, provide the AI with the source document and ask it to summarize or analyze from that document, rather than relying on the model's internal knowledge.
 
@@ -632,7 +632,7 @@ However, plausibility and accuracy are different things. A language model does n
 
 ## A Responsible Approach
 
-Hallucination is not a reason to avoid AI tools — it is a reason to use them thoughtfully. Ivana AI is a powerful tool for synthesis, analysis, drafting, and exploration. Used with appropriate verification habits, it dramatically accelerates intellectual work. Used without appropriate critical evaluation, it can introduce errors.
+Hallucination is not a reason to avoid AI tools — it is a reason to use them thoughtfully. Evara AI is a powerful tool for synthesis, analysis, drafting, and exploration. Used with appropriate verification habits, it dramatically accelerates intellectual work. Used without appropriate critical evaluation, it can introduce errors.
 
 The most effective AI users are those who combine AI's speed and synthesis capabilities with human verification and judgment. That combination produces outcomes that neither humans nor AI could achieve as well independently.
     `,
@@ -655,16 +655,16 @@ The most effective AI users are those who combine AI's speed and synthesis capab
 
 We are excited to share the latest improvements across the Evara AI platform. This month's update focuses on performance, reliability, and making the most-used features even better.
 
-## Ivana AI Improvements
+## Evara AI Improvements
 
 **Enhanced Conversation Context Retention**
-Ivana AI now retains conversation context more effectively across longer sessions. This means you can have extended, multi-part conversations without needing to re-establish context from earlier in the dialogue. Complex research sessions, multi-step writing projects, and iterative analysis workflows all benefit from this improvement.
+Evara AI now retains conversation context more effectively across longer sessions. This means you can have extended, multi-part conversations without needing to re-establish context from earlier in the dialogue. Complex research sessions, multi-step writing projects, and iterative analysis workflows all benefit from this improvement.
 
 **Faster Initial Response Times**
-We have optimized the inference pipeline that powers Ivana AI responses. Average initial response time has improved by 35% compared to last month. For users who interact with Ivana AI dozens of times per day, this adds up to a meaningfully faster experience.
+We have optimized the inference pipeline that powers Evara AI responses. Average initial response time has improved by 35% compared to last month. For users who interact with Evara AI dozens of times per day, this adds up to a meaningfully faster experience.
 
 **Improved Code Generation Accuracy**
-Following feedback from developer users, we have made targeted improvements to Ivana AI's code generation capabilities. TypeScript, Python, and SQL accuracy have all improved, with better handling of edge cases and more consistent documentation in generated code.
+Following feedback from developer users, we have made targeted improvements to Evara AI's code generation capabilities. TypeScript, Python, and SQL accuracy have all improved, with better handling of edge cases and more consistent documentation in generated code.
 
 ## WhatsApp AI Updates
 
@@ -699,7 +699,7 @@ As always, thank you for being part of the Evara AI community. Your feedback dri
     publishedAt: "2026-04-01",
     readingTime: 5,
     featured: false,
-    tags: ["Product Update", "Ivana AI", "WhatsApp AI", "New Features", "Performance"],
+    tags: ["Product Update", "Evara AI", "WhatsApp AI", "New Features", "Performance"],
   },
   {
     slug: "why-your-business-needs-ai-customer-communication",

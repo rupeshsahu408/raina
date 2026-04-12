@@ -153,7 +153,7 @@ export default async function CategoryPage({ params }: Props) {
 
       <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8 mt-10">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Raina Jet. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/blog" className="transition hover:text-zinc-400">Blog</Link>
             <Link href="/about" className="transition hover:text-zinc-400">About</Link>

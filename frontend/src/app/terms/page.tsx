@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — Vercal AI",
+  title: "Terms of Service — Raina Jet",
   description:
-    "Comprehensive Terms of Service for Vercal AI, including Ivana AI and WhatsApp AI platform usage terms.",
+    "Comprehensive Terms of Service for Raina Jet, including Evara AI and WhatsApp AI platform usage terms.",
 };
 
 const tableOfContents = [
@@ -37,10 +37,10 @@ export default function TermsOfServicePage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="group flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/10 transition group-hover:border-purple-300/40">
-              <img src="/evara-logo.png" alt="Vercal AI" className="h-7 w-7 object-contain" draggable={false} />
+              <img src="/evara-logo.png" alt="Raina Jet" className="h-7 w-7 object-contain" draggable={false} />
             </span>
             <span>
-              <span className="block text-sm font-bold tracking-[0.22em] text-white uppercase">Vercal AI</span>
+              <span className="block text-sm font-bold tracking-[0.22em] text-white uppercase">Raina Jet</span>
               <span className="block text-xs text-zinc-500">Terms of Service</span>
             </span>
           </Link>
@@ -70,7 +70,7 @@ export default function TermsOfServicePage() {
               <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300">Services Covered</p>
                 <div className="mt-3 space-y-2 text-sm text-zinc-400">
-                  <p>Ivana AI — Web/App AI assistant</p>
+                  <p>Evara AI — Web/App AI assistant</p>
                   <p>WhatsApp AI — WhatsApp Business API automation</p>
                 </div>
               </div>
@@ -89,17 +89,17 @@ export default function TermsOfServicePage() {
                 Last updated: April 12, 2026 · Effective date: April 12, 2026
               </p>
               <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-300">
-                These Terms of Service constitute a legally binding agreement between you and Vercal AI governing access to and use of Vercal.app, Ivana AI, WhatsApp AI, websites, dashboards, applications, APIs, integrations, and related services. Please read this document carefully before using any part of the platform.
+                These Terms of Service constitute a legally binding agreement between you and Raina Jet governing access to and use of rainajet.com, Evara AI, WhatsApp AI, websites, dashboards, applications, APIs, integrations, and related services. Please read this document carefully before using any part of the platform.
               </p>
             </div>
 
             <div className="mt-10 space-y-12">
               <TermsSection id="introduction" title="1. Introduction">
                 <p>
-                  Vercal AI provides artificial intelligence software services for individuals, creators, professionals, and businesses. The platform includes Ivana AI, a web and app-based AI assistant experience, and WhatsApp AI, a business automation service that may integrate with the WhatsApp Business API and related Meta platform services. These services are separate product experiences but are governed by these Terms unless service-specific terms state otherwise.
+                  Raina Jet provides artificial intelligence software services for individuals, creators, professionals, and businesses. The platform includes Evara AI, a web and app-based AI assistant experience, and WhatsApp AI, a business automation service that may integrate with the WhatsApp Business API and related Meta platform services. These services are separate product experiences but are governed by these Terms unless service-specific terms state otherwise.
                 </p>
                 <p>
-                  These Terms apply to your access to and use of all Vercal AI services, including websites, applications, dashboards, APIs, automations, AI chat features, WhatsApp automation features, support services, documentation, and future products or features that reference these Terms. By accessing or using the Services, creating an account, connecting an integration, submitting content, or using any AI-generated output, you agree to be bound by these Terms and by our Privacy Policy.
+                  These Terms apply to your access to and use of all Raina Jet services, including websites, applications, dashboards, APIs, automations, AI chat features, WhatsApp automation features, support services, documentation, and future products or features that reference these Terms. By accessing or using the Services, creating an account, connecting an integration, submitting content, or using any AI-generated output, you agree to be bound by these Terms and by our Privacy Policy.
                 </p>
                 <p>
                   If you use the Services on behalf of a company, organization, or other legal entity, you represent and warrant that you have authority to bind that entity to these Terms. In that case, “you” and “your” refer both to you individually and to the entity you represent. If you do not agree to these Terms, you must not access or use the Services.
@@ -109,15 +109,15 @@ export default function TermsOfServicePage() {
               <TermsSection id="definitions" title="2. Definitions">
                 <p>For purposes of these Terms, the following definitions apply:</p>
                 <DefinitionList items={[
-                  ["Service or Services", "The Vercal AI websites, web applications, mobile or progressive web applications, dashboards, APIs, AI assistant functions, WhatsApp automation functions, documentation, support services, and related software or features."],
-                  ["Platform", "The Vercal.app software environment, interface, infrastructure, and related technology through which the Services are made available."],
+                  ["Service or Services", "The Raina Jet websites, web applications, mobile or progressive web applications, dashboards, APIs, AI assistant functions, WhatsApp automation functions, documentation, support services, and related software or features."],
+                  ["Platform", "The rainajet.com software environment, interface, infrastructure, and related technology through which the Services are made available."],
                   ["User", "Any individual or entity that accesses or uses the Services, including account holders, administrators, team members, website visitors, business customers, and authorized representatives."],
-                  ["Ivana AI", "The Vercal AI web/app assistant service that allows users to submit prompts, questions, instructions, messages, and context to receive AI-generated responses."],
-                  ["WhatsApp AI", "The Vercal AI business automation service that connects to the WhatsApp Business API or related Meta tools to process business messages, automate replies, and support customer communication."],
+                  ["Evara AI", "The Raina Jet web/app assistant service that allows users to submit prompts, questions, instructions, messages, and context to receive AI-generated responses."],
+                  ["WhatsApp AI", "The Raina Jet business automation service that connects to the WhatsApp Business API or related Meta tools to process business messages, automate replies, and support customer communication."],
                   ["Content", "Any text, data, prompts, instructions, files, documents, business knowledge, customer messages, media, configurations, feedback, or other material submitted, uploaded, transmitted, generated, or displayed through the Services."],
                   ["User Content", "Content submitted, uploaded, provided, configured, or transmitted by or on behalf of a User, including business information, prompts, WhatsApp messages, and customer support materials."],
                   ["AI Output", "Any response, suggestion, classification, summary, message, analysis, automation result, or other material generated by artificial intelligence systems through the Services."],
-                  ["Third-party Services", "Products, APIs, platforms, models, infrastructure, software, analytics tools, authentication providers, payment processors, Meta services, WhatsApp Business API, or other services not owned or controlled by Vercal AI."],
+                  ["Third-party Services", "Products, APIs, platforms, models, infrastructure, software, analytics tools, authentication providers, payment processors, Meta services, WhatsApp Business API, or other services not owned or controlled by Raina Jet."],
                   ["WhatsApp Integration", "The connection between WhatsApp AI and WhatsApp Business API functionality, including business phone numbers, webhook events, Meta developer tools, credentials, message templates, and related configuration."],
                 ]} />
               </TermsSection>
@@ -146,12 +146,12 @@ export default function TermsOfServicePage() {
               </TermsSection>
 
               <TermsSection id="description-of-services" title="4. Description of Services">
-                <SubSection title="4.1 Ivana AI">
+                <SubSection title="4.1 Evara AI">
                   <p>
-                    Ivana AI provides AI chatbot and assistant functionality through a web or application interface. Users may submit prompts, questions, instructions, files, or contextual information and receive AI-generated responses. Ivana AI may support conversation history, personalization, productivity support, general information, drafting, summarization, and other assistant-like features.
+                    Evara AI provides AI chatbot and assistant functionality through a web or application interface. Users may submit prompts, questions, instructions, files, or contextual information and receive AI-generated responses. Evara AI may support conversation history, personalization, productivity support, general information, drafting, summarization, and other assistant-like features.
                   </p>
                   <p>
-                    AI-generated responses are probabilistic and may not be accurate, complete, current, lawful, appropriate, or suitable for every use case. Ivana AI is not a substitute for professional advice, including medical, legal, financial, tax, mental health, employment, safety, or other regulated advice. You are responsible for reviewing and validating AI Output before relying on it.
+                    AI-generated responses are probabilistic and may not be accurate, complete, current, lawful, appropriate, or suitable for every use case. Evara AI is not a substitute for professional advice, including medical, legal, financial, tax, mental health, employment, safety, or other regulated advice. You are responsible for reviewing and validating AI Output before relying on it.
                   </p>
                 </SubSection>
                 <SubSection title="4.2 WhatsApp AI">
@@ -159,7 +159,7 @@ export default function TermsOfServicePage() {
                     WhatsApp AI provides business automation features that may connect to the WhatsApp Business API and Meta platform tools. It may receive customer messages, apply business instructions and knowledge base content, generate AI-assisted replies, automate responses, classify requests, maintain conversation logs, and assist businesses in managing customer communication.
                   </p>
                   <p>
-                    WhatsApp AI depends on third-party systems, including Meta and the WhatsApp Business API. Access, delivery, templates, account status, phone number status, message limits, pricing, verification, policy enforcement, and platform availability may be controlled by Meta or other third parties. Vercal AI does not guarantee continued availability of any WhatsApp or Meta functionality.
+                    WhatsApp AI depends on third-party systems, including Meta and the WhatsApp Business API. Access, delivery, templates, account status, phone number status, message limits, pricing, verification, policy enforcement, and platform availability may be controlled by Meta or other third parties. Raina Jet does not guarantee continued availability of any WhatsApp or Meta functionality.
                   </p>
                   <p>
                     Business customers remain responsible for reviewing automation behavior, ensuring that replies are accurate and lawful, obtaining customer consent, complying with WhatsApp and Meta policies, and maintaining appropriate human oversight where required.
@@ -189,7 +189,7 @@ export default function TermsOfServicePage() {
                   <li><strong>Legal compliance:</strong> You must comply with all laws, regulations, industry rules, consumer protection obligations, data protection laws, advertising rules, telecommunications rules, and platform policies applicable to your use.</li>
                   <li><strong>AI Output usage:</strong> You must evaluate AI Output for accuracy, suitability, legality, safety, and appropriateness before using, publishing, sending, relying on, or making decisions based on it.</li>
                   <li><strong>Customer consent:</strong> For WhatsApp AI, you are responsible for obtaining and maintaining all required customer consents, opt-ins, notices, and lawful bases for messaging and AI-assisted processing.</li>
-                  <li><strong>Business verification:</strong> You must provide truthful and complete business information where required for Meta, WhatsApp, Vercal AI, or other platform compliance.</li>
+                  <li><strong>Business verification:</strong> You must provide truthful and complete business information where required for Meta, WhatsApp, Raina Jet, or other platform compliance.</li>
                   <li><strong>Human oversight:</strong> You must use appropriate review and escalation procedures when AI automation may affect customer rights, purchases, complaints, health, safety, finance, legal obligations, or other important matters.</li>
                   <li><strong>Credential management:</strong> You must protect API keys, tokens, passwords, administrative access, and business account permissions and promptly revoke access when no longer needed.</li>
                 </ul>
@@ -197,7 +197,7 @@ export default function TermsOfServicePage() {
 
               <TermsSection id="ai-output-disclaimer" title="7. AI Output Disclaimer">
                 <p>
-                  AI Output may be inaccurate, incomplete, outdated, offensive, biased, unsafe, duplicated, or unsuitable for your intended purpose. Similar or identical AI Output may be generated for multiple users. AI systems may produce information that appears confident but is incorrect. Vercal AI does not guarantee the correctness, reliability, uniqueness, legality, usefulness, or appropriateness of AI Output.
+                  AI Output may be inaccurate, incomplete, outdated, offensive, biased, unsafe, duplicated, or unsuitable for your intended purpose. Similar or identical AI Output may be generated for multiple users. AI systems may produce information that appears confident but is incorrect. Raina Jet does not guarantee the correctness, reliability, uniqueness, legality, usefulness, or appropriateness of AI Output.
                 </p>
                 <p>
                   You must independently verify critical information before relying on AI Output, especially for legal, medical, financial, employment, safety, customer support, commercial, compliance, or regulated decisions. You acknowledge that use of AI Output is at your own risk and that you remain responsible for decisions, communications, actions, or omissions based on AI Output.
@@ -219,43 +219,43 @@ export default function TermsOfServicePage() {
               </TermsSection>
 
               <TermsSection id="intellectual-property-rights" title="9. Intellectual Property Rights">
-                <SubSection title="9.1 Vercal AI Ownership">
+                <SubSection title="9.1 Raina Jet Ownership">
                   <p>
-                    Vercal AI and its licensors own all rights, title, and interest in and to the Platform, Services, software, interfaces, design, trademarks, logos, technology, workflows, models, prompts, systems, documentation, analytics, know-how, and other proprietary materials. These Terms do not transfer any ownership rights to you.
+                    Raina Jet and its licensors own all rights, title, and interest in and to the Platform, Services, software, interfaces, design, trademarks, logos, technology, workflows, models, prompts, systems, documentation, analytics, know-how, and other proprietary materials. These Terms do not transfer any ownership rights to you.
                   </p>
                 </SubSection>
                 <SubSection title="9.2 User Content Ownership">
                   <p>
-                    As between you and Vercal AI, you retain ownership of User Content you submit, upload, or configure, subject to the rights and licenses granted in these Terms. You represent that you have all rights, permissions, and lawful bases necessary to provide User Content to the Services.
+                    As between you and Raina Jet, you retain ownership of User Content you submit, upload, or configure, subject to the rights and licenses granted in these Terms. You represent that you have all rights, permissions, and lawful bases necessary to provide User Content to the Services.
                   </p>
                 </SubSection>
                 <SubSection title="9.3 License to Provide the Services">
                   <p>
-                    You grant Vercal AI a worldwide, non-exclusive, royalty-free, sublicensable license to host, copy, process, transmit, display, adapt, and use User Content solely as necessary to provide, secure, maintain, support, and improve the Services; comply with law; enforce these Terms; and operate integrations you configure.
+                    You grant Raina Jet a worldwide, non-exclusive, royalty-free, sublicensable license to host, copy, process, transmit, display, adapt, and use User Content solely as necessary to provide, secure, maintain, support, and improve the Services; comply with law; enforce these Terms; and operate integrations you configure.
                   </p>
                 </SubSection>
                 <SubSection title="9.4 Restrictions">
                   <p>
-                    You may not copy, modify, distribute, sell, lease, sublicense, publicly display, publicly perform, or create derivative works from the Services except as expressly permitted by Vercal AI. You may not remove proprietary notices, misuse trademarks, or represent that you own Vercal AI technology.
+                    You may not copy, modify, distribute, sell, lease, sublicense, publicly display, publicly perform, or create derivative works from the Services except as expressly permitted by Raina Jet. You may not remove proprietary notices, misuse trademarks, or represent that you own Raina Jet technology.
                   </p>
                 </SubSection>
               </TermsSection>
 
               <TermsSection id="third-party-services" title="10. Third-Party Services">
                 <p>
-                  The Services may depend on or interoperate with Third-party Services, including Meta, WhatsApp Business API, hosting providers, authentication providers, AI model providers, analytics tools, payment processors, and other APIs. Vercal AI does not control Third-party Services and is not responsible for their availability, security, policies, pricing, performance, errors, outages, suspensions, or changes.
+                  The Services may depend on or interoperate with Third-party Services, including Meta, WhatsApp Business API, hosting providers, authentication providers, AI model providers, analytics tools, payment processors, and other APIs. Raina Jet does not control Third-party Services and is not responsible for their availability, security, policies, pricing, performance, errors, outages, suspensions, or changes.
                 </p>
                 <p>
-                  Your use of Third-party Services may be subject to separate terms, privacy policies, data processing terms, acceptable use policies, and fees. You are responsible for complying with those terms. If a Third-party Service changes or becomes unavailable, Vercal AI may modify, suspend, or discontinue affected features without liability.
+                  Your use of Third-party Services may be subject to separate terms, privacy policies, data processing terms, acceptable use policies, and fees. You are responsible for complying with those terms. If a Third-party Service changes or becomes unavailable, Raina Jet may modify, suspend, or discontinue affected features without liability.
                 </p>
               </TermsSection>
 
               <TermsSection id="data-usage-reference" title="11. Data Usage Reference">
                 <p>
-                  Our collection, use, storage, sharing, retention, and protection of information is described in our <Link href="/privacy-policy">Privacy Policy</Link>, which is incorporated into these Terms by reference. By using the Services, you acknowledge that data handling is governed by the Privacy Policy and any applicable data processing agreement or separate written agreement between you and Vercal AI.
+                  Our collection, use, storage, sharing, retention, and protection of information is described in our <Link href="/privacy-policy">Privacy Policy</Link>, which is incorporated into these Terms by reference. By using the Services, you acknowledge that data handling is governed by the Privacy Policy and any applicable data processing agreement or separate written agreement between you and Raina Jet.
                 </p>
                 <p>
-                  For WhatsApp AI, business customers are responsible for ensuring that their own privacy notices, customer consents, and data processing practices accurately describe the use of Vercal AI, WhatsApp Business API, Meta services, and AI automation where required by law.
+                  For WhatsApp AI, business customers are responsible for ensuring that their own privacy notices, customer consents, and data processing practices accurately describe the use of Raina Jet, WhatsApp Business API, Meta services, and AI automation where required by law.
                 </p>
               </TermsSection>
 
@@ -274,9 +274,9 @@ export default function TermsOfServicePage() {
                     You may stop using the Services at any time. You may request account closure by contacting support or using available account tools. Termination does not relieve you of payment obligations incurred before termination and does not require us to provide refunds except where required by law or expressly agreed.
                   </p>
                 </SubSection>
-                <SubSection title="13.2 Suspension or Termination by Vercal AI">
+                <SubSection title="13.2 Suspension or Termination by Raina Jet">
                   <p>
-                    We may suspend, restrict, or terminate your access to the Services immediately, with or without notice, if we reasonably believe that you have violated these Terms, created legal or security risk, violated third-party policies, failed to pay amounts due, provided false information, misused AI Output, sent unauthorized messages, compromised platform integrity, or used the Services in a way that may harm users, customers, Vercal AI, Meta, WhatsApp, or third parties.
+                    We may suspend, restrict, or terminate your access to the Services immediately, with or without notice, if we reasonably believe that you have violated these Terms, created legal or security risk, violated third-party policies, failed to pay amounts due, provided false information, misused AI Output, sent unauthorized messages, compromised platform integrity, or used the Services in a way that may harm users, customers, Raina Jet, Meta, WhatsApp, or third parties.
                   </p>
                 </SubSection>
                 <SubSection title="13.3 Effect of Termination">
@@ -288,16 +288,16 @@ export default function TermsOfServicePage() {
 
               <TermsSection id="limitation-of-liability" title="14. Limitation of Liability">
                 <p>
-                  To the maximum extent permitted by applicable law, Vercal AI, its founders, directors, officers, employees, contractors, affiliates, licensors, and service providers will not be liable for indirect, incidental, special, consequential, exemplary, punitive, or enhanced damages; loss of profits; loss of revenue; loss of business; loss of goodwill; loss of data; service interruption; substitute services; or damages arising from AI Output, third-party services, WhatsApp or Meta outages, unauthorized access, user content, or your use of or inability to use the Services.
+                  To the maximum extent permitted by applicable law, Raina Jet, its founders, directors, officers, employees, contractors, affiliates, licensors, and service providers will not be liable for indirect, incidental, special, consequential, exemplary, punitive, or enhanced damages; loss of profits; loss of revenue; loss of business; loss of goodwill; loss of data; service interruption; substitute services; or damages arising from AI Output, third-party services, WhatsApp or Meta outages, unauthorized access, user content, or your use of or inability to use the Services.
                 </p>
                 <p>
-                  To the maximum extent permitted by law, Vercal AI’s total aggregate liability for all claims arising out of or relating to the Services or these Terms will not exceed the greater of: (a) the amount you paid to Vercal AI for the Services in the twelve (12) months preceding the event giving rise to the claim; or (b) INR 1,000. Some jurisdictions do not allow certain limitations, so some limitations may not apply to you.
+                  To the maximum extent permitted by law, Raina Jet’s total aggregate liability for all claims arising out of or relating to the Services or these Terms will not exceed the greater of: (a) the amount you paid to Raina Jet for the Services in the twelve (12) months preceding the event giving rise to the claim; or (b) INR 1,000. Some jurisdictions do not allow certain limitations, so some limitations may not apply to you.
                 </p>
               </TermsSection>
 
               <TermsSection id="indemnification" title="15. Indemnification">
                 <p>
-                  You agree to defend, indemnify, and hold harmless Vercal AI, its founders, directors, officers, employees, contractors, affiliates, licensors, and service providers from and against any claims, demands, actions, investigations, liabilities, damages, losses, costs, and expenses, including reasonable legal fees, arising out of or related to:
+                  You agree to defend, indemnify, and hold harmless Raina Jet, its founders, directors, officers, employees, contractors, affiliates, licensors, and service providers from and against any claims, demands, actions, investigations, liabilities, damages, losses, costs, and expenses, including reasonable legal fees, arising out of or related to:
                 </p>
                 <ul>
                   <li>Your access to or use of the Services.</li>
@@ -305,7 +305,7 @@ export default function TermsOfServicePage() {
                   <li>Your use, publication, transmission, or reliance on AI Output.</li>
                   <li>Your violation of these Terms, applicable law, third-party rights, Meta policies, WhatsApp policies, or third-party service terms.</li>
                   <li>Your failure to obtain required consents, provide required notices, or comply with data protection, messaging, consumer protection, or industry-specific obligations.</li>
-                  <li>Claims from your customers, employees, contractors, end users, regulators, or third parties arising from your use of Ivana AI or WhatsApp AI.</li>
+                  <li>Claims from your customers, employees, contractors, end users, regulators, or third parties arising from your use of Evara AI or WhatsApp AI.</li>
                 </ul>
               </TermsSection>
 
@@ -314,7 +314,7 @@ export default function TermsOfServicePage() {
                   These Terms and any dispute, claim, or controversy arising out of or relating to the Services will be governed by and construed in accordance with the laws of India, without regard to conflict of law principles. Subject to any mandatory consumer protection rights that may apply, the courts located in India will have jurisdiction over disputes arising from these Terms or the Services.
                 </p>
                 <p>
-                  Before initiating formal proceedings, you agree to first contact Vercal AI at <a href="mailto:support@vercal.app">support@vercal.app</a> and attempt to resolve the dispute informally by providing a written description of the issue, requested relief, and relevant account information. We will make reasonable good-faith efforts to respond within a commercially reasonable period.
+                  Before initiating formal proceedings, you agree to first contact Raina Jet at <a href="mailto:support@rainajet.com">support@rainajet.com</a> and attempt to resolve the dispute informally by providing a written description of the issue, requested relief, and relevant account information. We will make reasonable good-faith efforts to respond within a commercially reasonable period.
                 </p>
               </TermsSection>
 
@@ -329,15 +329,15 @@ export default function TermsOfServicePage() {
 
               <TermsSection id="contact-information" title="18. Contact Information">
                 <p>
-                  If you have questions about these Terms, the Services, Ivana AI, WhatsApp AI, or any legal notice, please contact us:
+                  If you have questions about these Terms, the Services, Evara AI, WhatsApp AI, or any legal notice, please contact us:
                 </p>
                 <div className="rounded-3xl border border-white/10 bg-black/35 p-6">
-                  <p className="text-lg font-semibold text-white">Vercal AI</p>
-                  <p className="mt-2 text-zinc-400">Vercal.app</p>
+                  <p className="text-lg font-semibold text-white">Raina Jet</p>
+                  <p className="mt-2 text-zinc-400">rainajet.com</p>
                   <p className="mt-4">
                     <span className="font-semibold text-zinc-200">Email:</span>{" "}
-                    <a href="mailto:support@vercal.app" className="text-purple-200 underline decoration-purple-300/40 underline-offset-4 transition hover:text-white">
-                      support@vercal.app
+                    <a href="mailto:support@rainajet.com" className="text-purple-200 underline decoration-purple-300/40 underline-offset-4 transition hover:text-white">
+                      support@rainajet.com
                     </a>
                   </p>
                 </div>
@@ -349,7 +349,7 @@ export default function TermsOfServicePage() {
 
       <footer className="relative z-10 border-t border-white/10 bg-black/60 py-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>© 2026 Vercal.app. All rights reserved.</p>
+          <p>© 2026 Raina Jet. All rights reserved.</p>
           <div className="flex flex-wrap gap-4">
             <Link href="/" className="transition hover:text-white">Home</Link>
             <Link href="/whatsapp-ai" className="transition hover:text-white">WhatsApp AI</Link>

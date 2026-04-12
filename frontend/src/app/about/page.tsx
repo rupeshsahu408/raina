@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About Us — Vercal AI",
+  title: "About Us — Raina Jet",
   description:
-    "Learn about Vercal AI — our story, mission, vision, AI products, founders, and the team building the future of intelligent automation.",
+    "Learn about Raina Jet — our story, mission, vision, AI products, founders, and the team building the future of intelligent automation.",
 };
 
 function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -101,10 +101,10 @@ function StarIcon(props: React.SVGProps<SVGSVGElement>) {
 
 const products = [
   {
-    name: "Ivana AI",
+    name: "Evara AI",
     tagline: "Your Intelligent Web & App AI Assistant",
     description:
-      "Ivana AI is the flagship conversational AI assistant within the Vercal AI platform. Designed for both individuals and professionals, Ivana delivers context-aware responses, smart automation, and deep productivity support through natural language interaction. Whether you need help with drafting content, answering complex questions, summarizing information, or navigating technical challenges, Ivana AI is built to think alongside you — intelligently, efficiently, and at scale.",
+      "Evara AI is the flagship conversational AI assistant within the Raina Jet platform. Designed for both individuals and professionals, Ivana delivers context-aware responses, smart automation, and deep productivity support through natural language interaction. Whether you need help with drafting content, answering complex questions, summarizing information, or navigating technical challenges, Evara AI is built to think alongside you — intelligently, efficiently, and at scale.",
     capabilities: [
       "Natural language conversations with deep context awareness",
       "Productivity automation for content, research, and problem-solving",
@@ -124,7 +124,7 @@ const products = [
     name: "Bihar AI",
     tagline: "Regional Intelligence, Local Impact",
     description:
-      "Bihar AI is a purpose-built regional AI initiative designed to serve the unique linguistic, cultural, and economic context of Bihar and its surrounding communities. Recognizing that AI should not be a privilege of only English-speaking or metropolitan users, Bihar AI brings the power of intelligent automation to regional users in their own language and context. It is Vercal AI's commitment to inclusive innovation — ensuring that AI tools are equally accessible, relevant, and empowering for users across every geography and background.",
+      "Bihar AI is a purpose-built regional AI initiative designed to serve the unique linguistic, cultural, and economic context of Bihar and its surrounding communities. Recognizing that AI should not be a privilege of only English-speaking or metropolitan users, Bihar AI brings the power of intelligent automation to regional users in their own language and context. It is Raina Jet's commitment to inclusive innovation — ensuring that AI tools are equally accessible, relevant, and empowering for users across every geography and background.",
     capabilities: [
       "Regional language understanding and interaction support",
       "Local knowledge base covering culture, governance, and commerce",
@@ -144,7 +144,7 @@ const products = [
     name: "WhatsApp AI",
     tagline: "Business Automation at Conversational Scale",
     description:
-      "WhatsApp AI transforms the way businesses communicate with their customers by bringing the power of artificial intelligence directly into the world's most widely used messaging platform. Through deep integration with the WhatsApp Business API, Vercal AI enables businesses to automate responses, manage customer queries at scale, deliver personalized support, and operate intelligent communication workflows — all without compromising the human feel of genuine conversation. It is AI-powered customer engagement, built for modern business.",
+      "WhatsApp AI transforms the way businesses communicate with their customers by bringing the power of artificial intelligence directly into the world's most widely used messaging platform. Through deep integration with the WhatsApp Business API, Raina Jet enables businesses to automate responses, manage customer queries at scale, deliver personalized support, and operate intelligent communication workflows — all without compromising the human feel of genuine conversation. It is AI-powered customer engagement, built for modern business.",
     capabilities: [
       "Automated AI responses via WhatsApp Business API",
       "Custom business knowledge base and FAQ automation",
@@ -167,7 +167,7 @@ const founders = [
     name: "Riley Parker",
     title: "Founder & Chief Executive Officer",
     description:
-      "Riley Parker is a forward-thinking technology leader whose vision for accessible, intelligent, and beautifully designed AI tools has been the driving force behind Vercal AI. With a deep belief that the future of productivity lies at the intersection of artificial intelligence and human creativity, Riley has built Vercal AI from the ground up with an unwavering focus on user experience, scalable architecture, and purposeful design. Riley brings a rare combination of strategic leadership, product intuition, and a genuine passion for building technology that improves lives. As the visionary architect of the Vercal AI platform, Riley continues to guide the company toward its mission of democratizing AI access for individuals and businesses globally — ensuring that intelligent automation is not a luxury, but a universal tool.",
+      "Riley Parker is a forward-thinking technology leader whose vision for accessible, intelligent, and beautifully designed AI tools has been the driving force behind Raina Jet. With a deep belief that the future of productivity lies at the intersection of artificial intelligence and human creativity, Riley has built Raina Jet from the ground up with an unwavering focus on user experience, scalable architecture, and purposeful design. Riley brings a rare combination of strategic leadership, product intuition, and a genuine passion for building technology that improves lives. As the visionary architect of the Raina Jet platform, Riley continues to guide the company toward its mission of democratizing AI access for individuals and businesses globally — ensuring that intelligent automation is not a luxury, but a universal tool.",
     traits: ["Visionary Leadership", "Product Strategy", "AI Innovation", "User-Centric Design", "Global Thinking"],
     avatar: "RP",
     gradient: "from-purple-500 via-pink-500 to-rose-500",
@@ -177,7 +177,7 @@ const founders = [
     name: "Rupesh Sahu",
     title: "Co-Founder & Chief Technology Officer",
     description:
-      "Rupesh Sahu is the technical backbone of Vercal AI — a dedicated engineer, builder, and problem-solver who transforms ambitious ideas into production-ready, high-performance AI systems. With an exceptional command of modern software architecture, API integrations, and AI product development, Rupesh has designed and built the core infrastructure that powers every feature within the Vercal AI platform. Known for his relentless work ethic, systematic approach to engineering, and unwavering commitment to quality, Rupesh ensures that the platform not only delivers on its promises but continuously evolves to meet the growing expectations of users and businesses. His deep-rooted belief in building tools that are both technically powerful and genuinely accessible to everyday users drives every technical decision at Vercal AI.",
+      "Rupesh Sahu is the technical backbone of Raina Jet — a dedicated engineer, builder, and problem-solver who transforms ambitious ideas into production-ready, high-performance AI systems. With an exceptional command of modern software architecture, API integrations, and AI product development, Rupesh has designed and built the core infrastructure that powers every feature within the Raina Jet platform. Known for his relentless work ethic, systematic approach to engineering, and unwavering commitment to quality, Rupesh ensures that the platform not only delivers on its promises but continuously evolves to meet the growing expectations of users and businesses. His deep-rooted belief in building tools that are both technically powerful and genuinely accessible to everyday users drives every technical decision at Raina Jet.",
     traits: ["Full-Stack Engineering", "AI Architecture", "Product Development", "Technical Leadership", "Growth Mindset"],
     avatar: "RS",
     gradient: "from-sky-500 via-blue-500 to-indigo-500",
@@ -189,42 +189,42 @@ const whyChooseItems = [
   {
     icon: <ZapIcon className="h-6 w-6" />,
     title: "Smart Automation",
-    description: "Vercal AI's intelligent automation eliminates repetitive tasks, accelerates workflows, and enables both individuals and businesses to focus on what truly matters — creative thinking, strategic decisions, and meaningful human interaction.",
+    description: "Raina Jet's intelligent automation eliminates repetitive tasks, accelerates workflows, and enables both individuals and businesses to focus on what truly matters — creative thinking, strategic decisions, and meaningful human interaction.",
     color: "text-yellow-300",
     bg: "bg-yellow-400/10 border-yellow-400/20",
   },
   {
     icon: <RocketIcon className="h-6 w-6" />,
     title: "Scalable Solutions",
-    description: "Whether you are a solo entrepreneur or a large enterprise, Vercal AI scales with your needs. Our platform is engineered to handle growing demands without sacrificing performance, reliability, or response quality.",
+    description: "Whether you are a solo entrepreneur or a large enterprise, Raina Jet scales with your needs. Our platform is engineered to handle growing demands without sacrificing performance, reliability, or response quality.",
     color: "text-purple-300",
     bg: "bg-purple-400/10 border-purple-400/20",
   },
   {
     icon: <ShieldIcon className="h-6 w-6" />,
     title: "Secure and Reliable",
-    description: "Data security and platform reliability are foundational commitments at Vercal AI. We implement rigorous security practices, encrypted data transmission, and resilient infrastructure to protect user information and maintain consistent service availability.",
+    description: "Data security and platform reliability are foundational commitments at Raina Jet. We implement rigorous security practices, encrypted data transmission, and resilient infrastructure to protect user information and maintain consistent service availability.",
     color: "text-emerald-300",
     bg: "bg-emerald-400/10 border-emerald-400/20",
   },
   {
     icon: <SparklesIcon className="h-6 w-6" />,
     title: "Easy to Use",
-    description: "Advanced AI should not require a technical background to access and benefit from. Vercal AI is designed with simplicity and clarity at its core, delivering powerful capabilities through interfaces that feel natural, intuitive, and effortless to use.",
+    description: "Advanced AI should not require a technical background to access and benefit from. Raina Jet is designed with simplicity and clarity at its core, delivering powerful capabilities through interfaces that feel natural, intuitive, and effortless to use.",
     color: "text-pink-300",
     bg: "bg-pink-400/10 border-pink-400/20",
   },
   {
     icon: <UsersIcon className="h-6 w-6" />,
     title: "Built for Modern Businesses",
-    description: "From automated customer communication to AI-assisted content generation and regional market intelligence, Vercal AI is purpose-built to address the real and evolving challenges of modern businesses operating in a fast-paced, digital-first world.",
+    description: "From automated customer communication to AI-assisted content generation and regional market intelligence, Raina Jet is purpose-built to address the real and evolving challenges of modern businesses operating in a fast-paced, digital-first world.",
     color: "text-sky-300",
     bg: "bg-sky-400/10 border-sky-400/20",
   },
   {
     icon: <GlobeIcon className="h-6 w-6" />,
     title: "Globally Accessible",
-    description: "Vercal AI is designed without geographic boundaries. With multilingual capability, regional AI initiatives like Bihar AI, and universal platform accessibility, we are committed to making intelligent technology available to every user, everywhere.",
+    description: "Raina Jet is designed without geographic boundaries. With multilingual capability, regional AI initiatives like Bihar AI, and universal platform accessibility, we are committed to making intelligent technology available to every user, everywhere.",
     color: "text-amber-300",
     bg: "bg-amber-400/10 border-amber-400/20",
   },
@@ -235,7 +235,7 @@ const futureGoals = [
   "Launching advanced third-party integrations with popular CRMs, e-commerce platforms, and productivity tools.",
   "Extending regional AI coverage beyond Bihar to additional underserved linguistic and cultural communities.",
   "Introducing enterprise-grade analytics dashboards and AI performance reporting for business customers.",
-  "Building a public developer API to enable third-party builders to extend and customize the Vercal AI platform.",
+  "Building a public developer API to enable third-party builders to extend and customize the Raina Jet platform.",
   "Achieving global reach across emerging markets in South Asia, Southeast Asia, Africa, and Latin America.",
   "Developing AI-powered voice automation for phone and call-center-based business communication.",
   "Establishing strategic partnerships with educational institutions and NGOs to drive AI literacy programs.",
@@ -254,8 +254,8 @@ export default function AboutPage() {
       <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <img src="/evara-logo.png" alt="Vercal AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-bold tracking-widest text-zinc-100 uppercase transition group-hover:text-white">Vercal AI</span>
+            <img src="/evara-logo.png" alt="Raina Jet" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-bold tracking-widest text-zinc-100 uppercase transition group-hover:text-white">Raina Jet</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/cookies" className="hidden text-sm text-zinc-500 transition hover:text-zinc-300 sm:block">Cookie Policy</Link>
@@ -271,7 +271,7 @@ export default function AboutPage() {
         <section className="relative flex min-h-[85vh] flex-col items-center justify-center overflow-hidden px-4 pt-24 pb-16 text-center sm:px-6 lg:px-8">
           <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-300 backdrop-blur-md mb-8">
             <SparklesIcon className="h-3.5 w-3.5" />
-            <span>About Vercal AI</span>
+            <span>About Raina Jet</span>
           </div>
           <h1 className="max-w-5xl text-balance text-5xl font-semibold tracking-tight text-white sm:text-7xl lg:text-8xl">
             Building the Future{" "}
@@ -280,7 +280,7 @@ export default function AboutPage() {
             </span>
           </h1>
           <p className="mt-8 max-w-2xl text-balance text-lg leading-relaxed text-zinc-400 sm:text-xl">
-            Vercal AI is an AI-powered SaaS platform on a singular mission — to make intelligent automation accessible, powerful, and genuinely useful for every person and business on the planet.
+            Raina Jet is an AI-powered SaaS platform on a singular mission — to make intelligent automation accessible, powerful, and genuinely useful for every person and business on the planet.
           </p>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-500">
             From individual productivity to enterprise-scale automation, from regional communities to global markets, we are building AI tools that make a real difference.
@@ -324,10 +324,10 @@ export default function AboutPage() {
               </h2>
               <div className="mt-6 space-y-5 text-base leading-8 text-zinc-400">
                 <p>
-                  Vercal AI began as a bold question: why should intelligent AI tools only be available to those with technical expertise or enterprise budgets? The founders of Vercal AI saw a world where artificial intelligence was transforming industries at a rapid pace, yet the vast majority of individuals and small businesses were left behind — unable to access, understand, or benefit from these powerful technologies.
+                  Raina Jet began as a bold question: why should intelligent AI tools only be available to those with technical expertise or enterprise budgets? The founders of Raina Jet saw a world where artificial intelligence was transforming industries at a rapid pace, yet the vast majority of individuals and small businesses were left behind — unable to access, understand, or benefit from these powerful technologies.
                 </p>
                 <p>
-                  The idea was simple in concept but ambitious in execution: build a platform that makes AI genuinely useful, approachable, and scalable for everyone. From the earliest prototypes to the full-featured platform it is today, Vercal AI has been built with a singular focus on the people it serves — their needs, their challenges, and their aspirations.
+                  The idea was simple in concept but ambitious in execution: build a platform that makes AI genuinely useful, approachable, and scalable for everyone. From the earliest prototypes to the full-featured platform it is today, Raina Jet has been built with a singular focus on the people it serves — their needs, their challenges, and their aspirations.
                 </p>
                 <p>
                   What started as a vision between two passionate builders has grown into a multi-product AI platform serving users across India and beyond, with a roadmap that points toward global reach and transformative impact. The journey from idea to platform has not been without challenges, but every obstacle has only deepened the commitment to the mission.
@@ -339,10 +339,10 @@ export default function AboutPage() {
                 <div className="space-y-6">
                   {[
                     { year: "2023", event: "Concept & ideation — identifying the gap in accessible AI tools for everyday users and businesses." },
-                    { year: "2024", event: "Platform development begins — building core AI infrastructure, Ivana AI assistant, and WhatsApp AI integration framework." },
+                    { year: "2024", event: "Platform development begins — building core AI infrastructure, Evara AI assistant, and WhatsApp AI integration framework." },
                     { year: "Early 2025", event: "Beta launch — first users onboarded, real-world feedback shapes product direction and feature priorities." },
                     { year: "Mid 2025", event: "Bihar AI initiative launched — expanding AI access to regional communities with localized intelligence." },
-                    { year: "2026", event: "Full platform release — Vercal AI goes live with all three products, growing user base, and global expansion underway." },
+                    { year: "2026", event: "Full platform release — Raina Jet goes live with all three products, growing user base, and global expansion underway." },
                   ].map((item, i) => (
                     <div key={i} className="flex gap-4">
                       <div className="flex flex-col items-center">
@@ -377,7 +377,7 @@ export default function AboutPage() {
                   Our mission is to dismantle the barriers that separate everyday users from the transformative power of artificial intelligence. We believe that AI should not be complex, exclusive, or intimidating. It should be approachable, intuitive, and empowering — a tool that every person, whether a student, a small business owner, or a global enterprise, can pick up, use, and benefit from immediately.
                 </p>
                 <p className="mt-4 text-base leading-8 text-zinc-400">
-                  Every product, every feature, and every design decision at Vercal AI is evaluated through this mission lens: does it make AI simpler, more useful, and more accessible? If the answer is yes, we build it.
+                  Every product, every feature, and every design decision at Raina Jet is evaluated through this mission lens: does it make AI simpler, more useful, and more accessible? If the answer is yes, we build it.
                 </p>
               </div>
               <div className="rounded-[2rem] border border-sky-500/20 bg-sky-500/[0.06] p-8 backdrop-blur-xl">
@@ -388,7 +388,7 @@ export default function AboutPage() {
                   Powerful AI for Businesses Globally
                 </h3>
                 <p className="mt-5 text-base leading-8 text-zinc-400">
-                  We envision a world where AI-powered tools are the standard operating environment for businesses of all sizes — where intelligent automation handles routine work, enabling humans to focus on creativity, strategy, and relationships. Vercal AI is building toward that world, one product, one integration, and one user at a time.
+                  We envision a world where AI-powered tools are the standard operating environment for businesses of all sizes — where intelligent automation handles routine work, enabling humans to focus on creativity, strategy, and relationships. Raina Jet is building toward that world, one product, one integration, and one user at a time.
                 </p>
                 <p className="mt-4 text-base leading-8 text-zinc-400">
                   Our vision extends beyond product features. We see a global community of AI-enabled businesses and individuals, from metropolitan enterprises to rural entrepreneurs, all equipped with the same quality of intelligence and the same opportunity to thrive.
@@ -404,10 +404,10 @@ export default function AboutPage() {
               The Platform
             </p>
             <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              What Vercal AI Does
+              What Raina Jet Does
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-zinc-400">
-              Vercal AI is more than a single product — it is a unified ecosystem of AI tools designed to address the diverse needs of modern users and businesses. At its core, the platform connects three powerful services under one intelligent infrastructure.
+              Raina Jet is more than a single product — it is a unified ecosystem of AI tools designed to address the diverse needs of modern users and businesses. At its core, the platform connects three powerful services under one intelligent infrastructure.
             </p>
           </div>
 
@@ -439,7 +439,7 @@ export default function AboutPage() {
                 </span>
               </h2>
               <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-zinc-400">
-                Each product within the Vercal AI ecosystem is purpose-built for a distinct use case, audience, and context — yet all share the same foundational commitment to intelligence, reliability, and accessibility.
+                Each product within the Raina Jet ecosystem is purpose-built for a distinct use case, audience, and context — yet all share the same foundational commitment to intelligence, reliability, and accessibility.
               </p>
             </div>
 
@@ -491,7 +491,7 @@ export default function AboutPage() {
               </span>
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-zinc-400">
-              Vercal AI was founded by two passionate individuals who share a deep conviction that AI can and should be a democratizing force — empowering individuals and businesses of every size, background, and geography.
+              Raina Jet was founded by two passionate individuals who share a deep conviction that AI can and should be a democratizing force — empowering individuals and businesses of every size, background, and geography.
             </p>
           </div>
 
@@ -540,13 +540,13 @@ export default function AboutPage() {
                 </h2>
                 <div className="mt-6 space-y-5 text-base leading-8 text-zinc-400">
                   <p>
-                    Behind every feature, every interface, and every AI capability within the Vercal AI platform is a team of skilled, passionate professionals dedicated to crafting software that is reliable, elegant, and genuinely useful. Our development team brings together expertise in artificial intelligence, full-stack engineering, mobile development, UX design, and product strategy.
+                    Behind every feature, every interface, and every AI capability within the Raina Jet platform is a team of skilled, passionate professionals dedicated to crafting software that is reliable, elegant, and genuinely useful. Our development team brings together expertise in artificial intelligence, full-stack engineering, mobile development, UX design, and product strategy.
                   </p>
                   <p>
                     We operate as a culture of continuous improvement — rigorously evaluating every aspect of the platform, gathering user feedback with care, iterating on design and functionality, and pushing the boundaries of what is possible with today's AI technologies. Every release reflects a collective commitment to doing the work properly, not just quickly.
                   </p>
                   <p>
-                    Our team believes in open collaboration, intellectual curiosity, and the idea that the best tools are built by people who use and care deeply about them. This philosophy permeates every layer of the Vercal AI platform.
+                    Our team believes in open collaboration, intellectual curiosity, and the idea that the best tools are built by people who use and care deeply about them. This philosophy permeates every layer of the Raina Jet platform.
                   </p>
                 </div>
               </div>
@@ -570,16 +570,16 @@ export default function AboutPage() {
         <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
-              Why Vercal AI
+              Why Raina Jet
             </p>
             <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
               Why Businesses Choose{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-sky-400">
-                Vercal AI
+                Raina Jet
               </span>
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-zinc-400">
-              In a crowded landscape of AI tools and automation platforms, Vercal AI stands apart through its combination of depth, accessibility, reliability, and purpose-driven design.
+              In a crowded landscape of AI tools and automation platforms, Raina Jet stands apart through its combination of depth, accessibility, reliability, and purpose-driven design.
             </p>
           </div>
           <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -609,7 +609,7 @@ export default function AboutPage() {
                   Where We Are Going
                 </h2>
                 <p className="mt-5 text-base leading-8 text-zinc-400">
-                  The work we have done so far is just the beginning. Vercal AI has an ambitious roadmap built around expanding capabilities, deepening integrations, and broadening access to intelligent automation for users and businesses across the globe. Our future is defined by continuous innovation and an unrelenting commitment to the people we serve.
+                  The work we have done so far is just the beginning. Raina Jet has an ambitious roadmap built around expanding capabilities, deepening integrations, and broadening access to intelligent automation for users and businesses across the globe. Our future is defined by continuous innovation and an unrelenting commitment to the people we serve.
                 </p>
               </div>
               <div className="space-y-4">
@@ -640,14 +640,14 @@ export default function AboutPage() {
               </span>
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
-              Join thousands of users and businesses who are already using Vercal AI to work smarter, communicate better, and grow faster. The future of intelligent automation is here — and it is built for you.
+              Join thousands of users and businesses who are already using Raina Jet to work smarter, communicate better, and grow faster. The future of intelligent automation is here — and it is built for you.
             </p>
             <div className="mt-12 flex flex-wrap items-center justify-center gap-5">
               <Link
                 href="/signup"
                 className="group inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-bold text-black transition hover:scale-105 hover:bg-zinc-100 shadow-2xl shadow-purple-900/30"
               >
-                Try Vercal AI Now
+                Try Raina Jet Now
                 <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </Link>
               <Link
@@ -672,7 +672,7 @@ export default function AboutPage() {
 
       <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Vercal AI. All rights reserved.</span>
+          <span>© 2026 Raina Jet. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/privacy-policy" className="transition hover:text-zinc-400">Privacy Policy</Link>
             <Link href="/terms" className="transition hover:text-zinc-400">Terms of Service</Link>

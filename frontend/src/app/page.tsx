@@ -374,10 +374,10 @@ export default function Home() {
               <div className="space-y-6">
                 <Link href="/" className="group inline-flex items-center gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-lg shadow-purple-500/10 transition group-hover:scale-105 group-hover:border-purple-300/50">
-                    <img src="/evara-logo.png" alt="Vercal AI" className="h-7 w-7 object-contain" />
+                    <img src="/evara-logo.png" alt="Raina Jet" className="h-7 w-7 object-contain" />
                   </span>
                   <span>
-                    <span className="block text-base font-bold tracking-[0.22em] text-white uppercase">Vercal AI</span>
+                    <span className="block text-base font-bold tracking-[0.22em] text-white uppercase">Raina Jet</span>
                     <span className="mt-1 block text-xs font-medium text-purple-200">Smart AI Automation Platform</span>
                   </span>
                 </Link>
@@ -454,9 +454,9 @@ export default function Home() {
             </div>
 
             <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-              <p>© 2026 Vercal.app</p>
+              <p>© 2026 Raina Jet</p>
               <p>
-                Built by <span className="font-semibold text-zinc-300">Rupesh Sahu</span>
+                Built by <span className="font-semibold text-zinc-300">Riley Parker &amp; Rupesh Sahu</span>
               </p>
             </div>
           </div>

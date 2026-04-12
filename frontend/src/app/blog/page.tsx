@@ -5,7 +5,7 @@ import { posts, categories, getFeaturedPost, formatDate } from "@/lib/blog";
 export const metadata: Metadata = {
   title: "Blog — Evara AI | AI Guides, WhatsApp Automation & Business Growth",
   description:
-    "Explore Evara AI's blog for expert guides on AI automation, WhatsApp Business API, Ivana AI tips, regional AI, and strategies to grow your business with artificial intelligence.",
+    "Explore Evara AI's blog for expert guides on AI automation, WhatsApp Business API, Evara AI tips, regional AI, and strategies to grow your business with artificial intelligence.",
   openGraph: {
     title: "Evara AI Blog — AI Guides, WhatsApp Automation & Business Growth",
     description: "Expert guides, tutorials, and insights from the Evara AI team to help you get the most from AI automation.",
@@ -300,7 +300,7 @@ export default function BlogPage() {
 
       <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8 mt-10">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Raina Jet. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/about" className="transition hover:text-zinc-400">About</Link>
             <Link href="/partners" className="transition hover:text-zinc-400">Partners</Link>

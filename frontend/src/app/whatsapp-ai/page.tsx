@@ -96,20 +96,8 @@ export default function WhatsAppAILandingPage() {
               <p className="mt-4 text-sm leading-relaxed text-zinc-500">
                 Empowering businesses with intelligent WhatsApp automation. Built in India, serving the world.
               </p>
-              <div className="mt-4 space-y-1.5 text-xs text-zinc-600">
-                <div className="flex items-center gap-1.5">
-                  <span>Founder:</span>
-                  <a href="https://vercal.app" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-zinc-400 hover:text-emerald-400 transition">
-                    <img
-                      src="https://vercal.app/favicon.ico"
-                      alt="vercal.app"
-                      className="h-3.5 w-3.5 rounded-sm object-contain"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
-                    <span>vercal.app</span>
-                  </a>
-                </div>
-                <p>Co-founder: Rupesh Sahu</p>
+              <div className="mt-4 space-y-1 text-xs text-zinc-600">
+                <p>Co-founders: <span className="text-zinc-400">Riley Parker</span> &amp; <span className="text-zinc-400">Rupesh Sahu</span></p>
               </div>
             </div>
 

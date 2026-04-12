@@ -171,15 +171,15 @@ const helpCategories = [
   },
   {
     id: "ivana-ai",
-    label: "Ivana AI",
+    label: "Evara AI",
     icon: <BrainIcon className="h-6 w-6" />,
     color: "text-pink-300",
     bg: "bg-pink-500/10",
     border: "border-pink-500/25",
     dot: "bg-pink-400",
     count: 12,
-    description: "Help with your Ivana AI web and app chat assistant.",
-    articles: ["Starting your first conversation", "How to write effective prompts", "Managing conversation history", "Ivana AI response quality", "Using Ivana AI for documents"],
+    description: "Help with your Evara AI web and app chat assistant.",
+    articles: ["Starting your first conversation", "How to write effective prompts", "Managing conversation history", "Evara AI response quality", "Using Evara AI for documents"],
   },
   {
     id: "whatsapp-ai",
@@ -215,7 +215,7 @@ const helpCategories = [
     dot: "bg-red-400",
     count: 9,
     description: "Troubleshoot errors, performance issues, and platform problems.",
-    articles: ["WhatsApp webhook not receiving messages", "Ivana AI not responding correctly", "Account login problems", "Slow response times", "Data not syncing in dashboard"],
+    articles: ["WhatsApp webhook not receiving messages", "Evara AI not responding correctly", "Account login problems", "Slow response times", "Data not syncing in dashboard"],
   },
   {
     id: "api",
@@ -236,7 +236,7 @@ const faqs = [
     id: "faq-1",
     category: "Getting Started",
     question: "How do I create an Evara AI account?",
-    answer: "Creating an Evara AI account is simple. Visit Vercal.app and click 'Sign Up'. Enter your email address, create a secure password, and follow the verification steps. Once verified, you will be taken to your dashboard where you can set up Ivana AI or WhatsApp AI based on your plan.",
+    answer: "Creating an Evara AI account is simple. Visit rainajet.com and click 'Sign Up'. Enter your email address, create a secure password, and follow the verification steps. Once verified, you will be taken to your dashboard where you can set up Evara AI or WhatsApp AI based on your plan.",
     tags: ["account", "signup", "getting started"],
   },
   {
@@ -248,9 +248,9 @@ const faqs = [
   },
   {
     id: "faq-3",
-    category: "Ivana AI",
-    question: "Why is Ivana AI giving me inaccurate or unexpected responses?",
-    answer: "Ivana AI's response quality depends heavily on how your questions are framed. For best results: (1) Provide clear context about your situation, (2) Specify the format you want the response in, (3) Be precise about what you need. If a response is off, ask Ivana to try again with more specific instructions. For persistent issues, contact support@evara.ai.",
+    category: "Evara AI",
+    question: "Why is Evara AI giving me inaccurate or unexpected responses?",
+    answer: "Evara AI's response quality depends heavily on how your questions are framed. For best results: (1) Provide clear context about your situation, (2) Specify the format you want the response in, (3) Be precise about what you need. If a response is off, ask Ivana to try again with more specific instructions. For persistent issues, contact support@evara.ai.",
     tags: ["ivana", "accuracy", "quality", "troubleshoot"],
   },
   {
@@ -269,9 +269,9 @@ const faqs = [
   },
   {
     id: "faq-6",
-    category: "Ivana AI",
-    question: "How do I save and revisit my Ivana AI conversations?",
-    answer: "Ivana AI automatically saves your conversation history when you are logged in. Access past conversations from the 'History' panel on the left side of the Ivana AI interface. You can also search through conversation history, rename chats for easy reference, and delete conversations you no longer need from the same panel.",
+    category: "Evara AI",
+    question: "How do I save and revisit my Evara AI conversations?",
+    answer: "Evara AI automatically saves your conversation history when you are logged in. Access past conversations from the 'History' panel on the left side of the Evara AI interface. You can also search through conversation history, rename chats for easy reference, and delete conversations you no longer need from the same panel.",
     tags: ["ivana", "history", "conversations", "save"],
   },
   {
@@ -307,7 +307,7 @@ const faqs = [
 const ivanaTips = [
   {
     title: "Starting a conversation",
-    desc: "Type your question or request in the chat input and press Enter or click Send. Ivana AI will respond within seconds.",
+    desc: "Type your question or request in the chat input and press Enter or click Send. Evara AI will respond within seconds.",
   },
   {
     title: "Getting better responses",
@@ -360,7 +360,7 @@ const whatsappTips = [
 
 const popularArticles = [
   { title: "Complete WhatsApp AI setup guide", category: "WhatsApp AI", time: "9 min" },
-  { title: "How to write effective prompts for Ivana AI", category: "Ivana AI", time: "5 min" },
+  { title: "How to write effective prompts for Evara AI", category: "Evara AI", time: "5 min" },
   { title: "Connecting your WhatsApp Business API", category: "WhatsApp AI", time: "6 min" },
   { title: "Understanding your Evara AI plan limits", category: "Billing", time: "3 min" },
   { title: "Troubleshooting WhatsApp webhook errors", category: "Technical", time: "4 min" },
@@ -472,7 +472,7 @@ export default function HelpPage() {
             {/* Quick links */}
             {!search && (
               <div className="mt-5 flex flex-wrap justify-center gap-2">
-                {["Setting up WhatsApp AI", "Ivana AI prompts", "Cancel subscription", "API key", "Webhook error"].map((q) => (
+                {["Setting up WhatsApp AI", "Evara AI prompts", "Cancel subscription", "API key", "Webhook error"].map((q) => (
                   <button
                     key={q}
                     onClick={() => setSearch(q)}
@@ -660,14 +660,14 @@ export default function HelpPage() {
               </div>
               <div className="grid gap-8 lg:grid-cols-2">
 
-                {/* Ivana AI Help */}
+                {/* Evara AI Help */}
                 <div className="rounded-[2rem] border border-pink-500/20 bg-pink-500/[0.05] p-7 backdrop-blur-xl">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-pink-500/20 bg-pink-500/10 text-pink-300">
                       <BrainIcon className="h-6 w-6" />
                     </div>
                     <div>
-                      <p className="font-semibold text-white">Ivana AI</p>
+                      <p className="font-semibold text-white">Evara AI</p>
                       <p className="text-xs text-pink-300">Web & App AI Assistant</p>
                     </div>
                   </div>
@@ -681,7 +681,7 @@ export default function HelpPage() {
                   </div>
                   <div className="mt-6 pt-5 border-t border-white/5">
                     <Link href="/chat" className="group inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-pink-400">
-                      Try Ivana AI
+                      Try Evara AI
                       <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
                     </Link>
                   </div>
@@ -784,11 +784,11 @@ export default function HelpPage() {
               Ready to get started?
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-zinc-400">
-              You now have everything you need. Launch Ivana AI for intelligent conversation, or connect WhatsApp AI to automate your business communication today.
+              You now have everything you need. Launch Evara AI for intelligent conversation, or connect WhatsApp AI to automate your business communication today.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Link href="/chat" className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-bold text-black transition hover:scale-105 hover:bg-zinc-100 shadow-xl">
-                Try Ivana AI Now
+                Try Evara AI Now
                 <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </Link>
               <Link href="/whatsapp-ai" className="group inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-7 py-3.5 text-sm font-bold text-emerald-200 transition hover:bg-emerald-400/20">
@@ -805,7 +805,7 @@ export default function HelpPage() {
 
       <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Raina Jet. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/blog" className="transition hover:text-zinc-400">Blog</Link>
             <Link href="/about" className="transition hover:text-zinc-400">About</Link>

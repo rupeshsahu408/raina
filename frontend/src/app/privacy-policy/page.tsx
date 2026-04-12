@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Vercal AI",
+  title: "Privacy Policy — Raina Jet",
   description:
-    "Comprehensive Privacy Policy for Vercal AI, including Ivana AI and WhatsApp AI data handling practices.",
+    "Comprehensive Privacy Policy for Raina Jet, including Evara AI and WhatsApp AI data handling practices.",
 };
 
 const tableOfContents = [
@@ -13,7 +13,7 @@ const tableOfContents = [
   ["Definitions", "definitions"],
   ["Information We Collect", "information-we-collect"],
   ["How We Use Information", "how-we-use-information"],
-  ["Ivana AI Specific Privacy", "ivana-ai-specific-privacy"],
+  ["Evara AI Specific Privacy", "ivana-ai-specific-privacy"],
   ["WhatsApp AI Specific Privacy", "whatsapp-ai-specific-privacy"],
   ["Data Sharing and Disclosure", "data-sharing-and-disclosure"],
   ["Data Retention", "data-retention"],
@@ -34,10 +34,10 @@ export default function PrivacyPolicyPage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="group flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/10 transition group-hover:border-purple-300/40">
-              <img src="/evara-logo.png" alt="Vercal AI" className="h-7 w-7 object-contain" draggable={false} />
+              <img src="/evara-logo.png" alt="Raina Jet" className="h-7 w-7 object-contain" draggable={false} />
             </span>
             <span>
-              <span className="block text-sm font-bold tracking-[0.22em] text-white uppercase">Vercal AI</span>
+              <span className="block text-sm font-bold tracking-[0.22em] text-white uppercase">Raina Jet</span>
               <span className="block text-xs text-zinc-500">Privacy Policy</span>
             </span>
           </Link>
@@ -67,7 +67,7 @@ export default function PrivacyPolicyPage() {
               <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300">Services Covered</p>
                 <div className="mt-3 space-y-2 text-sm text-zinc-400">
-                  <p>Ivana AI — Web/App AI assistant</p>
+                  <p>Evara AI — Web/App AI assistant</p>
                   <p>WhatsApp AI — WhatsApp Business API automation</p>
                 </div>
               </div>
@@ -86,38 +86,38 @@ export default function PrivacyPolicyPage() {
                 Last updated: April 12, 2026 · Effective date: April 12, 2026
               </p>
               <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-300">
-                This Privacy Policy describes how Vercal AI collects, uses, stores, shares, protects, and otherwise processes information in connection with its artificial intelligence software services, including Ivana AI and WhatsApp AI. It is intended to provide a comprehensive and transparent explanation of our privacy practices for users, business customers, website visitors, and individuals whose information may be processed through customer-configured integrations.
+                This Privacy Policy describes how Raina Jet collects, uses, stores, shares, protects, and otherwise processes information in connection with its artificial intelligence software services, including Evara AI and WhatsApp AI. It is intended to provide a comprehensive and transparent explanation of our privacy practices for users, business customers, website visitors, and individuals whose information may be processed through customer-configured integrations.
               </p>
             </div>
 
             <div className="policy-content mt-10 space-y-12">
               <PolicySection id="introduction" title="1. Introduction">
                 <p>
-                  Vercal AI, operating through the Vercal.app platform, provides AI-powered software tools designed to assist individuals and businesses with automation, communication, productivity, and intelligent response generation. Our services include, without limitation, Ivana AI, a web and application-based AI assistant, and WhatsApp AI, an automation service that enables businesses to use artificial intelligence in connection with the WhatsApp Business API.
+                  Raina Jet, operating through the rainajet.com platform, provides AI-powered software tools designed to assist individuals and businesses with automation, communication, productivity, and intelligent response generation. Our services include, without limitation, Evara AI, a web and application-based AI assistant, and WhatsApp AI, an automation service that enables businesses to use artificial intelligence in connection with the WhatsApp Business API.
                 </p>
                 <p>
-                  This Privacy Policy applies to all users of Vercal AI websites, applications, dashboards, APIs, integrations, and related services, whether accessed through a browser, mobile application, progressive web application, business dashboard, or third-party communication channel. Where this document refers to the “Service” or “Services,” it includes both Ivana AI and WhatsApp AI unless a section expressly states otherwise.
+                  This Privacy Policy applies to all users of Raina Jet websites, applications, dashboards, APIs, integrations, and related services, whether accessed through a browser, mobile application, progressive web application, business dashboard, or third-party communication channel. Where this document refers to the “Service” or “Services,” it includes both Evara AI and WhatsApp AI unless a section expressly states otherwise.
                 </p>
                 <p>
                   By accessing, registering for, connecting to, configuring, or otherwise using any part of the Services, you acknowledge that you have read and understood this Privacy Policy. If you use the Services on behalf of a company, organization, or other legal entity, you represent that you are authorized to bind that entity and that such entity accepts the practices described herein.
                 </p>
                 <p>
-                  The WhatsApp AI service is separate from the primary Vercal AI landing page and from Ivana AI. However, because both services are operated under the Vercal AI platform, this Privacy Policy covers both services in a single document and includes service-specific provisions for each where necessary.
+                  The WhatsApp AI service is separate from the primary Raina Jet landing page and from Evara AI. However, because both services are operated under the Raina Jet platform, this Privacy Policy covers both services in a single document and includes service-specific provisions for each where necessary.
                 </p>
               </PolicySection>
 
               <PolicySection id="definitions" title="2. Definitions">
                 <p>For purposes of this Privacy Policy, the following terms have the meanings set forth below:</p>
                 <DefinitionList items={[
-                  ["Service or Services", "The websites, web applications, mobile or progressive web applications, dashboards, APIs, automations, integrations, AI assistant features, WhatsApp automation features, support channels, and related software operated by or on behalf of Vercal AI."],
-                  ["Vercal AI", "The AI SaaS platform that provides Ivana AI, WhatsApp AI, and related automation, communication, and artificial intelligence services through Vercal.app."],
-                  ["Ivana AI", "The Vercal AI web/app AI assistant service used for prompts, conversations, productivity support, general AI interaction, and related assistant functionality."],
-                  ["WhatsApp AI", "The Vercal AI business automation service that connects to the WhatsApp Business API or related Meta services to process messages, automate replies, manage business communication, and assist with customer interactions."],
+                  ["Service or Services", "The websites, web applications, mobile or progressive web applications, dashboards, APIs, automations, integrations, AI assistant features, WhatsApp automation features, support channels, and related software operated by or on behalf of Raina Jet."],
+                  ["Raina Jet", "The AI SaaS platform that provides Evara AI, WhatsApp AI, and related automation, communication, and artificial intelligence services through rainajet.com."],
+                  ["Evara AI", "The Raina Jet web/app AI assistant service used for prompts, conversations, productivity support, general AI interaction, and related assistant functionality."],
+                  ["WhatsApp AI", "The Raina Jet business automation service that connects to the WhatsApp Business API or related Meta services to process messages, automate replies, manage business communication, and assist with customer interactions."],
                   ["User", "Any individual who accesses or uses the Services, including account holders, website visitors, business administrators, team members, end customers who interact with a connected WhatsApp business number, and authorized representatives of business customers."],
                   ["Personal Data", "Any information that identifies, relates to, describes, is reasonably capable of being associated with, or could reasonably be linked to an identified or identifiable natural person."],
                   ["Processing", "Any operation performed on Personal Data, including collection, recording, organization, structuring, storage, adaptation, retrieval, consultation, use, transmission, disclosure, alignment, restriction, erasure, or destruction."],
                   ["AI Interaction Data", "Prompts, messages, instructions, uploaded context, conversation history, AI-generated responses, feedback, ratings, corrections, and related metadata generated when using AI features."],
-                  ["Third-party Services", "External providers, platforms, APIs, infrastructure vendors, analytics tools, authentication providers, hosting providers, payment processors, AI model providers, Meta services, or other services not directly operated by Vercal AI."],
+                  ["Third-party Services", "External providers, platforms, APIs, infrastructure vendors, analytics tools, authentication providers, hosting providers, payment processors, AI model providers, Meta services, or other services not directly operated by Raina Jet."],
                   ["WhatsApp Integration", "The connection between WhatsApp AI and the WhatsApp Business API, Meta developer tools, business phone numbers, webhook events, message templates, credentials, and related Meta infrastructure."],
                 ]} />
               </PolicySection>
@@ -132,7 +132,7 @@ export default function PrivacyPolicyPage() {
                     <li>Name, display name, account name, or profile identifier.</li>
                     <li>Email address, phone number, account login credentials, and authentication identifiers.</li>
                     <li>Account preferences, language settings, notification preferences, and profile configuration.</li>
-                    <li>Customer support messages, feedback, attachments, and correspondence with Vercal AI.</li>
+                    <li>Customer support messages, feedback, attachments, and correspondence with Raina Jet.</li>
                     <li>Billing-related identifiers if paid services are later enabled, such as subscription plan, invoice reference, or transaction status, while payment card details may be processed directly by payment processors and not stored by us.</li>
                   </ul>
                 </SubSection>
@@ -154,7 +154,7 @@ export default function PrivacyPolicyPage() {
                   </ul>
                 </SubSection>
                 <SubSection title="3.4 AI Interaction Data">
-                  <p>When you use AI functionality, including Ivana AI or AI-powered automations within WhatsApp AI, we may process:</p>
+                  <p>When you use AI functionality, including Evara AI or AI-powered automations within WhatsApp AI, we may process:</p>
                   <ul>
                     <li>Prompts, messages, questions, commands, conversation threads, uploaded context, documents, notes, and files submitted to the Service.</li>
                     <li>AI-generated responses, summaries, suggested replies, classifications, moderation outcomes, automation decisions, and related system outputs.</li>
@@ -177,7 +177,7 @@ export default function PrivacyPolicyPage() {
                 <p>We process information for legitimate business, contractual, security, compliance, and user-requested purposes, including the following:</p>
                 <ul>
                   <li><strong>Providing AI responses:</strong> To receive prompts or messages, generate AI outputs, deliver responses, support ongoing conversations, and operate the functionality requested by users.</li>
-                  <li><strong>Operating Ivana AI:</strong> To maintain conversation continuity, apply user settings, provide assistant responses, enable chat history where available, and support account-based AI interaction.</li>
+                  <li><strong>Operating Evara AI:</strong> To maintain conversation continuity, apply user settings, provide assistant responses, enable chat history where available, and support account-based AI interaction.</li>
                   <li><strong>Operating WhatsApp AI:</strong> To receive WhatsApp messages through the WhatsApp Business API, apply business rules and knowledge base content, generate or route replies, send responses through Meta systems, and maintain dashboard visibility.</li>
                   <li><strong>Improving models and services:</strong> To evaluate quality, diagnose failures, improve prompts, refine product behavior, enhance accuracy, reduce hallucinations, improve safety systems, and develop new features, subject to the model training limitations described in this Policy.</li>
                   <li><strong>Analytics and performance:</strong> To understand usage patterns, measure reliability, detect errors, monitor latency, optimize infrastructure, and improve user experience.</li>
@@ -185,37 +185,37 @@ export default function PrivacyPolicyPage() {
                   <li><strong>Security and fraud prevention:</strong> To authenticate users, prevent unauthorized access, detect abuse, monitor suspicious behavior, protect integrations, prevent spam, enforce rate limits, and maintain platform integrity.</li>
                   <li><strong>Business verification and compliance:</strong> To support Meta platform requirements, WhatsApp Business API compliance, legal obligations, audit readiness, and enforcement of applicable policies.</li>
                   <li><strong>Communications:</strong> To send administrative messages, service updates, policy notices, security alerts, billing or plan-related notices if applicable, and support responses.</li>
-                  <li><strong>Legal obligations:</strong> To comply with applicable law, respond to lawful requests, preserve legal rights, enforce agreements, and protect users, customers, Vercal AI, or the public.</li>
+                  <li><strong>Legal obligations:</strong> To comply with applicable law, respond to lawful requests, preserve legal rights, enforce agreements, and protect users, customers, Raina Jet, or the public.</li>
                 </ul>
               </PolicySection>
 
-              <PolicySection id="ivana-ai-specific-privacy" title="5. Ivana AI Specific Privacy">
+              <PolicySection id="ivana-ai-specific-privacy" title="5. Evara AI Specific Privacy">
                 <p>
-                  Ivana AI is the web/app AI assistant service within the Vercal AI platform. It is separate from WhatsApp AI and is intended for user-directed AI conversations, productivity support, information assistance, and related interactive assistant experiences. The privacy practices in this section apply specifically to Ivana AI.
+                  Evara AI is the web/app AI assistant service within the Raina Jet platform. It is separate from WhatsApp AI and is intended for user-directed AI conversations, productivity support, information assistance, and related interactive assistant experiences. The privacy practices in this section apply specifically to Evara AI.
                 </p>
                 <SubSection title="5.1 AI Conversations and Assistant Context">
                   <p>
-                    When you interact with Ivana AI, we process the text, prompts, commands, uploaded context, conversation history, and AI responses needed to provide the assistant experience. This may include sensitive information if you choose to submit it. You should not submit confidential, regulated, or highly sensitive information unless you are authorized to do so and understand the risks of AI-assisted processing.
+                    When you interact with Evara AI, we process the text, prompts, commands, uploaded context, conversation history, and AI responses needed to provide the assistant experience. This may include sensitive information if you choose to submit it. You should not submit confidential, regulated, or highly sensitive information unless you are authorized to do so and understand the risks of AI-assisted processing.
                   </p>
                 </SubSection>
                 <SubSection title="5.2 Storage of Prompts and Responses">
                   <p>
-                    Depending on your account settings and product functionality, Ivana AI prompts and responses may be stored to provide chat history, continuity, debugging, personalization, account recovery, and quality assurance. Certain transient processing data may be retained temporarily in logs or caches for operational reliability, security monitoring, and abuse prevention.
+                    Depending on your account settings and product functionality, Evara AI prompts and responses may be stored to provide chat history, continuity, debugging, personalization, account recovery, and quality assurance. Certain transient processing data may be retained temporarily in logs or caches for operational reliability, security monitoring, and abuse prevention.
                   </p>
                 </SubSection>
                 <SubSection title="5.3 Model Training Clarification">
                   <p>
-                    Vercal AI does not sell Ivana AI conversation data. We do not intentionally use private user conversations to train public third-party foundation models unless we provide a clear notice or obtain any consent required by applicable law. We may use aggregated, anonymized, or de-identified information to improve product performance, safety, analytics, and user experience, provided such information is not reasonably capable of identifying an individual.
+                    Raina Jet does not sell Evara AI conversation data. We do not intentionally use private user conversations to train public third-party foundation models unless we provide a clear notice or obtain any consent required by applicable law. We may use aggregated, anonymized, or de-identified information to improve product performance, safety, analytics, and user experience, provided such information is not reasonably capable of identifying an individual.
                   </p>
                 </SubSection>
                 <SubSection title="5.4 Temporary and Persistent Storage">
                   <p>
-                    Some Ivana AI data may be processed only temporarily for response generation, while other data may be stored persistently to support account features such as chat history, preferences, memory-like features, and personalization. Where persistent storage is available, users may be provided controls to delete conversations, clear history, or change retention-related settings.
+                    Some Evara AI data may be processed only temporarily for response generation, while other data may be stored persistently to support account features such as chat history, preferences, memory-like features, and personalization. Where persistent storage is available, users may be provided controls to delete conversations, clear history, or change retention-related settings.
                   </p>
                 </SubSection>
                 <SubSection title="5.5 User Control Over Chats">
                   <p>
-                    Subject to product availability, technical limitations, and legal obligations, users may request access to, deletion of, or export of their Ivana AI conversation data. Deletion may not immediately remove data from encrypted backups, security logs, or disaster recovery systems, but such data will be isolated from ordinary use and removed in accordance with applicable retention schedules.
+                    Subject to product availability, technical limitations, and legal obligations, users may request access to, deletion of, or export of their Evara AI conversation data. Deletion may not immediately remove data from encrypted backups, security logs, or disaster recovery systems, but such data will be isolated from ordinary use and removed in accordance with applicable retention schedules.
                   </p>
                 </SubSection>
               </PolicySection>
@@ -226,12 +226,12 @@ export default function PrivacyPolicyPage() {
                 </p>
                 <SubSection title="6.1 Integration with WhatsApp Business API">
                   <p>
-                    When a business customer connects WhatsApp AI, the Service may receive webhook events and message data from Meta’s WhatsApp Business API. We use this data to process customer messages, apply business-defined automation rules, generate AI-assisted responses, and send messages through the connected WhatsApp Business account. WhatsApp AI operates as a processor or service provider for business customers where it handles their customer communication on their behalf, except where Vercal AI determines the purposes and means of processing for its own platform operations.
+                    When a business customer connects WhatsApp AI, the Service may receive webhook events and message data from Meta’s WhatsApp Business API. We use this data to process customer messages, apply business-defined automation rules, generate AI-assisted responses, and send messages through the connected WhatsApp Business account. WhatsApp AI operates as a processor or service provider for business customers where it handles their customer communication on their behalf, except where Raina Jet determines the purposes and means of processing for its own platform operations.
                   </p>
                 </SubSection>
                 <SubSection title="6.2 Data Shared with Meta Platforms">
                   <p>
-                    WhatsApp messages, metadata, delivery information, business account identifiers, and template-related information may be transmitted to or received from Meta Platforms, Inc. or its affiliates as necessary for WhatsApp Business API functionality. Such processing is also subject to Meta’s applicable terms, developer policies, WhatsApp Business terms, and privacy documentation. Vercal AI does not control Meta’s independent processing of information within Meta systems.
+                    WhatsApp messages, metadata, delivery information, business account identifiers, and template-related information may be transmitted to or received from Meta Platforms, Inc. or its affiliates as necessary for WhatsApp Business API functionality. Such processing is also subject to Meta’s applicable terms, developer policies, WhatsApp Business terms, and privacy documentation. Raina Jet does not control Meta’s independent processing of information within Meta systems.
                   </p>
                 </SubSection>
                 <SubSection title="6.3 Message Handling and Automation">
@@ -246,7 +246,7 @@ export default function PrivacyPolicyPage() {
                 </SubSection>
                 <SubSection title="6.5 WhatsApp Policy Compliance">
                   <p>
-                    Business customers must not use WhatsApp AI to send unlawful, misleading, harmful, discriminatory, harassing, or policy-violating content. They must not upload, process, or automate content that violates Meta or WhatsApp policies. Vercal AI may suspend or restrict WhatsApp AI functionality where we reasonably believe an account, integration, or message flow presents a security, legal, abuse, spam, or platform compliance risk.
+                    Business customers must not use WhatsApp AI to send unlawful, misleading, harmful, discriminatory, harassing, or policy-violating content. They must not upload, process, or automate content that violates Meta or WhatsApp policies. Raina Jet may suspend or restrict WhatsApp AI functionality where we reasonably believe an account, integration, or message flow presents a security, legal, abuse, spam, or platform compliance risk.
                   </p>
                 </SubSection>
               </PolicySection>
@@ -263,7 +263,7 @@ export default function PrivacyPolicyPage() {
                   <li><strong>Analytics and performance providers:</strong> We may use analytics and diagnostic tools to understand product usage, improve reliability, detect crashes, and optimize performance.</li>
                   <li><strong>Professional advisors:</strong> We may disclose information to legal counsel, auditors, accountants, insurers, or other advisors where reasonably necessary for business, compliance, or legal purposes.</li>
                   <li><strong>Legal requirements:</strong> We may disclose information to courts, regulators, law enforcement, government authorities, or third parties where required by law or where we believe disclosure is necessary to protect rights, safety, security, or legal interests.</li>
-                  <li><strong>Business transfers:</strong> If Vercal AI is involved in a merger, acquisition, financing, restructuring, bankruptcy, sale of assets, or similar transaction, information may be transferred as part of that transaction subject to appropriate confidentiality and notice measures where required.</li>
+                  <li><strong>Business transfers:</strong> If Raina Jet is involved in a merger, acquisition, financing, restructuring, bankruptcy, sale of assets, or similar transaction, information may be transferred as part of that transaction subject to appropriate confidentiality and notice measures where required.</li>
                 </ul>
               </PolicySection>
 
@@ -273,7 +273,7 @@ export default function PrivacyPolicyPage() {
                 </p>
                 <ul>
                   <li><strong>Account information:</strong> Retained while your account remains active and for a reasonable period thereafter for security, audit, compliance, and dispute resolution purposes.</li>
-                  <li><strong>Ivana AI conversations:</strong> Retained according to product settings, user controls, operational needs, and applicable law. Users may request deletion or export where available and legally required.</li>
+                  <li><strong>Evara AI conversations:</strong> Retained according to product settings, user controls, operational needs, and applicable law. Users may request deletion or export where available and legally required.</li>
                   <li><strong>WhatsApp AI chat logs:</strong> Retained to provide dashboard history, support business review, troubleshoot automation, and satisfy legal or compliance requirements. Business customers may request deletion subject to applicable constraints.</li>
                   <li><strong>Credentials and integration data:</strong> Retained only while necessary to maintain the integration or as required for audit, security, or legal reasons. If an integration is disconnected, credentials may be deleted or rendered unusable according to our technical processes.</li>
                   <li><strong>Backups and logs:</strong> Deleted data may persist in encrypted backups, disaster recovery systems, and security logs for a limited period until those systems cycle out according to retention schedules.</li>
@@ -283,7 +283,7 @@ export default function PrivacyPolicyPage() {
 
               <PolicySection id="data-security" title="9. Data Security">
                 <p>
-                  Vercal AI uses administrative, technical, and organizational safeguards designed to protect information against unauthorized access, disclosure, alteration, loss, misuse, or destruction. These measures may include encryption in transit, secure storage practices, access controls, authentication protections, least-privilege permissions, audit logging, monitoring, credential isolation, and environment separation where appropriate.
+                  Raina Jet uses administrative, technical, and organizational safeguards designed to protect information against unauthorized access, disclosure, alteration, loss, misuse, or destruction. These measures may include encryption in transit, secure storage practices, access controls, authentication protections, least-privilege permissions, audit logging, monitoring, credential isolation, and environment separation where appropriate.
                 </p>
                 <p>
                   Sensitive credentials, such as WhatsApp integration tokens where stored by the Service, are intended to be protected using encryption or equivalent safeguards and are not designed to be displayed back to users after submission. Access to production systems and user data is limited to authorized personnel and service providers who require access for legitimate operational purposes.
@@ -295,7 +295,7 @@ export default function PrivacyPolicyPage() {
 
               <PolicySection id="user-rights" title="10. User Rights">
                 <p>
-                  Depending on your jurisdiction, role, and relationship with Vercal AI, you may have certain rights regarding Personal Data. These rights may be subject to limitations, verification requirements, exceptions, and the rights of other individuals.
+                  Depending on your jurisdiction, role, and relationship with Raina Jet, you may have certain rights regarding Personal Data. These rights may be subject to limitations, verification requirements, exceptions, and the rights of other individuals.
                 </p>
                 <ul>
                   <li><strong>Access:</strong> You may request information about whether we process your Personal Data and request a copy of certain Personal Data we hold about you.</li>
@@ -328,7 +328,7 @@ export default function PrivacyPolicyPage() {
 
               <PolicySection id="childrens-privacy" title="12. Children’s Privacy">
                 <p>
-                  The Services are not intended for children under the age of 13, or under the age required by applicable law in the relevant jurisdiction. We do not knowingly collect Personal Data from children in violation of applicable law. If you believe a child has provided Personal Data to Vercal AI without appropriate consent, please contact us and we will take reasonable steps to delete or restrict the information as required.
+                  The Services are not intended for children under the age of 13, or under the age required by applicable law in the relevant jurisdiction. We do not knowingly collect Personal Data from children in violation of applicable law. If you believe a child has provided Personal Data to Raina Jet without appropriate consent, please contact us and we will take reasonable steps to delete or restrict the information as required.
                 </p>
                 <p>
                   Business customers using WhatsApp AI are responsible for ensuring that their customer communications, automations, and data collection practices are appropriate for their audience and comply with laws applicable to minors, students, consumers, and protected categories of individuals.
@@ -337,7 +337,7 @@ export default function PrivacyPolicyPage() {
 
               <PolicySection id="international-data-transfers" title="13. International Data Transfers">
                 <p>
-                  Vercal AI may process and store information in countries other than the country where you reside or where your business is established. Cloud infrastructure, AI providers, analytics vendors, Meta services, support tools, and other service providers may operate globally. As a result, information may be transferred to, stored in, or accessed from jurisdictions that may have data protection laws different from those in your jurisdiction.
+                  Raina Jet may process and store information in countries other than the country where you reside or where your business is established. Cloud infrastructure, AI providers, analytics vendors, Meta services, support tools, and other service providers may operate globally. As a result, information may be transferred to, stored in, or accessed from jurisdictions that may have data protection laws different from those in your jurisdiction.
                 </p>
                 <p>
                   Where required, we use appropriate safeguards for international transfers, which may include contractual protections, data processing agreements, standard contractual clauses, vendor due diligence, transfer impact assessments, encryption, access controls, and other measures designed to protect Personal Data in accordance with applicable law.
@@ -355,15 +355,15 @@ export default function PrivacyPolicyPage() {
 
               <PolicySection id="contact-information" title="15. Contact Information">
                 <p>
-                  If you have questions, requests, concerns, or complaints regarding this Privacy Policy or Vercal AI’s data practices, please contact us using the information below:
+                  If you have questions, requests, concerns, or complaints regarding this Privacy Policy or Raina Jet’s data practices, please contact us using the information below:
                 </p>
                 <div className="rounded-3xl border border-white/10 bg-black/35 p-6">
-                  <p className="text-lg font-semibold text-white">Vercal AI</p>
-                  <p className="mt-2 text-zinc-400">Vercal.app</p>
+                  <p className="text-lg font-semibold text-white">Raina Jet</p>
+                  <p className="mt-2 text-zinc-400">rainajet.com</p>
                   <p className="mt-4">
                     <span className="font-semibold text-zinc-200">Email:</span>{" "}
-                    <a href="mailto:support@vercal.app" className="text-purple-200 underline decoration-purple-300/40 underline-offset-4 transition hover:text-white">
-                      support@vercal.app
+                    <a href="mailto:support@rainajet.com" className="text-purple-200 underline decoration-purple-300/40 underline-offset-4 transition hover:text-white">
+                      support@rainajet.com
                     </a>
                   </p>
                   <p className="mt-3 text-sm text-zinc-500">
@@ -378,7 +378,7 @@ export default function PrivacyPolicyPage() {
 
       <footer className="relative z-10 border-t border-white/10 bg-black/60 py-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>© 2026 Vercal.app. All rights reserved.</p>
+          <p>© 2026 Raina Jet. All rights reserved.</p>
           <div className="flex flex-wrap gap-4">
             <Link href="/" className="transition hover:text-white">Home</Link>
             <Link href="/whatsapp-ai" className="transition hover:text-white">WhatsApp AI</Link>

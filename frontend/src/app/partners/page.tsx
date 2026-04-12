@@ -181,7 +181,7 @@ const collaborationAreas = [
   },
   {
     title: "AI Development and Scaling",
-    description: "As the AI capabilities of the Evara AI platform grow, partners contribute the compute resources, model infrastructure, and technical expertise necessary to scale AI services reliably and cost-effectively — ensuring that Ivana AI and WhatsApp AI continue to perform as demand grows.",
+    description: "As the AI capabilities of the Evara AI platform grow, partners contribute the compute resources, model infrastructure, and technical expertise necessary to scale AI services reliably and cost-effectively — ensuring that Evara AI and WhatsApp AI continue to perform as demand grows.",
     icon: <BrainIcon className="h-5 w-5 text-pink-300" />,
     items: ["Model infrastructure support", "Compute and storage resources", "AI performance optimization", "Safety and reliability systems"],
   },
@@ -519,17 +519,17 @@ export default function PartnersPage() {
               {[
                 {
                   icon: <BrainIcon className="h-7 w-7" />,
-                  name: "Ivana AI",
+                  name: "Evara AI",
                   tagline: "Web / App AI Assistant",
                   color: "text-purple-300",
                   border: "border-purple-500/25",
                   bg: "bg-purple-500/[0.07]",
                   iconBg: "bg-purple-500/15 border-purple-500/20",
                   points: [
-                    "AI model infrastructure from specialist providers ensures Ivana AI responses are fast, contextually accurate, and reliably available at all times.",
+                    "AI model infrastructure from specialist providers ensures Evara AI responses are fast, contextually accurate, and reliably available at all times.",
                     "Authentication and identity partner services secure user accounts and sessions, protecting every conversation and user interaction.",
-                    "Hosting and CDN partnerships ensure that the Ivana AI interface loads quickly and performs smoothly for users across every geography.",
-                    "Communication partners power transactional notifications, password resets, account alerts, and support routing for Ivana AI users.",
+                    "Hosting and CDN partnerships ensure that the Evara AI interface loads quickly and performs smoothly for users across every geography.",
+                    "Communication partners power transactional notifications, password resets, account alerts, and support routing for Evara AI users.",
                   ],
                 },
                 {
@@ -716,7 +716,7 @@ export default function PartnersPage() {
 
       <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Raina Jet. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/about" className="transition hover:text-zinc-400">About</Link>
             <Link href="/contact" className="transition hover:text-zinc-400">Contact</Link>

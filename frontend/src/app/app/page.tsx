@@ -703,8 +703,8 @@ export default function AppPage() {
               </div>
             </div>
             <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-              <p>© 2026 Vercal.app</p>
-              <p>Built by <span className="font-semibold text-zinc-300">Rupesh Sahu</span></p>
+              <p>© 2026 Raina Jet</p>
+              <p>Built by <span className="font-semibold text-zinc-300">Riley Parker &amp; Rupesh Sahu</span></p>
             </div>
           </div>
         </div>

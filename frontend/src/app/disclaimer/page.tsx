@@ -12,7 +12,7 @@ const tableOfContents = [
   ["General Disclaimer", "general-disclaimer"],
   ["AI Output Disclaimer", "ai-output-disclaimer"],
   ["Professional Disclaimer", "professional-disclaimer"],
-  ["Ivana AI Disclaimer", "ivana-ai-disclaimer"],
+  ["Evara AI Disclaimer", "ivana-ai-disclaimer"],
   ["WhatsApp AI Disclaimer", "whatsapp-ai-disclaimer"],
   ["Third-Party Disclaimer", "third-party-disclaimer"],
   ["Limitation of Liability", "limitation-of-liability"],
@@ -69,7 +69,7 @@ export default function DisclaimerPage() {
               <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300">Services Covered</p>
                 <div className="mt-3 space-y-2 text-sm text-zinc-400">
-                  <p>Ivana AI — Web/App AI assistant</p>
+                  <p>Evara AI — Web/App AI assistant</p>
                   <p>WhatsApp AI — WhatsApp Business API automation</p>
                 </div>
               </div>
@@ -102,7 +102,7 @@ export default function DisclaimerPage() {
 
               <DisclaimerSection id="general-disclaimer" title="1. General Disclaimer">
                 <p>
-                  Evara AI is an independent artificial intelligence software platform that provides AI-powered tools and automation services to individuals, professionals, and business customers through its web applications, mobile applications, progressive web applications, dashboards, APIs, and related digital properties. The platform currently includes, without limitation, Ivana AI, a web and application-based AI assistant, and WhatsApp AI, a business automation service operating through the WhatsApp Business API.
+                  Evara AI is an independent artificial intelligence software platform that provides AI-powered tools and automation services to individuals, professionals, and business customers through its web applications, mobile applications, progressive web applications, dashboards, APIs, and related digital properties. The platform currently includes, without limitation, Evara AI, a web and application-based AI assistant, and WhatsApp AI, a business automation service operating through the WhatsApp Business API.
                 </p>
                 <p>
                   All information, content, outputs, features, tools, services, and resources provided through the Evara AI platform are made available on an <strong>"as-is"</strong> and <strong>"as-available"</strong> basis. Evara AI makes no representations or warranties of any kind, whether express, implied, statutory, or otherwise, regarding the accuracy, reliability, completeness, timeliness, legality, safety, merchantability, fitness for a particular purpose, or non-infringement of any content, service, output, or feature made available through the platform.
@@ -167,28 +167,28 @@ export default function DisclaimerPage() {
                 </SubSection>
               </DisclaimerSection>
 
-              <DisclaimerSection id="ivana-ai-disclaimer" title="4. Ivana AI Disclaimer">
+              <DisclaimerSection id="ivana-ai-disclaimer" title="4. Evara AI Disclaimer">
                 <p>
-                  Ivana AI is the conversational AI assistant provided through the Evara AI web and application platform. It is intended to assist users with productivity, information, content generation, summarization, question-answering, and general AI-assisted tasks. The following specific disclaimers apply to your use of Ivana AI and any outputs it generates.
+                  Evara AI is the conversational AI assistant provided through the Evara AI web and application platform. It is intended to assist users with productivity, information, content generation, summarization, question-answering, and general AI-assisted tasks. The following specific disclaimers apply to your use of Evara AI and any outputs it generates.
                 </p>
                 <SubSection title="4.1 Conversational AI Risks">
                   <p>
-                    Conversational AI systems like Ivana AI operate by predicting contextually appropriate responses based on large volumes of training data. This methodology introduces inherent risks that users must understand, including the generation of plausible-sounding but incorrect information (commonly referred to as "hallucination"), the reproduction of biased or stereotyped language present in training data, the inability to access real-time or post-training information, and the potential for misunderstanding ambiguous user inputs in ways that result in unhelpful or misleading responses.
+                    Conversational AI systems like Evara AI operate by predicting contextually appropriate responses based on large volumes of training data. This methodology introduces inherent risks that users must understand, including the generation of plausible-sounding but incorrect information (commonly referred to as "hallucination"), the reproduction of biased or stereotyped language present in training data, the inability to access real-time or post-training information, and the potential for misunderstanding ambiguous user inputs in ways that result in unhelpful or misleading responses.
                   </p>
                 </SubSection>
                 <SubSection title="4.2 No Guarantee of Correctness">
                   <p>
-                    Evara AI makes no guarantee that Ivana AI responses will be accurate, complete, current, lawful, safe, appropriate, or suitable for any specific purpose. The quality and reliability of Ivana AI outputs may vary depending on the complexity of the query, the clarity of the user's input, the subject matter involved, the version of the underlying model in use, and the availability of relevant training data. Users should not treat any Ivana AI response as authoritative without independent verification.
+                    Evara AI makes no guarantee that Evara AI responses will be accurate, complete, current, lawful, safe, appropriate, or suitable for any specific purpose. The quality and reliability of Evara AI outputs may vary depending on the complexity of the query, the clarity of the user's input, the subject matter involved, the version of the underlying model in use, and the availability of relevant training data. Users should not treat any Evara AI response as authoritative without independent verification.
                   </p>
                 </SubSection>
                 <SubSection title="4.3 User Responsibility for Interpreting Outputs">
                   <p>
-                    The user is solely responsible for interpreting, evaluating, validating, and applying Ivana AI outputs. Evara AI is not responsible for any outcome that results from the user's interpretation or application of AI-generated content. This includes, without limitation, errors in published communications, incorrect automation logic, business decisions based on AI-generated analysis, creative works generated using AI assistance, or any other downstream application of AI outputs. Users are advised to apply their own knowledge, critical judgment, and professional expertise when reviewing and utilizing Ivana AI responses.
+                    The user is solely responsible for interpreting, evaluating, validating, and applying Evara AI outputs. Evara AI is not responsible for any outcome that results from the user's interpretation or application of AI-generated content. This includes, without limitation, errors in published communications, incorrect automation logic, business decisions based on AI-generated analysis, creative works generated using AI assistance, or any other downstream application of AI outputs. Users are advised to apply their own knowledge, critical judgment, and professional expertise when reviewing and utilizing Evara AI responses.
                   </p>
                 </SubSection>
                 <SubSection title="4.4 Sensitive Information">
                   <p>
-                    Users should exercise caution when submitting sensitive, confidential, personal, or regulated information to Ivana AI. While Evara AI implements technical and organizational security measures, users should not transmit information that they are not authorized to share with third-party AI systems, including but not limited to protected health information, confidential legal communications, trade secrets, proprietary business data, government-classified material, or any information subject to regulatory restrictions on processing. Submission of such information is at the user's sole risk.
+                    Users should exercise caution when submitting sensitive, confidential, personal, or regulated information to Evara AI. While Evara AI implements technical and organizational security measures, users should not transmit information that they are not authorized to share with third-party AI systems, including but not limited to protected health information, confidential legal communications, trade secrets, proprietary business data, government-classified material, or any information subject to regulatory restrictions on processing. Submission of such information is at the user's sole risk.
                   </p>
                 </SubSection>
               </DisclaimerSection>
@@ -405,7 +405,7 @@ export default function DisclaimerPage() {
 
             <div className="mt-12 border-t border-white/10 pt-8">
               <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
-                <span>© 2026 Evara AI. All rights reserved.</span>
+                <span>© 2026 Raina Jet. All rights reserved.</span>
                 <Link href="/privacy-policy" className="text-zinc-400 hover:text-white transition">Privacy Policy</Link>
                 <Link href="/terms" className="text-zinc-400 hover:text-white transition">Terms of Service</Link>
                 <Link href="/cookies" className="text-zinc-400 hover:text-white transition">Cookie Policy</Link>
