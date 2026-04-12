@@ -229,6 +229,30 @@ export default function Home() {
                 />
               </div>
             </div>
+
+            {/* Powered by Vercal */}
+            <a
+              href="https://vercal.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group relative mt-14 inline-flex items-center gap-3 overflow-hidden rounded-2xl p-px transition-transform hover:scale-[1.02]"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/5 to-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
+              <span className="relative flex items-center gap-3 rounded-[14px] border border-white/10 bg-white/[0.06] px-5 py-3 backdrop-blur-xl">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white shadow-md shadow-white/20">
+                  <img src="/vercal-logo.png" alt="Vercal" className="h-6 w-6 object-contain" />
+                </span>
+                <span className="flex flex-col items-start leading-none">
+                  <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">Powered by</span>
+                  <span className="mt-0.5 text-sm font-bold tracking-wide text-white">Vercal</span>
+                </span>
+                <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-white/10 text-zinc-400 transition-colors group-hover:border-white/30 group-hover:text-white">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-2.5 w-2.5">
+                    <path d="M7 17 17 7M7 7h10v10" />
+                  </svg>
+                </span>
+              </span>
+            </a>
           </div>
           
         </section>
@@ -455,17 +479,6 @@ export default function Home() {
 
             <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
               <p>© 2026 Raina Jet</p>
-              <a
-                href="https://vercal.app"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-zinc-400 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-zinc-200"
-              >
-                <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-white p-0.5">
-                  <img src="/vercal-logo.png" alt="Vercal" className="h-full w-full rounded-full object-contain" />
-                </span>
-                Powered by Vercal
-              </a>
               <p>
                 Built by <span className="font-semibold text-zinc-300">Riley Parker &amp; Rupesh Sahu</span>
               </p>
