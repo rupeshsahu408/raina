@@ -130,6 +130,7 @@ export default function WhatsAppAILandingPage() {
               <ul className="mt-4 space-y-2.5">
                 <li><a href="/privacy-policy" className="text-sm text-zinc-500 transition hover:text-emerald-400">Privacy Policy</a></li>
                 <li><a href="/terms" className="text-sm text-zinc-500 transition hover:text-emerald-400">Terms of Service</a></li>
+                <li><a href="/data-deletion" className="text-sm text-zinc-500 transition hover:text-emerald-400">Data Deletion</a></li>
                 <li>
                   <span className="text-sm text-zinc-600">
                     Compliant with WhatsApp Business API & Meta policies.
@@ -169,6 +170,7 @@ export default function WhatsAppAILandingPage() {
             <div className="flex items-center gap-6">
               <a href="/privacy-policy" className="text-xs text-zinc-600 transition hover:text-emerald-400">Privacy Policy</a>
               <a href="/terms" className="text-xs text-zinc-600 transition hover:text-emerald-400">Terms of Service</a>
+              <a href="/data-deletion" className="text-xs text-zinc-600 transition hover:text-emerald-400">Data Deletion</a>
               <a href="mailto:support.studyhelp@gmail.com" className="text-xs text-zinc-600 transition hover:text-emerald-400">Contact</a>
             </div>
           </div>
