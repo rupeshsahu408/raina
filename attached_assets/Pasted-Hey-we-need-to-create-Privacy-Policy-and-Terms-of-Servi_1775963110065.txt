@@ -1,0 +1,86 @@
+Hey, we need to create Privacy Policy and Terms of Service pages for Meta (WhatsApp API) approval.
+
+Please follow these requirements carefully:
+
+---
+
+1. Privacy Policy Page
+   URL: /privacy-policy
+
+Requirements:
+
+* Content should be LONG, detailed, and written in simple language
+* Clearly explain what data we collect (name, email, WhatsApp number, messages)
+* Explain how the data is used (WhatsApp integration, AI auto-replies, service improvement)
+* Mention data security and protection
+* Clearly state that we do NOT sell user data
+* Include sections like:
+
+  * Information We Collect
+  * How We Use Information
+  * Data Sharing
+  * Data Security
+  * User Rights
+* Add contact email at the end
+* Content should look professional and slightly formal (not short or basic)
+
+---
+
+2. Terms of Service Page
+   URL: /terms
+
+Requirements:
+
+* Content should be LONG, structured, and easy to understand
+* Clearly define rules for using the platform
+* Include:
+
+  * User responsibilities
+  * Prohibited activities (spam, illegal use, abuse)
+  * Account suspension rights
+  * Limitation of liability
+  * Service availability (we can modify or stop service anytime)
+* Should be written in simple but formal language
+* Make it detailed and slightly complex (not short or basic)
+
+---
+
+Technical Requirements:
+
+* Both pages must be publicly accessible (no login required)
+* Must be hosted on production domain (not localhost)
+* HTTPS required
+* Clean UI (simple is fine, but readable and structured)
+* my website link-https://raina-jet.vercel.app/
+   “These will be placed in the footer. Please create a good footer and include these pages along with other sections like Contact, About, etc.—you can add anything else you think is useful. All of this should be included in the footer of this page: https://raina-jet.vercel.app/whatsapp-ai, not on the main page. I will provide you with more details for different footer pages separately.”  
+
+  MY DETAILS-FOUNDER=VERCAL.APP
+  CO-FOUNDER-RUPESH SAHU
+  ADDRESS-  
+
+  ### 📍 **Contact Information**
+
+   
+
+  **Raina Jet**
+   Kaimur, Bihar – 821195
+   India
+
+   
+
+  📧 **Email:** [support.studyhelp@gmail.com](mailto:support.studyhelp@gmail.com)
+   📞 **Phone:** +91 9060937559
+
+   
+
+  🕒 **Support Hours:**
+   Monday – Saturday, 10:00 AM – 6:00 PM
+
+     ou can also add anything else you think is good or useful on your own.  
+
+---
+
+Goal:
+These pages are required for Meta (WhatsApp Business API) approval, so they must look professional, detailed, and trustworthy.
+
+Let me know once done so I can submit URLs.

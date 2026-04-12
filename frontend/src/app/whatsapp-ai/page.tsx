@@ -11,7 +11,7 @@ export default function WhatsAppAILandingPage() {
       <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-[#040c08] via-[#040c08]/80 to-transparent" />
       <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-[#040c08] via-transparent to-transparent opacity-80" />
 
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-12 pt-6 sm:px-6 lg:px-10">
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-0 pt-6 sm:px-6 lg:px-10">
         <header className="flex items-center justify-between rounded-full border border-white/10 bg-black/40 px-5 py-4 backdrop-blur-xl">
           <a href="/" className="flex items-center gap-3">
             <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" draggable={false} />
@@ -83,6 +83,85 @@ export default function WhatsAppAILandingPage() {
             </div>
           ))}
         </div>
+
+        {/* Footer */}
+        <footer className="mt-20 border-t border-white/10 py-14">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center gap-3">
+                <img src="/evara-logo.png" alt="Raina Jet" className="h-8 w-8 object-contain" draggable={false} />
+                <span className="text-sm font-bold tracking-widest text-emerald-300 uppercase">Raina Jet</span>
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-zinc-500">
+                Empowering businesses with intelligent WhatsApp automation. Built in India, serving the world.
+              </p>
+              <p className="mt-4 text-xs text-zinc-600">
+                Founder: VERCAL.APP<br />
+                Co-founder: Rupesh Sahu
+              </p>
+            </div>
+
+            {/* Product */}
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Product</h4>
+              <ul className="mt-4 space-y-2.5">
+                <li><a href="/whatsapp-ai" className="text-sm text-zinc-500 transition hover:text-emerald-400">WhatsApp AI</a></li>
+                <li><a href="/whatsapp-ai/dashboard" className="text-sm text-zinc-500 transition hover:text-emerald-400">Dashboard</a></li>
+                <li><a href="/signup?next=/whatsapp-ai/dashboard" className="text-sm text-zinc-500 transition hover:text-emerald-400">Get Started</a></li>
+                <li><a href="/login?next=/whatsapp-ai/dashboard" className="text-sm text-zinc-500 transition hover:text-emerald-400">Log In</a></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Legal</h4>
+              <ul className="mt-4 space-y-2.5">
+                <li><a href="/privacy-policy" className="text-sm text-zinc-500 transition hover:text-emerald-400">Privacy Policy</a></li>
+                <li><a href="/terms" className="text-sm text-zinc-500 transition hover:text-emerald-400">Terms of Service</a></li>
+                <li>
+                  <span className="text-sm text-zinc-600">
+                    Compliant with WhatsApp Business API & Meta policies.
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Contact</h4>
+              <ul className="mt-4 space-y-2.5">
+                <li>
+                  <a href="mailto:support.studyhelp@gmail.com" className="text-sm text-zinc-500 transition hover:text-emerald-400">
+                    support.studyhelp@gmail.com
+                  </a>
+                </li>
+                <li>
+                  <a href="tel:+919060937559" className="text-sm text-zinc-500 transition hover:text-emerald-400">
+                    +91 9060937559
+                  </a>
+                </li>
+                <li className="text-sm text-zinc-600">
+                  Kaimur, Bihar – 821195<br />India
+                </li>
+                <li className="text-xs text-zinc-600">
+                  Support: Mon–Sat, 10 AM – 6 PM IST
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/5 pt-8 sm:flex-row">
+            <p className="text-xs text-zinc-600">
+              © {new Date().getFullYear()} Raina Jet. All rights reserved.
+            </p>
+            <div className="flex items-center gap-6">
+              <a href="/privacy-policy" className="text-xs text-zinc-600 transition hover:text-emerald-400">Privacy Policy</a>
+              <a href="/terms" className="text-xs text-zinc-600 transition hover:text-emerald-400">Terms of Service</a>
+              <a href="mailto:support.studyhelp@gmail.com" className="text-xs text-zinc-600 transition hover:text-emerald-400">Contact</a>
+            </div>
+          </div>
+        </footer>
       </div>
     </main>
   );
