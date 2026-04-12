@@ -1,0 +1,139 @@
+Create a comprehensive, long-form, and professionally written **About Us** page for an AI SaaS platform named "Vercal AI".
+
+The page should be detailed, inspiring, and structured like a modern startup (similar to top tech companies). It must be long, engaging, and written in high-quality professional English.
+
+---
+
+### Structure and Sections to Include:
+
+#### 1. Hero / Introduction Section
+
+* Strong headline (e.g., “Building the Future with AI”)
+* Short introduction about Vercal AI
+* Vision-driven statement
+
+---
+
+#### 2. Our Story
+
+* How Vercal AI started
+* Problem it aims to solve (AI automation, business growth, communication)
+* Journey from idea to platform
+
+---
+
+#### 3. Our Mission & Vision
+
+* Mission: Simplify AI for everyone
+* Vision: Build powerful AI tools for businesses globally
+
+---
+
+#### 4. About the Platform
+
+Explain the platform in detail:
+
+* What Vercal AI does
+* How it helps users and businesses
+* Focus on automation, AI communication, and scalability
+
+---
+
+#### 5. Our AI Products
+
+Clearly describe each product:
+
+##### 5.1 Ivana AI
+
+* Web/App AI assistant
+* Smart conversations and automation
+* Helps users interact and solve problems
+
+##### 5.2 Bihar AI
+
+* Region-focused AI innovation
+* Focus on local users, language, and accessibility
+* Empowering small businesses and users
+
+##### 5.3 WhatsApp AI
+
+* Automation via WhatsApp
+* Customer communication and auto-replies
+* Business integration and scalability
+
+---
+
+#### 6. Founders Section
+
+Create a premium founder section with positive and inspiring descriptions:
+
+##### Founder – Riley Parker
+
+* Visionary leader in AI and technology
+* Strong focus on innovation and user-centric design
+* Passionate about building scalable AI solutions
+* Highlight leadership, creativity, and global thinking
+
+##### Co-Founder – Rupesh Sahu
+
+* Technical mind behind the platform
+* Focused on development, execution, and product building
+* Dedicated to creating powerful and accessible AI tools
+* Highlight problem-solving skills, consistency, and growth mindset
+
+---
+
+#### 7. Our Team & Development
+
+* Mention skilled developers and contributors
+* Focus on innovation, design, and performance
+* Emphasize continuous improvement
+
+---
+
+#### 8. Why Choose Vercal AI
+
+* Smart automation
+* Scalable solutions
+* Secure and reliable
+* Easy to use
+* Built for modern businesses
+
+---
+
+#### 9. Future Goals
+
+* Expanding AI capabilities
+* More integrations
+* Global reach
+* Advanced automation tools
+
+---
+
+#### 10. Call to Action
+
+* “Start your AI journey today”
+* “Try Vercal AI now”
+
+---
+
+### Design Requirements:
+
+* Create a dedicated page: /about
+* Use modern UI (clean + premium layout)
+* Add sections with proper spacing
+* Use cards for founders and products
+* Add subtle animations and hover effects
+* Fully responsive design
+
+---
+
+### Important Notes:
+
+* The content must be LONG and detailed
+* Use professional and inspiring tone
+* Highlight founders positively (no negative or casual tone)
+* Clearly explain all AI products
+* Do not copy content from other websites
+
+This is a frontend-only page. Focus on content structure, storytelling, and premium presentation.
