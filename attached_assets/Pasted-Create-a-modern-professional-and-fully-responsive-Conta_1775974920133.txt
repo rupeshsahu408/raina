@@ -1,0 +1,128 @@
+Create a modern, professional, and fully responsive **Contact Us** page for an AI SaaS platform named "Evara AI".
+
+The page should be clean, premium, and user-friendly, designed to help users easily reach out for support, business inquiries, or general questions.
+
+---
+
+### Structure and Sections to Include:
+
+#### 1. Hero Section
+
+* Heading: “Contact Us” or “Get in Touch”
+* Short subtitle:
+  Example: “We’re here to help you with AI solutions, support, and inquiries.”
+
+---
+
+#### 2. Contact Information Section
+
+Display clearly (developer will insert actual details):
+
+* Email address
+* Phone number (if available)
+* Business address (if available)
+
+Add icons for better UI (email, phone, location)
+
+---
+
+#### 3. Contact Form (IMPORTANT)
+
+Create a clean form with the following fields:
+
+* Full Name
+* Email Address
+* Subject
+* Message
+
+Add:
+
+* Submit button (styled premium)
+* Basic validation (required fields)
+
+---
+
+#### 4. Support & Help Section
+
+* Link to Help Center → /help
+* Short text:
+  “For quick answers, visit our Help Center.”
+
+---
+
+#### 5. Business / Partnership Inquiry
+
+* Small section for:
+
+  * Partnerships
+  * Collaborations
+  * Business inquiries
+
+Text example:
+“Interested in working with Evara AI? Reach out for partnerships and business opportunities.”
+
+---
+
+#### 6. AI Services Mention (Premium Touch)
+
+Mention briefly:
+
+* Ivana AI (AI assistant support)
+* WhatsApp AI (automation support)
+
+---
+
+#### 7. Response Time Info
+
+* Example:
+  “We typically respond within 24–48 hours.”
+
+---
+
+#### 8. Social Media Section
+
+Add icons + links:
+
+* Instagram
+* LinkedIn
+* Twitter (X)
+* YouTube
+
+---
+
+#### 9. CTA Section
+
+* “🚀 Start Using Evara AI” button
+* “💬 Try AI Now” button
+
+---
+
+### Design Requirements:
+
+* Create a dedicated page: /contact
+* Use modern UI (clean + premium design)
+* Add smooth hover effects
+* Use icons for better UX
+* Proper spacing and layout
+* Fully responsive (mobile + desktop)
+
+---
+
+### Important Notes:
+
+* Keep the design clean and not overcrowded
+* Focus on usability and accessibility
+* Form should look premium (like SaaS websites)
+* Do NOT include backend logic (frontend only)
+* Developer already knows the actual contact details
+
+---
+
+### Extra (Optional but Recommended):
+
+* Add Google Map embed (if business location available)
+* Add “Live Chat” button (future feature)
+
+  MY [EMAIL-support.evara.ai@sendora.me](mailto:EMAIL-support.evara.ai@sendora.me)
+
+This is a frontend-only page. Focus on clean UI, user experience, and professional presentation.
