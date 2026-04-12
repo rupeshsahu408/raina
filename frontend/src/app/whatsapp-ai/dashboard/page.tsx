@@ -497,7 +497,6 @@ export default function DashboardPage() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-lg font-bold">WhatsApp Connection</h2>
-                    <p className="text-sm text-zinc-500">OAuth-style onboarding now, Meta OAuth-ready later.</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-3">
                     <span className={`rounded-full px-3 py-1 text-xs font-bold ${
@@ -519,9 +518,11 @@ export default function DashboardPage() {
 
                 <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
                   <p className="text-xs font-bold uppercase tracking-widest text-emerald-700">Pre-configured webhook</p>
-                  <p className="mt-1 break-all text-sm font-medium text-emerald-950">
-                    {status?.callbackUrl || "https://raina-1.onrender.com/v1/whatsapp/webhook"}
-                  </p>
+                  {status?.callbackUrl && (
+                    <p className="mt-1 break-all text-sm font-medium text-emerald-950">
+                      {status.callbackUrl}
+                    </p>
+                  )}
                   <p className="mt-2 text-xs text-emerald-800">
                     Verify token is validated automatically on the backend. Stored credentials are never returned to this dashboard.
                   </p>
