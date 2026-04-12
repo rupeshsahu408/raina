@@ -1,0 +1,829 @@
+export type Category = {
+  slug: string;
+  label: string;
+  description: string;
+  color: string;
+  bg: string;
+  border: string;
+  dot: string;
+};
+
+export type Post = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  author: string;
+  authorRole: string;
+  authorInitials: string;
+  authorGradient: string;
+  publishedAt: string;
+  readingTime: number;
+  featured: boolean;
+  tags: string[];
+  image?: string;
+};
+
+export const categories: Category[] = [
+  {
+    slug: "ai-guides",
+    label: "AI Guides",
+    description: "Step-by-step guides to get the most from AI tools",
+    color: "text-purple-300",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/25",
+    dot: "bg-purple-400",
+  },
+  {
+    slug: "whatsapp-automation",
+    label: "WhatsApp Automation",
+    description: "Tutorials and tips for WhatsApp Business AI",
+    color: "text-emerald-300",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/25",
+    dot: "bg-emerald-400",
+  },
+  {
+    slug: "business-growth",
+    label: "Business Growth",
+    description: "How AI is transforming modern business operations",
+    color: "text-sky-300",
+    bg: "bg-sky-500/10",
+    border: "border-sky-500/25",
+    dot: "bg-sky-400",
+  },
+  {
+    slug: "product-updates",
+    label: "Product Updates",
+    description: "Latest features and improvements from Evara AI",
+    color: "text-pink-300",
+    bg: "bg-pink-500/10",
+    border: "border-pink-500/25",
+    dot: "bg-pink-400",
+  },
+  {
+    slug: "regional-ai",
+    label: "Regional AI",
+    description: "AI for regional languages, cultures, and communities",
+    color: "text-amber-300",
+    bg: "bg-amber-500/10",
+    border: "border-amber-500/25",
+    dot: "bg-amber-400",
+  },
+  {
+    slug: "ai-news",
+    label: "AI News",
+    description: "Industry trends and the future of artificial intelligence",
+    color: "text-indigo-300",
+    bg: "bg-indigo-500/10",
+    border: "border-indigo-500/25",
+    dot: "bg-indigo-400",
+  },
+];
+
+export const posts: Post[] = [
+  {
+    slug: "how-to-set-up-whatsapp-ai-for-your-business",
+    title: "How to Set Up WhatsApp AI for Your Business in 2026",
+    excerpt: "A complete step-by-step guide to connecting Evara AI's WhatsApp automation to your business — from API setup to your first automated reply.",
+    content: `
+## Introduction
+
+WhatsApp has over 2 billion active users worldwide, making it the most widely used messaging platform on the planet. For businesses, this represents an extraordinary opportunity: your customers are already there, they are comfortable with the interface, and they expect fast responses. The challenge has always been scale — how do you provide instant, high-quality responses to hundreds or thousands of customers simultaneously, around the clock?
+
+The answer is WhatsApp AI automation, and in this guide we will walk you through exactly how to set it up using Evara AI's WhatsApp AI product.
+
+## What You Will Need Before You Start
+
+Before diving into the setup process, there are a few prerequisites to have in order:
+
+**1. A WhatsApp Business Account**
+You will need a verified WhatsApp Business account. This is different from the standard WhatsApp or WhatsApp Business app — you need access to the WhatsApp Business Platform (formerly the Business API).
+
+**2. A Meta Developer Account**
+Because the WhatsApp Business Platform is operated by Meta, you will need a verified Meta developer account with an active app configured for WhatsApp integration.
+
+**3. An Evara AI Account**
+Create or log in to your Evara AI account at Vercal.app. Ensure you have access to the WhatsApp AI dashboard.
+
+**4. A Dedicated Business Phone Number**
+You will need a phone number that is not already registered on a personal WhatsApp account. This number will be your business WhatsApp number.
+
+## Step 1: Set Up Your WhatsApp Business Platform Access
+
+Navigate to the Meta Developer Portal and create or open your existing app. Under the app settings, add the WhatsApp product. Meta will walk you through the verification process, which typically involves submitting basic business information.
+
+Once approved, you will receive a permanent access token and a Phone Number ID — both of which you will need in the next step.
+
+## Step 2: Connect to Evara AI's WhatsApp AI Dashboard
+
+Log in to your Evara AI account and navigate to the WhatsApp AI section. Click "Connect New Integration" and enter the following from your Meta developer account:
+
+- Your WhatsApp Business Account ID
+- Your Phone Number ID
+- Your permanent access token
+- Your webhook verification token (you can create this yourself — it is simply a secure string you define)
+
+Evara AI will generate a webhook URL for you. Copy this URL.
+
+## Step 3: Configure the Webhook in Meta
+
+Return to the Meta Developer Portal and navigate to your app's WhatsApp configuration. Under Webhooks, paste the webhook URL generated by Evara AI and enter the verification token you defined. Click Verify.
+
+Meta will send a test ping to your webhook. Evara AI will automatically verify it. Once confirmed, select the following webhook fields to subscribe to:
+
+- messages
+- message_deliveries
+- message_reads
+
+## Step 4: Build Your Business Knowledge Base
+
+This is where Evara AI's WhatsApp AI truly shines. Navigate to the Knowledge Base section of your dashboard and begin adding information about your business:
+
+**Business Information**: Your business name, description, operating hours, location, and contact details.
+
+**Products and Services**: Detailed descriptions of what you offer, including pricing, availability, and key features.
+
+**Frequently Asked Questions**: Every common question your customers ask, with clear, accurate answers. The more thorough your FAQ section, the better your AI will perform.
+
+**Escalation Rules**: Define the conditions under which the AI should stop responding and alert a human team member. For example, complaints, refund requests, or questions the AI cannot confidently answer.
+
+**Tone and Style**: Set the communication tone — formal, friendly, professional, casual — and any specific language preferences for your brand.
+
+## Step 5: Test Your Setup
+
+Before going live, use Evara AI's built-in test environment to simulate incoming WhatsApp messages. Review how the AI responds to your most common customer questions. Adjust knowledge base content where needed.
+
+Pay particular attention to:
+- How the AI handles questions it does not have clear answers to
+- Whether escalation triggers are working correctly
+- The tone and accuracy of responses
+
+## Step 6: Go Live
+
+Once you are satisfied with the testing results, activate your integration in the Evara AI dashboard. From this point, all incoming WhatsApp messages to your business number will be processed by the AI, with responses generated based on your configured knowledge base.
+
+## Best Practices for Ongoing Management
+
+**Review conversation logs regularly**: The dashboard gives you full visibility into every conversation. Review them weekly to identify gaps in your knowledge base.
+
+**Update your knowledge base proactively**: When your products, prices, or policies change, update the knowledge base immediately. Outdated information leads to poor customer experiences.
+
+**Monitor escalation rates**: A high rate of escalations may indicate that your knowledge base is incomplete or that the AI is being too conservative. Adjust thresholds and content accordingly.
+
+**A/B test response styles**: Experiment with different tones and levels of detail in your responses to see what resonates best with your customers.
+
+## Conclusion
+
+WhatsApp AI automation is one of the most impactful tools a modern business can deploy. It provides instant, accurate, 24/7 customer support without proportional increases in staffing costs. Evara AI's WhatsApp AI is designed to make this setup straightforward, even for businesses without dedicated technical teams.
+
+If you run into any issues during setup, the Evara AI support team is available at support.evara.ai@sendora.me.
+    `,
+    category: "whatsapp-automation",
+    author: "Riley Parker",
+    authorRole: "Founder, Evara AI",
+    authorInitials: "RP",
+    authorGradient: "from-purple-500 to-pink-500",
+    publishedAt: "2026-04-10",
+    readingTime: 9,
+    featured: true,
+    tags: ["WhatsApp", "Automation", "Setup Guide", "Business API", "Meta"],
+  },
+  {
+    slug: "ivana-ai-vs-traditional-search-engines",
+    title: "Ivana AI vs Traditional Search: Why Conversational AI is Replacing How We Find Answers",
+    excerpt: "Search engines return ten blue links. Ivana AI returns a direct, contextual answer. Here's why conversational AI is fundamentally changing how we access information.",
+    content: `
+## The Problem with Traditional Search
+
+When you type a question into a traditional search engine, you receive a list of links. You then have to click through each one, read through pages of content, evaluate credibility, synthesize information from multiple sources, and eventually piece together an answer. For simple factual queries, this works reasonably well. For complex, nuanced, or contextual questions, it is a deeply inefficient process.
+
+This model made sense in the early internet era, when the primary challenge was helping people discover information that existed somewhere online. The indexing-and-ranking approach solved that problem well. But the world has changed. The volume of information online has grown by orders of magnitude, the quality varies wildly, and users increasingly need answers — not links to places where answers might exist.
+
+## What Conversational AI Does Differently
+
+Ivana AI, and conversational AI more broadly, approaches information access from a fundamentally different perspective. Instead of returning a list of sources, it synthesizes information and delivers a direct, contextual response to your specific question.
+
+Consider the difference in these two scenarios:
+
+**Traditional Search**: You search "how to improve customer response time in a small business." You receive a list of articles. You click the top result, which is a 3,000-word blog post. The relevant section is buried in paragraph eight. You skim, miss it, click back, try another link, repeat.
+
+**Ivana AI**: You ask "how can I improve customer response time for my 5-person e-commerce team?" Ivana responds with a concise, prioritized list of actionable recommendations tailored to your specific context — small team, e-commerce — without you having to wade through irrelevant content.
+
+## The Key Advantages of Conversational AI for Information Access
+
+**Contextual Understanding**: Ivana AI understands your question in context. You can follow up, ask for clarification, request more detail on a specific point, or redirect the conversation — all within the same dialogue. This mirrors how humans naturally seek information from knowledgeable colleagues.
+
+**Synthesis Over Retrieval**: Rather than pointing you toward information, Ivana synthesizes it. For questions that require drawing from multiple knowledge domains, this is vastly more efficient than reading through multiple source documents and constructing your own synthesis.
+
+**No Advertising Influence**: Traditional search results are shaped by SEO practices and advertising budgets. The most visible results are not necessarily the most accurate or helpful — they are the ones best optimized for search ranking. Conversational AI outputs are not filtered through this economic lens.
+
+**Iterative Refinement**: With a search engine, each new query starts from scratch. With Ivana AI, each message builds on the conversation that preceded it, allowing you to progressively narrow in on exactly the information you need.
+
+## Where Traditional Search Still Has an Edge
+
+In the interest of balance, there are scenarios where traditional search engines remain valuable:
+
+**Real-Time Information**: Search engines index fresh content continuously. For breaking news, live events, or very recent developments, a search engine will surface more current information than an AI trained on a fixed dataset.
+
+**Source Verification**: When you specifically need to verify a source, check an original document, or review primary evidence, search engines are the right tool. Conversational AI synthesizes — it does not replace the value of primary sources for critical research.
+
+**Discovery of Specific Resources**: If you are looking for a specific tool, website, or resource, a search engine is optimized for that discovery task.
+
+## The Emerging Hybrid Model
+
+The most effective information strategy in 2026 is increasingly a hybrid one. Use conversational AI like Ivana AI for complex questions, synthesis tasks, and iterative research. Use search engines for source verification, breaking news, and targeted resource discovery.
+
+The two approaches complement rather than replace each other — at least for now. As conversational AI continues to improve its integration of real-time information, the scenarios where traditional search holds a clear advantage will continue to narrow.
+
+## Conclusion
+
+The shift from search-and-click to ask-and-answer represents one of the most significant changes in how people access information since the invention of the web browser. Ivana AI is built to be part of that shift — providing direct, contextual, high-quality answers to the questions that matter to you, without the friction of the traditional search experience.
+
+The question is not whether conversational AI will change how we access information. It already has. The question is how quickly individuals and businesses will adapt their workflows to take full advantage.
+    `,
+    category: "ai-guides",
+    author: "Rupesh Sahu",
+    authorRole: "Co-Founder & CTO, Evara AI",
+    authorInitials: "RS",
+    authorGradient: "from-sky-500 to-indigo-500",
+    publishedAt: "2026-04-08",
+    readingTime: 7,
+    featured: false,
+    tags: ["Ivana AI", "Search", "Conversational AI", "Productivity"],
+  },
+  {
+    slug: "10-business-tasks-you-can-automate-with-ai-today",
+    title: "10 Business Tasks You Can Automate with Evara AI Right Now",
+    excerpt: "From customer support to FAQ handling and appointment confirmations — these ten automation use cases can save your team hundreds of hours each month.",
+    content: `
+## Why Business Automation Matters More Than Ever
+
+Time is the one resource every business, regardless of size, shares in equal measure. What distinguishes fast-growing businesses from stagnant ones is often not access to more time, but the intelligence with which existing time is used. AI-powered automation is one of the most powerful levers available to businesses that want to do more with the resources they already have.
+
+Here are ten business tasks you can start automating with Evara AI today.
+
+**1. Customer FAQ Responses**
+Every business receives the same questions repeatedly: What are your hours? How do I return a product? What payment methods do you accept? Training WhatsApp AI with a comprehensive FAQ knowledge base means your customers get instant, accurate answers at any hour — without any human involvement.
+
+**2. Order Status Updates**
+Customers frequently contact businesses to ask about the status of their orders. By integrating your order management system with WhatsApp AI, you can provide automated, real-time order status updates in response to customer inquiries.
+
+**3. Appointment Reminders and Confirmations**
+For service-based businesses — salons, clinics, consultants — missed appointments are costly. WhatsApp AI can send automated appointment reminders, collect confirmations, and handle rescheduling requests without burdening your front desk team.
+
+**4. Lead Qualification**
+When a new customer contacts your business through WhatsApp, AI can ask qualifying questions, gather basic information, and assess the lead's fit before routing it to your sales team. Your salespeople then spend their time only on qualified, ready-to-buy prospects.
+
+**5. Product Recommendations**
+Based on what a customer tells you about their needs, Ivana AI and WhatsApp AI can provide personalized product recommendations drawn from your catalog — mimicking the experience of speaking with an informed sales associate.
+
+**6. After-Hours Support**
+Your team goes home. Your customers' questions do not stop. AI-powered support means your business is always available, even at 2am on a Sunday. Critical issues can still be flagged for human follow-up the next morning, while routine inquiries are resolved immediately.
+
+**7. Content Drafting and Editing**
+Using Ivana AI, team members can dramatically accelerate content production — drafting product descriptions, marketing emails, social captions, and business proposals in a fraction of the time it would take to write from scratch.
+
+**8. Meeting Summaries and Action Items**
+After internal meetings, team members can paste notes or transcripts into Ivana AI and receive structured summaries, identified action items, and owner assignments — eliminating the need for someone to spend an hour writing up meeting notes.
+
+**9. Policy and Compliance Queries**
+Internal HR, compliance, and policy questions can be answered by AI trained on your internal documentation — reducing the load on HR teams for routine queries about leave policies, expense procedures, or onboarding steps.
+
+**10. Customer Onboarding Sequences**
+When a new customer signs up or makes a first purchase, WhatsApp AI can guide them through an automated onboarding sequence — welcome messages, setup instructions, tips for getting started, and prompts to engage with key features.
+
+## Getting Started
+
+Each of these use cases is achievable with Evara AI today. The key is to start with the one that will have the highest impact on your specific business, implement it thoroughly, and then expand. Businesses that try to automate everything at once often end up with mediocre automation across the board. Start focused, execute well, and scale.
+
+Log in to your Evara AI account or sign up at Vercal.app to begin.
+    `,
+    category: "business-growth",
+    author: "Riley Parker",
+    authorRole: "Founder, Evara AI",
+    authorInitials: "RP",
+    authorGradient: "from-purple-500 to-pink-500",
+    publishedAt: "2026-04-06",
+    readingTime: 6,
+    featured: false,
+    tags: ["Automation", "Business", "Productivity", "WhatsApp", "ROI"],
+  },
+  {
+    slug: "how-to-write-effective-ai-prompts",
+    title: "How to Write Effective AI Prompts: A Practical Guide for Better Results",
+    excerpt: "The quality of what you get from an AI assistant is directly tied to the quality of what you put in. Here's how to prompt Ivana AI for consistently excellent results.",
+    content: `
+## The Prompt Is the Interface
+
+With traditional software, the interface tells you exactly what inputs are expected — a form field here, a dropdown there. With conversational AI, the interface is language itself. This is simultaneously AI's greatest strength and its most common source of user frustration.
+
+When someone says "AI doesn't work for me," the problem is almost always not the AI — it is the prompts being used. Learning to write effective prompts is a skill, and like all skills, it improves with practice and the right framework.
+
+## The Four Elements of a High-Quality Prompt
+
+Every effective prompt for Ivana AI contains some combination of four elements:
+
+**1. Context** — Who you are, what situation you are in, and what background information is relevant.
+
+**2. Task** — What specifically you want the AI to do. Be precise.
+
+**3. Format** — How you want the output structured. A bullet list? A paragraph? A table? Code?
+
+**4. Constraints** — Any specific limitations, requirements, or things to avoid.
+
+Not every prompt needs all four elements. A simple factual question may need only the task. But for complex requests, including all four elements dramatically improves output quality.
+
+## Common Prompting Mistakes and How to Fix Them
+
+**Mistake: Being too vague**
+Weak: "Write me a marketing email."
+Strong: "Write a 200-word marketing email for a WhatsApp AI product targeting small business owners in India. The tone should be professional but approachable. Focus on the benefit of 24/7 automated customer support. Include a clear call to action to start a free trial."
+
+**Mistake: Skipping context**
+Weak: "Summarize this."
+Strong: "I am a product manager preparing for a board meeting. Summarize the following customer feedback data into three key themes with supporting evidence. Focus on issues affecting retention."
+
+**Mistake: Requesting everything in one prompt**
+Weak: "Write a full business plan for my bakery."
+Strong: Break this into stages — first ask for a market analysis, then a financial model outline, then a marketing strategy. Each focused prompt will produce better results than one enormous request.
+
+**Mistake: Accepting the first output without iteration**
+The first response is often a solid starting point, not a finished product. If it is close but not quite right, say so: "This is good, but make the tone more formal and reduce it to 150 words." Iteration is a core part of effective AI use.
+
+## Advanced Techniques
+
+**Role Assignment**: Ask Ivana AI to take on a specific perspective. "As an experienced e-commerce consultant, review the following product page copy and identify three improvements." Role assignment significantly sharpens the relevance and depth of responses.
+
+**Chain of Thought**: For complex reasoning tasks, ask the AI to show its reasoning. "Think through this step by step before giving your final recommendation." This produces more considered and accurate outputs for analytical tasks.
+
+**Comparative Analysis**: Ask for multiple options and a comparison. "Give me three different approaches to this email subject line, and explain the strength of each."
+
+**Constraint Specification**: Be explicit about what you do not want. "Write a product description that avoids technical jargon and does not mention competitors."
+
+## Building a Personal Prompt Library
+
+As you discover prompts that consistently produce excellent results, save them. Build a personal prompt library — a collection of templates for your most frequent use cases. Over time, these become powerful reusable assets that dramatically accelerate your work with Ivana AI.
+
+Effective prompting is the single highest-leverage skill for getting maximum value from conversational AI. Invest the time to develop it.
+    `,
+    category: "ai-guides",
+    author: "Rupesh Sahu",
+    authorRole: "Co-Founder & CTO, Evara AI",
+    authorInitials: "RS",
+    authorGradient: "from-sky-500 to-indigo-500",
+    publishedAt: "2026-04-04",
+    readingTime: 7,
+    featured: false,
+    tags: ["Prompt Engineering", "Ivana AI", "Productivity", "Tips"],
+  },
+  {
+    slug: "bihar-ai-regional-intelligence-for-local-communities",
+    title: "Bihar AI: Why Regional Language AI Is the Next Frontier",
+    excerpt: "The AI revolution should not stop at the borders of English-speaking populations. Bihar AI is building intelligent tools for communities that mainstream AI has overlooked.",
+    content: `
+## The Language Gap in AI
+
+The global AI boom has delivered extraordinary tools — but primarily to users who are fluent in English and comfortable with the digital interfaces those tools provide. For the hundreds of millions of people across India and other emerging markets who interact with technology primarily in their regional languages, the benefits of AI have remained largely inaccessible.
+
+This is not a minor footnote. It represents one of the largest unserved markets for intelligent technology in the world.
+
+## What Bihar AI Is Building
+
+Bihar AI is Evara AI's regional intelligence initiative, specifically designed to serve the linguistic, cultural, and economic context of Bihar and its surrounding communities. It is built on a core conviction: AI should be as useful in Patna as it is in Pune, as helpful in Bhojpuri as it is in English.
+
+The initiative focuses on three interconnected goals:
+
+**Linguistic Accessibility**: Delivering AI interactions in regional languages that users are comfortable with, removing the language barrier that has kept millions of people from benefiting from conversational AI.
+
+**Local Knowledge Relevance**: Training the AI on locally relevant content — governance, agriculture, small business practices, regional culture, local regulations, and community-specific knowledge — rather than generalizing from global datasets that may have little relevance to a farmer in Muzaffarpur or a shop owner in Gaya.
+
+**Economic Empowerment**: Giving small and micro-businesses in the region access to the same quality of AI-powered tools that are currently available only to larger, more technically sophisticated businesses in urban centers.
+
+## Why This Matters for Small Businesses
+
+Consider a small trading business in a tier-3 city in Bihar. The owner is highly capable and entrepreneurially minded, but communicates primarily in Bhojpuri and Hindi. Until now, sophisticated AI tools for customer communication, business automation, and market intelligence were essentially inaccessible.
+
+With Bihar AI, this business owner can:
+
+- Automate customer communication in their preferred language
+- Access business guidance and market information in a format they understand
+- Use AI-powered tools without needing to learn a new language or navigate a foreign-feeling interface
+
+The economic impact of making AI accessible to this population is enormous — both at the individual business level and at the level of regional economic development.
+
+## The Technical Challenge
+
+Building effective regional AI is significantly harder than building general-purpose English AI. Training data in regional languages is scarcer, less structured, and often not digitized. Cultural context is harder to encode. Dialectal variation adds further complexity.
+
+The Evara AI team is tackling these challenges through a combination of careful data curation, community-sourced knowledge, and ongoing collaboration with regional language experts. It is a long-term commitment, not a quick localization exercise.
+
+## The Broader Vision
+
+Bihar AI is the beginning of a broader vision: AI that serves every community, in every language, with knowledge that is relevant to their specific context. As the initiative matures, lessons learned will inform expansion to other regional communities across India and beyond.
+
+The question is not whether regional AI will matter. It is who will build it with the care and commitment it deserves.
+    `,
+    category: "regional-ai",
+    author: "Riley Parker",
+    authorRole: "Founder, Evara AI",
+    authorInitials: "RP",
+    authorGradient: "from-purple-500 to-pink-500",
+    publishedAt: "2026-04-02",
+    readingTime: 6,
+    featured: false,
+    tags: ["Bihar AI", "Regional AI", "Hindi", "Bhojpuri", "Inclusion"],
+  },
+  {
+    slug: "whatsapp-business-api-complete-guide-2026",
+    title: "WhatsApp Business API: The Complete Guide for 2026",
+    excerpt: "Everything you need to know about the WhatsApp Business API — how it works, what it costs, what you can and cannot do, and how AI makes it exponentially more powerful.",
+    content: `
+## What Is the WhatsApp Business API?
+
+The WhatsApp Business API (now officially called the WhatsApp Business Platform) is Meta's enterprise-grade messaging infrastructure that allows businesses to send and receive WhatsApp messages programmatically at scale. Unlike the WhatsApp Business App — which is a simple mobile application suited for individual business owners — the API is a developer-facing platform designed for high-volume, automated business communication.
+
+## Who Should Use the WhatsApp Business API?
+
+The API is suited for businesses that:
+- Receive more messages than a single person can manually handle
+- Want to automate responses to common customer queries
+- Need to send notifications, updates, or marketing messages at scale
+- Are building WhatsApp into a formal customer support or sales channel
+
+For very small businesses with low message volume, the WhatsApp Business App may be sufficient. For growing businesses handling hundreds or thousands of WhatsApp interactions per month, the API is essential.
+
+## How the API Works
+
+At a technical level, the WhatsApp Business API works through webhooks and REST API calls:
+
+**Incoming Messages**: When a customer sends a message to your business WhatsApp number, Meta's servers send a webhook event to your configured endpoint. Your system receives this event, processes it, and sends a response.
+
+**Outgoing Messages**: To send a message, your system makes an API call to Meta's messaging endpoint with the recipient's phone number and message content.
+
+**Session Windows**: The API distinguishes between two types of messaging windows. If a customer messages you first, you have a 24-hour window to reply freely. Outside this window, you can only send approved Message Templates.
+
+## Message Templates
+
+Message templates are pre-approved message formats used to initiate conversations or send messages outside the 24-hour customer-initiated window. Common use cases include:
+
+- Order confirmations
+- Shipping notifications
+- Appointment reminders
+- Payment receipts
+- Re-engagement messages
+
+Templates must be submitted to Meta for approval before use. They must comply with WhatsApp's messaging policies and cannot contain promotional content in certain categories.
+
+## How AI Transforms the API Experience
+
+The WhatsApp Business API is powerful infrastructure, but it requires intelligence to be truly useful at scale. This is where Evara AI's WhatsApp AI product comes in.
+
+Without AI, the API is a pipe — capable of sending and receiving messages, but requiring a human to decide what to say. With AI layered on top through Evara AI, the pipe becomes intelligent:
+
+- Incoming messages are analyzed for intent
+- The AI accesses your knowledge base to formulate an accurate response
+- Complex queries are escalated to humans automatically
+- Responses maintain your brand's voice and tone consistently
+
+The combination of the WhatsApp Business API and Evara AI's intelligence layer is what enables true 24/7 customer support at scale.
+
+## Getting Started
+
+Getting access to the WhatsApp Business API requires a verified Meta Business account and, in most cases, a Business Verification submission to Meta. The process typically takes a few business days.
+
+Once you have API access, Evara AI's WhatsApp AI makes the integration straightforward — no custom development required. Visit Vercal.app to connect your WhatsApp Business API account to Evara AI and have your first automated response live within hours.
+    `,
+    category: "whatsapp-automation",
+    author: "Rupesh Sahu",
+    authorRole: "Co-Founder & CTO, Evara AI",
+    authorInitials: "RS",
+    authorGradient: "from-sky-500 to-indigo-500",
+    publishedAt: "2026-03-28",
+    readingTime: 8,
+    featured: false,
+    tags: ["WhatsApp Business API", "Meta", "Setup", "Automation", "Enterprise"],
+  },
+  {
+    slug: "the-future-of-ai-assistants-2026",
+    title: "The Future of AI Assistants: Five Trends Shaping 2026 and Beyond",
+    excerpt: "From multimodal understanding to emotionally intelligent responses — here are the five most important trends defining the next generation of AI assistants.",
+    content: `
+## Where AI Assistants Are Headed
+
+The AI assistant landscape of 2026 looks dramatically different from even two years ago. Capabilities that seemed years away have arrived, and new challenges have emerged alongside them. Here are the five trends that will define the next generation of AI assistant technology.
+
+**Trend 1: Multimodal Understanding**
+The first generation of conversational AI was text-in, text-out. The next generation is genuinely multimodal — understanding and generating text, images, audio, code, and documents within the same conversation. This shifts AI from a text tool to a comprehensive cognitive assistant capable of engaging with the full range of information formats that humans work with daily.
+
+**Trend 2: Persistent Memory and Context**
+One of the most significant limitations of early AI assistants was their inability to remember previous interactions. Each conversation started from scratch. This is rapidly changing. AI systems with persistent memory can build a model of who you are, what you care about, how you work, and what you have previously discussed — enabling a fundamentally more personalized and effective assistant experience.
+
+**Trend 3: Agentic Capabilities**
+Conversational AI that only answers questions is the first step. The next step is AI that can take actions — browsing the web, filling out forms, booking appointments, executing code, managing files, and completing multi-step tasks with minimal human intervention. This shift from AI as an answering machine to AI as an autonomous agent is already underway.
+
+**Trend 4: Deeper Domain Specialization**
+General-purpose AI will remain valuable, but increasingly valuable will be AI systems deeply specialized for specific domains — legal research, medical diagnostics, financial analysis, or, as with Evara AI's Bihar AI initiative, specific regional and linguistic communities. Specialized AI that knows a domain deeply will outperform general AI for domain-specific tasks.
+
+**Trend 5: Emotional and Social Intelligence**
+The most advanced AI systems are beginning to exhibit genuine emotional intelligence — recognizing frustration, adjusting tone accordingly, providing encouragement, and communicating in ways that feel genuinely human and empathetic. This is particularly important for customer-facing applications, where the emotional quality of an interaction matters as much as its informational accuracy.
+
+## What This Means for Businesses
+
+Each of these trends has direct implications for businesses building AI into their customer experience and operations. Multimodal AI means customer support that can analyze photos of damaged products. Persistent memory means every customer interaction benefits from the full history of your relationship. Agentic capabilities mean the AI does not just answer questions — it resolves issues.
+
+The businesses that will benefit most are those that begin investing in AI infrastructure and workflows today, before these capabilities become table stakes. Building on Evara AI's platform now means you grow with these capabilities as they emerge.
+
+## Conclusion
+
+The pace of change in AI assistant technology shows no signs of slowing. The five trends outlined here are not distant possibilities — they are already arriving, and the next 18 months will see significant advancement on every dimension. For individuals and businesses alike, the challenge is not predicting where AI is going. It is adapting quickly enough to benefit from where it is already heading.
+    `,
+    category: "ai-news",
+    author: "Riley Parker",
+    authorRole: "Founder, Evara AI",
+    authorInitials: "RP",
+    authorGradient: "from-purple-500 to-pink-500",
+    publishedAt: "2026-03-25",
+    readingTime: 7,
+    featured: false,
+    tags: ["AI Trends", "Future", "Multimodal", "Agentic AI", "2026"],
+  },
+  {
+    slug: "5-ways-ai-transforms-small-business-customer-support",
+    title: "5 Ways AI Is Transforming Small Business Customer Support",
+    excerpt: "Small businesses used to be at a disadvantage in customer support. AI has changed that equation permanently — here's how.",
+    content: `
+## The Old Disadvantage
+
+For most of business history, enterprise companies had an insurmountable advantage in customer support: scale. They could afford large support teams, sophisticated ticketing systems, and dedicated quality assurance. Small businesses competed on personalization and relationship — areas where larger players often fell short — but were always constrained by the finite hours of their small teams.
+
+AI has fundamentally changed this equation. Here are five specific ways.
+
+**1. 24/7 Availability Without 24/7 Staffing Costs**
+The most immediate and impactful transformation AI brings to small business support is always-on availability. A customer who messages your WhatsApp number at midnight with a question about your return policy no longer waits until morning. They get an instant, accurate answer — and the experience feels seamless, not automated.
+
+For businesses in competitive markets, this availability advantage is significant. Customers who get immediate answers are more likely to complete purchases, less likely to abandon carts, and more likely to recommend your business.
+
+**2. Consistent Quality Across Every Interaction**
+Human support quality is inherently variable. Different team members have different knowledge levels, different communication styles, and different levels of patience on different days. AI-powered support is consistent — the same quality of response, the same accuracy, the same tone, every time.
+
+This consistency is particularly valuable for businesses trying to build a premium brand perception. Every customer interaction reflects your brand, and AI ensures that reflection is always faithful to the standard you set.
+
+**3. Instant Expertise Across Your Entire Product or Service Catalog**
+Small businesses often have products or services that are complex enough that not every team member can answer every question confidently. With WhatsApp AI trained on your complete knowledge base, every customer effectively gets access to your most knowledgeable team member — every time, instantly.
+
+**4. Scalability Without Proportional Cost Growth**
+When a small business grows, customer support volume typically grows faster than revenue. Hiring support staff is expensive. Training takes time. AI-powered support scales with your volume without proportional cost increases — allowing your business to grow without the support function becoming a bottleneck or a budget crisis.
+
+**5. Data-Driven Insight Into What Customers Actually Need**
+Every conversation handled by WhatsApp AI generates data about what your customers are asking, what information is missing from your website, and where your products or services may have gaps. This intelligence, available in the Evara AI dashboard, is valuable strategic input that most small businesses previously had no systematic way to capture.
+
+## Getting Started
+
+If you are a small business owner interested in deploying AI-powered customer support, Evara AI's WhatsApp AI is designed specifically to be accessible to businesses without large technical teams. Visit Vercal.app to learn more or start a free account.
+    `,
+    category: "business-growth",
+    author: "Riley Parker",
+    authorRole: "Founder, Evara AI",
+    authorInitials: "RP",
+    authorGradient: "from-purple-500 to-pink-500",
+    publishedAt: "2026-03-22",
+    readingTime: 6,
+    featured: false,
+    tags: ["Small Business", "Customer Support", "AI", "Growth", "WhatsApp"],
+  },
+  {
+    slug: "understanding-ai-hallucination",
+    title: "Understanding AI Hallucination: What It Is and How to Work Around It",
+    excerpt: "AI systems sometimes generate confident-sounding information that is simply wrong. Understanding why this happens — and how to manage it — is essential for responsible AI use.",
+    content: `
+## What Is AI Hallucination?
+
+AI hallucination refers to instances where a large language model generates information that is factually incorrect, fabricated, or not grounded in reality — but presents it with the same confidence and fluency as accurate information. The term is somewhat misleading: AI systems are not "seeing" things that do not exist in the way humans hallucinate. Rather, they are generating plausible-sounding text that does not correspond to factual reality.
+
+## Why Does It Happen?
+
+Understanding hallucination requires a basic understanding of how large language models work. These models are trained to predict what text should come next, based on patterns learned from enormous amounts of text data. They are extraordinarily good at generating text that is stylistically coherent, contextually appropriate, and superficially plausible.
+
+However, plausibility and accuracy are different things. A language model does not "know" facts in the way humans know facts. It generates text that fits the statistical patterns of its training data. When asked about something outside its training data, or when the training data contained inaccuracies, the model may generate a response that sounds correct but is not.
+
+## Common Hallucination Scenarios
+
+**Specific facts and statistics**: Asking for specific numbers, dates, or citations is a common trigger for hallucination. The model may generate a plausible-sounding number or citation that does not actually exist.
+
+**Recent events**: Events that occurred after the model's training data cutoff may be invented or confused with earlier events.
+
+**Highly specialized domains**: In areas where the training data is thin — rare medical conditions, obscure legal statutes, highly specialized technical topics — hallucination risk increases.
+
+**Names and biographical details**: Combining common knowledge about a person with fabricated details is a frequent hallucination pattern.
+
+## Practical Strategies for Managing Hallucination
+
+**Verify critical information independently**: For any information that will be used in a consequential decision, verify it through authoritative sources. Never rely solely on AI output for medical, legal, financial, or safety-critical information.
+
+**Ask the AI to flag uncertainty**: Prompt Ivana AI to indicate when it is uncertain: "Answer this question, and explicitly flag any claims you are not fully confident about." While not foolproof, this can surface uncertainty that might otherwise be hidden.
+
+**Prefer retrieval-augmented queries**: Where possible, provide the AI with the source document and ask it to summarize or analyze from that document, rather than relying on the model's internal knowledge.
+
+**Use AI for reasoning, not just recall**: AI is generally more reliable when reasoning through a problem you provide the relevant facts for, compared to when it is expected to independently recall specific facts.
+
+**Cross-check with multiple queries**: Asking the same question in different ways and comparing the answers can reveal inconsistencies that indicate uncertain or potentially hallucinated information.
+
+## A Responsible Approach
+
+Hallucination is not a reason to avoid AI tools — it is a reason to use them thoughtfully. Ivana AI is a powerful tool for synthesis, analysis, drafting, and exploration. Used with appropriate verification habits, it dramatically accelerates intellectual work. Used without appropriate critical evaluation, it can introduce errors.
+
+The most effective AI users are those who combine AI's speed and synthesis capabilities with human verification and judgment. That combination produces outcomes that neither humans nor AI could achieve as well independently.
+    `,
+    category: "ai-guides",
+    author: "Rupesh Sahu",
+    authorRole: "Co-Founder & CTO, Evara AI",
+    authorInitials: "RS",
+    authorGradient: "from-sky-500 to-indigo-500",
+    publishedAt: "2026-03-18",
+    readingTime: 7,
+    featured: false,
+    tags: ["AI Safety", "Hallucination", "Best Practices", "Responsible AI"],
+  },
+  {
+    slug: "evara-ai-new-features-april-2026",
+    title: "Evara AI Product Update: What's New in April 2026",
+    excerpt: "Improved conversation context retention, faster WhatsApp response times, and new dashboard analytics — here's everything new in Evara AI this month.",
+    content: `
+## April 2026 Release Highlights
+
+We are excited to share the latest improvements across the Evara AI platform. This month's update focuses on performance, reliability, and making the most-used features even better.
+
+## Ivana AI Improvements
+
+**Enhanced Conversation Context Retention**
+Ivana AI now retains conversation context more effectively across longer sessions. This means you can have extended, multi-part conversations without needing to re-establish context from earlier in the dialogue. Complex research sessions, multi-step writing projects, and iterative analysis workflows all benefit from this improvement.
+
+**Faster Initial Response Times**
+We have optimized the inference pipeline that powers Ivana AI responses. Average initial response time has improved by 35% compared to last month. For users who interact with Ivana AI dozens of times per day, this adds up to a meaningfully faster experience.
+
+**Improved Code Generation Accuracy**
+Following feedback from developer users, we have made targeted improvements to Ivana AI's code generation capabilities. TypeScript, Python, and SQL accuracy have all improved, with better handling of edge cases and more consistent documentation in generated code.
+
+## WhatsApp AI Updates
+
+**Sub-Second Response Processing**
+WhatsApp AI now processes incoming messages and generates responses faster than ever, with median response time under one second for standard queries. This speed improvement is particularly valuable in high-volume business environments where customers expect near-instant replies.
+
+**Expanded Template Support**
+WhatsApp AI now supports a wider range of Meta message template categories, including utility templates for transactional notifications and authentication templates for verification workflows. Businesses can now configure and manage approved templates directly from the Evara AI dashboard.
+
+**Multi-Language Fallback**
+When a customer messages in a language that differs from the primary language of your configured knowledge base, WhatsApp AI now attempts to respond appropriately in the customer's language. This is an early capability that will continue to improve in future releases.
+
+## Dashboard and Analytics
+
+**New Conversation Analytics Dashboard**
+The Evara AI dashboard now includes a dedicated analytics section showing conversation volume over time, most common query categories, average response satisfaction, escalation rates, and knowledge base coverage gaps. These insights help you continuously improve your AI configuration.
+
+**Export and Reporting**
+Analytics data can now be exported in CSV format for use in external reporting tools. Monthly reports can be scheduled for automatic delivery to your email.
+
+## Coming Next Month
+
+We are working on several major capabilities for May 2026, including integration support for additional third-party platforms, expanded language support for Bihar AI, and a significantly improved knowledge base editor with bulk import capabilities.
+
+As always, thank you for being part of the Evara AI community. Your feedback drives our roadmap. Reach us at support.evara.ai@sendora.me with questions or suggestions.
+    `,
+    category: "product-updates",
+    author: "Riley Parker",
+    authorRole: "Founder, Evara AI",
+    authorInitials: "RP",
+    authorGradient: "from-purple-500 to-pink-500",
+    publishedAt: "2026-04-01",
+    readingTime: 5,
+    featured: false,
+    tags: ["Product Update", "Ivana AI", "WhatsApp AI", "New Features", "Performance"],
+  },
+  {
+    slug: "why-your-business-needs-ai-customer-communication",
+    title: "Why Your Business Needs AI-Powered Customer Communication in 2026",
+    excerpt: "Customer expectations have fundamentally shifted. Businesses that cannot respond instantly, accurately, and around the clock are losing customers to competitors who can.",
+    content: `
+## The New Normal in Customer Expectations
+
+Something has changed in what customers expect from businesses, and it has changed faster than most businesses have adapted. The driver, perhaps counterintuitively, is not business investment in better service — it is consumer experience with AI-powered platforms.
+
+When your customers can ask a consumer AI assistant a question and receive an intelligent, accurate answer in under two seconds at 3am, their expectations for business responsiveness shift accordingly. The business that replies to a WhatsApp message eight hours later is not competing against other small businesses — it is competing against the standard of instant, intelligent response that consumers increasingly consider the baseline.
+
+## The Cost of Falling Behind
+
+The cost of slow or unavailable customer response is higher than most businesses measure. It shows up in:
+
+**Lost sales**: Studies consistently show that response speed is strongly correlated with conversion rate. A customer who asks a pre-purchase question and waits hours for an answer often makes their purchase decision — from a competitor — before you respond.
+
+**Higher support costs**: When customers cannot get answers through convenient channels like WhatsApp, they escalate to phone calls and emails — more expensive channels that consume more team time per resolution.
+
+**Lower customer lifetime value**: Customers who have a slow or frustrating support experience are less likely to make repeat purchases and less likely to recommend your business to others.
+
+**Negative reviews**: In the age of Google Reviews, Trustpilot, and social media, a single frustrating support experience can reach thousands of potential customers.
+
+## What AI-Powered Communication Delivers
+
+Evara AI's WhatsApp AI provides the communication capabilities that were previously only accessible to large enterprises with substantial support teams:
+
+**Always-on availability**: Your business responds instantly, 24 hours a day, 7 days a week, 365 days a year.
+
+**Consistent accuracy**: Every response draws from your verified, up-to-date knowledge base — no guessing, no variations based on which team member is available.
+
+**Infinite scalability**: Whether you receive 10 messages per day or 10,000, the AI handles them all with the same speed and quality.
+
+**Intelligent routing**: Complex or sensitive queries are automatically identified and routed to human team members with full conversation context attached.
+
+## Starting the Transformation
+
+The businesses that will thrive in the next five years are those that view AI not as a cost-cutting measure but as a genuine capability upgrade — a way to deliver a quality of customer experience that would have been impossible to sustain without AI assistance.
+
+The starting point is simpler than most businesses expect. You do not need a technical team, a large budget, or months of implementation time. Evara AI's WhatsApp AI is designed to be operational within hours, not weeks.
+
+The question is not whether AI will change customer communication expectations. It already has. The question is how quickly your business will adapt.
+    `,
+    category: "business-growth",
+    author: "Rupesh Sahu",
+    authorRole: "Co-Founder & CTO, Evara AI",
+    authorInitials: "RS",
+    authorGradient: "from-sky-500 to-indigo-500",
+    publishedAt: "2026-03-15",
+    readingTime: 6,
+    featured: false,
+    tags: ["Customer Communication", "Business Strategy", "AI", "WhatsApp", "2026"],
+  },
+  {
+    slug: "ai-for-regional-businesses-india",
+    title: "AI for Regional Businesses in India: The Opportunity Most Platforms Are Missing",
+    excerpt: "India's regional economies are enormous, entrepreneurially active, and massively underserved by mainstream AI tools. Evara AI is building for the market others have ignored.",
+    content: `
+## The Scale of the Opportunity
+
+India is home to over 63 million registered micro, small, and medium enterprises. The vast majority of these businesses operate in regional languages, serve local markets, and have historically had access to far fewer technology tools than their counterparts in metro cities.
+
+This is not a niche market. It is one of the largest concentrations of entrepreneurial activity in the world — and it has been almost entirely overlooked by mainstream AI platforms that design primarily for English-speaking, globally connected users.
+
+## Why Mainstream AI Has Failed Regional India
+
+The gap is not a result of lack of interest — it is a result of how mainstream AI platforms are built. When you design an AI product starting from English training data, English-language prompts, and user experience assumptions based on Western digital behavior, you inevitably build a product that works well for a narrow slice of global users.
+
+Regional Indian businesses face specific barriers to mainstream AI adoption:
+
+**Language**: Most AI platforms require English fluency to use effectively. Business owners who communicate primarily in Hindi, Bhojpuri, Maithili, or other regional languages cannot access the platform's full value.
+
+**Cultural context**: AI trained primarily on Western content lacks understanding of local business practices, regional regulations, seasonal patterns tied to local festivals, and cultural nuances that are central to how regional businesses operate.
+
+**Interface complexity**: Many AI platforms assume a level of digital sophistication — familiarity with API concepts, SaaS subscription models, and technical interfaces — that does not match the reality of a first-generation digital business in a tier-3 city.
+
+## What Evara AI Is Doing Differently
+
+Evara AI's Bihar AI initiative begins from a different set of design assumptions. Rather than adapting a global product for regional use as an afterthought, Bihar AI is built from the ground up for regional communities:
+
+- Knowledge bases seeded with locally relevant content
+- Interfaces optimized for regional language users
+- Business templates aligned to common regional business models
+- WhatsApp as the primary communication channel — the platform regional users already trust and use daily
+
+## The Business Case for Serving This Market
+
+Beyond the social impact, there is a compelling business case. Regional Indian businesses that adopt AI tools effectively will grow faster than competitors who do not. Early AI platform providers that serve this market will benefit from network effects, brand loyalty, and long-term customer relationships in an enormous market.
+
+Evara AI is building for this future not because it is easy — it is genuinely hard — but because the opportunity and the impact are both too significant to ignore.
+    `,
+    category: "regional-ai",
+    author: "Riley Parker",
+    authorRole: "Founder, Evara AI",
+    authorInitials: "RP",
+    authorGradient: "from-purple-500 to-pink-500",
+    publishedAt: "2026-03-10",
+    readingTime: 6,
+    featured: false,
+    tags: ["India", "Regional Business", "MSME", "Bihar AI", "Vernacular AI"],
+  },
+];
+
+export function getPost(slug: string): Post | undefined {
+  return posts.find((p) => p.slug === slug);
+}
+
+export function getPostsByCategory(categorySlug: string): Post[] {
+  return posts.filter((p) => p.category === categorySlug);
+}
+
+export function getFeaturedPost(): Post | undefined {
+  return posts.find((p) => p.featured);
+}
+
+export function getCategory(slug: string): Category | undefined {
+  return categories.find((c) => c.slug === slug);
+}
+
+export function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
