@@ -14,9 +14,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Evara AI",
+  title: "Evara AI — Premium Personal, Business, and Regional AI",
   description:
-    "Evara AI – a calm, emotionally intelligent AI companion in your pocket.",
+    "Evara AI is a premium AI platform for emotionally intelligent personal conversations, WhatsApp business automation, and Bihar-focused regional knowledge.",
+  openGraph: {
+    title: "Evara AI — Intelligence with a soul",
+    description:
+      "A premium AI platform combining emotional companionship, business automation, and regional intelligence in one mobile-first experience.",
+    siteName: "Evara AI",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
