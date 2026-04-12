@@ -12,6 +12,15 @@ function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function SmartphoneIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+      <path d="M12 18h.01" />
+    </svg>
+  );
+}
+
 function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -197,13 +206,28 @@ export default function Home() {
               Evara blends emotional intelligence with elegant product design. Experience supportive conversations, regional knowledge, and business automation in one unified platform.
             </p>
 
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-              <Link href="/signup" className="w-full sm:w-auto rounded-full bg-white px-8 py-4 text-sm font-bold text-black transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50">
-                Start Chatting
-              </Link>
-              <Link href="/whatsapp-ai" className="w-full sm:w-auto rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50">
-                Explore Business Solutions
-              </Link>
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+                <Link href="/signup" className="w-full sm:w-auto rounded-full bg-white px-8 py-4 text-sm font-bold text-black transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50">
+                  Start Chatting
+                </Link>
+                <Link href="/whatsapp-ai" className="w-full sm:w-auto rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50">
+                  Explore Business Solutions
+                </Link>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
+                <Link
+                  href="/app"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-sky-500 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-purple-500/30 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+                >
+                  <SmartphoneIcon className="h-4 w-4" />
+                  Install App — Free
+                </Link>
+                <InstallPrompt
+                  label="⚡ Install Now"
+                  className="w-full sm:w-auto rounded-full border border-purple-500/30 bg-purple-500/10 px-8 py-4 text-sm font-semibold text-purple-200 backdrop-blur-md transition hover:bg-purple-500/20 focus:outline-none"
+                />
+              </div>
             </div>
           </div>
           
