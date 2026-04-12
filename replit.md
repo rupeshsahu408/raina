@@ -22,6 +22,7 @@ A PWA AI companion app with two AI systems:
 - `NVIDIA_API_KEY` — NVIDIA AI API key
 - `SERPER_API_KEY` — Serper web search API key
 - `FIREBASE_SERVICE_ACCOUNT_PATH=./firebase-service-account.json`
+- `WHATSAPP_CREDENTIALS_SECRET` — preferred encryption secret for WhatsApp credential vault records
 
 ### Frontend (`frontend/.env.local`)
 - Firebase config (`NEXT_PUBLIC_FIREBASE_*`)
@@ -35,7 +36,8 @@ Frontend proxies all `/v1/*` and `/health` requests to the backend via Next.js r
 - MongoDB memory system (short-term + long-term profile)
 - NVIDIA AI API integration (`openai/gpt-oss-20b`)
 - Serper web search integration
-- WhatsApp AI Business Assistant flow: premium 3D product landing page at `/whatsapp-ai`, authenticated business dashboard at `/whatsapp-ai/dashboard`, and login/signup redirect support through `?next=/whatsapp-ai/dashboard`
+- WhatsApp AI Business Assistant flow: premium 3D product landing page at `/whatsapp-ai`, authenticated business dashboard at `/whatsapp-ai/dashboard`, login/signup redirect support through `?next=/whatsapp-ai/dashboard`, and hybrid OAuth-style “Connect WhatsApp” onboarding backed by manual credential collection
+- Encrypted WhatsApp credential vault in MongoDB using `WhatsAppCredential`, with credentials stored server-side only and never returned to the frontend
 - Persistent WhatsApp business profiles and chat logs in MongoDB
 - Mode system: Personal, Web Search, Study, Thinking, Business (Evara); Education, Politics, News, Culture, Student Help, Jobs, Agriculture, District (Bihar)
 - Personality switching: Simi (calm/caring) and Loa (confident/playful)
@@ -54,5 +56,6 @@ Frontend proxies all `/v1/*` and `/health` requests to the backend via Next.js r
 - Backend runs `tsx watch` for hot-reload in dev mode
 - Cookie preferences are stored in localStorage under `evara_cookie_prefs`
 - Voice transcription uses browser SpeechRecognition API (works best in Chrome on direct URL, not inside Replit iframe)
-- WhatsApp assistant credentials must be configured as server-side environment variables/secrets: `WHATSAPP_CLOUD_API_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN`, and `NVIDIA_API_KEY`. The frontend only receives readiness booleans, never secret values.
+- WhatsApp assistant credentials can be configured either as server-side environment variables/secrets (`WHATSAPP_CLOUD_API_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN`) or through the dashboard’s encrypted credential vault. The frontend only receives readiness/status booleans and metadata, never secret values.
+- WhatsApp webhook callback URL is `https://raina-1.onrender.com/v1/whatsapp/webhook`; default verify token fallback is `evara_ai_secure_2026`.
 - WhatsApp business setup uses a browser-stored `businessId` and persists profiles/logs in MongoDB collections `WhatsAppBusinessProfile` and `WhatsAppChatLog`. Set `EVARA_WHATSAPP_BUSINESS_ID` to choose which saved profile the production WhatsApp webhook uses.

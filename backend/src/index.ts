@@ -25,6 +25,7 @@ import { ConversationMessage } from "./models/ConversationMessage";
 import { Conversation } from "./models/Conversation";
 import { WhatsAppBusinessProfile } from "./models/WhatsAppBusinessProfile";
 import { WhatsAppChatLog } from "./models/WhatsAppChatLog";
+import { WhatsAppCredential } from "./models/WhatsAppCredential";
 
 dotenv.config();
 
@@ -758,6 +759,9 @@ type WhatsAppLogItem = {
 
 const whatsappLogs: WhatsAppLogItem[] = [];
 const DEFAULT_WHATSAPP_BUSINESS_ID = process.env.EVARA_WHATSAPP_BUSINESS_ID || "default-business";
+const WHATSAPP_CALLBACK_URL =
+  process.env.WHATSAPP_CALLBACK_URL ||
+  "https://raina-1.onrender.com/v1/whatsapp/webhook";
 
 let whatsappBusinessConfig: WhatsAppBusinessConfig = {
   businessName: process.env.EVARA_BUSINESS_NAME || "Evara Business",
@@ -864,6 +868,142 @@ async function createWhatsAppLog(args: {
   await WhatsAppChatLog.create(args);
 }
 
+type ResolvedWhatsAppCredentials = {
+  apiToken: string;
+  phoneNumberId: string;
+  verifyToken: string;
+  source: "env" | "database";
+};
+
+function getCredentialEncryptionKey() {
+  const raw =
+    process.env.WHATSAPP_CREDENTIALS_SECRET ||
+    process.env.ENCRYPTION_KEY ||
+    process.env.MONGODB_URI ||
+    process.env.NVIDIA_API_KEY;
+  if (!raw) {
+    throw new Error(
+      "Credential encryption key missing. Set WHATSAPP_CREDENTIALS_SECRET or MONGODB_URI."
+    );
+  }
+  return crypto.createHash("sha256").update(raw).digest();
+}
+
+function encryptCredential(value: string) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", getCredentialEncryptionKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return `v1:${iv.toString("base64")}:${tag.toString("base64")}:${encrypted.toString("base64")}`;
+}
+
+function decryptCredential(value: string) {
+  const [version, ivRaw, tagRaw, encryptedRaw] = value.split(":");
+  if (version !== "v1" || !ivRaw || !tagRaw || !encryptedRaw) {
+    throw new Error("Invalid encrypted credential format");
+  }
+  const decipher = crypto.createDecipheriv(
+    "aes-256-gcm",
+    getCredentialEncryptionKey(),
+    Buffer.from(ivRaw, "base64")
+  );
+  decipher.setAuthTag(Buffer.from(tagRaw, "base64"));
+  const decrypted = Buffer.concat([
+    decipher.update(Buffer.from(encryptedRaw, "base64")),
+    decipher.final(),
+  ]);
+  return decrypted.toString("utf8");
+}
+
+function getEnvWhatsAppCredentials(): ResolvedWhatsAppCredentials | null {
+  const apiToken = process.env.WHATSAPP_CLOUD_API_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
+  if (!apiToken || !phoneNumberId || !verifyToken) return null;
+  return { apiToken, phoneNumberId, verifyToken, source: "env" };
+}
+
+async function getStoredWhatsAppCredentials(
+  businessId: string
+): Promise<ResolvedWhatsAppCredentials | null> {
+  await connectMongo();
+  const record = await WhatsAppCredential.findOne({ businessId }).lean();
+  if (!record) return null;
+  return {
+    apiToken: decryptCredential(record.apiTokenEncrypted),
+    phoneNumberId: record.phoneNumberId,
+    verifyToken: decryptCredential(record.verifyTokenEncrypted),
+    source: "database",
+  };
+}
+
+async function resolveWhatsAppCredentials(
+  businessId: string
+): Promise<ResolvedWhatsAppCredentials | null> {
+  const stored = await getStoredWhatsAppCredentials(businessId).catch(() => null);
+  if (stored) return stored;
+  return getEnvWhatsAppCredentials();
+}
+
+async function getWhatsAppCredentialStatus(businessId: string) {
+  const envCredentials = getEnvWhatsAppCredentials();
+  let stored: any = null;
+  try {
+    await connectMongo();
+    stored = await WhatsAppCredential.findOne({ businessId }).lean();
+  } catch {}
+
+  const hasDatabaseCredentials = Boolean(stored);
+  const hasEnvCredentials = Boolean(envCredentials);
+  return {
+    whatsappApiToken: hasDatabaseCredentials || Boolean(envCredentials?.apiToken),
+    whatsappPhoneNumberId: hasDatabaseCredentials || Boolean(envCredentials?.phoneNumberId),
+    whatsappVerifyToken: hasDatabaseCredentials || Boolean(envCredentials?.verifyToken),
+    credentialSource: hasDatabaseCredentials ? "database" : hasEnvCredentials ? "env" : "none",
+    connected: Boolean(stored?.connected || hasEnvCredentials),
+    callbackUrl: WHATSAPP_CALLBACK_URL,
+    lastTestAt: stored?.lastTestAt || null,
+    lastError: stored?.lastError || null,
+    tokenLast4: stored?.tokenLast4 || null,
+    oauthReady: true,
+  };
+}
+
+async function testWhatsAppGraphCredentials(credentials: ResolvedWhatsAppCredentials) {
+  const response = await fetch(
+    `https://graph.facebook.com/v20.0/${credentials.phoneNumberId}?fields=id,display_phone_number,verified_name`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${credentials.apiToken}`,
+      },
+    }
+  );
+
+  const text = await response.text().catch(() => "");
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok) {
+    const message =
+      data?.error?.message ||
+      data?.error?.error_user_msg ||
+      text ||
+      `WhatsApp API returned ${response.status}`;
+    throw new Error(String(message).slice(0, 500));
+  }
+
+  return {
+    id: String(data?.id || credentials.phoneNumberId),
+    displayPhoneNumber: data?.display_phone_number || null,
+    verifiedName: data?.verified_name || null,
+  };
+}
+
 function detectCustomerLanguage(text: string, mode: WhatsAppBusinessConfig["languageMode"]) {
   if (mode === "english") return "English";
   if (mode === "hindi") return "Hindi";
@@ -927,17 +1067,16 @@ async function generateWhatsAppBusinessReply(config: WhatsAppBusinessConfig, cus
   return reply || fallback;
 }
 
-async function sendWhatsAppText(to: string, body: string) {
-  const token = process.env.WHATSAPP_CLOUD_API_TOKEN;
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
-  if (!token || !phoneNumberId) {
+async function sendWhatsAppText(to: string, body: string, businessId = DEFAULT_WHATSAPP_BUSINESS_ID) {
+  const credentials = await resolveWhatsAppCredentials(businessId);
+  if (!credentials) {
     throw new Error("WhatsApp credentials not configured");
   }
 
-  const response = await fetch(`https://graph.facebook.com/v20.0/${phoneNumberId}/messages`, {
+  const response = await fetch(`https://graph.facebook.com/v20.0/${credentials.phoneNumberId}/messages`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${credentials.apiToken}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -954,14 +1093,97 @@ async function sendWhatsAppText(to: string, body: string) {
   }
 }
 
-app.get("/v1/whatsapp/status", (_req, res) => {
+app.get("/v1/whatsapp/status", async (req, res) => {
+  const businessId = sanitizeBusinessId(req.query.businessId);
+  const credentialStatus = await getWhatsAppCredentialStatus(businessId);
   res.json({
-    whatsappApiToken: Boolean(process.env.WHATSAPP_CLOUD_API_TOKEN),
-    whatsappPhoneNumberId: Boolean(process.env.WHATSAPP_PHONE_NUMBER_ID),
-    whatsappVerifyToken: Boolean(process.env.WHATSAPP_VERIFY_TOKEN),
+    ...credentialStatus,
     aiApiKey: Boolean(process.env.NVIDIA_API_KEY),
     autoReplyEnabled: whatsappBusinessConfig.autoReplyEnabled,
   });
+});
+
+app.post("/v1/whatsapp/credentials", async (req, res) => {
+  const businessId = sanitizeBusinessId(req.body?.businessId);
+  const apiToken = String(req.body?.apiToken || "").trim();
+  const phoneNumberId = String(req.body?.phoneNumberId || "").trim();
+  const verifyToken = String(req.body?.verifyToken || "").trim();
+
+  if (!apiToken || !phoneNumberId || !verifyToken) {
+    return res.status(400).json({ error: "apiToken, phoneNumberId, and verifyToken are required" });
+  }
+
+  if (!/^EA[A-Za-z0-9]+/.test(apiToken) || phoneNumberId.length < 6 || verifyToken.length < 8) {
+    return res.status(400).json({ error: "Credentials format looks invalid" });
+  }
+
+  try {
+    await connectMongo();
+    await WhatsAppCredential.findOneAndUpdate(
+      { businessId },
+      {
+        $set: {
+          apiTokenEncrypted: encryptCredential(apiToken),
+          phoneNumberId,
+          verifyTokenEncrypted: encryptCredential(verifyToken),
+          tokenLast4: apiToken.slice(-4),
+          connected: false,
+          lastError: null,
+          provider: "manual",
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
+    const status = await getWhatsAppCredentialStatus(businessId);
+    return res.json({ ok: true, status });
+  } catch (err) {
+    console.error("[whatsapp] credential save failed:", err);
+    return res.status(500).json({ error: "Could not securely store WhatsApp credentials" });
+  }
+});
+
+app.post("/v1/whatsapp/test-connection", async (req, res) => {
+  const businessId = sanitizeBusinessId(req.body?.businessId);
+  try {
+    const credentials = await resolveWhatsAppCredentials(businessId);
+    if (!credentials) {
+      return res.status(400).json({ ok: false, error: "WhatsApp credentials are not configured" });
+    }
+
+    const details = await testWhatsAppGraphCredentials(credentials);
+    try {
+      await connectMongo();
+      await WhatsAppCredential.findOneAndUpdate(
+        { businessId },
+        { $set: { connected: true, lastTestAt: new Date(), lastError: null } }
+      );
+    } catch {}
+
+    return res.json({
+      ok: true,
+      connected: true,
+      message: "WhatsApp Cloud API credentials are valid",
+      details,
+      status: await getWhatsAppCredentialStatus(businessId),
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "WhatsApp connection test failed";
+    try {
+      await connectMongo();
+      await WhatsAppCredential.findOneAndUpdate(
+        { businessId },
+        { $set: { connected: false, lastTestAt: new Date(), lastError: message.slice(0, 500) } }
+      );
+    } catch {}
+
+    return res.status(400).json({
+      ok: false,
+      connected: false,
+      error: message,
+      status: await getWhatsAppCredentialStatus(businessId),
+    });
+  }
 });
 
 app.get("/v1/whatsapp/config", async (req, res) => {
@@ -1048,11 +1270,30 @@ app.post("/v1/whatsapp/preview-reply", async (req, res) => {
   }
 });
 
-app.get("/v1/whatsapp/webhook", (req, res) => {
+app.get("/v1/whatsapp/webhook", async (req, res) => {
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
-  if (mode === "subscribe" && token === process.env.WHATSAPP_VERIFY_TOKEN) {
+  const credentials = await resolveWhatsAppCredentials(DEFAULT_WHATSAPP_BUSINESS_ID).catch(() => null);
+  const storedVerifyTokens = await (async () => {
+    try {
+      await connectMongo();
+      const records = await WhatsAppCredential.find({}).select("verifyTokenEncrypted").limit(50).lean();
+      return records
+        .map((record) => decryptCredential(record.verifyTokenEncrypted))
+        .filter(Boolean);
+    } catch {
+      return [];
+    }
+  })();
+  const validTokens = [
+    process.env.WHATSAPP_VERIFY_TOKEN,
+    credentials?.verifyToken,
+    "evara_ai_secure_2026",
+    ...storedVerifyTokens,
+  ].filter(Boolean);
+
+  if (mode === "subscribe" && validTokens.includes(String(token || ""))) {
     return res.status(200).send(String(challenge || ""));
   }
   return res.sendStatus(403);
@@ -1100,7 +1341,7 @@ app.post("/v1/whatsapp/webhook", async (req, res) => {
             language,
             source: "whatsapp",
           }).catch(() => undefined);
-          await sendWhatsAppText(from, reply);
+          await sendWhatsAppText(from, reply, businessId);
         }
       }
     }
