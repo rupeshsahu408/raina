@@ -1,0 +1,150 @@
+Create a comprehensive, long-form, and legally structured **Disclaimer** page for an AI SaaS platform named "Evara AI".
+
+This disclaimer must be detailed, formal, and written in professional legal English. It should clearly define limitations of liability, AI output reliability, third-party integrations, and platform responsibilities.
+
+The Disclaimer must cover TWO services within the same page:
+
+1. Ivana AI (Web/App AI assistant)
+2. WhatsApp AI (Automation via WhatsApp Business API)
+
+---
+
+### Structure and Sections to Include:
+
+#### 1. General Disclaimer
+
+* Overview of Evara AI
+* Information is provided on an “as-is” and “as-available” basis
+* No warranties or guarantees of accuracy
+
+---
+
+#### 2. AI Output Disclaimer
+
+* AI-generated responses may be inaccurate, incomplete, or outdated
+* Users should not rely solely on AI for critical decisions
+* No liability for actions taken based on AI outputs
+
+---
+
+#### 3. Professional Disclaimer
+
+* AI does NOT provide legal, financial, medical, or professional advice
+* Users must consult qualified professionals for such matters
+
+---
+
+#### 4. Ivana AI Disclaimer
+
+* Covers conversational AI risks
+* No guarantee of correctness of chatbot responses
+* User responsibility for interpreting outputs
+
+---
+
+#### 5. WhatsApp AI Disclaimer
+
+* Integration with WhatsApp Business API
+
+* Dependency on third-party platform (Meta)
+
+* Evara AI is not responsible for:
+
+  * WhatsApp outages
+  * API limitations
+  * Policy changes by Meta
+
+* Users are responsible for:
+
+  * Customer consent
+  * Lawful communication
+  * Compliance with WhatsApp policies
+
+---
+
+#### 6. Third-Party Disclaimer
+
+* Platform may include integrations with external services
+* No control over third-party services
+* No liability for third-party failures or data handling
+
+---
+
+#### 7. Limitation of Liability
+
+* Evara AI is not liable for:
+
+  * Direct or indirect damages
+  * Loss of data
+  * Business interruptions
+  * Loss of profits
+
+* Use of the platform is at the user’s own risk
+
+---
+
+#### 8. No Guarantees
+
+* No guarantee of:
+
+  * Service uptime
+  * Accuracy of AI
+  * Continuous availability
+
+---
+
+#### 9. External Links Disclaimer
+
+* Platform may contain links to external websites
+* Evara AI does not endorse or control external content
+
+---
+
+#### 10. Brand Independence Statement (IMPORTANT)
+
+* Clearly state:
+
+"Evara AI is an independent platform and has no affiliation, association, or connection with vercal.com or any similarly named entity. Any resemblance in name is purely coincidental."
+
+---
+
+#### 11. User Responsibility
+
+* Users are fully responsible for how they use the platform
+* Users must comply with applicable laws and regulations
+
+---
+
+#### 12. Changes to Disclaimer
+
+* Right to update or modify disclaimer at any time
+* Continued use implies acceptance
+
+---
+
+#### 13. Contact Information
+
+* Email: [support.evara.ai@sendora.me](mailto:support.evara.ai@sendora.me) or updated support email if changed)
+
+---
+
+### Design Requirements:
+
+* Create a dedicated page: /disclaimer
+* Use clean, readable typography
+* Add table of contents with anchor links
+* Proper section spacing and hierarchy
+* Make it long but easy to scroll and navigate
+
+---
+
+### Important Notes:
+
+* The document must be LONG, detailed, and legally structured
+* Maintain formal legal tone
+* Clearly separate Ivana AI and WhatsApp AI disclaimers
+* Include strong limitation of liability language
+* Must include brand independence statement (no relation to vercal.com)
+* Do NOT copy from other websites — generate original content
+
+This is a frontend-only page. Focus on structured legal content and professional readability.
