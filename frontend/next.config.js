@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: ["*"],
+  allowedDevOrigins: [
+    "*.replit.dev",
+    "*.kirk.replit.dev",
+    "*.replit.app",
+  ],
 };
 
 module.exports = nextConfig;
