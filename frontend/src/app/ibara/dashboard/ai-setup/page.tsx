@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { ibaraUrl } from "@/lib/ibaraApi";
 
 interface BotConfig {
   businessName: string;
@@ -64,7 +65,7 @@ function AISetupContent() {
       setUser(u);
       if (siteId) {
         try {
-          const { data } = await safeJsonFetch(`/api/ibara/sites/${siteId}/bot?userId=${u.uid}`);
+          const { data } = await safeJsonFetch(ibaraUrl(`/sites/${siteId}/bot?userId=${u.uid}`));
           if (data.bot) {
             setConfig({
               businessName: data.bot.businessName || "",
@@ -96,7 +97,7 @@ function AISetupContent() {
     setSaving(true);
     try {
       const payload = { ...config, userId: user.uid, isActive: activate || config.isActive };
-      const { res, data } = await safeJsonFetch(`/api/ibara/sites/${siteId}/bot`, {
+      const { res, data } = await safeJsonFetch(ibaraUrl(`/sites/${siteId}/bot`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

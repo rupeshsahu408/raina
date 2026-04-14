@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { ibaraUrl } from "@/lib/ibaraApi";
 
 interface Site {
   _id: string;
@@ -44,8 +45,8 @@ function OverviewContent() {
       if (!siteId) { setLoading(false); return; }
       try {
         const [sitesRes, botRes] = await Promise.all([
-          fetch(`/api/ibara/sites?userId=${u.uid}`),
-          fetch(`/api/ibara/sites/${siteId}/bot?userId=${u.uid}`),
+          fetch(ibaraUrl(`/sites?userId=${u.uid}`)),
+          fetch(ibaraUrl(`/sites/${siteId}/bot?userId=${u.uid}`)),
         ]);
         const sitesData = await sitesRes.json();
         const botData = await botRes.json();

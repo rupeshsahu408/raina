@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, signOut, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { ibaraUrl } from "@/lib/ibaraApi";
 
 interface Site {
   _id: string;
@@ -37,7 +38,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
       }
       setUser(u);
       try {
-        const res = await fetch(`/api/ibara/sites?userId=${u.uid}`);
+        const res = await fetch(ibaraUrl(`/sites?userId=${u.uid}`));
         const data = await res.json();
         if (data.sites?.length) {
           setSites(data.sites);

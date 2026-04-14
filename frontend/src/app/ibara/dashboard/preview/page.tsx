@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { ibaraUrl } from "@/lib/ibaraApi";
 
 interface Message {
   role: "user" | "assistant";
@@ -47,7 +48,7 @@ function PreviewContent() {
       setUser(u);
       if (siteId) {
         try {
-          const res = await fetch(`/api/ibara/sites/${siteId}/bot?userId=${u.uid}`);
+          const res = await fetch(ibaraUrl(`/sites/${siteId}/bot?userId=${u.uid}`));
           const data = await res.json();
           setBot(data.bot || null);
           if (data.bot) {
@@ -78,7 +79,7 @@ function PreviewContent() {
 
     try {
       const history = messages.slice(-10).map((m) => ({ role: m.role, content: m.content }));
-      const res = await fetch(`/api/ibara/sites/${siteId}/chat`, {
+      const res = await fetch(ibaraUrl(`/sites/${siteId}/chat`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user?.uid, message: userMsg, history }),

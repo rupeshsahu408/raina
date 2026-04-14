@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { ibaraUrl } from "@/lib/ibaraApi";
 
 type VerificationStatus = "pending" | "verified" | "failed" | "checking";
 
@@ -66,7 +67,7 @@ export default function IbaraOnboarding() {
     setCreating(true);
     try {
       const token = await user!.getIdToken();
-      const { res, data } = await safeJsonFetch("/api/ibara/sites", {
+      const { res, data } = await safeJsonFetch(ibaraUrl("/sites"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ userId: user!.uid, websiteUrl: url.trim() }),
@@ -92,7 +93,7 @@ export default function IbaraOnboarding() {
     setVerifyMsg("");
     try {
       const token = await user!.getIdToken();
-      const { res, data } = await safeJsonFetch(`/api/ibara/sites/${site._id}/verify`, {
+      const { res, data } = await safeJsonFetch(ibaraUrl(`/sites/${site._id}/verify`), {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ userId: user!.uid }),
