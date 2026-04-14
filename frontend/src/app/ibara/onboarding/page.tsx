@@ -195,7 +195,7 @@ export default function IbaraOnboarding() {
                 </div>
                 <h1 className="text-2xl font-black mb-2">Add your website</h1>
                 <p className="text-white/40 text-sm leading-relaxed">
-                  Enter your website URL to get started. We'll verify you own the domain in the next step.
+                  Enter your website URL to get started. You can optionally verify domain ownership in the next step.
                 </p>
               </div>
 
@@ -239,9 +239,12 @@ export default function IbaraOnboarding() {
                 <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-600/20 to-violet-600/20 border border-cyan-500/20 items-center justify-center text-2xl mb-4">
                   🔒
                 </div>
-                <h1 className="text-2xl font-black mb-2">Verify your domain</h1>
+                <div className="flex items-center gap-2 mb-2">
+                  <h1 className="text-2xl font-black">Verify your domain</h1>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/5 border border-white/10 text-white/30">Optional</span>
+                </div>
                 <p className="text-white/40 text-sm leading-relaxed">
-                  Add this DNS TXT record to <span className="text-white font-medium">{site.domain}</span> to prove you own it. Then click Verify.
+                  Adding a DNS TXT record to <span className="text-white font-medium">{site.domain}</span> confirms you own it. You can skip this for now and verify later from your dashboard.
                 </p>
               </div>
 
@@ -259,9 +262,9 @@ export default function IbaraOnboarding() {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-                  <p className="text-xs text-amber-300/80 leading-relaxed">
-                    <span className="font-semibold">Note:</span> DNS changes can take up to 24 hours to propagate, but usually take just a few minutes.
+                <div className="rounded-xl border border-white/6 bg-white/2 px-4 py-3">
+                  <p className="text-xs text-white/30 leading-relaxed">
+                    DNS changes can take a few minutes to propagate. You can skip this step and come back to verify later — your chatbot will still work.
                   </p>
                 </div>
               </div>
@@ -285,14 +288,14 @@ export default function IbaraOnboarding() {
               <div className="flex gap-3">
                 <button
                   onClick={() => setStep(1)}
-                  className="flex-1 h-12 rounded-xl border border-white/10 hover:border-white/20 text-sm font-medium text-white/50 hover:text-white transition-all"
+                  className="h-12 px-4 rounded-xl border border-white/10 hover:border-white/20 text-sm font-medium text-white/50 hover:text-white transition-all"
                 >
                   ← Back
                 </button>
                 <button
                   onClick={handleVerify}
                   disabled={verifying || verifyStatus === "verified"}
-                  className="btn-primary flex-2 flex-1 h-12 rounded-xl text-sm font-semibold text-white"
+                  className="btn-primary flex-1 h-12 rounded-xl text-sm font-semibold text-white"
                 >
                   {verifying ? (
                     <span className="flex items-center justify-center gap-2">
@@ -303,10 +306,16 @@ export default function IbaraOnboarding() {
                 </button>
               </div>
 
-              <p className="mt-4 text-center text-xs text-white/20">
-                Having trouble?{" "}
-                <a href="https://www.cloudflare.com/learning/dns/dns-txt-record/" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300">
-                  Learn about DNS TXT records
+              <button
+                onClick={() => router.replace(`/ibara/dashboard/connect?siteId=${site._id}`)}
+                className="mt-3 w-full h-11 rounded-xl border border-white/6 hover:border-white/12 text-sm font-medium text-white/30 hover:text-white/60 transition-all"
+              >
+                Skip for now — verify later
+              </button>
+
+              <p className="mt-3 text-center text-xs text-white/20">
+                <a href="https://www.cloudflare.com/learning/dns/dns-txt-record/" target="_blank" rel="noopener noreferrer" className="text-violet-400/50 hover:text-violet-300 transition-colors">
+                  What is a DNS TXT record?
                 </a>
               </p>
             </div>
