@@ -5,6 +5,7 @@ import { promisify } from "util";
 import { IbaraSite } from "./models/IbaraSite";
 import { IbaraBot } from "./models/IbaraBot";
 import { callNvidiaChatCompletions, type ChatMessage } from "./ai/nvidiaClient";
+import { connectMongo } from "./db";
 
 const resolveTxt = promisify(dns.resolveTxt);
 
@@ -74,6 +75,7 @@ Instructions:
 - If you don't know the answer, say so honestly and suggest the user contact the business directly.`;
 }
 
+// POST /api/ibara/sites — register a new site
 ibaraRouter.post("/sites", async (req, res) => {
   const { userId, websiteUrl } = req.body || {};
   if (!userId || !websiteUrl) {
@@ -86,6 +88,7 @@ ibaraRouter.post("/sites", async (req, res) => {
   }
 
   try {
+    await connectMongo();
     const existing = await IbaraSite.findOne({ userId, domain });
     if (existing) {
       return res.json({ site: existing });
@@ -102,19 +105,26 @@ ibaraRouter.post("/sites", async (req, res) => {
     return res.status(201).json({ site });
   } catch (err: any) {
     if (err.code === 11000) {
-      const existing = await IbaraSite.findOne({ userId, domain });
-      return res.json({ site: existing });
+      try {
+        const existing = await IbaraSite.findOne({ userId, domain });
+        return res.json({ site: existing });
+      } catch (e2) {
+        console.error("[ibara] duplicate fallback error:", e2);
+        return res.status(500).json({ error: "Failed to create site" });
+      }
     }
     console.error("[ibara] create site error:", err);
-    return res.status(500).json({ error: "Failed to create site" });
+    return res.status(500).json({ error: "Failed to create site. Please try again." });
   }
 });
 
+// GET /api/ibara/sites — list user's sites
 ibaraRouter.get("/sites", async (req, res) => {
   const { userId } = req.query;
   if (!userId) return res.status(400).json({ error: "userId is required" });
 
   try {
+    await connectMongo();
     const sites = await IbaraSite.find({ userId }).sort({ createdAt: -1 });
     return res.json({ sites });
   } catch (err) {
@@ -123,6 +133,7 @@ ibaraRouter.get("/sites", async (req, res) => {
   }
 });
 
+// POST /api/ibara/sites/:siteId/verify — verify DNS
 ibaraRouter.post("/sites/:siteId/verify", async (req, res) => {
   const { siteId } = req.params;
   const { userId } = req.body || {};
@@ -130,6 +141,7 @@ ibaraRouter.post("/sites/:siteId/verify", async (req, res) => {
   if (!userId) return res.status(400).json({ error: "userId is required" });
 
   try {
+    await connectMongo();
     const site = await IbaraSite.findOne({ _id: siteId, userId });
     if (!site) return res.status(404).json({ error: "Site not found" });
 
@@ -147,7 +159,11 @@ ibaraRouter.post("/sites/:siteId/verify", async (req, res) => {
     } else {
       site.verificationStatus = "pending";
       await site.save();
-      return res.json({ verified: false, site, message: "DNS record not found yet. Please check your DNS settings and try again." });
+      return res.json({
+        verified: false,
+        site,
+        message: "DNS record not found yet. Please check your DNS settings and try again in a few minutes.",
+      });
     }
   } catch (err) {
     console.error("[ibara] verify error:", err);
@@ -155,14 +171,13 @@ ibaraRouter.post("/sites/:siteId/verify", async (req, res) => {
   }
 });
 
+// GET /api/ibara/sites/:siteId/bot — get bot config
 ibaraRouter.get("/sites/:siteId/bot", async (req, res) => {
   const { siteId } = req.params;
-  const { userId } = req.query;
-
-  if (!userId) return res.status(400).json({ error: "userId is required" });
 
   try {
-    const bot = await IbaraBot.findOne({ siteId, userId });
+    await connectMongo();
+    const bot = await IbaraBot.findOne({ siteId });
     return res.json({ bot: bot || null });
   } catch (err) {
     console.error("[ibara] get bot error:", err);
@@ -170,6 +185,7 @@ ibaraRouter.get("/sites/:siteId/bot", async (req, res) => {
   }
 });
 
+// POST /api/ibara/sites/:siteId/bot — save bot config
 ibaraRouter.post("/sites/:siteId/bot", async (req, res) => {
   const { siteId } = req.params;
   const {
@@ -188,6 +204,7 @@ ibaraRouter.post("/sites/:siteId/bot", async (req, res) => {
   if (!userId) return res.status(400).json({ error: "userId is required" });
 
   try {
+    await connectMongo();
     const site = await IbaraSite.findOne({ _id: siteId, userId });
     if (!site) return res.status(404).json({ error: "Site not found" });
 
@@ -216,13 +233,15 @@ ibaraRouter.post("/sites/:siteId/bot", async (req, res) => {
   }
 });
 
+// POST /api/ibara/sites/:siteId/chat — chat with the configured bot
 ibaraRouter.post("/sites/:siteId/chat", async (req, res) => {
   const { siteId } = req.params;
-  const { userId, message, history } = req.body || {};
+  const { message, history } = req.body || {};
 
   if (!message?.trim()) return res.status(400).json({ error: "message is required" });
 
   try {
+    await connectMongo();
     const bot = await IbaraBot.findOne({ siteId });
     if (!bot) {
       return res.status(404).json({ error: "Bot not configured for this site" });
@@ -259,6 +278,6 @@ ibaraRouter.post("/sites/:siteId/chat", async (req, res) => {
     return res.json({ reply });
   } catch (err) {
     console.error("[ibara] chat error:", err);
-    return res.status(500).json({ error: "Chat failed" });
+    return res.status(500).json({ error: "Chat failed. Please try again." });
   }
 });

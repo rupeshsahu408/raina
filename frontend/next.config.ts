@@ -37,6 +37,27 @@ const nextConfig: NextConfig = {
         images: { unoptimized: true },
       }
     : {
+        async headers() {
+          return [
+            {
+              // Allow any website to call the IBARA API (needed for the embedded widget)
+              source: "/api/ibara/:path*",
+              headers: [
+                { key: "Access-Control-Allow-Origin", value: "*" },
+                { key: "Access-Control-Allow-Methods", value: "GET,POST,OPTIONS" },
+                { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
+              ],
+            },
+            {
+              // Allow any website to load the widget script
+              source: "/ibara-widget.js",
+              headers: [
+                { key: "Access-Control-Allow-Origin", value: "*" },
+                { key: "Cache-Control", value: "public, max-age=3600" },
+              ],
+            },
+          ];
+        },
         async rewrites() {
           return [
             {
