@@ -11,7 +11,7 @@ type ChatMessage = {
   content: string;
 };
 
-const MAX_DEMO_REPLIES = 4; // 3–5 responses per spec
+const MAX_DEMO_REPLIES = 4;
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8081";
 
@@ -119,12 +119,12 @@ export function DemoChatWidget() {
   const canSend = !isTyping && remainingReplies > 0 && input.trim().length > 0;
 
   return (
-    <div className="rounded-3xl border border-zinc-800 bg-zinc-950/70 p-3 text-xs text-zinc-300">
+    <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.055] p-3 text-xs text-zinc-300 shadow-2xl shadow-black/30">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-pink-400 via-purple-500 to-sky-400" />
+          <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-pink-400 via-purple-500 to-sky-400 shadow-lg shadow-violet-500/20" />
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-zinc-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">
               Demo chat
             </p>
             <p className="mt-0.5 text-[11px] text-zinc-200">
@@ -135,7 +135,7 @@ export function DemoChatWidget() {
           </div>
         </div>
 
-        <div className="flex items-center rounded-2xl border border-zinc-800 bg-black/10 p-0.5">
+        <div className="flex items-center rounded-2xl border border-white/10 bg-black/20 p-0.5">
           {(["Simi", "Loa"] as Personality[]).map((p) => (
             <button
               key={p}
@@ -144,7 +144,7 @@ export function DemoChatWidget() {
               className={[
                 "rounded-2xl px-2 py-1 text-[10px] transition-colors",
                 personality === p
-                  ? "bg-zinc-900 text-zinc-50"
+                  ? "bg-white text-black shadow-sm"
                   : "text-zinc-400 hover:text-zinc-200",
               ].join(" ")}
             >
@@ -154,9 +154,9 @@ export function DemoChatWidget() {
         </div>
       </div>
 
-      <div className="mt-2 max-h-44 overflow-y-auto rounded-2xl bg-zinc-900/60 p-2">
+      <div className="mt-3 max-h-56 min-h-40 overflow-y-auto rounded-[1.35rem] border border-white/8 bg-black/25 p-2.5">
         {messages.length === 0 ? (
-          <div className="text-[11px] text-zinc-400">
+          <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.035] p-4 text-[11px] leading-5 text-zinc-400">
             Send one thought—Evara will respond gently.
           </div>
         ) : (
@@ -168,10 +168,10 @@ export function DemoChatWidget() {
               >
                 <div
                   className={[
-                    "max-w-[84%] whitespace-pre-wrap rounded-2xl px-3 py-2 leading-relaxed",
+                    "max-w-[86%] whitespace-pre-wrap rounded-2xl px-3 py-2 leading-relaxed shadow-sm",
                     m.role === "user"
-                      ? "bg-zinc-100 text-black"
-                      : "bg-zinc-800 text-zinc-100",
+                      ? "bg-white text-black"
+                      : "border border-white/8 bg-white/[0.08] text-zinc-100",
                   ].join(" ")}
                 >
                   {m.content}
@@ -180,7 +180,7 @@ export function DemoChatWidget() {
             ))}
             {isTyping ? (
               <div className="flex">
-                <div className="rounded-2xl bg-zinc-800 px-3 py-2 text-zinc-100">
+                <div className="rounded-2xl border border-white/8 bg-white/[0.08] px-3 py-2 text-zinc-100">
                   <span className="inline-flex items-center gap-1">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-200" />
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-200 delay-100" />
@@ -195,7 +195,7 @@ export function DemoChatWidget() {
       </div>
 
       <form
-        className="mt-2 flex items-end gap-2"
+        className="mt-3 flex items-end gap-2"
         onSubmit={(e) => {
           e.preventDefault();
           if (!canSend) return;
@@ -252,7 +252,7 @@ export function DemoChatWidget() {
       >
         <textarea
           rows={1}
-          className="max-h-24 flex-1 resize-none rounded-2xl border border-zinc-800 bg-zinc-950 px-3 py-2 text-[12px] leading-relaxed text-zinc-100 outline-none ring-0 focus:border-zinc-500"
+          className="max-h-24 flex-1 resize-none rounded-2xl border border-white/10 bg-black/35 px-3 py-2 text-[12px] leading-relaxed text-zinc-100 outline-none ring-0 transition focus:border-violet-300/50"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Share what you’re feeling…"
@@ -262,8 +262,8 @@ export function DemoChatWidget() {
           type="submit"
           disabled={!canSend}
           className={[
-            "h-9 rounded-2xl px-3 text-[12px] font-medium transition-colors",
-            canSend ? "bg-zinc-100 text-black" : "bg-zinc-800 text-zinc-500",
+            "h-9 rounded-2xl px-3 text-[12px] font-bold transition-colors",
+            canSend ? "bg-white text-black" : "bg-white/8 text-zinc-500",
           ].join(" ")}
         >
           Send

@@ -559,11 +559,11 @@ export default function ChatPage() {
   }, [input]);
 
   const modeConfig: Record<Mode, { label: string; icon: string; color: string }> = {
-    personal:  { label: "Personal",   icon: "❤️",  color: "text-rose-400" },
-    web:       { label: "Web Search", icon: "🌐",  color: "text-sky-400" },
-    study:     { label: "Study",      icon: "🎓",  color: "text-emerald-400" },
-    thinking:  { label: "Thinking",   icon: "🧠",  color: "text-violet-400" },
-    business:  { label: "Business",   icon: "💼",  color: "text-amber-400" },
+    personal:  { label: "Personal",   icon: "P",  color: "text-rose-300" },
+    web:       { label: "Web Search", icon: "W",  color: "text-sky-300" },
+    study:     { label: "Study",      icon: "S",  color: "text-emerald-300" },
+    thinking:  { label: "Thinking",   icon: "T",  color: "text-violet-300" },
+    business:  { label: "Business",   icon: "B",  color: "text-amber-300" },
   };
 
   const messageLeft = usage.messagesLeft;
@@ -833,7 +833,7 @@ export default function ChatPage() {
                 />
               ) : (
                 <span className="block truncate leading-snug">
-                  {c.pinned && <span className="mr-1 text-[10px] text-amber-400">📌</span>}
+                  {c.pinned && <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-400 align-middle" />}
                   {c.title || c.preview || "Untitled chat"}
                 </span>
               )}
@@ -907,7 +907,8 @@ export default function ChatPage() {
 
   // ── RENDER ──────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen overflow-hidden bg-[#111111] text-zinc-100">
+    <div className="flex h-screen overflow-hidden bg-[#05030a] text-zinc-100">
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_22%_0%,rgba(168,85,247,0.18),transparent_30%),radial-gradient(circle_at_95%_16%,rgba(14,165,233,0.14),transparent_28%),linear-gradient(180deg,#07040d,#0d0a14_48%,#05030a)]" />
 
       {/* ── Mobile sidebar overlay ── */}
       {sidebarOpen && (
@@ -921,16 +922,16 @@ export default function ChatPage() {
           SIDEBAR
       ══════════════════════════════════════════ */}
       <aside className={[
-        "fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-white/[0.05] bg-[#0a0a0a] transition-transform duration-300",
+        "fixed inset-y-0 left-0 z-40 flex w-[286px] flex-col border-r border-white/[0.08] bg-[#07050d]/95 shadow-2xl shadow-black/50 backdrop-blur-2xl transition-transform duration-300",
         "lg:static lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full",
       ].join(" ")}>
 
         {/* ── Header ── */}
-        <div className="flex items-center justify-between px-3 pt-4 pb-2">
+        <div className="flex items-center justify-between px-3 pb-3 pt-4">
           <div className="flex items-center gap-2.5">
             <img src="/evara-logo.png" alt="Evara AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
-            <span className="text-[14px] font-semibold tracking-tight text-zinc-100">Evara AI</span>
+            <span className="text-[14px] font-black tracking-tight text-zinc-100">Evara AI</span>
           </div>
           <button
             type="button"
@@ -947,7 +948,7 @@ export default function ChatPage() {
             type="button"
             onClick={startNewChat}
             disabled={loading || isTyping}
-            className="flex w-full items-center gap-3 rounded-xl border border-white/[0.07] px-3.5 py-2.5 text-[13px] font-medium text-zinc-300 transition hover:bg-white/[0.06] hover:text-white disabled:opacity-40"
+            className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.09] bg-white/[0.035] px-3.5 py-3 text-[13px] font-bold text-zinc-200 shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-white/[0.07] hover:text-white disabled:opacity-40"
           >
             <IconPlus size={15} className="shrink-0 text-zinc-400" />
             New chat
@@ -955,7 +956,7 @@ export default function ChatPage() {
         </div>
 
         {/* ── Personality toggle ── */}
-        <div className="mx-3 mb-2 flex gap-1 rounded-xl bg-white/[0.04] p-1">
+        <div className="mx-3 mb-3 flex gap-1 rounded-2xl border border-white/[0.06] bg-white/[0.045] p-1">
           {(["Simi", "Loa"] as Personality[]).map((p) => (
             <button
               key={p}
@@ -964,7 +965,7 @@ export default function ChatPage() {
               className={[
                 "flex-1 rounded-lg py-1.5 text-[12px] font-medium transition",
                 personality === p
-                  ? "bg-violet-600 text-white shadow shadow-violet-900/40"
+                  ? "bg-white text-black shadow shadow-white/10"
                   : "text-zinc-500 hover:text-zinc-300",
               ].join(" ")}
             >
@@ -975,7 +976,7 @@ export default function ChatPage() {
 
         {/* ── Search ── */}
         <div className="px-3 pb-2">
-          <div className="flex items-center gap-2 rounded-xl bg-white/[0.05] px-3 py-2">
+          <div className="flex items-center gap-2 rounded-2xl border border-white/[0.06] bg-white/[0.045] px-3 py-2.5">
             <IconSearch size={13} className="shrink-0 text-zinc-600" />
             <input
               value={searchQuery}
@@ -998,7 +999,7 @@ export default function ChatPage() {
             onClick={() => setSidebarOpen(false)}
             className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-[13px] font-medium text-zinc-400 transition hover:bg-white/[0.05] hover:text-zinc-200"
           >
-            <span className="shrink-0 text-[13px] leading-none">🟡</span>
+            <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-br from-amber-300 to-orange-500" />
             Bihar AI
           </a>
         </div>
@@ -1138,7 +1139,7 @@ export default function ChatPage() {
       <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
 
         {/* ── Header ── */}
-        <header className="flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#111111]/95 px-4 py-3 backdrop-blur-md">
+        <header className="relative z-10 flex shrink-0 items-center justify-between border-b border-white/[0.08] bg-[#080611]/82 px-4 py-3 backdrop-blur-2xl">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button
@@ -1153,9 +1154,9 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={() => setShowModeMenu((v) => !v)}
-              className="flex items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.04] px-3 py-1.5 text-[12px] font-medium text-zinc-300 transition hover:bg-white/[0.08] hover:text-zinc-100"
+              className="flex items-center gap-1.5 rounded-2xl border border-white/[0.09] bg-white/[0.06] px-3 py-2 text-[12px] font-bold text-zinc-200 shadow-lg shadow-black/10 transition hover:bg-white/[0.1] hover:text-zinc-100"
             >
-              <span>{modeConfig[mode].icon}</span>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px]">{modeConfig[mode].icon}</span>
               <span>{modeConfig[mode].label}</span>
               <IconChevronDown size={11} />
             </button>
@@ -1172,7 +1173,7 @@ export default function ChatPage() {
               type="button"
               onClick={startNewChat}
               disabled={loading || isTyping}
-              className="hidden items-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.04] px-3 py-1.5 text-[12px] text-zinc-400 transition hover:bg-white/[0.08] hover:text-zinc-100 disabled:opacity-40 sm:flex"
+              className="hidden items-center gap-1.5 rounded-2xl border border-white/[0.09] bg-white/[0.05] px-3 py-2 text-[12px] font-bold text-zinc-300 transition hover:bg-white/[0.09] hover:text-zinc-100 disabled:opacity-40 sm:flex"
             >
               <IconPlus size={12} />
               New chat
@@ -1183,7 +1184,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => setShowTopMenu((v) => !v)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700 text-[12px] font-bold text-zinc-200 hover:ring-2 hover:ring-violet-500/40 transition"
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 via-violet-600 to-sky-500 text-[12px] font-black text-white shadow-lg shadow-violet-500/20 transition hover:ring-2 hover:ring-violet-500/40"
               >
                 {avatarInitial}
               </button>
@@ -1257,20 +1258,20 @@ export default function ChatPage() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-1 flex-col min-h-0">
+          <div className="relative z-10 flex min-h-0 flex-1 flex-col">
             <div className="flex-1 overflow-y-auto">
-              <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
+              <div className="mx-auto max-w-4xl space-y-6 px-3 py-5 sm:px-6 sm:py-8">
                 {messages.map((m) => (
                   <div key={m.id} className={["msg-in", m.role === "user" ? "flex justify-end" : "flex items-start gap-3"].join(" ")}>
                     {m.role === "ai" && <EvaraAvatar personality={personality} />}
                     <div className={[
                       "group relative",
                       m.role === "user"
-                        ? "max-w-[80%] rounded-2xl rounded-br-sm bg-white/[0.08] px-4 py-3 text-[14px] leading-relaxed text-zinc-100"
+                        ? "max-w-[86%] rounded-3xl rounded-br-md bg-gradient-to-br from-violet-500 to-fuchsia-500 px-4 py-3 text-[14px] leading-relaxed text-white shadow-xl shadow-violet-950/25 sm:max-w-[78%]"
                         : "flex-1 min-w-0",
                     ].join(" ")}>
                       {m.role === "ai" ? (
-                        <div className="text-[14px] text-zinc-100">
+                        <div className="rounded-[1.6rem] border border-white/[0.07] bg-white/[0.045] px-4 py-3 text-[14px] text-zinc-100 shadow-xl shadow-black/10 backdrop-blur-xl">
                           <div className="chat-markdown">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                           </div>
@@ -1323,8 +1324,8 @@ export default function ChatPage() {
             </div>
 
             {/* ── Input area ── */}
-            <div className="shrink-0 border-t border-white/[0.05] bg-[#111111] px-4 py-4">
-              <div className="mx-auto max-w-3xl">
+            <div className="shrink-0 border-t border-white/[0.08] bg-[#07050d]/88 px-3 py-3 backdrop-blur-2xl sm:px-4 sm:py-4">
+              <div className="mx-auto max-w-4xl">
                 {isListening ? (
                   <VoiceRecordingBar
                     analyserRef={analyserRef}
@@ -1336,7 +1337,7 @@ export default function ChatPage() {
                 ) : (
                   <form
                     onSubmit={handleSubmit}
-                    className="relative rounded-2xl border border-white/[0.09] bg-[#1c1c1c] p-3 shadow-xl ring-1 ring-inset ring-white/[0.04] transition-all focus-within:border-violet-500/40 focus-within:ring-violet-500/10"
+                    className="relative rounded-[1.6rem] border border-white/[0.1] bg-white/[0.07] p-3 shadow-2xl shadow-black/30 ring-1 ring-inset ring-white/[0.05] backdrop-blur-xl transition-all focus-within:border-violet-300/50 focus-within:bg-white/[0.09] focus-within:ring-violet-500/10"
                   >
                     <textarea
                       ref={textareaRef}
@@ -1358,16 +1359,16 @@ export default function ChatPage() {
                       <button
                         type="button"
                         onClick={() => setShowModeMenu(true)}
-                        className={["flex items-center gap-1.5 rounded-lg border border-white/[0.06] px-2.5 py-1.5 text-[11px] font-medium transition hover:border-white/10 hover:bg-white/[0.06]", modeConfig[mode].color].join(" ")}
+                          className={["flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-black/10 px-2.5 py-1.5 text-[11px] font-bold transition hover:border-white/10 hover:bg-white/[0.08]", modeConfig[mode].color].join(" ")}
                       >
-                        {modeConfig[mode].icon} {modeConfig[mode].label}
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[9px]">{modeConfig[mode].icon}</span> {modeConfig[mode].label}
                       </button>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={startRecording}
                           disabled={isTyping}
-                          className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.06] text-zinc-500 transition hover:border-white/10 hover:text-zinc-300 disabled:opacity-40"
+                          className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04] text-zinc-400 transition hover:border-white/12 hover:bg-white/[0.08] hover:text-zinc-200 disabled:opacity-40"
                           aria-label="Voice input"
                           title="Voice input"
                         >
@@ -1376,7 +1377,7 @@ export default function ChatPage() {
                         <button
                           type="submit"
                           disabled={isTyping || input.trim().length === 0}
-                          className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-600 text-white shadow-lg transition hover:bg-violet-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-black shadow-lg shadow-white/10 transition hover:-translate-y-0.5 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           <IconSend size={14} />
                         </button>
@@ -1414,7 +1415,7 @@ export default function ChatPage() {
           onClick={() => setShowModeMenu(false)}
         >
           <div
-            className="w-full max-w-sm overflow-hidden rounded-3xl border border-white/[0.08] bg-[#161616] shadow-2xl"
+            className="w-full max-w-sm overflow-hidden rounded-[2rem] border border-white/[0.1] bg-[#0b0812]/95 shadow-2xl shadow-black/50 backdrop-blur-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="border-b border-white/[0.06] px-5 py-4">
@@ -1435,7 +1436,7 @@ export default function ChatPage() {
                   ].join(" ")}
                 >
                   <span className="flex items-center gap-2.5">
-                    <span className="text-[16px]">{cfg.icon}</span>
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[11px] font-black">{cfg.icon}</span>
                     <span className="font-medium">{cfg.label}</span>
                   </span>
                   {mode === key && (

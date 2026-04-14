@@ -96,8 +96,8 @@ const footerColumns = [
       ["Home", "/"],
       ["Features", "/features"],
       ["App", "/app"],
-      ["Pricing", "/pricing"],
-      ["Try AI / Demo", "/demo"],
+      ["Chat", "/chat"],
+      ["WhatsApp AI", "/whatsapp-ai"],
     ],
   },
   {
@@ -105,8 +105,8 @@ const footerColumns = [
     links: [
       ["Blog", "/blog"],
       ["Help Center", "/help"],
-      ["API Docs", "/docs"],
-      ["Tutorials / Guides", "/guides"],
+      ["Bihar AI", "/bihar-ai"],
+      ["Settings", "/settings"],
     ],
   },
   {
@@ -114,7 +114,6 @@ const footerColumns = [
     links: [
       ["About Us", "/about"],
       ["Partners", "/partners"],
-      ["Careers", "/careers"],
       ["Contact", "/contact"],
     ],
   },
@@ -138,38 +137,40 @@ const socialLinks = [
 
 export default function Home() {
   return (
-    <div className="evara-premium-landing relative min-h-screen bg-black text-zinc-100 selection:bg-purple-500/30">
-      {/* Dynamic Background */}
+    <div className="evara-premium-landing relative min-h-screen overflow-hidden bg-[#04030a] text-zinc-100 selection:bg-violet-400/30">
       <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-pink-600/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-sky-600/10 blur-[120px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_8%,rgba(244,114,182,0.22),transparent_32%),radial-gradient(circle_at_92%_12%,rgba(56,189,248,0.2),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(124,58,237,0.24),transparent_36%),linear-gradient(180deg,#05030b_0%,#090713_48%,#030207_100%)]" />
+        <div className="premium-grid absolute inset-0 opacity-45" />
+        <div className="absolute left-1/2 top-0 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-fuchsia-500/12 blur-[130px]" />
       </div>
 
-      {/* Navigation */}
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-black/50 backdrop-blur-xl transition-all duration-300">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#05030a]/70 backdrop-blur-2xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-bold tracking-widest text-zinc-100 uppercase">Evara</span>
+            <span className="text-sm font-black uppercase tracking-[0.32em] text-white">Evara</span>
+          </Link>
+          <div className="hidden items-center gap-6 text-sm font-medium text-zinc-400 md:flex">
+            <Link href="/features" className="transition hover:text-white">Features</Link>
+            <Link href="/bihar-ai" className="transition hover:text-white">Bihar AI</Link>
+            <Link href="/whatsapp-ai" className="transition hover:text-white">Business</Link>
+            <Link href="/blog" className="transition hover:text-white">Blog</Link>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden text-sm font-medium text-zinc-400 transition hover:text-white sm:block">
-              Sign In
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/login" className="hidden rounded-full px-4 py-2 text-sm font-semibold text-zinc-300 transition hover:bg-white/10 hover:text-white sm:block">
+              Sign in
             </Link>
-            <InstallPrompt label="Install App" className="hidden sm:block rounded-full bg-white/10 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/20" />
-            <Link href="/signup" className="rounded-full bg-white px-4 py-2 text-xs font-bold text-black transition hover:scale-105 hover:bg-zinc-200">
-              Get Started
+            <Link href="/signup" className="rounded-full bg-white px-4 py-2 text-xs font-black text-black shadow-lg shadow-white/10 transition hover:-translate-y-0.5 hover:bg-zinc-200 sm:px-5 sm:text-sm">
+              Get started
             </Link>
           </div>
         </div>
       </nav>
 
       <main className="relative z-10 flex flex-col">
-        {/* Hero Section */}
-        <section className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-4 pt-24 text-center sm:px-6 lg:px-8">
-          <div className="absolute inset-0 z-0 opacity-60 [mask-image:linear-gradient(to_bottom,white,transparent)]">
-             <ThreeBackground />
+        <section className="relative flex min-h-[100svh] items-center overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:px-8">
+          <div className="absolute inset-0 z-0 opacity-55 [mask-image:linear-gradient(to_bottom,white,transparent_76%)]">
+            <ThreeBackground />
           </div>
           <div className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center" aria-hidden="true">
             <div className="evara-orbital-stage">
@@ -188,232 +189,171 @@ export default function Home() {
               </div>
             </div>
           </div>
-          
-          <div className="relative z-10 flex flex-col items-center max-w-5xl mx-auto">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium text-zinc-300 backdrop-blur-md mb-8 shadow-2xl">
+
+          <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="flex flex-col items-start text-left">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-100 shadow-2xl backdrop-blur-md">
               <SparklesIcon className="h-3.5 w-3.5 text-purple-400" />
-              <span>Intelligence with a soul.</span>
+              <span>Mobile-first personal intelligence</span>
             </div>
-            
-            <h1 className="text-balance text-5xl font-medium tracking-tight text-white sm:text-7xl lg:text-8xl">
-              The next generation of <br className="hidden sm:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-sky-400">
-                personal AI.
-              </span>
+
+            <h1 className="max-w-4xl text-balance text-5xl font-black leading-[0.92] tracking-[-0.075em] text-white sm:text-7xl lg:text-8xl">
+              An AI companion that feels calm, capable, and human.
             </h1>
-            
-            <p className="mt-8 max-w-2xl text-balance text-base leading-relaxed text-zinc-400 sm:text-xl">
-              Evara blends emotional intelligence with elegant product design. Experience supportive conversations, regional knowledge, and business automation in one unified platform.
+
+            <p className="mt-7 max-w-2xl text-pretty text-base leading-8 text-zinc-300 sm:text-xl">
+              Evara brings supportive conversations, regional knowledge, and business automation into one refined platform built to feel effortless on your phone first.
             </p>
 
-            <div className="mt-10 flex flex-col items-center justify-center gap-4 w-full sm:w-auto">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-                <Link href="/signup" className="w-full sm:w-auto rounded-full bg-white px-8 py-4 text-sm font-bold text-black transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50">
-                  Start Chatting
+            <div className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                <Link href="/signup" className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-white px-8 text-sm font-black text-black shadow-2xl shadow-white/10 transition hover:-translate-y-1 hover:bg-zinc-200 sm:w-auto">
+                  Start free
                 </Link>
-                <Link href="/whatsapp-ai" className="w-full sm:w-auto rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white/50">
-                  Explore Business Solutions
+                <Link href="/chat" className="inline-flex min-h-14 w-full items-center justify-center rounded-full border border-white/12 bg-white/8 px-8 text-sm font-bold text-white shadow-xl shadow-black/20 backdrop-blur-md transition hover:-translate-y-1 hover:bg-white/12 sm:w-auto">
+                  Open chat
                 </Link>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
                 <Link
                   href="/app"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-sky-500 px-8 py-4 text-sm font-bold text-white shadow-lg shadow-purple-500/30 transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400/50"
+                className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-fuchsia-500 via-violet-500 to-sky-400 px-8 text-sm font-black text-white shadow-2xl shadow-violet-500/25 transition hover:-translate-y-1 sm:w-auto"
                 >
                   <SmartphoneIcon className="h-4 w-4" />
-                  Install App — Free
+                Install app
                 </Link>
-                <InstallPrompt
-                  label="⚡ Install Now"
-                  className="w-full sm:w-auto rounded-full border border-purple-500/30 bg-purple-500/10 px-8 py-4 text-sm font-semibold text-purple-200 backdrop-blur-md transition hover:bg-purple-500/20 focus:outline-none"
-                />
+              </div>
+
+              <div className="mt-9 grid w-full max-w-xl grid-cols-3 gap-2 sm:gap-3">
+                {[
+                  ["24/7", "companion"],
+                  ["10+", "languages"],
+                  ["PWA", "ready"],
+                ].map(([value, label]) => (
+                  <div key={label} className="rounded-3xl border border-white/10 bg-white/[0.055] p-4 shadow-xl shadow-black/20 backdrop-blur-xl">
+                    <p className="text-xl font-black text-white sm:text-2xl">{value}</p>
+                    <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-500">{label}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Powered by Vercal */}
-            <a
-              href="https://vercal.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group relative mt-14 inline-flex items-center gap-3 overflow-hidden rounded-2xl p-px transition-transform hover:scale-[1.02]"
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/5 to-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
-              <span className="relative flex items-center gap-3 rounded-[14px] border border-white/10 bg-white/[0.06] px-5 py-3 backdrop-blur-xl">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white shadow-md shadow-white/20">
-                  <img src="/vercal-logo.png" alt="Vercal" className="h-6 w-6 object-contain" />
-                </span>
-                <span className="flex flex-col items-start leading-none">
-                  <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-zinc-500">Powered by</span>
-                  <span className="mt-0.5 text-sm font-bold tracking-wide text-white">Vercal</span>
-                </span>
-                <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-white/10 text-zinc-400 transition-colors group-hover:border-white/30 group-hover:text-white">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-2.5 w-2.5">
-                    <path d="M7 17 17 7M7 7h10v10" />
-                  </svg>
-                </span>
-              </span>
-            </a>
-          </div>
-          
-        </section>
-
-        {/* Evara Personal Showcase */}
-        <section className="relative py-24 sm:py-32">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
-              <div>
-                <h2 className="text-3xl font-medium tracking-tight text-white sm:text-5xl text-balance">
-                  A companion that actually listens.
-                </h2>
-                <p className="mt-6 text-lg leading-relaxed text-zinc-400 text-balance">
-                  Meet Simi and Loa. Two distinct personalities designed to hold space for your thoughts. Whether you need gentle grounding or analytical clarity, Evara adapts to your emotional state.
-                </p>
-                <ul className="mt-8 space-y-4">
-                  {[
-                    "Real-time emotional state detection",
-                    "Persistent memory across sessions",
-                    "Voice-first mobile experience",
-                  ].map((feature, i) => (
-                    <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500/20 text-purple-400">
-                        <svg className="h-3.5 w-3.5" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M11.6666 3.5L5.24992 9.91667L2.33325 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      </div>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="relative">
-                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-pink-500/20 via-purple-500/10 to-transparent blur-2xl" />
-                <div className="relative rounded-[2rem] border border-white/10 bg-black/40 p-4 sm:p-8 backdrop-blur-2xl shadow-2xl">
-                   <div className="mb-6 flex items-center justify-between">
-                     <div>
-                       <h3 className="text-sm font-semibold text-white">Live Demo</h3>
-                       <p className="text-xs text-zinc-500">Experience the emotional engine</p>
-                     </div>
-                   </div>
-                   <DemoChatWidget />
+            <div className="relative mx-auto w-full max-w-sm lg:ml-auto lg:max-w-md">
+              <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-fuchsia-500/25 via-violet-500/15 to-sky-400/20 blur-3xl" />
+              <div className="relative rounded-[2.6rem] border border-white/12 bg-white/[0.075] p-3 shadow-2xl shadow-black/50 backdrop-blur-2xl">
+                <div className="rounded-[2.15rem] border border-white/10 bg-[#06040b]/85 p-4">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-fuchsia-400 via-violet-500 to-sky-400 shadow-lg shadow-violet-500/25">
+                        <img src="/evara-logo.png" alt="Evara" className="h-7 w-7 object-contain" />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-black text-white">Evara AI</span>
+                        <span className="text-xs text-emerald-300">Ready to listen</span>
+                      </span>
+                    </div>
+                    <InstallPrompt label="Install" className="rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white transition hover:bg-white/15" />
+                  </div>
+                  <DemoChatWidget />
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* The Ecosystem Grid */}
-        <section className="relative py-24 sm:py-32 bg-zinc-950/50 border-y border-white/5">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl font-medium tracking-tight text-white sm:text-5xl text-balance">
-                One platform. <br/> Three dimensions of intelligence.
+        <section className="relative px-4 py-10 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-3">
+            {[
+              ["Personal AI", "A gentle daily companion that adapts to your emotional state and remembers what matters."],
+              ["Bihar AI", "Regional intelligence with cultural context for education, jobs, news, and local knowledge."],
+              ["Business AI", "Customer support automation for WhatsApp with a dashboard built for practical workflows."],
+            ].map(([title, body]) => (
+              <div key={title} className="group rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-black/20 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/[0.07]">
+                <div className="mb-7 h-1.5 w-16 rounded-full bg-gradient-to-r from-fuchsia-400 via-violet-400 to-sky-300 transition group-hover:w-24" />
+                <h2 className="text-2xl font-black tracking-tight text-white">{title}</h2>
+                <p className="mt-4 text-sm leading-7 text-zinc-400">{body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="relative px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-sky-300">Designed for real use</p>
+              <h2 className="mt-4 max-w-xl text-balance text-4xl font-black tracking-[-0.055em] text-white sm:text-6xl">
+                Clean enough for daily focus. Rich enough to feel alive.
               </h2>
+              <p className="mt-6 max-w-xl text-base leading-8 text-zinc-400 sm:text-lg">
+                The experience is shaped around fast mobile access, thumb-friendly actions, calm surfaces, and clear pathways into personal chat, Bihar AI, and business automation.
+              </p>
             </div>
-            
-            <div className="grid gap-6 md:grid-cols-3">
-              {/* Evara Personal Card */}
-              <div className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] p-8 transition-all hover:bg-white/[0.04]">
-                <div className="absolute top-0 right-0 p-8 opacity-20 transition-opacity group-hover:opacity-100">
-                  <MessageCircleIcon className="h-24 w-24 text-purple-400" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                ["Mobile-first", "Large touch targets, compact sections, and clean vertical flow for small screens."],
+                ["Emotion-aware", "The visual language feels supportive without becoming childish or cluttered."],
+                ["Professional", "Consistent branding, stronger hierarchy, and fewer distracting dead-end links."],
+                ["Expandable", "Landing, chat, PWA, and business surfaces now feel like one connected product."],
+              ].map(([title, body]) => (
+                <div key={title} className="rounded-[1.75rem] border border-white/10 bg-[#0d0a16]/75 p-6 shadow-xl shadow-black/20">
+                  <h3 className="text-lg font-black text-white">{title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-zinc-400">{body}</p>
                 </div>
-                <div className="relative z-10 mb-20">
-                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-500/20 text-purple-400">
-                    <MessageCircleIcon className="h-6 w-6" />
-                  </div>
-                  <h3 className="text-2xl font-semibold text-white">Personal AI</h3>
-                  <p className="mt-4 text-sm leading-relaxed text-zinc-400">Your emotional companion. Available 24/7 on iOS, Android, and Web with native-level performance.</p>
-                </div>
-                <Link href="/login" className="relative z-10 inline-flex items-center gap-2 text-sm font-medium text-purple-400 hover:text-purple-300">
-                  Open App <ArrowRightIcon className="h-4 w-4" />
-                </Link>
-              </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-              {/* WhatsApp AI Card */}
-              <div className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] p-8 transition-all hover:bg-white/[0.04]">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-                <div className="relative z-10 mb-20">
-                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-400">
-                    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21" />
-                      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" />
-                    </svg>
-                  </div>
-                  <h3 className="text-2xl font-semibold text-white">WhatsApp Business</h3>
-                  <p className="mt-4 text-sm leading-relaxed text-zinc-400">Automate your customer support. Connect your business knowledge base and let our agents handle inquiries in 10+ languages.</p>
-                </div>
-                <Link href="/whatsapp-ai" className="relative z-10 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 hover:text-emerald-300">
-                  Build Assistant <ArrowRightIcon className="h-4 w-4" />
-                </Link>
+        <section className="relative px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+          <div className="mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] border border-white/10 bg-[linear-gradient(135deg,rgba(244,114,182,0.16),rgba(124,58,237,0.16)_42%,rgba(14,165,233,0.14))] p-6 shadow-2xl shadow-violet-950/30 backdrop-blur-xl sm:p-10 lg:p-14">
+            <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.28em] text-violet-100">Start in seconds</p>
+                <h2 className="mt-4 text-balance text-4xl font-black tracking-[-0.055em] text-white sm:text-6xl">
+                  One product. Three intelligent entry points.
+                </h2>
+                <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-200">
+                  Chat when you need support, explore Bihar-focused knowledge when context matters, and automate business conversations when customers need quick answers.
+                </p>
               </div>
-
-              {/* Bihar AI Card */}
-              <div className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] p-8 transition-all hover:bg-white/[0.04]">
-                <div className="absolute top-0 right-0 p-8 opacity-20 transition-opacity group-hover:opacity-100">
-                  <GlobeIcon className="h-24 w-24 text-sky-400" />
-                </div>
-                <div className="relative z-10 mb-20">
-                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-500/20 text-sky-400">
-                    <GlobeIcon className="h-6 w-6" />
-                  </div>
-                  <h3 className="text-2xl font-semibold text-white">Bihar AI</h3>
-                  <p className="mt-4 text-sm leading-relaxed text-zinc-400">Deep regional intelligence. Access specialized knowledge, cultural context, and localized data with native understanding.</p>
-                </div>
-                <Link href="/bihar-ai" className="relative z-10 inline-flex items-center gap-2 text-sm font-medium text-sky-400 hover:text-sky-300">
-                  Access Knowledge <ArrowRightIcon className="h-4 w-4" />
+              <div className="grid gap-3">
+                <Link href="/signup" className="group flex items-center justify-between rounded-3xl bg-white px-5 py-4 text-sm font-black text-black transition hover:-translate-y-1 hover:bg-zinc-200">
+                  Create account <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
+                </Link>
+                <Link href="/bihar-ai" className="group flex items-center justify-between rounded-3xl border border-white/12 bg-white/10 px-5 py-4 text-sm font-bold text-white transition hover:-translate-y-1 hover:bg-white/15">
+                  Explore Bihar AI <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
+                </Link>
+                <Link href="/whatsapp-ai" className="group flex items-center justify-between rounded-3xl border border-white/12 bg-white/10 px-5 py-4 text-sm font-bold text-white transition hover:-translate-y-1 hover:bg-white/15">
+                  Build business assistant <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
                 </Link>
               </div>
             </div>
           </div>
         </section>
-
-        {/* Call to Action */}
-        <section className="relative py-24 sm:py-32 overflow-hidden">
-          <div className="absolute inset-0 z-0">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-purple-600/20 blur-[100px]" />
-          </div>
-          <div className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <h2 className="text-4xl font-medium tracking-tight text-white sm:text-6xl text-balance">
-              Ready to experience the difference?
-            </h2>
-            <p className="mt-6 text-lg leading-relaxed text-zinc-400">
-              Join thousands of users who have found a smarter, more empathetic way to interact with AI.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/signup" className="w-full sm:w-auto rounded-full bg-white px-8 py-4 text-sm font-bold text-black transition-transform hover:scale-105">
-                Create Free Account
-              </Link>
-              <InstallPrompt label="Install PWA" className="w-full sm:w-auto rounded-full border border-white/10 bg-black/50 px-8 py-4 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/10" />
-            </div>
-          </div>
-        </section>
-
       </main>
 
-      <footer className="relative z-10 overflow-hidden border-t border-white/10 bg-black">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(168,85,247,0.18),transparent_34%),radial-gradient(circle_at_90%_15%,rgba(56,189,248,0.12),transparent_30%),linear-gradient(180deg,rgba(24,24,27,0.78),rgba(0,0,0,1))]" />
+      <footer className="relative z-10 overflow-hidden border-t border-white/10 bg-[#030207]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(168,85,247,0.18),transparent_34%),radial-gradient(circle_at_90%_15%,rgba(56,189,248,0.12),transparent_30%)]" />
         <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <div className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-5 shadow-2xl shadow-purple-950/20 backdrop-blur-2xl sm:p-8 lg:p-10">
-            <div className="grid gap-10 lg:grid-cols-[1.15fr_1.65fr_1fr]">
+            <div className="grid gap-10 lg:grid-cols-[1.05fr_1.65fr_1fr]">
               <div className="space-y-6">
                 <Link href="/" className="group inline-flex items-center gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-lg shadow-purple-500/10 transition group-hover:scale-105 group-hover:border-purple-300/50">
-                    <img src="/evara-logo.png" alt="Raina Jet" className="h-7 w-7 object-contain" />
+                    <img src="/evara-logo.png" alt="Evara AI" className="h-7 w-7 object-contain" />
                   </span>
                   <span>
-                    <span className="block text-base font-bold tracking-[0.22em] text-white uppercase">Raina Jet</span>
-                    <span className="mt-1 block text-xs font-medium text-purple-200">Smart AI Automation Platform</span>
+                    <span className="block text-base font-black uppercase tracking-[0.22em] text-white">Evara AI</span>
+                    <span className="mt-1 block text-xs font-medium text-purple-200">Personal, regional, and business AI</span>
                   </span>
                 </Link>
                 <p className="max-w-sm text-sm leading-6 text-zinc-400">
-                  AI automation for smarter workflows, faster customer support, and intelligent business growth.
+                  A polished AI platform for supportive conversations, local knowledge, and smarter customer workflows.
                 </p>
                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
                   <Link href="/signup" className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-black shadow-lg shadow-white/10 transition hover:-translate-y-0.5 hover:bg-zinc-200">
-                    🚀 Start Free
+                    Start free
                   </Link>
                   <Link href="/chat" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-purple-300/40 hover:bg-white/10">
-                    💬 Chat with AI
+                    Chat with AI
                   </Link>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -478,7 +418,7 @@ export default function Home() {
             </div>
 
             <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-              <p>© 2026 Raina Jet</p>
+              <p>© 2026 Evara AI</p>
               <p>
                 Built by <span className="font-semibold text-zinc-300">Riley Parker &amp; Rupesh Sahu</span>
               </p>

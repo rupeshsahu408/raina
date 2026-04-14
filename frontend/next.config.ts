@@ -9,6 +9,7 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 const allowedDevOrigins: string[] = [];
 if (process.env.REPLIT_DEV_DOMAIN) {
   allowedDevOrigins.push(process.env.REPLIT_DEV_DOMAIN);
+  allowedDevOrigins.push(process.env.REPLIT_DEV_DOMAIN.replace(".replit.dev", ".repl.co"));
 }
 
 const nextConfig: NextConfig = {
