@@ -53,6 +53,11 @@ function ConnectContent() {
 
   const [codeCopied, setCodeCopied] = useState(false);
 
+  const [dnsOpen, setDnsOpen] = useState(false);
+  const [dnsVerifying, setDnsVerifying] = useState(false);
+  const [dnsResult, setDnsResult] = useState<{ verified: boolean; message: string } | null>(null);
+  const [dnsToken, setDnsToken] = useState<string>("");
+
   useEffect(() => {
     if (!siteId) return;
     let auth;
@@ -74,6 +79,7 @@ function ConnectContent() {
         if (found) {
           setDomain(found.domain);
           setWpUrl(`https://${found.domain}`);
+          if (found.verificationToken) setDnsToken(found.verificationToken);
           if (connData.connectionMethod) {
             setSelectedMethod(connData.connectionMethod);
           }
@@ -604,6 +610,75 @@ window.dataLayer = window.dataLayer || [];
           </button>
         </div>
       )}
+
+      <div className="card-glass rounded-2xl overflow-hidden">
+        <button
+          onClick={() => setDnsOpen((o) => !o)}
+          className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-white/2 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-lg">🔒</span>
+            <div>
+              <p className="text-sm font-semibold text-white/70">Domain Ownership Verification</p>
+              <p className="text-xs text-white/30">Optional — add a DNS TXT record to prove you own this domain</p>
+            </div>
+          </div>
+          <span className={`text-white/30 text-sm transition-transform ${dnsOpen ? "rotate-180" : ""}`}>▾</span>
+        </button>
+
+        {dnsOpen && (
+          <div className="px-6 pb-6 border-t border-white/5 pt-5">
+            <p className="text-xs text-white/40 leading-relaxed mb-4">
+              Add the following DNS TXT record to <strong className="text-white/60">{domain}</strong> through your domain registrar (e.g. GoDaddy, Namecheap, Cloudflare). This confirms you own the domain and is entirely optional.
+            </p>
+            {dnsToken && (
+              <div className="code-block rounded-xl p-4 mb-4">
+                <div className="grid grid-cols-3 gap-2 text-xs mb-3 text-white/30 uppercase tracking-wider">
+                  <span>Type</span><span>Name</span><span>Value</span>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-xs font-mono text-white/80">
+                  <span className="text-cyan-400">TXT</span>
+                  <span>@</span>
+                  <span className="break-all text-violet-300">ibara-verify={dnsToken}</span>
+                </div>
+              </div>
+            )}
+            {dnsResult && (
+              <div className={`mb-4 rounded-xl px-4 py-3 text-xs ${dnsResult.verified ? "bg-green-500/10 border border-green-500/30 text-green-300" : "bg-amber-500/10 border border-amber-500/30 text-amber-300"}`}>
+                {dnsResult.verified ? "✅ Domain verified successfully!" : `⚠️ ${dnsResult.message}`}
+              </div>
+            )}
+            <button
+              disabled={dnsVerifying || dnsResult?.verified}
+              onClick={async () => {
+                if (!user) return;
+                setDnsVerifying(true);
+                setDnsResult(null);
+                try {
+                  const res = await fetch(ibaraUrl(`/sites/${siteId}/verify`), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId: user.uid }),
+                  });
+                  const data = await res.json();
+                  setDnsResult({ verified: data.verified, message: data.message || "DNS record not found yet. Please check your settings and try again in a few minutes." });
+                } catch {
+                  setDnsResult({ verified: false, message: "Verification failed. Please try again." });
+                }
+                setDnsVerifying(false);
+              }}
+              className="btn-primary w-full py-2.5 rounded-xl text-sm font-semibold text-white"
+            >
+              {dnsVerifying ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Checking DNS...
+                </span>
+              ) : dnsResult?.verified ? "✓ Verified" : "Check DNS Record"}
+            </button>
+          </div>
+        )}
+      </div>
 
       {selectedMethod && (
         <div className="card-glass rounded-2xl p-6">
