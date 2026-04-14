@@ -624,6 +624,93 @@ ibaraRouter.post("/sites/:siteId/wordpress-connect", async (req, res) => {
   }
 });
 
+// POST /api/ibara/sites/:siteId/setup-chat — AI setup assistant for connecting the bot
+ibaraRouter.post("/sites/:siteId/setup-chat", async (req, res) => {
+  const { siteId } = req.params;
+  const { message, history } = req.body || {};
+  if (!message?.trim()) return res.status(400).json({ error: "message is required" });
+
+  try {
+    await connectMongo();
+    const site = await IbaraSite.findById(siteId);
+    if (!site) return res.status(404).json({ error: "Site not found" });
+
+    const apiKey = process.env.NVIDIA_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: "AI service not configured" });
+
+    const embedScript = `<script src="${WIDGET_CDN}" data-site-id="${siteId}" data-api-base="${API_BASE}" async defer></script>`;
+
+    const systemPrompt = `You are an expert web developer and friendly technical guide for Ibara AI — a platform that lets businesses add an AI chatbot to their website with zero coding.
+
+Your mission: guide users step-by-step to connect the Ibara AI chatbot to their website. Be concise, precise, and always give working code.
+
+User's website: ${site.domain}
+User's unique Site ID: ${siteId}
+Widget script URL: ${WIDGET_CDN}
+API Base URL: ${API_BASE}
+
+The user's unique embed script is:
+\`\`\`html
+${embedScript}
+\`\`\`
+
+CONNECTION METHODS you can guide them through:
+1. WordPress Plugin — Download our PHP plugin file from the dashboard, go to WP Admin → Plugins → Add New → Upload Plugin → activate it. Done.
+2. Google Tag Manager — In GTM: Tags → New → Custom HTML → paste the script → Trigger: All Pages → Submit & Publish.
+3. File Upload (cPanel) — Download ibara-connect.php installer, upload to public_html via cPanel File Manager, visit https://${site.domain}/ibara-connect.php and click Install.
+4. Manual HTML — Paste the script before </body> in every page. For specific platforms, give exact steps.
+
+Platform-specific guides you know:
+- WordPress (manual): Appearance → Theme Editor → footer.php → paste before </body>
+- Shopify: Online Store → Themes → Edit Code → theme.liquid → paste before </body>
+- Wix: Settings → Custom Code → Add to Body end → paste script
+- Squarespace: Settings → Advanced → Code Injection → Footer → paste script
+- Webflow: Project Settings → Custom Code → Footer Code → paste script
+- HTML/plain: paste before </body> in index.html
+- React/Next.js: add to _document.tsx or layout.tsx in the <body> section
+- Vue: add to index.html before </body>
+- PHP sites: add to footer.php or the main template file
+
+When giving code:
+- ALWAYS wrap in triple backticks with language tag (e.g. \`\`\`html, \`\`\`php, \`\`\`javascript)
+- ALWAYS use the exact Site ID (${siteId}) and widget URL above — never use placeholders
+- Be specific about WHICH FILE and WHERE exactly to paste
+
+Rules:
+- Keep replies short and to the point — one step at a time
+- If user says their platform, give exact steps for that platform immediately
+- If unsure of platform, ask one clarifying question
+- End each reply with a simple next-step or question to keep momentum
+- NEVER tell the user to modify the widget script — it's correct as-is`;
+
+    const pastMessages: ChatMessage[] = Array.isArray(history)
+      ? history.slice(-12).map((m: any) => ({
+          role: m.role === "assistant" ? "assistant" : "user",
+          content: String(m.content || ""),
+        }))
+      : [];
+
+    const messages: ChatMessage[] = [
+      { role: "system", content: systemPrompt },
+      ...pastMessages,
+      { role: "user", content: message.trim() },
+    ];
+
+    const reply = await callNvidiaChatCompletions({
+      apiKey,
+      messages,
+      model: "openai/gpt-oss-20b",
+      max_tokens: 600,
+      temperature: 0.5,
+    });
+
+    return res.json({ reply });
+  } catch (err) {
+    console.error("[ibara] setup-chat error:", err);
+    return res.status(500).json({ error: "Chat failed. Please try again." });
+  }
+});
+
 // POST /api/ibara/sites/:siteId/chat — chat with the configured bot
 ibaraRouter.post("/sites/:siteId/chat", async (req, res) => {
   const { siteId } = req.params;

@@ -1,10 +1,31 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { ibaraUrl } from "@/lib/ibaraApi";
+
+interface ChatMsg { role: "user" | "assistant"; content: string; }
+
+function renderMessage(content: string) {
+  const parts = content.split(/(```[\s\S]*?```)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("```")) {
+      const lines = part.replace(/^```\w*\n?/, "").replace(/```$/, "");
+      return (
+        <div key={i} className="relative mt-2 mb-2">
+          <pre className="bg-black/60 border border-white/10 rounded-xl p-3 text-xs font-mono text-green-300 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">{lines}</pre>
+          <button
+            onClick={() => navigator.clipboard.writeText(lines)}
+            className="absolute top-2 right-2 text-[10px] text-white/30 hover:text-white/70 bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded transition-all"
+          >copy</button>
+        </div>
+      );
+    }
+    return <span key={i} className="whitespace-pre-wrap leading-relaxed">{part}</span>;
+  });
+}
 
 type Method = "wordpress" | "gtm" | "file" | "manual" | null;
 type Platform = "wordpress" | "shopify" | "wix" | "squarespace" | "webflow" | "html" | "unknown";
@@ -57,6 +78,14 @@ function ConnectContent() {
   const [dnsVerifying, setDnsVerifying] = useState(false);
   const [dnsResult, setDnsResult] = useState<{ verified: boolean; message: string } | null>(null);
   const [dnsToken, setDnsToken] = useState<string>("");
+
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMsgs, setChatMsgs] = useState<ChatMsg[]>([
+    { role: "assistant", content: "Hi! I'm your Setup Assistant 👋\n\nI can guide you step-by-step to connect your chatbot to your website, and generate the exact code you need.\n\nWhat platform is your website built on? (e.g. WordPress, Shopify, Wix, plain HTML, React...)" }
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!siteId) return;
@@ -199,6 +228,32 @@ function ConnectContent() {
       setCodeCopied(true);
       setTimeout(() => setCodeCopied(false), 2000);
     });
+  };
+
+  useEffect(() => {
+    if (chatOpen) chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMsgs, chatOpen]);
+
+  const sendChat = async () => {
+    const msg = chatInput.trim();
+    if (!msg || chatLoading) return;
+    const newMsgs: ChatMsg[] = [...chatMsgs, { role: "user", content: msg }];
+    setChatMsgs(newMsgs);
+    setChatInput("");
+    setChatLoading(true);
+    try {
+      const history = newMsgs.slice(0, -1).map((m) => ({ role: m.role, content: m.content }));
+      const res = await fetch(ibaraUrl(`/sites/${siteId}/setup-chat`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg, history }),
+      });
+      const data = await res.json();
+      setChatMsgs((prev) => [...prev, { role: "assistant", content: data.reply || "Sorry, something went wrong. Please try again." }]);
+    } catch {
+      setChatMsgs((prev) => [...prev, { role: "assistant", content: "Connection error. Please try again." }]);
+    }
+    setChatLoading(false);
   };
 
   const embedCode = `<script src="${WIDGET_CDN}" data-site-id="${siteId}" data-api-base="${API_BASE}" async defer></script>`;
@@ -680,50 +735,111 @@ window.dataLayer = window.dataLayer || [];
         )}
       </div>
 
-      {selectedMethod && (
-        <div className="card-glass rounded-2xl p-6">
-          <h2 className="font-bold mb-2 flex items-center gap-2">
-            <span>🔍</span> Verify Connection
-          </h2>
-          <p className="text-sm text-white/40 mb-4">
-            After completing the installation steps above, click the button below to confirm your chatbot is live.
-          </p>
-          {verifyResult && (
-            <div className={`mb-4 rounded-xl px-4 py-3 text-sm ${verifyResult.isLive ? "bg-green-500/10 border border-green-500/30 text-green-300" : "bg-amber-500/10 border border-amber-500/30 text-amber-300"}`}>
-              {verifyResult.isLive ? "✅ " : "⚠️ "}{verifyResult.message}
-            </div>
-          )}
-          {isConnected ? (
-            <div className="flex gap-3">
-              <button
-                onClick={() => router.push(`/ibara/dashboard/overview?siteId=${siteId}`)}
-                className="btn-primary flex-1 py-3 rounded-xl text-sm font-bold text-white"
-              >
-                Go to Dashboard →
-              </button>
-              <button
-                onClick={() => window.open(`https://${domain}`, "_blank")}
-                className="px-5 py-3 rounded-xl border border-white/10 hover:border-white/20 text-sm font-semibold text-white/60 hover:text-white transition-all"
-              >
-                Visit Site
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={handleVerifyConnection}
-              disabled={verifying}
-              className="btn-primary w-full py-3 rounded-xl text-sm font-bold text-white"
-            >
-              {verifying ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Checking your website...
-                </span>
-              ) : "Verify My Bot is Live →"}
-            </button>
-          )}
+      {selectedMethod && isConnected && (
+        <div className="card-glass rounded-2xl p-5 border-green-500/20 bg-green-500/5 flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-green-500/20 border border-green-500/30 flex items-center justify-center text-xl shrink-0">✅</div>
+          <div className="flex-1">
+            <p className="font-bold text-green-300 text-sm">Chatbot is live on your website!</p>
+            <p className="text-xs text-green-300/50 mt-0.5">Your visitors can now chat with the AI assistant</p>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => window.open(`https://${domain}`, "_blank")} className="px-3 py-2 rounded-xl border border-green-500/30 text-green-300 text-xs font-semibold hover:bg-green-500/10 transition-all">Visit Site</button>
+            <button onClick={() => router.push(`/ibara/dashboard/overview?siteId=${siteId}`)} className="btn-primary px-3 py-2 rounded-xl text-xs font-bold text-white">Dashboard →</button>
+          </div>
         </div>
       )}
+
+      {/* Floating Setup Assistant */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        {chatOpen && (
+          <div className="w-[370px] h-[520px] rounded-2xl overflow-hidden flex flex-col shadow-2xl shadow-black/60"
+            style={{ background: "rgba(8,8,20,0.97)", border: "1px solid rgba(124,58,237,0.3)" }}>
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5"
+              style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.1))" }}>
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center text-sm shrink-0">🤖</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-white">Setup Assistant</p>
+                <p className="text-[10px] text-white/40">AI-powered connection guide</p>
+              </div>
+              <button onClick={() => setChatOpen(false)} className="text-white/30 hover:text-white/70 text-lg transition-colors leading-none">×</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+              {chatMsgs.map((m, i) => (
+                <div key={i} className={`flex gap-2.5 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                  {m.role === "assistant" && (
+                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600/50 to-cyan-500/50 flex items-center justify-center text-sm shrink-0 mt-0.5">🤖</div>
+                  )}
+                  <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${m.role === "user"
+                    ? "bg-violet-600/30 border border-violet-500/30 text-white rounded-tr-sm"
+                    : "bg-white/5 border border-white/8 text-white/85 rounded-tl-sm"
+                  }`}>
+                    {renderMessage(m.content)}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="flex gap-2.5 justify-start">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600/50 to-cyan-500/50 flex items-center justify-center text-sm shrink-0">🤖</div>
+                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1 items-center">
+                    <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            <div className="px-4 py-3 border-t border-white/5">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
+                  placeholder="Ask me anything about setup..."
+                  className="flex-1 h-10 rounded-xl px-3 text-sm text-white placeholder:text-white/25"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                />
+                <button
+                  onClick={sendChat}
+                  disabled={chatLoading || !chatInput.trim()}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
+                  style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
+              <div className="mt-2 flex gap-1.5 flex-wrap">
+                {["WordPress", "Shopify", "Wix", "Plain HTML"].map((q) => (
+                  <button key={q} onClick={() => { setChatInput(`I'm using ${q}`); }}
+                    className="text-[10px] px-2 py-1 rounded-lg border border-white/8 text-white/30 hover:text-white/60 hover:border-white/15 transition-all">
+                    {q}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <button
+          onClick={() => setChatOpen((o) => !o)}
+          className="flex items-center gap-2.5 px-4 py-3 rounded-2xl text-sm font-semibold text-white shadow-lg shadow-violet-900/40 transition-all hover:scale-105 active:scale-95"
+          style={{ background: chatOpen ? "rgba(124,58,237,0.6)" : "linear-gradient(135deg, #7c3aed, #06b6d4)" }}
+        >
+          {chatOpen ? (
+            <span className="text-lg leading-none">×</span>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+          )}
+          {chatOpen ? "Close" : "Need help connecting?"}
+        </button>
+      </div>
     </div>
   );
 }
