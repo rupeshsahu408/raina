@@ -12,10 +12,11 @@ export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
-async function proxy(req: NextRequest, params: { path: string[] }) {
-  const path = params.path.join("/");
+async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
+  const { path } = await params;
+  const pathStr = path.join("/");
   const search = req.nextUrl.search || "";
-  const targetUrl = `${BACKEND_URL}/api/ibara/${path}${search}`;
+  const targetUrl = `${BACKEND_URL}/api/ibara/${pathStr}${search}`;
 
   const headers: Record<string, string> = {
     "Content-Type": req.headers.get("Content-Type") || "application/json",
@@ -53,18 +54,18 @@ async function proxy(req: NextRequest, params: { path: string[] }) {
   }
 }
 
-export async function GET(req: NextRequest, { params }: { params: { path: string[] } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   return proxy(req, params);
 }
 
-export async function POST(req: NextRequest, { params }: { params: { path: string[] } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   return proxy(req, params);
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { path: string[] } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   return proxy(req, params);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { path: string[] } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   return proxy(req, params);
 }
