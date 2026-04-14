@@ -33,23 +33,6 @@ function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-function MessageCircleIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-    </svg>
-  );
-}
-
-function GlobeIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-      <path d="M2 12h20" />
-    </svg>
-  );
-}
 
 function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -98,7 +81,6 @@ const footerColumns = [
       ["App", "/app"],
       ["Chat", "/chat"],
       ["Business AI", "/business-ai"],
-      ["IBARA AI", "/ibara"],
     ],
   },
   {
@@ -155,7 +137,6 @@ export default function Home() {
             <Link href="/features" className="transition hover:text-white">Features</Link>
             <Link href="/bihar-ai" className="transition hover:text-white">Bihar AI</Link>
             <Link href="/business-ai" className="transition hover:text-white">Business</Link>
-            <Link href="/ibara" className="transition hover:text-white font-semibold text-violet-300 hover:text-violet-100">IBARA AI</Link>
             <Link href="/blog" className="transition hover:text-white">Blog</Link>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -275,19 +256,15 @@ export default function Home() {
         </section>
 
         <section className="relative px-4 py-10 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-3">
             {[
               { title: "Personal AI", body: "A gentle daily companion that adapts to your emotional state and remembers what matters.", href: "/chat", gradient: "from-fuchsia-400 via-violet-400 to-sky-300" },
               { title: "Bihar AI", body: "Regional intelligence with cultural context for education, jobs, news, and local knowledge.", href: "/bihar-ai", gradient: "from-sky-400 via-blue-400 to-violet-400" },
-              { title: "Business AI", body: "Customer support automation for WhatsApp and website chatbots, with dashboards built for practical workflows.", href: "/business-ai", gradient: "from-emerald-400 via-teal-400 to-sky-400" },
-              { title: "IBARA AI", body: "Add a smart chatbot to any website in minutes — trained on your business, no code needed.", href: "/ibara", gradient: "from-violet-500 via-purple-400 to-cyan-400", highlight: true },
-            ].map(({ title, body, href, gradient, highlight }) => (
-              <Link key={title} href={href} className={`group rounded-[2rem] border p-6 shadow-2xl shadow-black/20 backdrop-blur-xl transition hover:-translate-y-1 ${highlight ? "border-violet-500/30 bg-violet-950/30 hover:bg-violet-950/50" : "border-white/10 bg-white/[0.045] hover:bg-white/[0.07]"}`}>
+              { title: "Business AI", body: "Customer support automation for WhatsApp and website chatbots — pick the tools that fit your business.", href: "/business-ai", gradient: "from-emerald-400 via-teal-400 to-sky-400" },
+            ].map(({ title, body, href, gradient }) => (
+              <Link key={title} href={href} className="group rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-black/20 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/[0.07]">
                 <div className={`mb-7 h-1.5 w-16 rounded-full bg-gradient-to-r ${gradient} transition group-hover:w-24`} />
-                <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
-                  {title}
-                  {highlight && <span className="text-xs font-bold bg-violet-500/20 border border-violet-400/30 text-violet-300 px-2 py-0.5 rounded-full">New</span>}
-                </h2>
+                <h2 className="text-2xl font-black tracking-tight text-white">{title}</h2>
                 <p className="mt-4 text-sm leading-7 text-zinc-400">{body}</p>
               </Link>
             ))}
@@ -327,10 +304,10 @@ export default function Home() {
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.28em] text-violet-100">Start in seconds</p>
                 <h2 className="mt-4 text-balance text-4xl font-black tracking-[-0.055em] text-white sm:text-6xl">
-                  One product. Three intelligent entry points.
+                  One platform. Three ways to use it.
                 </h2>
                 <p className="mt-6 max-w-2xl text-base leading-8 text-zinc-200">
-                  Chat when you need support, explore Bihar-focused knowledge when context matters, and automate business conversations when customers need quick answers.
+                  Chat for personal support, explore Bihar-focused knowledge, or automate your business conversations — all in one place.
                 </p>
               </div>
               <div className="grid gap-3">
@@ -341,10 +318,7 @@ export default function Home() {
                   Explore Bihar AI <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
                 </Link>
                 <Link href="/business-ai" className="group flex items-center justify-between rounded-3xl border border-white/12 bg-white/10 px-5 py-4 text-sm font-bold text-white transition hover:-translate-y-1 hover:bg-white/15">
-                  Build business assistant <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
-                </Link>
-                <Link href="/ibara" className="group flex items-center justify-between rounded-3xl border border-violet-500/30 bg-violet-950/30 px-5 py-4 text-sm font-bold text-violet-200 transition hover:-translate-y-1 hover:bg-violet-950/50 hover:border-violet-400/50">
-                  <span className="flex items-center gap-2"><span className="text-xs font-black bg-violet-500/25 text-violet-300 border border-violet-400/30 px-2 py-0.5 rounded-full">New</span> Add AI to your website</span> <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
+                  Explore Business AI <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
                 </Link>
               </div>
             </div>
