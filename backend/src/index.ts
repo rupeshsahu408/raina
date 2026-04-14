@@ -854,7 +854,7 @@ async function saveBusinessProfileConfig(businessId: string, config: WhatsAppBus
   await WhatsAppBusinessProfile.findOneAndUpdate(
     { businessId },
     { $set: configToProfileUpdate(config) },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
   );
 }
 
@@ -1135,7 +1135,7 @@ app.post("/v1/whatsapp/credentials", async (req, res) => {
           provider: "manual",
         },
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
     );
 
     const status = await getWhatsAppCredentialStatus(businessId);
@@ -1653,7 +1653,7 @@ app.put("/v1/profile", requireFirebaseAuth, async (req, res) => {
     const profile = await UserProfile.findOneAndUpdate(
       { uid },
       { $set: update },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     ).lean();
 
     return res.json({ ok: true, profile });
@@ -1786,7 +1786,7 @@ app.patch("/v1/conversations/:conversationId", requireFirebaseAuth, async (req, 
     const doc = await Conversation.findOneAndUpdate(
       { uid, conversationId: resolvedConversationId },
       { $set: update, $setOnInsert: { title: "New Chat", preview: "", pinned: false } },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     ).lean();
 
     return res.json({ ok: true, conversation: doc });
@@ -2064,7 +2064,7 @@ app.post("/v1/chat", requireFirebaseAuth, async (req, res) => {
             createdAt: new Date(),
           },
         },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
       );
     }
     // Fetch recent turns in correct order: oldest -> newest.
@@ -2572,7 +2572,7 @@ app.post("/v1/bihar-ai/chat", requireFirebaseAuth, async (req, res) => {
             createdAt: new Date(),
           },
         },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: "after" }
       );
     }
 

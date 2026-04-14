@@ -223,7 +223,7 @@ ibaraRouter.post("/sites/:siteId/bot", async (req, res) => {
         language: language ?? "english",
         isActive: isActive ?? false,
       },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: "after" }
     );
 
     return res.json({ bot });
