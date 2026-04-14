@@ -148,6 +148,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-white/25 px-2 mb-2">Dashboard</p>
           {navItem("Overview", "overview", "◈")}
+          {navItem("Connect Website", "connect", "🔗")}
           {navItem("AI Setup", "ai-setup", "⚡")}
           {navItem("Chat Preview", "preview", "💬")}
         </nav>

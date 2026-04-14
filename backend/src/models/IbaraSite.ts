@@ -6,6 +6,10 @@ export interface IIbaraSite extends Document {
   verificationToken: string;
   verificationStatus: "pending" | "verified" | "failed";
   verifiedAt?: Date;
+  connectionMethod?: "wordpress" | "gtm" | "file" | "manual" | null;
+  connectionStatus?: "not_connected" | "connected" | "pending";
+  connectionVerifiedAt?: Date;
+  detectedPlatform?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,6 +25,10 @@ const IbaraSiteSchema = new Schema<IIbaraSite>(
       default: "pending",
     },
     verifiedAt: { type: Date },
+    connectionMethod: { type: String, enum: ["wordpress", "gtm", "file", "manual", null], default: null },
+    connectionStatus: { type: String, enum: ["not_connected", "connected", "pending"], default: "not_connected" },
+    connectionVerifiedAt: { type: Date },
+    detectedPlatform: { type: String, default: "" },
   },
   { timestamps: true }
 );

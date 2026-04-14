@@ -58,8 +58,8 @@ export default function IbaraOnboarding() {
             setSite(pendingSite);
             setStep(2);
           } else {
-            // All sites already verified — go to dashboard
-            router.replace(`/ibara/dashboard/overview?siteId=${data.sites[0]._id}`);
+            // All sites already verified — go to connect page
+            router.replace(`/ibara/dashboard/connect?siteId=${data.sites[0]._id}`);
           }
         }
       } catch {
@@ -123,7 +123,7 @@ export default function IbaraOnboarding() {
       if (data.verified) {
         setVerifyStatus("verified");
         setTimeout(() => {
-          router.replace(`/ibara/dashboard/overview?siteId=${site._id}`);
+          router.replace(`/ibara/dashboard/connect?siteId=${site._id}`);
         }, 1500);
       } else {
         setVerifyStatus("failed");
