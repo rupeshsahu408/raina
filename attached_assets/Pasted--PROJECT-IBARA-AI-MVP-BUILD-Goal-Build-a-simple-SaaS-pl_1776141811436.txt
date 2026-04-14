@@ -1,0 +1,113 @@
+**PROJECT: IBARA AI – MVP BUILD**
+
+## 🎯 Goal
+
+Build a simple SaaS platform where users can add an AI chatbot to their website with minimal steps.
+
+---
+
+## 🧩 CORE USER FLOW
+
+1. User signs up / logs in
+2. User enters their website URL
+3. User verifies ownership via DNS (TXT record)
+4. After verification, user gets access to dashboard
+5. User fills AI setup details (business info, services, tone, etc.)
+6. User clicks “Activate AI”
+7. AI chatbot becomes active (initially testable inside dashboard)
+
+---
+
+
+
+---
+
+## 🟢 FEATURES TO BUILD
+
+### 1. Authentication
+
+* Signup / Login system
+* Basic user account handling
+
+---
+
+### 2. Website Input + DNS Verification
+
+* Input field for website URL
+* Generate DNS TXT record
+* Button to verify domain
+* Show status: Pending / Verified
+
+---
+
+### 3. Dashboard (Basic UI)
+
+* Sidebar navigation
+* Pages:
+
+  * Overview
+  * AI Setup
+
+---
+
+### 4. AI Setup (Main Feature)
+
+User should be able to enter:
+
+* Business Name
+* Business Type
+* Location
+* Working Hours (optional)
+* Services / Products
+* Knowledge Base (text input)
+* Tone (professional/friendly)
+* Language (English/Hindi/Hinglish)
+
+👉 Save data properly
+
+---
+
+### 5. AI Chat System (Basic)
+
+* Use AI model to respond based on user input data
+* Responses should follow:
+
+  * Business info
+  * Knowledge base
+  * Tone
+
+---
+
+### 6. Chat Preview (Inside Dashboard)
+
+* Simple chat UI
+* User can test chatbot
+* Messages → API → AI response
+
+---
+
+
+
+---
+
+
+
+---
+
+## 🏁 SUCCESS CRITERIA
+
+* User can:
+  ✔ Signup
+  ✔ Verify website
+  ✔ Fill business details
+  ✔ Test AI chatbot
+
+👉 If this works → MVP success
+
+---
+
+*There will be a separate page for this, with a separate button. I’m giving you 100% freedom—I’m leaving everything to you. You choose the wireframe, decide what goes where, and handle the UI/UX design, colors, and everything else. Do whatever you think looks best and works well.
+
+But always remember one thing: it must be fully functional. The backend should work properly, and the entire system should be fully working. If you have any doubts, ask me.
+
+I’m giving you complete freedom to decide the wireframe, placement of elements, page structure, and how to make everything look great. So go ahead and start 
