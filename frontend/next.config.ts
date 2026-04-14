@@ -61,6 +61,10 @@ const nextConfig: NextConfig = {
         async rewrites() {
           return [
             {
+              source: "/api/ibara/:path*",
+              destination: `${BACKEND_URL}/api/ibara/:path*`,
+            },
+            {
               source: "/v1/:path*",
               destination: `${BACKEND_URL}/v1/:path*`,
             },
