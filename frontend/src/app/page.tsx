@@ -97,7 +97,7 @@ const footerColumns = [
       ["Features", "/features"],
       ["App", "/app"],
       ["Chat", "/chat"],
-      ["WhatsApp AI", "/whatsapp-ai"],
+      ["Business AI", "/business-ai"],
       ["IBARA AI", "/ibara"],
     ],
   },
@@ -154,7 +154,7 @@ export default function Home() {
           <div className="hidden items-center gap-6 text-sm font-medium text-zinc-400 md:flex">
             <Link href="/features" className="transition hover:text-white">Features</Link>
             <Link href="/bihar-ai" className="transition hover:text-white">Bihar AI</Link>
-            <Link href="/whatsapp-ai" className="transition hover:text-white">Business</Link>
+            <Link href="/business-ai" className="transition hover:text-white">Business</Link>
             <Link href="/ibara" className="transition hover:text-white font-semibold text-violet-300 hover:text-violet-100">IBARA AI</Link>
             <Link href="/blog" className="transition hover:text-white">Blog</Link>
           </div>
@@ -279,7 +279,7 @@ export default function Home() {
             {[
               { title: "Personal AI", body: "A gentle daily companion that adapts to your emotional state and remembers what matters.", href: "/chat", gradient: "from-fuchsia-400 via-violet-400 to-sky-300" },
               { title: "Bihar AI", body: "Regional intelligence with cultural context for education, jobs, news, and local knowledge.", href: "/bihar-ai", gradient: "from-sky-400 via-blue-400 to-violet-400" },
-              { title: "Business AI", body: "Customer support automation for WhatsApp with a dashboard built for practical workflows.", href: "/whatsapp-ai", gradient: "from-emerald-400 via-teal-400 to-sky-400" },
+              { title: "Business AI", body: "Customer support automation for WhatsApp and website chatbots, with dashboards built for practical workflows.", href: "/business-ai", gradient: "from-emerald-400 via-teal-400 to-sky-400" },
               { title: "IBARA AI", body: "Add a smart chatbot to any website in minutes — trained on your business, no code needed.", href: "/ibara", gradient: "from-violet-500 via-purple-400 to-cyan-400", highlight: true },
             ].map(({ title, body, href, gradient, highlight }) => (
               <Link key={title} href={href} className={`group rounded-[2rem] border p-6 shadow-2xl shadow-black/20 backdrop-blur-xl transition hover:-translate-y-1 ${highlight ? "border-violet-500/30 bg-violet-950/30 hover:bg-violet-950/50" : "border-white/10 bg-white/[0.045] hover:bg-white/[0.07]"}`}>
@@ -340,7 +340,7 @@ export default function Home() {
                 <Link href="/bihar-ai" className="group flex items-center justify-between rounded-3xl border border-white/12 bg-white/10 px-5 py-4 text-sm font-bold text-white transition hover:-translate-y-1 hover:bg-white/15">
                   Explore Bihar AI <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
                 </Link>
-                <Link href="/whatsapp-ai" className="group flex items-center justify-between rounded-3xl border border-white/12 bg-white/10 px-5 py-4 text-sm font-bold text-white transition hover:-translate-y-1 hover:bg-white/15">
+                <Link href="/business-ai" className="group flex items-center justify-between rounded-3xl border border-white/12 bg-white/10 px-5 py-4 text-sm font-bold text-white transition hover:-translate-y-1 hover:bg-white/15">
                   Build business assistant <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
                 </Link>
                 <Link href="/ibara" className="group flex items-center justify-between rounded-3xl border border-violet-500/30 bg-violet-950/30 px-5 py-4 text-sm font-bold text-violet-200 transition hover:-translate-y-1 hover:bg-violet-950/50 hover:border-violet-400/50">
