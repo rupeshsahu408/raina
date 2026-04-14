@@ -98,6 +98,7 @@ const footerColumns = [
       ["App", "/app"],
       ["Chat", "/chat"],
       ["WhatsApp AI", "/whatsapp-ai"],
+      ["IBARA AI", "/ibara"],
     ],
   },
   {
@@ -154,6 +155,7 @@ export default function Home() {
             <Link href="/features" className="transition hover:text-white">Features</Link>
             <Link href="/bihar-ai" className="transition hover:text-white">Bihar AI</Link>
             <Link href="/whatsapp-ai" className="transition hover:text-white">Business</Link>
+            <Link href="/ibara" className="transition hover:text-white font-semibold text-violet-300 hover:text-violet-100">IBARA AI</Link>
             <Link href="/blog" className="transition hover:text-white">Blog</Link>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -273,17 +275,21 @@ export default function Home() {
         </section>
 
         <section className="relative px-4 py-10 sm:px-6 lg:px-8">
-          <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-3">
+          <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[
-              ["Personal AI", "A gentle daily companion that adapts to your emotional state and remembers what matters."],
-              ["Bihar AI", "Regional intelligence with cultural context for education, jobs, news, and local knowledge."],
-              ["Business AI", "Customer support automation for WhatsApp with a dashboard built for practical workflows."],
-            ].map(([title, body]) => (
-              <div key={title} className="group rounded-[2rem] border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-black/20 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/[0.07]">
-                <div className="mb-7 h-1.5 w-16 rounded-full bg-gradient-to-r from-fuchsia-400 via-violet-400 to-sky-300 transition group-hover:w-24" />
-                <h2 className="text-2xl font-black tracking-tight text-white">{title}</h2>
+              { title: "Personal AI", body: "A gentle daily companion that adapts to your emotional state and remembers what matters.", href: "/chat", gradient: "from-fuchsia-400 via-violet-400 to-sky-300" },
+              { title: "Bihar AI", body: "Regional intelligence with cultural context for education, jobs, news, and local knowledge.", href: "/bihar-ai", gradient: "from-sky-400 via-blue-400 to-violet-400" },
+              { title: "Business AI", body: "Customer support automation for WhatsApp with a dashboard built for practical workflows.", href: "/whatsapp-ai", gradient: "from-emerald-400 via-teal-400 to-sky-400" },
+              { title: "IBARA AI", body: "Add a smart chatbot to any website in minutes — trained on your business, no code needed.", href: "/ibara", gradient: "from-violet-500 via-purple-400 to-cyan-400", highlight: true },
+            ].map(({ title, body, href, gradient, highlight }) => (
+              <Link key={title} href={href} className={`group rounded-[2rem] border p-6 shadow-2xl shadow-black/20 backdrop-blur-xl transition hover:-translate-y-1 ${highlight ? "border-violet-500/30 bg-violet-950/30 hover:bg-violet-950/50" : "border-white/10 bg-white/[0.045] hover:bg-white/[0.07]"}`}>
+                <div className={`mb-7 h-1.5 w-16 rounded-full bg-gradient-to-r ${gradient} transition group-hover:w-24`} />
+                <h2 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                  {title}
+                  {highlight && <span className="text-xs font-bold bg-violet-500/20 border border-violet-400/30 text-violet-300 px-2 py-0.5 rounded-full">New</span>}
+                </h2>
                 <p className="mt-4 text-sm leading-7 text-zinc-400">{body}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
@@ -336,6 +342,9 @@ export default function Home() {
                 </Link>
                 <Link href="/whatsapp-ai" className="group flex items-center justify-between rounded-3xl border border-white/12 bg-white/10 px-5 py-4 text-sm font-bold text-white transition hover:-translate-y-1 hover:bg-white/15">
                   Build business assistant <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
+                </Link>
+                <Link href="/ibara" className="group flex items-center justify-between rounded-3xl border border-violet-500/30 bg-violet-950/30 px-5 py-4 text-sm font-bold text-violet-200 transition hover:-translate-y-1 hover:bg-violet-950/50 hover:border-violet-400/50">
+                  <span className="flex items-center gap-2"><span className="text-xs font-black bg-violet-500/25 text-violet-300 border border-violet-400/30 px-2 py-0.5 rounded-full">New</span> Add AI to your website</span> <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
                 </Link>
               </div>
             </div>
