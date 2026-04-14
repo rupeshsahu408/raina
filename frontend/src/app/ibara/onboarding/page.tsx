@@ -37,12 +37,33 @@ export default function IbaraOnboarding() {
       router.replace("/ibara/auth");
       return;
     }
-    const unsub = onAuthStateChanged(auth, (u) => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
       setAuthLoading(false);
       if (!u) {
         router.replace("/ibara/auth");
-      } else {
-        setUser(u);
+        return;
+      }
+      setUser(u);
+
+      // On load, check if the user already has a pending site.
+      // If so, jump straight to step 2 with the existing token — never regenerate it.
+      try {
+        const res = await fetch(ibaraUrl(`/sites?userId=${u.uid}`));
+        const data = await res.json();
+        if (data.sites?.length) {
+          const pendingSite = data.sites.find(
+            (s: Site) => s.verificationStatus !== "verified"
+          );
+          if (pendingSite) {
+            setSite(pendingSite);
+            setStep(2);
+          } else {
+            // All sites already verified — go to dashboard
+            router.replace(`/ibara/dashboard/overview?siteId=${data.sites[0]._id}`);
+          }
+        }
+      } catch {
+        // No sites yet or fetch error — stay on step 1
       }
     });
     return () => unsub();
@@ -284,7 +305,7 @@ export default function IbaraOnboarding() {
 
               <p className="mt-4 text-center text-xs text-white/20">
                 Having trouble?{" "}
-                <a href="https://www.cloudflare.com/learning/dns/dns-records/dns-txt-record/" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300">
+                <a href="https://www.cloudflare.com/learning/dns/dns-txt-record/" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300">
                   Learn about DNS TXT records
                 </a>
               </p>
