@@ -29,6 +29,18 @@ const defaultConfig: BotConfig = {
   isActive: false,
 };
 
+async function safeJsonFetch(url: string, options?: RequestInit) {
+  const res = await fetch(url, options);
+  const text = await res.text();
+  let data: any;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(`Server error (${res.status}). Please try again.`);
+  }
+  return { res, data };
+}
+
 function AISetupContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -52,8 +64,7 @@ function AISetupContent() {
       setUser(u);
       if (siteId) {
         try {
-          const res = await fetch(`/api/ibara/sites/${siteId}/bot?userId=${u.uid}`);
-          const data = await res.json();
+          const { data } = await safeJsonFetch(`/api/ibara/sites/${siteId}/bot?userId=${u.uid}`);
           if (data.bot) {
             setConfig({
               businessName: data.bot.businessName || "",
@@ -85,12 +96,11 @@ function AISetupContent() {
     setSaving(true);
     try {
       const payload = { ...config, userId: user.uid, isActive: activate || config.isActive };
-      const res = await fetch(`/api/ibara/sites/${siteId}/bot`, {
+      const { res, data } = await safeJsonFetch(`/api/ibara/sites/${siteId}/bot`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to save");
       setConfig((prev) => ({ ...prev, isActive: data.bot.isActive }));
       setSaved(true);

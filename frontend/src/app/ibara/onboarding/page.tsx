@@ -47,6 +47,18 @@ export default function IbaraOnboarding() {
     return () => unsub();
   }, [router]);
 
+  async function safeJsonFetch(url: string, options: RequestInit) {
+    const res = await fetch(url, options);
+    const text = await res.text();
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(`Server error (${res.status}). Please try again.`);
+    }
+    return { res, data };
+  }
+
   const handleUrlSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setUrlError("");
@@ -54,12 +66,11 @@ export default function IbaraOnboarding() {
     setCreating(true);
     try {
       const token = await user!.getIdToken();
-      const res = await fetch("/api/ibara/sites", {
+      const { res, data } = await safeJsonFetch("/api/ibara/sites", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ userId: user!.uid, websiteUrl: url.trim() }),
       });
-      const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to register site");
       setSite(data.site);
       if (data.site.verificationStatus === "verified") {
@@ -81,12 +92,11 @@ export default function IbaraOnboarding() {
     setVerifyMsg("");
     try {
       const token = await user!.getIdToken();
-      const res = await fetch(`/api/ibara/sites/${site._id}/verify`, {
+      const { res, data } = await safeJsonFetch(`/api/ibara/sites/${site._id}/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ userId: user!.uid }),
       });
-      const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Verification failed");
       if (data.verified) {
         setVerifyStatus("verified");
