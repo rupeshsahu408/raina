@@ -58,3 +58,8 @@ externalPort = 8080
 [userenv.production]
 BACKEND_URL = "https://raina-1.onrender.com"
 NEXT_PUBLIC_BACKEND_URL = "https://raina-1.onrender.com"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "cd frontend && npm run start"]
+build = ["bash", "-c", "cd frontend && npm run build"]
