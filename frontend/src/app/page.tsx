@@ -192,9 +192,23 @@ export default function Home() {
 
           <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="flex flex-col items-start text-left">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-100 shadow-2xl backdrop-blur-md">
-              <SparklesIcon className="h-3.5 w-3.5 text-purple-400" />
-              <span>Mobile-first personal intelligence</span>
+            <div className="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-100 shadow-2xl backdrop-blur-md">
+                <SparklesIcon className="h-3.5 w-3.5 text-purple-400" />
+                <span>Mobile-first personal intelligence</span>
+              </div>
+              <a
+                href="https://sendora.me/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.09] py-1.5 pl-1.5 pr-4 text-xs font-black text-white shadow-2xl shadow-black/20 backdrop-blur-2xl transition hover:-translate-y-0.5 hover:border-sky-300/40 hover:bg-white/[0.14]"
+                aria-label="Powered by Sendora"
+              >
+                <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-white">
+                  <img src="/sendora-logo.png" alt="Sendora logo" className="h-7 w-7 object-contain" />
+                </span>
+                <span className="tracking-[0.14em]">Powered by Sendora</span>
+              </a>
             </div>
 
             <h1 className="max-w-4xl text-balance text-5xl font-black leading-[0.92] tracking-[-0.075em] text-white sm:text-7xl lg:text-8xl">
