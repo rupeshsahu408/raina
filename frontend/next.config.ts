@@ -72,10 +72,6 @@ const nextConfig: NextConfig = {
               source: "/api/health",
               destination: `${BACKEND_URL}/api/health`,
             },
-            {
-              source: "/api/ibara/:path*",
-              destination: `${BACKEND_URL}/api/ibara/:path*`,
-            },
           ];
         },
       }),
