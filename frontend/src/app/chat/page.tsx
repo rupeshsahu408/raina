@@ -9,6 +9,8 @@ import remarkGfm from "remark-gfm";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { VoiceRecordingBar } from "@/components/VoiceRecordingBar";
 import { CookiePreferencesModal } from "@/components/CookiePreferencesModal";
+import { PlatformSwitcher } from "@/components/PlatformSwitcher";
+import { setLastActivePlatform } from "@/lib/platformSession";
 
 type Personality = "Simi" | "Loa";
 type Mode = "personal" | "web" | "study" | "thinking" | "business";
@@ -412,6 +414,7 @@ export default function ChatPage() {
       if (!u) {
         router.replace("/login");
       } else {
+        setLastActivePlatform("evara");
         const cached = loadConvCache(u.uid);
         if (cached.length) setConversations(cached);
       }
@@ -1405,6 +1408,7 @@ export default function ChatPage() {
       </div>
 
       <CookiePreferencesModal open={showCookieModal} onClose={() => setShowCookieModal(false)} />
+      <PlatformSwitcher current="evara" />
 
       {/* ══════════════════════════════════════════
           MODE SELECTOR MODAL

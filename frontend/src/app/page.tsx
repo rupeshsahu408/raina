@@ -1,6 +1,7 @@
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { DemoChatWidget } from "@/components/DemoChatWidget";
 import { ThreeBackground } from "@/components/ThreeBackground";
+import { AuthRedirect } from "@/components/AuthRedirect";
 import Link from "next/link";
 
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -121,6 +122,7 @@ const socialLinks = [
 export default function Home() {
   return (
     <div className="evara-premium-landing relative min-h-screen overflow-hidden bg-[#04030a] text-zinc-100 selection:bg-violet-400/30">
+      <AuthRedirect />
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_8%,rgba(244,114,182,0.22),transparent_32%),radial-gradient(circle_at_92%_12%,rgba(56,189,248,0.2),transparent_30%),radial-gradient(circle_at_50%_80%,rgba(124,58,237,0.24),transparent_36%),linear-gradient(180deg,#05030b_0%,#090713_48%,#030207_100%)]" />
         <div className="premium-grid absolute inset-0 opacity-45" />

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { PlatformSwitcher } from "@/components/PlatformSwitcher";
+import { setLastActivePlatform } from "@/lib/platformSession";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 const STORAGE_KEY = "evara_whatsapp_business_setup_v1";
@@ -101,6 +103,7 @@ export default function DashboardPage() {
         router.replace("/login?next=/whatsapp-ai/dashboard");
       } else {
         setAuthChecked(true);
+        setLastActivePlatform("whatsapp-ai");
       }
     });
     return () => unsubscribe();
@@ -447,6 +450,7 @@ export default function DashboardPage() {
           ))}
         </div>
       </nav>
+      <PlatformSwitcher current="whatsapp-ai" />
     </div>
   );
 }

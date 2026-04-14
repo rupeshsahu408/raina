@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { ibaraUrl } from "@/lib/ibaraApi";
+import { PlatformSwitcher } from "@/components/PlatformSwitcher";
+import { setLastActivePlatform } from "@/lib/platformSession";
 
 interface Site {
   _id: string;
@@ -45,6 +47,7 @@ function OverviewContent() {
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (!u) { router.replace("/ibara/auth"); return; }
       setUser(u);
+      setLastActivePlatform("ibara");
       if (!siteId) { setLoading(false); return; }
       try {
         const [sitesRes, botRes, connRes] = await Promise.all([
@@ -291,6 +294,7 @@ function OverviewContent() {
           )}
         </div>
       )}
+      <PlatformSwitcher current="ibara" />
     </div>
   );
 }
