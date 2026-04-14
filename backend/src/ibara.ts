@@ -120,7 +120,7 @@ ibaraRouter.post("/sites", async (req, res) => {
 
 // GET /api/ibara/sites — list user's sites
 ibaraRouter.get("/sites", async (req, res) => {
-  const { userId } = req.query;
+  const userId = req.query.userId as string | undefined;
   if (!userId) return res.status(400).json({ error: "userId is required" });
 
   try {

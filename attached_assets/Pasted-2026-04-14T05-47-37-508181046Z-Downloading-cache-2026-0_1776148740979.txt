@@ -1,0 +1,36 @@
+2026-04-14T05:47:37.508181046Z ==> Downloading cache...
+2026-04-14T05:47:37.544857058Z ==> Cloning from https://github.com/rupeshsahu408/raina
+2026-04-14T05:47:43.284779903Z ==> Checking out commit 9efc1ef1b9d73e62881636a733ac91e598181fac in branch main
+2026-04-14T05:47:47.723323363Z ==> Downloaded 98MB in 8s. Extraction took 2s.
+2026-04-14T05:47:50.694623778Z ==> Requesting Node.js version >=20.0.0
+2026-04-14T05:47:50.838428698Z ==> Using Node.js version 25.9.0 via /opt/render/project/src/backend/package.json
+2026-04-14T05:47:50.864578342Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-04-14T05:47:50.98711943Z ==> Running build command 'npm install && npm run build'...
+2026-04-14T05:47:51.897162566Z 
+2026-04-14T05:47:51.897188038Z up to date, audited 279 packages in 840ms
+2026-04-14T05:47:51.897208238Z 
+2026-04-14T05:47:51.897316503Z 48 packages are looking for funding
+2026-04-14T05:47:51.897374126Z   run `npm fund` for details
+2026-04-14T05:47:51.903525722Z 
+2026-04-14T05:47:51.903534573Z 8 low severity vulnerabilities
+2026-04-14T05:47:51.903537873Z 
+2026-04-14T05:47:51.903544143Z To address all issues (including breaking changes), run:
+2026-04-14T05:47:51.903547743Z   npm audit fix --force
+2026-04-14T05:47:51.903550754Z 
+2026-04-14T05:47:51.903553954Z Run `npm audit` for details.
+2026-04-14T05:47:52.057992385Z 
+2026-04-14T05:47:52.058018116Z > backend@1.0.0 build
+2026-04-14T05:47:52.058022896Z > tsc -p tsconfig.json
+2026-04-14T05:47:52.058026856Z 
+2026-04-14T05:47:55.334078585Z src/ibara.ts(128,42): error TS2769: No overload matches this call.
+2026-04-14T05:47:55.334103995Z   Overload 1 of 4, '(filter?: _QueryFilter<{ _id: ObjectId; userId: string; domain: string; verificationToken: string; verificationStatus: NonNullable<"pending" | "verified" | "failed">; verifiedAt: Date; ... 221 more ...; "schema.virtualpath": (name: string) => VirtualType<...> | null; }> | undefined, projection?: ProjectionType<...> | ... 1 more ... | undefined, options?: (QueryOptions<...> & Abortable) | undefined): Query<...>', gave the following error.
+2026-04-14T05:47:55.334116006Z     Type 'string | ParsedQs | (string | ParsedQs)[]' is not assignable to type 'StrictCondition<ApplyBasicQueryCasting<string>> | undefined'.
+2026-04-14T05:47:55.334123127Z       Type '(string | ParsedQs)[]' is not assignable to type 'StrictCondition<ApplyBasicQueryCasting<string>> | undefined'.
+2026-04-14T05:47:55.334130127Z         Type '(string | ParsedQs)[]' is not assignable to type 'StringQueryTypeCasting[]'.
+2026-04-14T05:47:55.334136197Z           Type 'string | ParsedQs' is not assignable to type 'StringQueryTypeCasting'.
+2026-04-14T05:47:55.334141537Z             Type 'ParsedQs' is not assignable to type 'StringQueryTypeCasting'.
+2026-04-14T05:47:55.334147288Z               Type 'ParsedQs' is missing the following properties from type 'RegExp': exec, test, source, global, and 13 more.
+2026-04-14T05:47:55.334153268Z   Overload 2 of 4, '(filter?: Query<any, any, {}, unknown, "find", Record<string, never>> | undefined, projection?: ProjectionType<IIbaraSite> | null | undefined, options?: (QueryOptions<...> & Abortable) | undefined): Query<...>', gave the following error.
+2026-04-14T05:47:55.334159588Z     Object literal may only specify known properties, and 'userId' does not exist in type 'Query<any, any, {}, unknown, "find", Record<string, never>>'.
+2026-04-14T05:47:55.422328764Z ==> Build failed 😞
+2026-04-14T05:47:55.422348715Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
