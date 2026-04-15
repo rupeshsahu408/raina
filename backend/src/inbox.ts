@@ -205,12 +205,24 @@ inboxRouter.get("/status", async (req, res) => {
   return res.json({ connected: true, email: record.email });
 });
 
-// GET /inbox/messages?maxResults=20&pageToken=xxx
+const FOLDER_CONFIG: Record<string, { labelIds?: string[]; q?: string }> = {
+  inbox:    { labelIds: ["INBOX"], q: "in:inbox -category:promotions -category:social" },
+  sent:     { labelIds: ["SENT"] },
+  spam:     { labelIds: ["SPAM"] },
+  trash:    { labelIds: ["TRASH"] },
+  drafts:   { labelIds: ["DRAFT"] },
+  starred:  { labelIds: ["STARRED"] },
+  all:      { q: "-in:spam -in:trash" },
+};
+
+// GET /inbox/messages?maxResults=20&pageToken=xxx&folder=inbox
 inboxRouter.get("/messages", async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
-  const maxResults = Math.min(Number(req.query.maxResults ?? 20), 50);
+  const maxResults = Math.min(Number(req.query.maxResults ?? 25), 50);
   const pageToken = req.query.pageToken as string | undefined;
+  const folder = (req.query.folder as string) || "inbox";
+  const folderCfg = FOLDER_CONFIG[folder] ?? FOLDER_CONFIG.inbox;
   try {
     const auth = await getAuthenticatedClient(uid);
     const gmail = google.gmail({ version: "v1", auth });
@@ -218,8 +230,8 @@ inboxRouter.get("/messages", async (req, res) => {
       userId: "me",
       maxResults,
       pageToken,
-      labelIds: ["INBOX"],
-      q: "in:inbox -category:promotions -category:social",
+      ...(folderCfg.labelIds ? { labelIds: folderCfg.labelIds } : {}),
+      ...(folderCfg.q ? { q: folderCfg.q } : {}),
     });
     const messageIds = listRes.data.messages ?? [];
     const threads: Record<string, any> = {};
@@ -240,6 +252,7 @@ inboxRouter.get("/messages", async (req, res) => {
           const threadId = msg.data.threadId ?? m.id!;
           const labelIds = msg.data.labelIds ?? [];
           const isUnread = labelIds.includes("UNREAD");
+          const isStarred = labelIds.includes("STARRED");
           const intent = detectIntent(subject, snippet);
           return {
             id: m.id,
@@ -251,6 +264,7 @@ inboxRouter.get("/messages", async (req, res) => {
             summary: snippet.slice(0, 120),
             intent,
             isUnread,
+            isStarred,
           };
         } catch {
           return null;
@@ -334,6 +348,28 @@ inboxRouter.post("/reply/send", express.json(), async (req, res) => {
     return res.json({ success: true });
   } catch (err: any) {
     console.error("[inbox/reply/send]", err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /inbox/star/:messageId  — toggle star
+inboxRouter.post("/star/:messageId", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { messageId } = req.params;
+  const { starred } = req.body ?? {};
+  try {
+    const auth = await getAuthenticatedClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+    await gmail.users.messages.modify({
+      userId: "me",
+      id: messageId,
+      requestBody: starred
+        ? { addLabelIds: ["STARRED"] }
+        : { removeLabelIds: ["STARRED"] },
+    });
+    return res.json({ success: true, starred });
+  } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
 });
