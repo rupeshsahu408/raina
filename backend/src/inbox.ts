@@ -3,6 +3,7 @@ import multer from "multer";
 import { google } from "googleapis";
 import { connectMongo } from "./db";
 import { InboxToken } from "./models/InboxToken";
+import { FollowUp } from "./models/FollowUp";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -918,5 +919,171 @@ inboxRouter.delete("/disconnect", async (req, res) => {
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
   await connectMongo();
   await InboxToken.deleteOne({ uid });
+  return res.json({ success: true });
+});
+
+// ─── Follow-Up System ────────────────────────────────────────────────────────
+
+interface FollowUpDetection {
+  needsFollowUp: boolean;
+  reason: string;
+  suggestedLabel: string;
+  suggestedDaysFromNow: number;
+}
+
+function parseFollowUpJson(raw: string): FollowUpDetection | null {
+  try {
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    const parsed = JSON.parse(match[0]);
+    if (typeof parsed.needsFollowUp !== "boolean") return null;
+    if (typeof parsed.reason !== "string") return null;
+    if (typeof parsed.suggestedDaysFromNow !== "number") return null;
+    return {
+      needsFollowUp: parsed.needsFollowUp,
+      reason: String(parsed.reason).trim(),
+      suggestedLabel: String(parsed.suggestedLabel ?? "").trim(),
+      suggestedDaysFromNow: Math.max(0, Math.min(30, Number(parsed.suggestedDaysFromNow))),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function heuristicFollowUp(subject: string, thread: string, intent: string): FollowUpDetection {
+  const text = `${subject} ${thread.slice(0, 1000)}`.toLowerCase();
+  const isSent = /i sent|we sent|as discussed|following up|attached|please find|proposal|quote|pricing|invoice sent/i.test(text);
+  const isNoReply = !/thank you|thanks for|reply|respond|i will|we will|got it|received|noted/i.test(thread.slice(-1200));
+  const needsFollowUp = isSent || (intent === "Lead" && isNoReply) || (intent === "Payment" && isNoReply);
+  const days = intent === "Urgent" ? 1 : intent === "Lead" || intent === "Payment" ? 2 : 3;
+  return {
+    needsFollowUp,
+    reason: needsFollowUp
+      ? isSent
+        ? "You sent information but haven't received a reply yet."
+        : `This ${intent.toLowerCase()} conversation may need a follow-up.`
+      : "No immediate follow-up action detected.",
+    suggestedLabel: days === 1 ? "Tomorrow morning" : days === 2 ? "In 2 days" : "In 3 days",
+    suggestedDaysFromNow: needsFollowUp ? days : 3,
+  };
+}
+
+async function detectFollowUpNeed(args: {
+  subject: string;
+  thread: string;
+  intent?: string;
+}): Promise<FollowUpDetection> {
+  const intent = args.intent ?? "FYI";
+  const fallback = heuristicFollowUp(args.subject, args.thread, intent);
+  if (!NVIDIA_API_KEY) return fallback;
+  try {
+    const result = await callNvidiaChatCompletions({
+      apiKey: NVIDIA_API_KEY,
+      messages: [
+        {
+          role: "system",
+          content: `You are an email follow-up detector. Analyze this email thread and return ONLY valid JSON with these keys:
+- needsFollowUp (boolean): true if the user should follow up (e.g., they sent info/proposal/pricing but got no reply, or a lead/payment needs chasing)
+- reason (string): specific reason why follow-up is needed (max 20 words, direct)
+- suggestedLabel (string): human-readable suggested time like "Monday 10 AM" or "In 2 days"
+- suggestedDaysFromNow (number): how many business days from now (1-7)
+Be strict: only set needsFollowUp=true if there is a clear unresolved action.`,
+        },
+        {
+          role: "user",
+          content: `Subject: ${args.subject}\nDetected intent: ${intent}\n\nThread:\n${args.thread.slice(0, 5000)}`,
+        },
+      ],
+      max_tokens: 180,
+      temperature: 0.2,
+    });
+    const parsed = parseFollowUpJson(result);
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+// POST /inbox/followup/detect
+inboxRouter.post("/followup/detect", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { subject, thread, intent } = req.body ?? {};
+  if (!subject || !thread) return res.status(400).json({ error: "subject and thread are required" });
+  try {
+    const detection = await detectFollowUpNeed({
+      subject: String(subject),
+      thread: String(thread),
+      intent: intent ? String(intent) : undefined,
+    });
+    return res.json({ detection });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /inbox/followups  — list all follow-ups for the user
+inboxRouter.get("/followups", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const status = req.query.status as string | undefined;
+  await connectMongo();
+  const query: any = { uid };
+  if (status) query.status = status;
+  const items = await FollowUp.find(query).sort({ scheduledAt: 1 }).lean();
+  return res.json({ followUps: items });
+});
+
+// POST /inbox/followups  — create a follow-up reminder
+inboxRouter.post("/followups", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { messageId, threadId, subject, from, scheduledAt, reason } = req.body ?? {};
+  if (!messageId || !threadId || !subject || !scheduledAt || !reason) {
+    return res.status(400).json({ error: "messageId, threadId, subject, scheduledAt, and reason are required" });
+  }
+  await connectMongo();
+  const existing = await FollowUp.findOne({ uid, messageId, status: "pending" });
+  if (existing) {
+    existing.scheduledAt = Number(scheduledAt);
+    existing.reason = String(reason);
+    await existing.save();
+    return res.json({ followUp: existing.toObject() });
+  }
+  const followUp = await FollowUp.create({
+    uid,
+    messageId: String(messageId),
+    threadId: String(threadId),
+    subject: String(subject),
+    from: String(from ?? ""),
+    scheduledAt: Number(scheduledAt),
+    reason: String(reason),
+    status: "pending",
+  });
+  return res.status(201).json({ followUp: followUp.toObject() });
+});
+
+// PATCH /inbox/followups/:id  — update status or reschedule
+inboxRouter.patch("/followups/:id", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { id } = req.params;
+  const { status, scheduledAt } = req.body ?? {};
+  await connectMongo();
+  const item = await FollowUp.findOne({ _id: id, uid });
+  if (!item) return res.status(404).json({ error: "Follow-up not found" });
+  if (status && ["pending", "completed", "dismissed"].includes(status)) item.status = status;
+  if (scheduledAt) item.scheduledAt = Number(scheduledAt);
+  await item.save();
+  return res.json({ followUp: item.toObject() });
+});
+
+// DELETE /inbox/followups/:id
+inboxRouter.delete("/followups/:id", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { id } = req.params;
+  await connectMongo();
+  await FollowUp.deleteOne({ _id: id, uid });
   return res.json({ success: true });
 });

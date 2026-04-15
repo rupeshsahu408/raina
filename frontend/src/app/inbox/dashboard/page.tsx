@@ -132,6 +132,12 @@ function MoreVertIcon() {
 function ComposeIcon() {
   return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
 }
+function BellIcon() {
+  return <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>;
+}
+function CheckCircleIcon() {
+  return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+}
 
 const NAV_ITEMS: { id: Folder; label: string; icon: React.ReactNode }[] = [
   { id: "inbox",     label: "Inbox",     icon: <InboxIcon /> },
@@ -421,6 +427,11 @@ export default function InboxDashboard() {
 
   const [mobileView, setMobileView] = useState<"list" | "email">("list");
 
+  const [followUpDetection, setFollowUpDetection] = useState<{ needsFollowUp: boolean; reason: string; suggestedLabel: string; suggestedDaysFromNow: number } | null>(null);
+  const [followUpDetecting, setFollowUpDetecting] = useState(false);
+  const [followUpSaved, setFollowUpSaved] = useState(false);
+  const [followUpSaving, setFollowUpSaving] = useState(false);
+
   const tokenRef = useRef("");
   const filterRef = useRef<HTMLDivElement>(null);
   const activeThreadRequestRef = useRef(0);
@@ -517,6 +528,50 @@ export default function InboxDashboard() {
     }
   }
 
+  async function runFollowUpDetection(email: EmailItem, messages: { bodyText?: string; body: string; from: string }[], token: string, requestId: number) {
+    if (!messages.length) return;
+    setFollowUpDetecting(true);
+    setFollowUpDetection(null);
+    setFollowUpSaved(false);
+    const threadText = messages.map(m => `From: ${m.from}\n${m.bodyText || m.body}`).join("\n\n---\n\n");
+    try {
+      const res = await fetch(`${API}/inbox/followup/detect`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: email.subject, thread: threadText, intent: email.intent }),
+      });
+      const data = await res.json();
+      if (res.ok && activeThreadRequestRef.current === requestId) {
+        setFollowUpDetection(data.detection ?? null);
+      }
+    } catch {}
+    finally {
+      if (activeThreadRequestRef.current === requestId) setFollowUpDetecting(false);
+    }
+  }
+
+  async function saveFollowUp(email: EmailItem, daysFromNow: number, reason: string) {
+    setFollowUpSaving(true);
+    const token = await getToken();
+    const scheduledAt = Date.now() + daysFromNow * 24 * 60 * 60 * 1000;
+    try {
+      const res = await fetch(`${API}/inbox/followups`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId: email.id,
+          threadId: email.threadId,
+          subject: email.subject,
+          from: email.from,
+          scheduledAt,
+          reason,
+        }),
+      });
+      if (res.ok) setFollowUpSaved(true);
+    } catch {}
+    finally { setFollowUpSaving(false); }
+  }
+
   const loadLocalDrafts = useCallback(() => {
     try {
       const raw = localStorage.getItem("plyndrox_drafts");
@@ -596,6 +651,9 @@ export default function InboxDashboard() {
     setReplyOpen(false);
     setShowDetails(false);
     setMobileView("email");
+    setFollowUpDetection(null);
+    setFollowUpDetecting(false);
+    setFollowUpSaved(false);
     setThreadLoading(true);
     const token = await getToken();
     try {
@@ -608,6 +666,7 @@ export default function InboxDashboard() {
         setThreadMessages(messages);
         void loadActionPlan(email, messages, token, requestId);
         void generateSmartReplySuggestions(email, messages, token, requestId);
+        void runFollowUpDetection(email, messages, token, requestId);
       }
     } catch {}
     finally {
@@ -945,11 +1004,15 @@ export default function InboxDashboard() {
           ))}
 
           <div className="px-3 pt-4 pb-1">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600">Labels</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600">AI Features</p>
           </div>
-          <div className="px-3 py-1.5">
-            <p className="text-xs text-zinc-600">No labels yet</p>
-          </div>
+          <Link
+            href="/inbox/followups"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-white/8 hover:text-white transition"
+          >
+            <span className="text-zinc-500"><BellIcon /></span>
+            Follow-Ups
+          </Link>
         </nav>
 
         {/* Bottom */}
@@ -1527,6 +1590,52 @@ export default function InboxDashboard() {
                                 </button>
                               ))}
                             </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* ── Follow-Up Card ──────────────────────────────── */}
+                      {(followUpDetecting || followUpDetection) && (
+                        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                              <BellIcon />
+                            </span>
+                            <span className="text-xs font-black text-amber-800">AI Follow-Up Detection</span>
+                            {followUpDetecting && <div className="w-3.5 h-3.5 border border-amber-300 border-t-amber-600 rounded-full animate-spin ml-auto" />}
+                          </div>
+                          {followUpDetecting ? (
+                            <div className="space-y-2 animate-pulse">
+                              <div className="h-3 bg-amber-100 rounded w-3/4" />
+                              <div className="h-3 bg-amber-100 rounded w-1/2" />
+                            </div>
+                          ) : followUpDetection?.needsFollowUp ? (
+                            <>
+                              <p className="text-sm text-amber-900 font-medium mb-1">{followUpDetection.reason}</p>
+                              <p className="text-xs text-amber-700 mb-3">
+                                Suggested: <span className="font-black">{followUpDetection.suggestedLabel}</span>
+                              </p>
+                              {followUpSaved ? (
+                                <div className="flex items-center gap-2 text-emerald-700 text-sm font-bold">
+                                  <CheckCircleIcon />
+                                  Reminder set for {followUpDetection.suggestedLabel}
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => selectedEmail && saveFollowUp(selectedEmail, followUpDetection.suggestedDaysFromNow, followUpDetection.reason)}
+                                    disabled={followUpSaving}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-black transition disabled:opacity-60"
+                                  >
+                                    {followUpSaving ? <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" /> : <BellIcon />}
+                                    {followUpSaving ? "Saving…" : "Set Reminder"}
+                                  </button>
+                                  <Link href="/inbox/followups" className="text-xs text-amber-700 underline hover:text-amber-900">View all follow-ups</Link>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-xs text-amber-700">No follow-up needed for this thread.</p>
                           )}
                         </div>
                       )}
