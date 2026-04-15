@@ -153,12 +153,46 @@ function escapeHtml(value: string): string {
     .replace(/'/g, "&#039;");
 }
 
+function linkifyPlainText(value: string): string {
+  const urlPattern = /(https?:\/\/[^\s<>"')]+[^\s<>"').,;:!?])/gi;
+  let output = "";
+  let lastIndex = 0;
+  for (const match of value.matchAll(urlPattern)) {
+    const url = match[0];
+    const index = match.index ?? 0;
+    output += escapeHtml(value.slice(lastIndex, index));
+    const safeUrl = escapeHtml(url);
+    const label = url.length > 72 ? "Open link" : url;
+    output += `<a href="${safeUrl}" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
+    lastIndex = index + url.length;
+  }
+  output += escapeHtml(value.slice(lastIndex));
+  return output;
+}
+
 function plainTextToHtml(value: string): string {
-  const paragraphs = value
+  const normalized = value
+    .replace(/\r\n?/g, "\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/={12,}/g, "\n\n---\n\n")
+    .replace(/([.!?])\s+(This message was sent|If you don't want|To help keep|Follow the link|Community Support|You can unsubscribe)/gi, "$1\n\n$2")
+    .replace(/\s+(Hi\s+[^,\n]+,)/i, "\n\n$1")
+    .replace(/\s+(Thanks,\s*[^\n]+)$/i, "\n\n$1")
+    .trim();
+
+  const paragraphs = normalized
     .split(/\n{2,}/)
-    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean)
+    .map((paragraph) => {
+      if (/^-{3,}$/.test(paragraph)) return "<hr>";
+      const readable = paragraph.length > 900
+        ? paragraph.replace(/([.!?])\s+(?=[A-Z])/g, "$1\n")
+        : paragraph;
+      return `<p>${linkifyPlainText(readable).replace(/\n/g, "<br>")}</p>`;
+    })
     .join("");
-  return paragraphs || "<p></p>";
+  return paragraphs ? `<div class="text-fallback">${paragraphs}</div>` : "<p></p>";
 }
 
 function emailFrameDocument(message: ThreadMessage, fallback: string): string {
@@ -181,6 +215,10 @@ function emailFrameDocument(message: ThreadMessage, fallback: string): string {
     pre { white-space: pre-wrap; word-break: break-word; font-family: inherit; }
     a { color: #1a73e8; text-decoration: none; }
     a:hover { text-decoration: underline; }
+    hr { border: 0; border-top: 1px solid #e8eaed; margin: 18px 0; }
+    .text-fallback { max-width: 760px; }
+    .text-fallback p { margin: 0 0 14px; }
+    .text-fallback a { display: inline-block; margin: 0 2px; padding: 1px 6px; border-radius: 999px; background: #eef3fe; font-size: 13px; font-weight: 600; }
   </style>
 </head>
 <body>

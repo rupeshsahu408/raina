@@ -69,6 +69,19 @@ function stripHtmlTags(html: string): string {
     .slice(0, 8000);
 }
 
+function normalizePlainTextEmail(text: string): string {
+  return text
+    .replace(/\r\n?/g, "\n")
+    .replace(/={12,}/g, "\n\n---\n\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/([.!?])\s+(This message was sent|If you don't want|To help keep|Follow the link|Community Support|You can unsubscribe)/gi, "$1\n\n$2")
+    .replace(/\s+(Hi\s+[^,\n]+,)/i, "\n\n$1")
+    .replace(/\s+(Thanks,\s*[^\n]+)$/i, "\n\n$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .slice(0, 12000);
+}
+
 function normalizeContentId(value: string): string {
   return value.trim().replace(/^</, "").replace(/>$/, "").replace(/^cid:/i, "").toLowerCase();
 }
@@ -141,7 +154,7 @@ async function extractMessageContent(payload: any, gmail: any, messageId: string
     html = html.replace(new RegExp(`cid:${escapedCid}`, "gi"), `data:${image.mimeType};base64,${image.data}`);
   }
 
-  const text = textParts.join("\n\n").trim() || stripHtmlTags(html);
+  const text = normalizePlainTextEmail(textParts.join("\n\n").trim() || stripHtmlTags(html));
   return { html, text };
 }
 
