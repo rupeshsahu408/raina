@@ -12,6 +12,8 @@ const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 type Folder = "inbox" | "sent" | "spam" | "drafts" | "starred" | "trash" | "scheduled" | "archive";
 type FilterType = "all" | "read" | "unread" | "starred" | "unstarred";
+type CommandView = "inbox" | "mission";
+type PriorityCategory = "Urgent" | "High-Value Lead" | "Payment" | "Support Issue" | "Risk Detected" | "Needs Reply" | "Low Priority";
 
 interface LocalDraft {
   id: string;
@@ -44,6 +46,12 @@ interface EmailItem {
   snippet: string;
   summary: string;
   intent: string;
+  priorityCategory: PriorityCategory;
+  priorityScore: number;
+  priorityReason: string;
+  suggestedAction: string;
+  riskLevel: "High" | "Medium" | "Low";
+  bestTone: string;
   isUnread: boolean;
   isStarred: boolean;
 }
@@ -58,6 +66,17 @@ interface ThreadMessage {
   body: string;
   bodyText?: string;
   bodyHtml?: string;
+}
+
+interface ActionPlan {
+  summary: string;
+  intent: string;
+  priority: string;
+  recommendedAction: string;
+  risk: string;
+  bestTone: string;
+  suggestedNextStep: string;
+  source?: "ai" | "rules";
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -248,6 +267,59 @@ function parseSmartReplies(raw: string): string[] {
     .slice(0, 5);
 }
 
+const PRIORITY_ORDER: PriorityCategory[] = ["Urgent", "Risk Detected", "High-Value Lead", "Payment", "Support Issue", "Needs Reply", "Low Priority"];
+
+function priorityStyle(category?: PriorityCategory) {
+  const styles: Record<PriorityCategory, { badge: string; dot: string; panel: string; text: string }> = {
+    Urgent: { badge: "bg-red-50 text-red-700 border-red-200", dot: "bg-red-500", panel: "bg-red-50 border-red-100", text: "text-red-700" },
+    "Risk Detected": { badge: "bg-rose-50 text-rose-700 border-rose-200", dot: "bg-rose-500", panel: "bg-rose-50 border-rose-100", text: "text-rose-700" },
+    "High-Value Lead": { badge: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", panel: "bg-emerald-50 border-emerald-100", text: "text-emerald-700" },
+    Payment: { badge: "bg-amber-50 text-amber-700 border-amber-200", dot: "bg-amber-500", panel: "bg-amber-50 border-amber-100", text: "text-amber-700" },
+    "Support Issue": { badge: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-500", panel: "bg-blue-50 border-blue-100", text: "text-blue-700" },
+    "Needs Reply": { badge: "bg-indigo-50 text-indigo-700 border-indigo-200", dot: "bg-indigo-500", panel: "bg-indigo-50 border-indigo-100", text: "text-indigo-700" },
+    "Low Priority": { badge: "bg-gray-50 text-gray-500 border-gray-200", dot: "bg-gray-300", panel: "bg-gray-50 border-gray-100", text: "text-gray-500" },
+  };
+  return styles[category ?? "Low Priority"];
+}
+
+function priorityRank(email: EmailItem): number {
+  const base = PRIORITY_ORDER.indexOf(email.priorityCategory);
+  return (base === -1 ? 99 : base) * 100 - (email.priorityScore || 0);
+}
+
+function missionHeadline(emails: EmailItem[]) {
+  const urgent = emails.filter(e => ["Urgent", "Risk Detected"].includes(e.priorityCategory)).length;
+  const leads = emails.filter(e => e.priorityCategory === "High-Value Lead").length;
+  const payments = emails.filter(e => e.priorityCategory === "Payment").length;
+  const needsReply = emails.filter(e => e.priorityCategory === "Needs Reply" || e.isUnread).length;
+  if (!emails.length) return "No priority mission yet.";
+  if (urgent) return `${urgent} urgent conversation${urgent > 1 ? "s" : ""} need attention first.`;
+  if (leads) return `${leads} lead${leads > 1 ? "s" : ""} may turn into revenue today.`;
+  if (payments) return `${payments} payment conversation${payments > 1 ? "s" : ""} should be checked.`;
+  return `${needsReply || emails.length} conversation${(needsReply || emails.length) > 1 ? "s" : ""} are worth clearing today.`;
+}
+
+function normalizeEmailItem(item: Partial<EmailItem> & { id: string; threadId: string; subject: string; from: string; date: string; snippet: string }): EmailItem {
+  return {
+    id: item.id,
+    threadId: item.threadId,
+    subject: item.subject,
+    from: item.from,
+    date: item.date,
+    snippet: item.snippet,
+    summary: item.summary ?? item.snippet.slice(0, 120),
+    intent: item.intent ?? "FYI",
+    priorityCategory: item.priorityCategory ?? "Low Priority",
+    priorityScore: item.priorityScore ?? 38,
+    priorityReason: item.priorityReason ?? "No strong action signal was detected.",
+    suggestedAction: item.suggestedAction ?? "Review after higher-priority conversations.",
+    riskLevel: item.riskLevel ?? "Low",
+    bestTone: item.bestTone ?? "Neutral",
+    isUnread: item.isUnread ?? false,
+    isStarred: item.isStarred ?? false,
+  };
+}
+
 function emailFrameDocument(message: ThreadMessage, fallback: string): string {
   const content = message.bodyHtml?.trim() || plainTextToHtml(message.bodyText || message.body || fallback);
   return `<!doctype html>
@@ -303,6 +375,8 @@ export default function InboxDashboard() {
   const [search, setSearch] = useState("");
   const [aiSearch, setAiSearch] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [commandView, setCommandView] = useState<CommandView>("inbox");
+  const [priorityFilter, setPriorityFilter] = useState<PriorityCategory | "All">("All");
 
   const [emails, setEmails] = useState<EmailItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -320,6 +394,9 @@ export default function InboxDashboard() {
   const [smartReplies, setSmartReplies] = useState<string[]>([]);
   const [smartRepliesLoading, setSmartRepliesLoading] = useState(false);
   const [smartRepliesError, setSmartRepliesError] = useState("");
+  const [actionPlan, setActionPlan] = useState<ActionPlan | null>(null);
+  const [actionPlanLoading, setActionPlanLoading] = useState(false);
+  const [actionPlanError, setActionPlanError] = useState("");
 
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyTone, setReplyTone] = useState("Formal");
@@ -405,6 +482,41 @@ export default function InboxDashboard() {
     }
   }
 
+  async function loadActionPlan(email: EmailItem, messages: ThreadMessage[], token: string, requestId: number) {
+    if (!messages.length) return;
+    setActionPlanLoading(true);
+    setActionPlanError("");
+    setActionPlan(null);
+    const threadText = messages.map(m => `From: ${m.from}\nDate: ${m.date}\n${m.bodyText || m.body}`).join("\n\n---\n\n");
+    try {
+      const res = await fetch(`${API}/inbox/action-plan`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: email.subject,
+          from: email.from,
+          snippet: email.snippet,
+          intent: email.intent,
+          priorityCategory: email.priorityCategory,
+          thread: threadText,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to build action plan");
+      if (activeThreadRequestRef.current === requestId) {
+        setActionPlan(data.actionPlan ?? null);
+      }
+    } catch (e: any) {
+      if (activeThreadRequestRef.current === requestId) {
+        setActionPlanError(e.message || "Could not build the action plan.");
+      }
+    } finally {
+      if (activeThreadRequestRef.current === requestId) {
+        setActionPlanLoading(false);
+      }
+    }
+  }
+
   const loadLocalDrafts = useCallback(() => {
     try {
       const raw = localStorage.getItem("plyndrox_drafts");
@@ -441,8 +553,9 @@ export default function InboxDashboard() {
       if (res.status === 401 || res.status === 403) { router.replace("/inbox/connect"); return; }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to load");
-      if (pageToken) setEmails(prev => [...prev, ...(data.messages ?? [])]);
-      else setEmails(data.messages ?? []);
+      const loaded = (data.messages ?? []).map(normalizeEmailItem);
+      if (pageToken) setEmails(prev => [...prev, ...loaded]);
+      else setEmails(loaded);
       setNextPageToken(data.nextPageToken ?? null);
     } catch (e: any) {
       setError(e.message);
@@ -474,6 +587,9 @@ export default function InboxDashboard() {
     setSmartReplies([]);
     setSmartRepliesError("");
     setSmartRepliesLoading(false);
+    setActionPlan(null);
+    setActionPlanError("");
+    setActionPlanLoading(false);
     setGeneratedReply("");
     setEditedReply("");
     setSendSuccess(false);
@@ -490,6 +606,7 @@ export default function InboxDashboard() {
       if (res.ok && activeThreadRequestRef.current === requestId) {
         const messages = data.messages ?? [];
         setThreadMessages(messages);
+        void loadActionPlan(email, messages, token, requestId);
         void generateSmartReplySuggestions(email, messages, token, requestId);
       }
     } catch {}
@@ -713,10 +830,21 @@ export default function InboxDashboard() {
     setSelectedEmail(null);
     setMobileView("list");
     setFilter("all");
+    setPriorityFilter("All");
+    setCommandView("inbox");
     setSearch("");
   }
 
-  const filteredEmails = emails.filter(em => {
+  function openMission() {
+    setCommandView("mission");
+    setPriorityFilter("All");
+    setFilter("all");
+    setSelectedEmail(null);
+    setMobileView("list");
+    if (folder !== "inbox") setFolder("inbox");
+  }
+
+  const searchedEmails = emails.filter(em => {
     if (search && !em.subject.toLowerCase().includes(search.toLowerCase()) && !em.from.toLowerCase().includes(search.toLowerCase())) return false;
     if (filter === "read" && em.isUnread) return false;
     if (filter === "unread" && !em.isUnread) return false;
@@ -724,6 +852,17 @@ export default function InboxDashboard() {
     if (filter === "unstarred" && em.isStarred) return false;
     return true;
   });
+  const priorityFilteredEmails = searchedEmails
+    .filter(em => priorityFilter === "All" || em.priorityCategory === priorityFilter)
+    .sort((a, b) => priorityRank(a) - priorityRank(b));
+  const missionEmails = searchedEmails
+    .filter(em => em.priorityCategory !== "Low Priority" || em.isUnread)
+    .sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0))
+    .slice(0, 8);
+  const displayedEmails = commandView === "mission" ? missionEmails : priorityFilteredEmails;
+  const missionCount = missionEmails.length;
+  const highPriorityCount = searchedEmails.filter(em => ["Urgent", "Risk Detected", "High-Value Lead"].includes(em.priorityCategory)).length;
+  const lowPriorityCount = searchedEmails.filter(em => em.priorityCategory === "Low Priority").length;
 
   const TONES = ["Formal", "Casual", "Sales", "Empathetic", "Short"];
   const FILTER_LABELS: Record<FilterType, string> = { all: "All", read: "Read", unread: "Unread", starred: "Starred", unstarred: "Unstarred" };
@@ -737,6 +876,7 @@ export default function InboxDashboard() {
   }
 
   const folderLabel = NAV_ITEMS.find(n => n.id === folder)?.label ?? "Inbox";
+  const selectedPriorityStyle = selectedEmail ? priorityStyle(selectedEmail.priorityCategory) : priorityStyle();
 
   return (
     <div className="flex h-screen overflow-hidden bg-white text-gray-800 font-sans">
@@ -758,6 +898,32 @@ export default function InboxDashboard() {
           >
             <ComposeIcon />
             + New message
+          </button>
+        </div>
+
+        <div className="px-3 mb-4">
+          <button
+            onClick={openMission}
+            className={`w-full overflow-hidden rounded-2xl border p-3 text-left transition ${
+              commandView === "mission"
+                ? "border-[#8c82ff] bg-white text-[#14112a]"
+                : "border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.1]"
+            }`}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className={`flex h-7 w-7 items-center justify-center rounded-xl ${commandView === "mission" ? "bg-[#5c4ff6] text-white" : "bg-[#5c4ff6]/30 text-[#b9b4ff]"}`}>
+                  <SparkleIcon />
+                </span>
+                <span className="text-sm font-black">Today’s Mission</span>
+              </div>
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${commandView === "mission" ? "bg-[#14112a] text-white" : "bg-white/10 text-white"}`}>
+                {missionCount}
+              </span>
+            </div>
+            <p className={`mt-2 text-[11px] leading-4 ${commandView === "mission" ? "text-gray-600" : "text-zinc-400"}`}>
+              A focused action list pulled from your real Gmail priorities.
+            </p>
           </button>
         </div>
 
@@ -842,7 +1008,33 @@ export default function InboxDashboard() {
           <div className={`${selectedEmail ? "hidden md:flex" : "flex"} md:flex w-full md:w-[320px] lg:w-[360px] shrink-0 flex-col border-r border-gray-200 bg-white overflow-hidden`}>
             {/* List header */}
             <div className="px-4 pt-3 pb-2 border-b border-gray-100">
-              <h2 className="text-base font-bold text-gray-800 mb-2">{folderLabel}</h2>
+              <div className="mb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-base font-bold text-gray-800">{commandView === "mission" ? "Today’s Mission" : folderLabel}</h2>
+                  {folder === "inbox" && (
+                    <span className="rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-indigo-700">AI Priority</span>
+                  )}
+                </div>
+                {folder === "inbox" && (
+                  <div className={`mt-3 rounded-2xl border p-3 ${commandView === "mission" ? "border-indigo-100 bg-[#f6f4ff]" : "border-gray-100 bg-gray-50"}`}>
+                    <p className="text-xs font-bold text-gray-900">{missionHeadline(missionEmails)}</p>
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      <div className="rounded-xl bg-white px-2 py-2 text-center shadow-sm">
+                        <p className="text-base font-black text-gray-900">{missionCount}</p>
+                        <p className="text-[10px] text-gray-400">Mission</p>
+                      </div>
+                      <div className="rounded-xl bg-white px-2 py-2 text-center shadow-sm">
+                        <p className="text-base font-black text-red-600">{highPriorityCount}</p>
+                        <p className="text-[10px] text-gray-400">Hot</p>
+                      </div>
+                      <div className="rounded-xl bg-white px-2 py-2 text-center shadow-sm">
+                        <p className="text-base font-black text-gray-500">{lowPriorityCount}</p>
+                        <p className="text-[10px] text-gray-400">Can wait</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" className="accent-indigo-600 w-4 h-4" />
 
@@ -879,6 +1071,25 @@ export default function InboxDashboard() {
                   Refresh
                 </button>
               </div>
+              {folder === "inbox" && commandView !== "mission" && (
+                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                  {(["All", ...PRIORITY_ORDER] as (PriorityCategory | "All")[]).map(category => {
+                    const selected = priorityFilter === category;
+                    const count = category === "All" ? searchedEmails.length : searchedEmails.filter(em => em.priorityCategory === category).length;
+                    return (
+                      <button
+                        key={category}
+                        onClick={() => setPriorityFilter(category)}
+                        className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold transition ${
+                          selected ? "border-[#5c4ff6] bg-[#5c4ff6] text-white" : "border-gray-200 bg-white text-gray-600 hover:border-indigo-200 hover:bg-indigo-50"
+                        }`}
+                      >
+                        {category} <span className={selected ? "text-white/75" : "text-gray-400"}>{count}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Email list */}
@@ -983,13 +1194,16 @@ export default function InboxDashboard() {
                     <p className="text-sm text-red-500 mb-3">{error}</p>
                     <button onClick={() => loadEmails(folder)} className="text-sm text-indigo-600 underline">Retry</button>
                   </div>
-                ) : filteredEmails.length === 0 && !(folder === "drafts" && localDrafts.length > 0) ? (
+                ) : displayedEmails.length === 0 && !(folder === "drafts" && localDrafts.length > 0) ? (
                   <div className="p-8 text-center">
-                    <p className="text-sm text-gray-400">No emails found</p>
+                    <p className="text-sm text-gray-400">{commandView === "mission" ? "No mission items yet" : "No emails found"}</p>
+                    {commandView === "mission" && <p className="mt-1 text-xs text-gray-300">Refresh your inbox or clear the search filter.</p>}
                   </div>
                 ) : (
                   <>
-                    {filteredEmails.map(email => (
+                    {displayedEmails.map(email => {
+                      const style = priorityStyle(email.priorityCategory);
+                      return (
                       <div
                         key={email.id}
                         onClick={() => openEmail(email)}
@@ -1053,13 +1267,23 @@ export default function InboxDashboard() {
                               )}
                             </div>
                           </div>
+                          <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black ${style.badge}`}>
+                              <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                              {email.priorityCategory}
+                            </span>
+                            <span className="rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-semibold text-gray-500">{email.intent}</span>
+                          </div>
                           <p className={`text-xs truncate mb-0.5 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>
                             {email.subject}
                           </p>
                           <p className="text-[11px] text-gray-400 truncate">{email.snippet}</p>
+                          {commandView === "mission" && (
+                            <p className="mt-1 rounded-lg bg-white/80 px-2 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-gray-100">{email.suggestedAction}</p>
+                          )}
                         </div>
                       </div>
-                    ))}
+                    );})}
                     {nextPageToken && (
                       <div className="p-4">
                         <button
@@ -1102,13 +1326,13 @@ export default function InboxDashboard() {
                   <div className="flex items-center gap-1.5 ml-auto">
                     <button
                       onClick={e => handleArchive(selectedEmail, e)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition"
+                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition"
                     >
                       <ArchiveIcon /> Archive
                     </button>
                     <button
                       onClick={e => handleTrash(selectedEmail, e)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-red-500 hover:bg-red-50 hover:border-red-200 transition"
+                      className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-red-500 hover:bg-red-50 hover:border-red-200 transition"
                     >
                       <TrashIcon /> Trash
                     </button>
@@ -1138,6 +1362,62 @@ export default function InboxDashboard() {
                     </div>
                   ) : (
                     <>
+                      <div className={`mb-5 rounded-3xl border p-4 ${selectedPriorityStyle.panel}`}>
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                              <span className={`inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1 text-xs font-black ${selectedPriorityStyle.badge}`}>
+                                <span className={`h-2 w-2 rounded-full ${selectedPriorityStyle.dot}`} />
+                                {selectedEmail.priorityCategory}
+                              </span>
+                              <span className="rounded-full border border-white bg-white px-3 py-1 text-xs font-bold text-gray-600">{selectedEmail.priorityScore}/100 priority</span>
+                              <span className="rounded-full border border-white bg-white px-3 py-1 text-xs font-bold text-gray-600">{selectedEmail.bestTone}</span>
+                            </div>
+                            <h3 className="text-sm font-black text-gray-900">AI Action Plan</h3>
+                            <p className="mt-1 text-xs leading-5 text-gray-600">{selectedEmail.priorityReason}</p>
+                          </div>
+                          <button
+                            onClick={() => smartReplies[0] ? openSmartReplyInCompose(smartReplies[0]) : setReplyOpen(true)}
+                            disabled={!selectedEmail}
+                            className="shrink-0 rounded-full bg-[#14112a] px-4 py-2 text-xs font-black text-white transition hover:bg-[#25204a]"
+                          >
+                            {smartReplies[0] ? "Use best reply" : "Draft reply"}
+                          </button>
+                        </div>
+
+                        {actionPlanLoading ? (
+                          <div className="mt-4 grid gap-3 md:grid-cols-2">
+                            {[1,2,3,4].map(i => <div key={i} className="h-16 rounded-2xl bg-white/70 animate-pulse" />)}
+                          </div>
+                        ) : actionPlanError ? (
+                          <p className="mt-4 rounded-2xl bg-white px-3 py-2 text-xs text-red-500">{actionPlanError}</p>
+                        ) : actionPlan ? (
+                          <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                            <div className="rounded-2xl bg-white p-3 shadow-sm">
+                              <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Summary</p>
+                              <p className="mt-1 text-sm leading-6 text-gray-700">{actionPlan.summary}</p>
+                            </div>
+                            <div className="rounded-2xl bg-white p-3 shadow-sm">
+                              <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Recommended action</p>
+                              <p className="mt-1 text-sm leading-6 text-gray-700">{actionPlan.recommendedAction}</p>
+                            </div>
+                            <div className="rounded-2xl bg-white p-3 shadow-sm">
+                              <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Risk if ignored</p>
+                              <p className="mt-1 text-sm leading-6 text-gray-700">{actionPlan.risk}</p>
+                            </div>
+                            <div className="rounded-2xl bg-white p-3 shadow-sm">
+                              <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Next step</p>
+                              <p className="mt-1 text-sm leading-6 text-gray-700">{actionPlan.suggestedNextStep}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="mt-4 rounded-2xl bg-white p-3 shadow-sm">
+                            <p className="text-[10px] font-black uppercase tracking-wide text-gray-400">Suggested action</p>
+                            <p className="mt-1 text-sm leading-6 text-gray-700">{selectedEmail.suggestedAction}</p>
+                          </div>
+                        )}
+                      </div>
+
                       {threadMessages.map((msg, idx) => {
                         const name = senderName(msg.from);
                         const email = senderEmail(msg.from);

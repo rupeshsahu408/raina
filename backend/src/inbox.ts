@@ -162,6 +162,28 @@ async function extractMessageContent(payload: any, gmail: any, messageId: string
 }
 
 type IntentLabel = "Lead" | "Support" | "Payment" | "Meeting" | "Spam" | "FYI";
+type PriorityCategory = "Urgent" | "High-Value Lead" | "Payment" | "Support Issue" | "Risk Detected" | "Needs Reply" | "Low Priority";
+type RiskLevel = "High" | "Medium" | "Low";
+
+interface PrioritySignal {
+  priorityCategory: PriorityCategory;
+  priorityScore: number;
+  priorityReason: string;
+  suggestedAction: string;
+  riskLevel: RiskLevel;
+  bestTone: string;
+}
+
+interface ActionPlan {
+  summary: string;
+  intent: string;
+  priority: string;
+  recommendedAction: string;
+  risk: string;
+  bestTone: string;
+  suggestedNextStep: string;
+  source: "ai" | "rules";
+}
 
 function detectIntent(subject: string, snippet: string): IntentLabel {
   const text = `${subject} ${snippet}`.toLowerCase();
@@ -171,6 +193,171 @@ function detectIntent(subject: string, snippet: string): IntentLabel {
   if (/pricing|quote|proposal|interested|demo|trial|offer|discount|buy|purchase/i.test(text)) return "Lead";
   if (/unsubscribe|newsletter|promotion|sale|% off|deal|offer/i.test(text)) return "Spam";
   return "FYI";
+}
+
+function inferPriority(subject: string, snippet: string, intent: IntentLabel, isUnread = false): PrioritySignal {
+  const text = `${subject} ${snippet}`.toLowerCase();
+  let signal: PrioritySignal;
+  if (/refund|cancel|cancellation|angry|upset|legal|lawsuit|chargeback|security|breach|escalat|complaint|failed|blocked/i.test(text)) {
+    signal = {
+      priorityCategory: "Risk Detected",
+      priorityScore: 96,
+      priorityReason: "Potential escalation, financial, or trust risk detected.",
+      suggestedAction: "Open now and respond with a clear resolution path.",
+      riskLevel: "High",
+      bestTone: "Empathetic + decisive",
+    };
+  } else if (/urgent|asap|immediately|today|deadline|final notice|overdue|last chance|time sensitive/i.test(text)) {
+    signal = {
+      priorityCategory: "Urgent",
+      priorityScore: 92,
+      priorityReason: "Time-sensitive wording suggests this needs attention today.",
+      suggestedAction: "Reply or archive after deciding the next step.",
+      riskLevel: "High",
+      bestTone: "Direct + professional",
+    };
+  } else if (intent === "Lead") {
+    signal = {
+      priorityCategory: "High-Value Lead",
+      priorityScore: 86,
+      priorityReason: "Buying intent or pricing interest was detected.",
+      suggestedAction: "Reply quickly with pricing, a qualifying question, or a call option.",
+      riskLevel: "Medium",
+      bestTone: "Helpful + sales-focused",
+    };
+  } else if (intent === "Payment") {
+    signal = {
+      priorityCategory: "Payment",
+      priorityScore: 82,
+      priorityReason: "Payment, invoice, or billing language was detected.",
+      suggestedAction: "Confirm status, share payment details, or resolve the billing question.",
+      riskLevel: "Medium",
+      bestTone: "Clear + concise",
+    };
+  } else if (intent === "Support") {
+    signal = {
+      priorityCategory: "Support Issue",
+      priorityScore: 78,
+      priorityReason: "The sender appears to need help with a problem or issue.",
+      suggestedAction: "Acknowledge the issue and give the next troubleshooting step.",
+      riskLevel: "Medium",
+      bestTone: "Empathetic + practical",
+    };
+  } else if (intent === "Meeting" || /\?|reply|respond|confirm|let me know|thoughts|available|can you|could you|please/i.test(text)) {
+    signal = {
+      priorityCategory: "Needs Reply",
+      priorityScore: 70,
+      priorityReason: "The message likely expects a response or decision.",
+      suggestedAction: "Send a short reply or confirm the requested detail.",
+      riskLevel: "Low",
+      bestTone: "Professional + brief",
+    };
+  } else if (intent === "Spam") {
+    signal = {
+      priorityCategory: "Low Priority",
+      priorityScore: 18,
+      priorityReason: "Promotional or low-value language was detected.",
+      suggestedAction: "Review later, unsubscribe, archive, or ignore.",
+      riskLevel: "Low",
+      bestTone: "No reply needed",
+    };
+  } else {
+    signal = {
+      priorityCategory: "Low Priority",
+      priorityScore: 38,
+      priorityReason: "No strong action signal was detected.",
+      suggestedAction: "Review after higher-priority conversations.",
+      riskLevel: "Low",
+      bestTone: "Neutral",
+    };
+  }
+  return { ...signal, priorityScore: Math.min(100, signal.priorityScore + (isUnread ? 4 : 0)) };
+}
+
+function compactText(value: string, max = 220): string {
+  const cleaned = value.replace(/\s+/g, " ").trim();
+  return cleaned.length > max ? `${cleaned.slice(0, max - 1)}…` : cleaned;
+}
+
+function heuristicActionPlan(args: {
+  subject: string;
+  thread: string;
+  snippet?: string;
+  intent?: IntentLabel;
+  priorityCategory?: PriorityCategory;
+  prioritySignal?: PrioritySignal;
+}): ActionPlan {
+  const intent = args.intent ?? detectIntent(args.subject, args.snippet || args.thread.slice(0, 500));
+  const signal = args.prioritySignal ?? inferPriority(args.subject, args.snippet || args.thread.slice(0, 500), intent);
+  const summaryBase = compactText(args.thread || args.snippet || args.subject, 170);
+  const priority = signal.priorityScore >= 85 ? "High" : signal.priorityScore >= 60 ? "Medium" : "Low";
+  return {
+    summary: summaryBase || `Conversation about ${args.subject}.`,
+    intent,
+    priority,
+    recommendedAction: signal.suggestedAction,
+    risk: signal.riskLevel === "High" ? signal.priorityReason : signal.riskLevel === "Medium" ? "If delayed, this may slow down a business or customer outcome." : "Low immediate risk.",
+    bestTone: signal.bestTone,
+    suggestedNextStep: signal.priorityCategory === "Low Priority" ? "Archive or review later after high-priority mail." : "Open a reply draft and handle this before lower-priority messages.",
+    source: "rules",
+  };
+}
+
+function parseActionPlanJson(raw: string): Omit<ActionPlan, "source"> | null {
+  try {
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    const parsed = JSON.parse(match[0]);
+    const required = ["summary", "intent", "priority", "recommendedAction", "risk", "bestTone", "suggestedNextStep"];
+    if (!required.every(key => typeof parsed[key] === "string" && parsed[key].trim())) return null;
+    return {
+      summary: parsed.summary.trim(),
+      intent: parsed.intent.trim(),
+      priority: parsed.priority.trim(),
+      recommendedAction: parsed.recommendedAction.trim(),
+      risk: parsed.risk.trim(),
+      bestTone: parsed.bestTone.trim(),
+      suggestedNextStep: parsed.suggestedNextStep.trim(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function generateActionPlan(args: {
+  subject: string;
+  thread: string;
+  from?: string;
+  snippet?: string;
+  intent?: IntentLabel;
+  priorityCategory?: PriorityCategory;
+}): Promise<ActionPlan> {
+  const intent = args.intent ?? detectIntent(args.subject, args.snippet || args.thread.slice(0, 500));
+  const prioritySignal = inferPriority(args.subject, args.snippet || args.thread.slice(0, 500), intent);
+  const fallback = heuristicActionPlan({ ...args, intent, prioritySignal });
+  if (!NVIDIA_API_KEY) return fallback;
+  try {
+    const result = await callNvidiaChatCompletions({
+      apiKey: NVIDIA_API_KEY,
+      messages: [
+        {
+          role: "system",
+          content: "You are Plyndrox, an executive Gmail command-center assistant. Analyze the latest email thread and return ONLY valid JSON with these string keys: summary, intent, priority, recommendedAction, risk, bestTone, suggestedNextStep. Be specific, concise, and action-oriented. priority must be High, Medium, or Low.",
+        },
+        {
+          role: "user",
+          content: `Subject: ${args.subject}\nFrom: ${args.from ?? "Unknown"}\nDetected intent: ${intent}\nDetected priority category: ${prioritySignal.priorityCategory}\n\nThread:\n${args.thread.slice(0, 7000)}`,
+        },
+      ],
+      max_tokens: 420,
+      temperature: 0.25,
+    });
+    const parsed = parseActionPlanJson(result);
+    if (!parsed) return fallback;
+    return { ...parsed, source: "ai" };
+  } catch {
+    return fallback;
+  }
 }
 
 async function summarizeEmail(subject: string, body: string): Promise<string> {
@@ -346,6 +533,7 @@ inboxRouter.get("/messages", async (req, res) => {
           const isUnread = labelIds.includes("UNREAD");
           const isStarred = labelIds.includes("STARRED");
           const intent = detectIntent(subject, snippet);
+          const priority = inferPriority(subject, snippet, intent, isUnread);
           return {
             id: m.id,
             threadId,
@@ -355,6 +543,12 @@ inboxRouter.get("/messages", async (req, res) => {
             snippet,
             summary: snippet.slice(0, 120),
             intent,
+            priorityCategory: priority.priorityCategory,
+            priorityScore: priority.priorityScore,
+            priorityReason: priority.priorityReason,
+            suggestedAction: priority.suggestedAction,
+            riskLevel: priority.riskLevel,
+            bestTone: priority.bestTone,
             isUnread,
             isStarred,
           };
@@ -397,6 +591,29 @@ inboxRouter.get("/thread/:threadId", async (req, res) => {
     return res.json({ messages: threadMessages });
   } catch (err: any) {
     console.error("[inbox/thread]", err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /inbox/action-plan
+inboxRouter.post("/action-plan", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { subject, thread, from, snippet, intent, priorityCategory } = req.body ?? {};
+  if (!subject || !thread) return res.status(400).json({ error: "subject and thread are required" });
+  const safeIntent: IntentLabel | undefined = ["Lead", "Support", "Payment", "Meeting", "Spam", "FYI"].includes(intent) ? intent : undefined;
+  const safePriority: PriorityCategory | undefined = ["Urgent", "High-Value Lead", "Payment", "Support Issue", "Risk Detected", "Needs Reply", "Low Priority"].includes(priorityCategory) ? priorityCategory : undefined;
+  try {
+    const actionPlan = await generateActionPlan({
+      subject: String(subject),
+      thread: String(thread),
+      from: from ? String(from) : undefined,
+      snippet: snippet ? String(snippet) : undefined,
+      intent: safeIntent,
+      priorityCategory: safePriority,
+    });
+    return res.json({ actionPlan });
+  } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
 });
