@@ -638,6 +638,40 @@ inboxRouter.post("/reply/send", upload.array("attachments", 20), async (req, res
   }
 });
 
+// POST /inbox/trash/:messageId  — move to trash
+inboxRouter.post("/trash/:messageId", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { messageId } = req.params;
+  try {
+    const auth = await getAuthenticatedClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+    await gmail.users.messages.trash({ userId: "me", id: messageId });
+    return res.json({ success: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /inbox/archive/:messageId  — remove from inbox (archive)
+inboxRouter.post("/archive/:messageId", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { messageId } = req.params;
+  try {
+    const auth = await getAuthenticatedClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+    await gmail.users.messages.modify({
+      userId: "me",
+      id: messageId,
+      requestBody: { removeLabelIds: ["INBOX"] },
+    });
+    return res.json({ success: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /inbox/star/:messageId  — toggle star
 inboxRouter.post("/star/:messageId", express.json(), async (req, res) => {
   const uid = (req as any).user?.uid;

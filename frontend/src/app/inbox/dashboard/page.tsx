@@ -10,8 +10,30 @@ import ComposeModal from "@/components/ComposeModal";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-type Folder = "inbox" | "sent" | "spam" | "drafts" | "starred" | "trash";
+type Folder = "inbox" | "sent" | "spam" | "drafts" | "starred" | "trash" | "scheduled";
 type FilterType = "all" | "read" | "unread" | "starred" | "unstarred";
+
+interface LocalDraft {
+  id: string;
+  to: string[];
+  cc: string[];
+  bcc: string[];
+  subject: string;
+  bodyHtml: string;
+  attachments: { name: string; size: number; type: string }[];
+  savedAt: number;
+}
+
+interface ScheduledEmailItem {
+  id: string;
+  to: string[];
+  cc: string[];
+  bcc: string[];
+  subject: string;
+  bodyHtml: string;
+  scheduledAt: number;
+  attachments: { name: string; size: number; type: string }[];
+}
 
 interface EmailItem {
   id: string;
@@ -93,12 +115,13 @@ function ComposeIcon() {
 }
 
 const NAV_ITEMS: { id: Folder; label: string; icon: React.ReactNode }[] = [
-  { id: "inbox",   label: "Inbox",     icon: <InboxIcon /> },
-  { id: "spam",    label: "Spam",      icon: <SpamIcon /> },
-  { id: "drafts",  label: "Drafts",    icon: <DraftIcon /> },
-  { id: "sent",    label: "Sent",      icon: <SendIcon2 /> },
-  { id: "starred", label: "Starred",   icon: <StarIcon filled={false} /> },
-  { id: "trash",   label: "Trash",     icon: <TrashIcon /> },
+  { id: "inbox",     label: "Inbox",     icon: <InboxIcon /> },
+  { id: "sent",      label: "Sent",      icon: <SendIcon2 /> },
+  { id: "drafts",    label: "Drafts",    icon: <DraftIcon /> },
+  { id: "scheduled", label: "Scheduled", icon: <ScheduledIcon /> },
+  { id: "starred",   label: "Starred",   icon: <StarIcon filled={false} /> },
+  { id: "trash",     label: "Trash",     icon: <TrashIcon /> },
+  { id: "spam",      label: "Spam",      icon: <SpamIcon /> },
 ];
 
 function cleanAddressPart(value: string): string {
@@ -280,6 +303,13 @@ export default function InboxDashboard() {
 
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeSuccess, setComposeSuccess] = useState("");
+  const [composeInitialTo, setComposeInitialTo] = useState("");
+  const [composeInitialSubject, setComposeInitialSubject] = useState("");
+  const [composeInitialBody, setComposeInitialBody] = useState("");
+  const [composeDraftId, setComposeDraftId] = useState<string | undefined>();
+
+  const [localDrafts, setLocalDrafts] = useState<LocalDraft[]>([]);
+  const [scheduledEmails, setScheduledEmails] = useState<ScheduledEmailItem[]>([]);
 
   const [mobileView, setMobileView] = useState<"list" | "email">("list");
 
@@ -309,7 +339,31 @@ export default function InboxDashboard() {
     return t;
   }, [user]);
 
+  const loadLocalDrafts = useCallback(() => {
+    try {
+      const raw = localStorage.getItem("plyndrox_drafts");
+      const drafts: LocalDraft[] = raw ? JSON.parse(raw) : [];
+      setLocalDrafts(drafts);
+    } catch { setLocalDrafts([]); }
+  }, []);
+
+  const loadScheduled = useCallback(() => {
+    try {
+      const raw = localStorage.getItem("plyndrox_scheduled");
+      const items: ScheduledEmailItem[] = raw ? JSON.parse(raw) : [];
+      setScheduledEmails(items.sort((a, b) => a.scheduledAt - b.scheduledAt));
+    } catch { setScheduledEmails([]); }
+  }, []);
+
   const loadEmails = useCallback(async (fld = folder, pageToken?: string) => {
+    if (fld === "scheduled") {
+      setLoading(false);
+      loadScheduled();
+      return;
+    }
+    if (fld === "drafts") {
+      loadLocalDrafts();
+    }
     const token = await getToken();
     if (!token) return;
     if (pageToken) setLoadingMore(true);
@@ -330,7 +384,7 @@ export default function InboxDashboard() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [getToken, router, folder]);
+  }, [getToken, router, folder, loadLocalDrafts, loadScheduled]);
 
   useEffect(() => {
     if (user) loadEmails(folder);
@@ -445,16 +499,17 @@ export default function InboxDashboard() {
     const token = await getToken();
     const lastMsg = threadMessages[threadMessages.length - 1];
     try {
+      const formData = new FormData();
+      formData.append("to", senderEmail(selectedEmail.from));
+      formData.append("subject", selectedEmail.subject);
+      formData.append("body", editedReply);
+      formData.append("threadId", selectedEmail.threadId);
+      if (lastMsg?.id) formData.append("inReplyTo", lastMsg.id);
+
       const res = await fetch(`${API}/inbox/reply/send`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: senderEmail(selectedEmail.from),
-          subject: selectedEmail.subject,
-          body: editedReply,
-          threadId: selectedEmail.threadId,
-          inReplyTo: lastMsg?.id,
-        }),
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to send");
@@ -469,13 +524,71 @@ export default function InboxDashboard() {
     }
   }
 
+  async function handleTrash(email: EmailItem, e?: React.MouseEvent) {
+    e?.stopPropagation();
+    const token = await getToken();
+    setEmails(prev => prev.filter(em => em.id !== email.id));
+    if (selectedEmail?.id === email.id) { setSelectedEmail(null); setMobileView("list"); }
+    try {
+      await fetch(`${API}/inbox/trash/${email.id}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {}
+    if (folder === "trash") loadEmails("trash");
+  }
+
+  async function handleArchive(email: EmailItem, e?: React.MouseEvent) {
+    e?.stopPropagation();
+    const token = await getToken();
+    setEmails(prev => prev.filter(em => em.id !== email.id));
+    if (selectedEmail?.id === email.id) { setSelectedEmail(null); setMobileView("list"); }
+    try {
+      await fetch(`${API}/inbox/archive/${email.id}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {}
+  }
+
+  function deleteScheduled(id: string) {
+    try {
+      const items: ScheduledEmailItem[] = JSON.parse(localStorage.getItem("plyndrox_scheduled") || "[]");
+      const updated = items.filter(i => i.id !== id);
+      localStorage.setItem("plyndrox_scheduled", JSON.stringify(updated));
+      setScheduledEmails(updated.sort((a, b) => a.scheduledAt - b.scheduledAt));
+    } catch {}
+  }
+
+  function deleteLocalDraft(id: string) {
+    try {
+      const drafts: LocalDraft[] = JSON.parse(localStorage.getItem("plyndrox_drafts") || "[]");
+      const updated = drafts.filter(d => d.id !== id);
+      localStorage.setItem("plyndrox_drafts", JSON.stringify(updated));
+      setLocalDrafts(updated);
+    } catch {}
+  }
+
+  function openDraftInCompose(draft: LocalDraft) {
+    setComposeInitialTo(draft.to.join(", "));
+    setComposeInitialSubject(draft.subject);
+    setComposeInitialBody(draft.bodyHtml);
+    setComposeDraftId(draft.id);
+    setComposeOpen(true);
+  }
+
   function openCompose() {
+    setComposeInitialTo("");
+    setComposeInitialSubject("");
+    setComposeInitialBody("");
+    setComposeDraftId(undefined);
     setComposeOpen(true);
   }
 
   function handleComposeSent(fld?: string) {
     setComposeSuccess("Message sent through Gmail.");
-    if (fld) loadEmails(fld as any);
+    if (fld === "sent" || folder === "sent") loadEmails("sent");
+    else if (fld) loadEmails(fld as Folder);
     window.setTimeout(() => setComposeSuccess(""), 4500);
   }
 
@@ -669,85 +782,167 @@ export default function InboxDashboard() {
 
             {/* Email list */}
             <div className="flex-1 overflow-y-auto">
-              {loading ? (
-                <div className="p-4 space-y-2">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="flex items-center gap-3 py-2.5 animate-pulse">
-                      <div className="w-4 h-4 rounded bg-gray-100" />
-                      <div className="w-8 h-8 rounded-full bg-gray-100" />
-                      <div className="flex-1 space-y-1.5">
-                        <div className="h-3 bg-gray-100 rounded w-3/4" />
-                        <div className="h-2.5 bg-gray-50 rounded w-full" />
-                        <div className="h-2 bg-gray-50 rounded w-2/3" />
-                      </div>
+              {/* ── Scheduled folder ────────────────────────────────── */}
+              {folder === "scheduled" && (
+                scheduledEmails.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <div className="mx-auto mb-3 w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-400">
+                      <ScheduledIcon />
                     </div>
-                  ))}
-                </div>
-              ) : error ? (
-                <div className="p-6 text-center">
-                  <p className="text-sm text-red-500 mb-3">{error}</p>
-                  <button onClick={() => loadEmails(folder)} className="text-sm text-indigo-600 underline">Retry</button>
-                </div>
-              ) : filteredEmails.length === 0 ? (
-                <div className="p-8 text-center">
-                  <p className="text-sm text-gray-400">No emails found</p>
-                </div>
-              ) : (
-                <>
-                  {filteredEmails.map(email => (
-                    <button
-                      key={email.id}
-                      onClick={() => openEmail(email)}
-                      className={`w-full text-left flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 transition group relative ${
-                        selectedEmail?.id === email.id
-                          ? "bg-[#eeebff]"
-                          : email.isUnread
-                          ? "bg-white hover:bg-[#f8f7ff]"
-                          : "bg-white hover:bg-gray-50"
-                      }`}
-                    >
-                      {email.isUnread && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r bg-indigo-600" />
-                      )}
-                      <input type="checkbox" onClick={e => e.stopPropagation()} className="accent-indigo-600 mt-1 w-4 h-4 shrink-0" />
-                      <div
-                        className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-black mt-0.5"
-                        style={{ background: avatarColor(senderName(email.from)) }}
-                      >
-                        {senderInitial(email.from)}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1 mb-0.5">
-                          <span className={`text-sm truncate ${email.isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
-                            {senderName(email.from)}
-                          </span>
-                          <span className="text-[11px] text-gray-400 shrink-0">{formatDate(email.date)}</span>
+                    <p className="text-sm text-gray-400">No scheduled messages</p>
+                    <p className="text-xs text-gray-300 mt-1">Schedule a message using the compose window</p>
+                  </div>
+                ) : (
+                  scheduledEmails.map(item => (
+                    <div key={item.id} className="px-4 py-3 border-b border-gray-100 bg-white hover:bg-[#f8f7ff] transition group">
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-indigo-100 text-indigo-600 text-xs font-black mt-0.5">
+                          <ScheduledIcon />
                         </div>
-                        <p className={`text-xs truncate mb-0.5 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>
-                          {email.subject}
-                        </p>
-                        <p className="text-[11px] text-gray-400 truncate">{email.snippet}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1 mb-0.5">
+                            <span className="text-sm font-semibold text-gray-900 truncate">To: {item.to.join(", ")}</span>
+                            <span className="text-[11px] text-indigo-500 shrink-0 font-semibold">
+                              {new Date(item.scheduledAt).toLocaleDateString([], { month: "short", day: "numeric" })} {new Date(item.scheduledAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
+                          <p className="text-xs font-medium text-gray-700 truncate mb-0.5">{item.subject || "(no subject)"}</p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-[11px] text-gray-400 truncate" dangerouslySetInnerHTML={{ __html: item.bodyHtml.replace(/<[^>]+>/g, " ").slice(0, 80) }} />
+                            <button
+                              onClick={() => deleteScheduled(item.id)}
+                              className="ml-2 shrink-0 text-xs text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                          {item.attachments?.length > 0 && (
+                            <p className="text-[10px] text-gray-400 mt-0.5">📎 {item.attachments.length} attachment{item.attachments.length > 1 ? "s" : ""}</p>
+                          )}
+                        </div>
                       </div>
-                      <button
-                        onClick={e => toggleStar(email, e)}
-                        className="shrink-0 p-0.5 mt-0.5 text-gray-300 hover:text-yellow-400 transition opacity-0 group-hover:opacity-100"
-                      >
-                        <StarIcon filled={email.isStarred} />
-                      </button>
-                    </button>
-                  ))}
-                  {nextPageToken && (
-                    <div className="p-4">
-                      <button
-                        onClick={() => loadEmails(folder, nextPageToken)}
-                        disabled={loadingMore}
-                        className="w-full py-2.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition"
-                      >
-                        {loadingMore ? "Loading..." : "Load more"}
-                      </button>
                     </div>
+                  ))
+                )
+              )}
+
+              {/* ── Drafts folder — local drafts section ────────────── */}
+              {folder === "drafts" && localDrafts.length > 0 && (
+                <div>
+                  <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-gray-50 border-b border-gray-100">Local Drafts</p>
+                  {localDrafts.map(draft => (
+                    <div key={draft.id} className="px-4 py-3 border-b border-gray-100 bg-amber-50/40 hover:bg-amber-50 transition group">
+                      <div className="flex items-start gap-2.5">
+                        <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center bg-amber-100 text-amber-600 text-xs font-black mt-0.5">
+                          <DraftIcon />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1 mb-0.5">
+                            <span className="text-sm font-semibold text-gray-900 truncate">
+                              {draft.to.length ? `To: ${draft.to.join(", ")}` : "(no recipients)"}
+                            </span>
+                            <span className="text-[11px] text-gray-400 shrink-0">{formatDate(new Date(draft.savedAt).toISOString())}</span>
+                          </div>
+                          <p className="text-xs font-medium text-gray-700 truncate mb-0.5">{draft.subject || "(no subject)"}</p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-[11px] text-gray-400 truncate" dangerouslySetInnerHTML={{ __html: draft.bodyHtml.replace(/<[^>]+>/g, " ").slice(0, 80) }} />
+                            <div className="flex gap-2 ml-2 shrink-0 opacity-0 group-hover:opacity-100 transition">
+                              <button onClick={() => openDraftInCompose(draft)} className="text-xs text-indigo-600 hover:underline">Edit</button>
+                              <button onClick={() => deleteLocalDraft(draft.id)} className="text-xs text-red-400 hover:text-red-600">Delete</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {emails.length > 0 && (
+                    <p className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 bg-gray-50 border-b border-gray-100">Gmail Drafts</p>
                   )}
-                </>
+                </div>
+              )}
+
+              {/* ── Regular email list ──────────────────────────────── */}
+              {folder !== "scheduled" && (
+                loading ? (
+                  <div className="p-4 space-y-2">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div key={i} className="flex items-center gap-3 py-2.5 animate-pulse">
+                        <div className="w-4 h-4 rounded bg-gray-100" />
+                        <div className="w-8 h-8 rounded-full bg-gray-100" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="h-3 bg-gray-100 rounded w-3/4" />
+                          <div className="h-2.5 bg-gray-50 rounded w-full" />
+                          <div className="h-2 bg-gray-50 rounded w-2/3" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : error ? (
+                  <div className="p-6 text-center">
+                    <p className="text-sm text-red-500 mb-3">{error}</p>
+                    <button onClick={() => loadEmails(folder)} className="text-sm text-indigo-600 underline">Retry</button>
+                  </div>
+                ) : filteredEmails.length === 0 && !(folder === "drafts" && localDrafts.length > 0) ? (
+                  <div className="p-8 text-center">
+                    <p className="text-sm text-gray-400">No emails found</p>
+                  </div>
+                ) : (
+                  <>
+                    {filteredEmails.map(email => (
+                      <button
+                        key={email.id}
+                        onClick={() => openEmail(email)}
+                        className={`w-full text-left flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 transition group relative ${
+                          selectedEmail?.id === email.id
+                            ? "bg-[#eeebff]"
+                            : email.isUnread
+                            ? "bg-white hover:bg-[#f8f7ff]"
+                            : "bg-white hover:bg-gray-50"
+                        }`}
+                      >
+                        {email.isUnread && (
+                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r bg-indigo-600" />
+                        )}
+                        <input type="checkbox" onClick={e => e.stopPropagation()} className="accent-indigo-600 mt-1 w-4 h-4 shrink-0" />
+                        <div
+                          className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-black mt-0.5"
+                          style={{ background: avatarColor(senderName(email.from)) }}
+                        >
+                          {senderInitial(email.from)}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1 mb-0.5">
+                            <span className={`text-sm truncate ${email.isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
+                              {senderName(email.from)}
+                            </span>
+                            <span className="text-[11px] text-gray-400 shrink-0">{formatDate(email.date)}</span>
+                          </div>
+                          <p className={`text-xs truncate mb-0.5 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>
+                            {email.subject}
+                          </p>
+                          <p className="text-[11px] text-gray-400 truncate">{email.snippet}</p>
+                        </div>
+                        <button
+                          onClick={e => toggleStar(email, e)}
+                          className="shrink-0 p-0.5 mt-0.5 text-gray-300 hover:text-yellow-400 transition opacity-0 group-hover:opacity-100"
+                        >
+                          <StarIcon filled={email.isStarred} />
+                        </button>
+                      </button>
+                    ))}
+                    {nextPageToken && (
+                      <div className="p-4">
+                        <button
+                          onClick={() => loadEmails(folder, nextPageToken)}
+                          disabled={loadingMore}
+                          className="w-full py-2.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition"
+                        >
+                          {loadingMore ? "Loading..." : "Load more"}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )
               )}
             </div>
           </div>
@@ -775,10 +970,16 @@ export default function InboxDashboard() {
                   </button>
                   <h2 className="flex-1 font-bold text-gray-900 text-base truncate">{selectedEmail.subject}</h2>
                   <div className="flex items-center gap-1.5 ml-auto">
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition">
+                    <button
+                      onClick={e => handleArchive(selectedEmail, e)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition"
+                    >
                       <ArchiveIcon /> Archive
                     </button>
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition">
+                    <button
+                      onClick={e => handleTrash(selectedEmail, e)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-red-500 hover:bg-red-50 hover:border-red-200 transition"
+                    >
                       <TrashIcon /> Trash
                     </button>
                     <button
@@ -1032,8 +1233,12 @@ export default function InboxDashboard() {
         <ComposeModal
           user={user}
           apiBase={API}
-          onClose={() => setComposeOpen(false)}
+          onClose={() => { setComposeOpen(false); if (folder === "drafts") loadLocalDrafts(); if (folder === "scheduled") loadScheduled(); }}
           onSent={handleComposeSent}
+          initialTo={composeInitialTo || undefined}
+          initialSubject={composeInitialSubject || undefined}
+          initialBodyHtml={composeInitialBody || undefined}
+          draftId={composeDraftId}
         />
       )}
     </div>
