@@ -432,9 +432,15 @@ export default function InboxDashboard() {
   const [followUpSaved, setFollowUpSaved] = useState(false);
   const [followUpSaving, setFollowUpSaving] = useState(false);
 
+  const [newEmailsBanner, setNewEmailsBanner] = useState(0);
+  const [newEmailItems, setNewEmailItems] = useState<EmailItem[]>([]);
+
   const tokenRef = useRef("");
   const filterRef = useRef<HTMLDivElement>(null);
   const activeThreadRequestRef = useRef(0);
+  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const knownEmailIdsRef = useRef<Set<string>>(new Set());
+  const currentFolderRef = useRef<string>("inbox");
 
   useEffect(() => {
     let auth;
@@ -458,6 +464,59 @@ export default function InboxDashboard() {
     tokenRef.current = t;
     return t;
   }, [user]);
+
+  const pollForNewEmails = useCallback(async () => {
+    if (currentFolderRef.current !== "inbox") return;
+    const token = tokenRef.current;
+    if (!token) return;
+    try {
+      const url = `${API}/inbox/messages?maxResults=10&folder=inbox`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) return;
+      const data = await res.json();
+      const fetched: EmailItem[] = (data.messages ?? []).map(normalizeEmailItem);
+      const fresh = fetched.filter(e => !knownEmailIdsRef.current.has(e.id));
+      if (fresh.length > 0) {
+        fresh.forEach(e => knownEmailIdsRef.current.add(e.id));
+        setNewEmailItems(prev => {
+          const existingIds = new Set(prev.map(e => e.id));
+          return [...fresh.filter(e => !existingIds.has(e.id)), ...prev];
+        });
+        setNewEmailsBanner(prev => prev + fresh.length);
+      }
+    } catch {}
+  }, []);
+
+  const startPolling = useCallback(() => {
+    if (pollingIntervalRef.current) clearInterval(pollingIntervalRef.current);
+    pollingIntervalRef.current = setInterval(pollForNewEmails, 45000);
+  }, [pollForNewEmails]);
+
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user && folder === "inbox") {
+      startPolling();
+    } else {
+      stopPolling();
+    }
+    return () => stopPolling();
+  }, [user, folder, startPolling, stopPolling]);
+
+  function acceptNewEmails() {
+    setEmails(prev => {
+      const existingIds = new Set(prev.map(e => e.id));
+      const toAdd = newEmailItems.filter(e => !existingIds.has(e.id));
+      return [...toAdd, ...prev];
+    });
+    setNewEmailsBanner(0);
+    setNewEmailItems([]);
+  }
 
   async function generateSmartReplySuggestions(email: EmailItem, messages: ThreadMessage[], token: string, requestId: number) {
     if (!messages.length) return;
@@ -597,10 +656,16 @@ export default function InboxDashboard() {
     if (fld === "drafts") {
       loadLocalDrafts();
     }
+    currentFolderRef.current = fld;
     const token = await getToken();
     if (!token) return;
     if (pageToken) setLoadingMore(true);
-    else { setLoading(true); setEmails([]); }
+    else {
+      setLoading(true);
+      setEmails([]);
+      setNewEmailsBanner(0);
+      setNewEmailItems([]);
+    }
     setError("");
     try {
       const url = `${API}/inbox/messages?maxResults=25&folder=${fld}${pageToken ? `&pageToken=${pageToken}` : ""}`;
@@ -609,8 +674,14 @@ export default function InboxDashboard() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to load");
       const loaded = (data.messages ?? []).map(normalizeEmailItem);
-      if (pageToken) setEmails(prev => [...prev, ...loaded]);
-      else setEmails(loaded);
+      if (pageToken) {
+        setEmails(prev => [...prev, ...loaded]);
+      } else {
+        setEmails(loaded);
+        if (fld === "inbox") {
+          knownEmailIdsRef.current = new Set(loaded.map((e: EmailItem) => e.id));
+        }
+      }
       setNextPageToken(data.nextPageToken ?? null);
     } catch (e: any) {
       setError(e.message);
@@ -885,6 +956,7 @@ export default function InboxDashboard() {
   }
 
   function switchFolder(f: Folder) {
+    currentFolderRef.current = f;
     setFolder(f);
     setSelectedEmail(null);
     setMobileView("list");
@@ -892,6 +964,8 @@ export default function InboxDashboard() {
     setPriorityFilter("All");
     setCommandView("inbox");
     setSearch("");
+    setNewEmailsBanner(0);
+    setNewEmailItems([]);
   }
 
   function openMission() {
@@ -1157,6 +1231,17 @@ export default function InboxDashboard() {
 
             {/* Email list */}
             <div className="flex-1 overflow-y-auto">
+              {/* ── New emails banner ───────────────────────────────── */}
+              {newEmailsBanner > 0 && folder === "inbox" && (
+                <button
+                  onClick={acceptNewEmails}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#5c4ff6] text-white text-xs font-black hover:bg-[#4f43e0] transition animate-pulse"
+                >
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14"/><path d="m19 12-7-7-7 7"/></svg>
+                  {newEmailsBanner} new email{newEmailsBanner > 1 ? "s" : ""} — click to show
+                </button>
+              )}
+
               {/* ── Scheduled folder ────────────────────────────────── */}
               {folder === "scheduled" && (
                 scheduledEmails.length === 0 ? (
