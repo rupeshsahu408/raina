@@ -1,8 +1,11 @@
 import express from "express";
+import multer from "multer";
 import { google } from "googleapis";
 import { connectMongo } from "./db";
 import { InboxToken } from "./models/InboxToken";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
 
 export const inboxRouter = express.Router();
 export const inboxPublicRouter = express.Router();
@@ -438,19 +441,26 @@ function foldBase64(b64: string): string {
   return (b64.match(/.{1,76}/g) ?? [b64]).join("\r\n");
 }
 
+interface EmailAttachment {
+  filename: string;
+  contentType: string;
+  data: Buffer;
+}
+
 /**
  * Build a complete RFC-2822 / MIME email that Gmail API can send.
- * Uses multipart/alternative so recipients get both plain-text and HTML.
+ * When attachments are present, wraps content in multipart/mixed.
+ * Otherwise uses multipart/alternative for plain-text + HTML.
  */
 function buildEmail(opts: {
   to: string; cc?: string; bcc?: string; subject: string;
   bodyHtml: string; inReplyTo?: string;
+  attachments?: EmailAttachment[];
 }): string {
-  const { to, cc, bcc, subject, bodyHtml, inReplyTo } = opts;
+  const { to, cc, bcc, subject, bodyHtml, inReplyTo, attachments = [] } = opts;
 
   const isHtml = /<[a-zA-Z][^>]*>/.test(bodyHtml);
 
-  // Wrap body in a properly styled HTML document
   const fullHtml = isHtml
     ? `<!DOCTYPE html>
 <html>
@@ -482,11 +492,75 @@ function buildEmail(opts: {
 
   const plainText = htmlToPlain(bodyHtml);
 
-  // Base64-encode each MIME part (safest, most compatible encoding)
   const plainB64 = foldBase64(Buffer.from(plainText, "utf8").toString("base64"));
   const htmlB64  = foldBase64(Buffer.from(fullHtml, "utf8").toString("base64"));
 
-  const boundary = `plyndrox_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  const altBoundary = `plyndrox_alt_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+  const altPart = [
+    `Content-Type: multipart/alternative; boundary="${altBoundary}"`,
+    ``,
+    `--${altBoundary}`,
+    `Content-Type: text/plain; charset="UTF-8"`,
+    `Content-Transfer-Encoding: base64`,
+    ``,
+    plainB64,
+    ``,
+    `--${altBoundary}`,
+    `Content-Type: text/html; charset="UTF-8"`,
+    `Content-Transfer-Encoding: base64`,
+    ``,
+    htmlB64,
+    ``,
+    `--${altBoundary}--`,
+  ].join("\r\n");
+
+  let bodySection: string;
+  let topContentType: string;
+
+  if (attachments.length > 0) {
+    const mixedBoundary = `plyndrox_mix_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+    topContentType = `multipart/mixed; boundary="${mixedBoundary}"`;
+
+    const attachmentParts = attachments.map(att => {
+      const attB64 = foldBase64(att.data.toString("base64"));
+      const safeName = encodeSubject(att.filename);
+      return [
+        `--${mixedBoundary}`,
+        `Content-Type: ${att.contentType}; name="${safeName}"`,
+        `Content-Transfer-Encoding: base64`,
+        `Content-Disposition: attachment; filename="${safeName}"`,
+        ``,
+        attB64,
+      ].join("\r\n");
+    }).join("\r\n\r\n");
+
+    bodySection = [
+      `--${mixedBoundary}`,
+      altPart,
+      ``,
+      attachmentParts,
+      ``,
+      `--${mixedBoundary}--`,
+    ].join("\r\n");
+  } else {
+    topContentType = `multipart/alternative; boundary="${altBoundary}"`;
+    bodySection = [
+      `--${altBoundary}`,
+      `Content-Type: text/plain; charset="UTF-8"`,
+      `Content-Transfer-Encoding: base64`,
+      ``,
+      plainB64,
+      ``,
+      `--${altBoundary}`,
+      `Content-Type: text/html; charset="UTF-8"`,
+      `Content-Transfer-Encoding: base64`,
+      ``,
+      htmlB64,
+      ``,
+      `--${altBoundary}--`,
+    ].join("\r\n");
+  }
 
   const headers = [
     `To: ${to}`,
@@ -494,45 +568,43 @@ function buildEmail(opts: {
     bcc ? `Bcc: ${bcc}` : "",
     `Subject: ${encodeSubject(subject)}`,
     `MIME-Version: 1.0`,
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    `Content-Type: ${topContentType}`,
     inReplyTo ? `In-Reply-To: <${inReplyTo}>` : "",
     inReplyTo ? `References: <${inReplyTo}>` : "",
   ].filter(Boolean).join("\r\n");
 
-  const body = [
-    `--${boundary}`,
-    `Content-Type: text/plain; charset="UTF-8"`,
-    `Content-Transfer-Encoding: base64`,
-    ``,
-    plainB64,
-    ``,
-    `--${boundary}`,
-    `Content-Type: text/html; charset="UTF-8"`,
-    `Content-Transfer-Encoding: base64`,
-    ``,
-    htmlB64,
-    ``,
-    `--${boundary}--`,
-  ].join("\r\n");
-
-  return `${headers}\r\n\r\n${body}`;
+  return `${headers}\r\n\r\n${bodySection}`;
 }
 
 // POST /inbox/reply/send
-inboxRouter.post("/reply/send", express.json(), async (req, res) => {
+inboxRouter.post("/reply/send", upload.array("attachments", 20), async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
 
-  const { to, cc, bcc, subject, body, threadId, inReplyTo } = req.body ?? {};
+  const body = req.body ?? {};
+  const to        = body.to        ?? "";
+  const cc        = body.cc        ?? "";
+  const bcc       = body.bcc       ?? "";
+  const subject   = body.subject   ?? "";
+  const bodyHtml  = body.body      ?? "";
+  const threadId  = body.threadId  ?? "";
+  const inReplyTo = body.inReplyTo ?? "";
 
   const toStr      = (typeof to      === "string" ? to      : "").trim();
-  const bodyStr    = (typeof body    === "string" ? body    : "").trim();
+  const bodyStr    = (typeof bodyHtml === "string" ? bodyHtml : "").trim();
   const subjectStr = (typeof subject === "string" ? subject : "").trim() || "(no subject)";
   const ccStr      = (typeof cc      === "string" ? cc      : "").trim();
   const bccStr     = (typeof bcc     === "string" ? bcc     : "").trim();
 
   if (!toStr)   return res.status(400).json({ error: "At least one recipient (To) is required." });
   if (!bodyStr) return res.status(400).json({ error: "Message body cannot be empty." });
+
+  const uploadedFiles = (req.files as Express.Multer.File[]) ?? [];
+  const attachments: EmailAttachment[] = uploadedFiles.map(f => ({
+    filename: f.originalname,
+    contentType: f.mimetype || "application/octet-stream",
+    data: f.buffer,
+  }));
 
   try {
     const auth  = await getAuthenticatedClient(uid);
@@ -549,9 +621,9 @@ inboxRouter.post("/reply/send", express.json(), async (req, res) => {
       subject: finalSubject,
       bodyHtml: bodyStr,
       inReplyTo: inReplyTo ? String(inReplyTo) : undefined,
+      attachments,
     });
 
-    // The Gmail API raw field must be base64url of the full RFC-2822 message
     const raw = Buffer.from(mimeMessage, "utf8").toString("base64url");
 
     await gmail.users.messages.send({

@@ -39,6 +39,7 @@ interface AttachmentFile {
   file: File;
   id: string;
   url: string;
+  status: "ready" | "uploading" | "done" | "error";
 }
 
 export interface ComposeModalProps {
@@ -258,6 +259,7 @@ export default function ComposeModal({
 
   // ── Sending / errors ──
   const [sending, setSending] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
@@ -549,7 +551,7 @@ export default function ComposeModal({
     if (!files) return;
     const newAtts: AttachmentFile[] = [];
     for (const file of Array.from(files)) {
-      newAtts.push({ file, id: uid(), url: URL.createObjectURL(file) });
+      newAtts.push({ file, id: uid(), url: URL.createObjectURL(file), status: "ready" });
     }
     setAttachments(prev => [...prev, ...newAtts]);
   }
@@ -608,14 +610,12 @@ export default function ComposeModal({
   // ─── Send ─────────────────────────────────────────────────────────────────
 
   async function handleSend() {
-    // Flush any pending typed (not-yet-chipped) recipients
     const allTo = toRef.current?.getAll() ?? to;
     const allCc = ccRef.current?.getAll() ?? cc;
     const allBcc = bccRef.current?.getAll() ?? bcc;
 
     if (!allTo.length) { setError("Add at least one recipient."); return; }
 
-    // Get the raw HTML and check for real text content
     const rawHtml = editorRef.current?.innerHTML || "";
     const plainTextCheck = rawHtml
       .replace(/<br\s*\/?>/gi, "")
@@ -625,7 +625,9 @@ export default function ComposeModal({
     if (!plainTextCheck) { setError("Write a message before sending."); return; }
 
     setSending(true);
+    setUploadProgress(0);
     setError("");
+
     try {
       const token = await user?.getIdToken();
       if (!token) throw new Error("Not authenticated");
@@ -635,27 +637,65 @@ export default function ComposeModal({
         htmlBody += `<br><br><div style="color:#c00;font-size:12px;padding:8px 12px;border:1px solid #c00;border-radius:6px;display:inline-block;margin-top:8px;">🔒 CONFIDENTIAL — Do not forward or share this message.</div>`;
       }
 
-      const res = await fetch(`${apiBase}/inbox/reply/send`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: allTo.join(", "),
-          cc: allCc.length ? allCc.join(", ") : undefined,
-          bcc: allBcc.length ? allBcc.join(", ") : undefined,
-          subject: subject.trim() || "(no subject)",
-          body: htmlBody,
-        }),
+      const formData = new FormData();
+      formData.append("to", allTo.join(", "));
+      if (allCc.length) formData.append("cc", allCc.join(", "));
+      if (allBcc.length) formData.append("bcc", allBcc.join(", "));
+      formData.append("subject", subject.trim() || "(no subject)");
+      formData.append("body", htmlBody);
+
+      setAttachments(prev => prev.map(a => ({ ...a, status: "uploading" as const })));
+      for (const att of attachments) {
+        formData.append("attachments", att.file, att.file.name);
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `${apiBase}/inbox/reply/send`);
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+
+        xhr.upload.addEventListener("progress", (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        });
+
+        xhr.addEventListener("load", () => {
+          setUploadProgress(100);
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              if (data.error) reject(new Error(data.error));
+              else resolve();
+            } catch {
+              resolve();
+            }
+          } else {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              reject(new Error(data.error ?? "Failed to send"));
+            } catch {
+              reject(new Error(`Server error: ${xhr.status}`));
+            }
+          }
+        });
+
+        xhr.addEventListener("error", () => reject(new Error("Network error — please try again.")));
+        xhr.addEventListener("abort", () => reject(new Error("Upload cancelled.")));
+
+        xhr.send(formData);
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to send");
+      setAttachments(prev => prev.map(a => ({ ...a, status: "done" as const })));
       removeDraftFromStorage(draftId);
       onSent("sent");
       onClose();
     } catch (e: any) {
+      setAttachments(prev => prev.map(a => a.status === "uploading" ? { ...a, status: "error" as const } : a));
       setError(e.message);
     } finally {
       setSending(false);
+      setUploadProgress(null);
     }
   }
 
@@ -1208,27 +1248,101 @@ export default function ComposeModal({
 
             {/* ── Attachments ─────────────────────────────────────────────── */}
             {attachments.length > 0 && (
-              <div className="border-t border-gray-100 px-4 py-2 flex flex-wrap gap-2 bg-gray-50/60 shrink-0">
+              <div className="border-t border-gray-100 px-4 py-2 bg-gray-50/60 shrink-0 space-y-1.5">
                 {attachments.map(att => (
-                  <div
-                    key={att.id}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-white border border-gray-200 text-xs text-gray-700 shadow-sm"
-                  >
+                  <div key={att.id} className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white border border-gray-200 text-xs text-gray-700 shadow-sm">
+                    {/* File icon / thumbnail */}
                     {att.file.type.startsWith("image/")
-                      ? <img src={att.url} alt="" className="w-4 h-4 rounded object-cover" />
-                      : <svg className="w-3.5 h-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      ? <img src={att.url} alt="" className="w-6 h-6 rounded object-cover shrink-0" />
+                      : <svg className="w-4 h-4 text-indigo-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     }
-                    <span className="max-w-[120px] truncate">{att.file.name}</span>
-                    <span className="text-gray-400">({formatBytes(att.file.size)})</span>
-                    <button
-                      type="button"
-                      onClick={() => removeAttachment(att.id)}
-                      className="ml-1 text-gray-400 hover:text-red-500 transition leading-none"
-                    >
-                      ×
-                    </button>
+
+                    {/* Name + size + progress */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span className="truncate font-medium max-w-[160px]">{att.file.name}</span>
+                        <span className="text-gray-400 shrink-0">({formatBytes(att.file.size)})</span>
+
+                        {/* Status badge */}
+                        {att.status === "ready" && (
+                          <span className="shrink-0 inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
+                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Ready
+                          </span>
+                        )}
+                        {att.status === "uploading" && (
+                          <span className="shrink-0 inline-flex items-center gap-0.5 text-indigo-600 font-semibold">
+                            <div className="w-2.5 h-2.5 rounded-full border border-indigo-300 border-t-indigo-600 animate-spin" />
+                            Uploading…
+                          </span>
+                        )}
+                        {att.status === "done" && (
+                          <span className="shrink-0 inline-flex items-center gap-0.5 text-emerald-600 font-semibold">
+                            <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            Sent
+                          </span>
+                        )}
+                        {att.status === "error" && (
+                          <span className="shrink-0 text-red-500 font-semibold">Failed</span>
+                        )}
+                      </div>
+
+                      {/* Progress bar during upload */}
+                      {att.status === "uploading" && uploadProgress !== null && (
+                        <div className="mt-1 w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                          <div
+                            className="h-full bg-indigo-500 rounded-full transition-all duration-200"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Remove button — only when not uploading */}
+                    {att.status !== "uploading" && att.status !== "done" && (
+                      <button
+                        type="button"
+                        onClick={() => removeAttachment(att.id)}
+                        className="ml-1 text-gray-400 hover:text-red-500 transition leading-none shrink-0"
+                        title="Remove"
+                      >
+                        ×
+                      </button>
+                    )}
                   </div>
                 ))}
+
+                {/* Overall upload progress bar */}
+                {uploadProgress !== null && (
+                  <div className="px-1 pt-1">
+                    <div className="flex items-center justify-between text-[11px] text-gray-500 mb-0.5">
+                      <span>Sending{attachments.length > 0 ? " with attachments" : ""}…</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-indigo-600 rounded-full transition-all duration-200"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Send progress bar (shown when no attachments) ────────────── */}
+            {uploadProgress !== null && attachments.length === 0 && (
+              <div className="shrink-0 px-4 py-2 border-t border-indigo-100 bg-indigo-50">
+                <div className="flex items-center justify-between text-[11px] text-indigo-600 font-semibold mb-1">
+                  <span>Sending…</span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <div className="w-full bg-indigo-100 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="h-full bg-indigo-600 rounded-full transition-all duration-200"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
               </div>
             )}
 
