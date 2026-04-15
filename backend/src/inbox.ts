@@ -924,11 +924,18 @@ inboxRouter.delete("/disconnect", async (req, res) => {
 
 // ─── Follow-Up System ────────────────────────────────────────────────────────
 
+type FollowUpIntent = "Sales" | "Support" | "General";
+type FollowUpConfidence = "low" | "medium" | "high";
+type FollowUpTag = "Urgent" | "Sales" | "Waiting" | "General";
+
 interface FollowUpDetection {
   needsFollowUp: boolean;
   reason: string;
   suggestedLabel: string;
   suggestedDaysFromNow: number;
+  intent: FollowUpIntent;
+  confidence: FollowUpConfidence;
+  tag: FollowUpTag;
 }
 
 function parseFollowUpJson(raw: string): FollowUpDetection | null {
@@ -939,32 +946,43 @@ function parseFollowUpJson(raw: string): FollowUpDetection | null {
     if (typeof parsed.needsFollowUp !== "boolean") return null;
     if (typeof parsed.reason !== "string") return null;
     if (typeof parsed.suggestedDaysFromNow !== "number") return null;
+    const validIntents: FollowUpIntent[] = ["Sales", "Support", "General"];
+    const validConf: FollowUpConfidence[] = ["low", "medium", "high"];
+    const validTags: FollowUpTag[] = ["Urgent", "Sales", "Waiting", "General"];
     return {
       needsFollowUp: parsed.needsFollowUp,
       reason: String(parsed.reason).trim(),
       suggestedLabel: String(parsed.suggestedLabel ?? "").trim(),
       suggestedDaysFromNow: Math.max(0, Math.min(30, Number(parsed.suggestedDaysFromNow))),
+      intent: validIntents.includes(parsed.intent) ? parsed.intent : "General",
+      confidence: validConf.includes(parsed.confidence) ? parsed.confidence : "medium",
+      tag: validTags.includes(parsed.tag) ? parsed.tag : "General",
     };
   } catch {
     return null;
   }
 }
 
-function heuristicFollowUp(subject: string, thread: string, intent: string): FollowUpDetection {
+function heuristicFollowUp(subject: string, thread: string, emailIntent: string): FollowUpDetection {
   const text = `${subject} ${thread.slice(0, 1000)}`.toLowerCase();
   const isSent = /i sent|we sent|as discussed|following up|attached|please find|proposal|quote|pricing|invoice sent/i.test(text);
   const isNoReply = !/thank you|thanks for|reply|respond|i will|we will|got it|received|noted/i.test(thread.slice(-1200));
-  const needsFollowUp = isSent || (intent === "Lead" && isNoReply) || (intent === "Payment" && isNoReply);
-  const days = intent === "Urgent" ? 1 : intent === "Lead" || intent === "Payment" ? 2 : 3;
+  const needsFollowUp = isSent || (emailIntent === "Lead" && isNoReply) || (emailIntent === "Payment" && isNoReply);
+  const days = emailIntent === "Urgent" ? 1 : emailIntent === "Lead" || emailIntent === "Payment" ? 2 : 3;
+  const intent: FollowUpIntent = emailIntent === "Lead" || emailIntent === "Payment" ? "Sales" : emailIntent === "Support" ? "Support" : "General";
+  const tag: FollowUpTag = days === 1 ? "Urgent" : intent === "Sales" ? "Sales" : "Waiting";
   return {
     needsFollowUp,
     reason: needsFollowUp
       ? isSent
         ? "You sent information but haven't received a reply yet."
-        : `This ${intent.toLowerCase()} conversation may need a follow-up.`
+        : `This ${emailIntent.toLowerCase()} conversation may need a follow-up.`
       : "No immediate follow-up action detected.",
     suggestedLabel: days === 1 ? "Tomorrow morning" : days === 2 ? "In 2 days" : "In 3 days",
     suggestedDaysFromNow: needsFollowUp ? days : 3,
+    intent,
+    confidence: needsFollowUp ? "medium" : "low",
+    tag: needsFollowUp ? tag : "General",
   };
 }
 
@@ -982,19 +1000,22 @@ async function detectFollowUpNeed(args: {
       messages: [
         {
           role: "system",
-          content: `You are an email follow-up detector. Analyze this email thread and return ONLY valid JSON with these keys:
-- needsFollowUp (boolean): true if the user should follow up (e.g., they sent info/proposal/pricing but got no reply, or a lead/payment needs chasing)
-- reason (string): specific reason why follow-up is needed (max 20 words, direct)
-- suggestedLabel (string): human-readable suggested time like "Monday 10 AM" or "In 2 days"
-- suggestedDaysFromNow (number): how many business days from now (1-7)
-Be strict: only set needsFollowUp=true if there is a clear unresolved action.`,
+          content: `You are an expert email follow-up detector. Analyze this email thread and return ONLY valid JSON with exactly these keys:
+- needsFollowUp (boolean): true if the sender should follow up (proposal sent, no reply, lead/payment pending, action requested but unacknowledged)
+- reason (string): specific, direct reason why follow-up is needed (max 20 words)
+- suggestedLabel (string): human-readable time like "Tomorrow morning", "In 2 days", "Monday 10 AM"
+- suggestedDaysFromNow (number): business days from now (1–7)
+- intent ("Sales"|"Support"|"General"): classify the conversation type
+- confidence ("low"|"medium"|"high"): how confident you are a follow-up is actually needed
+- tag ("Urgent"|"Sales"|"Waiting"|"General"): single most relevant tag
+Be strict: only needsFollowUp=true if there is a clear unresolved action needing a response.`,
         },
         {
           role: "user",
           content: `Subject: ${args.subject}\nDetected intent: ${intent}\n\nThread:\n${args.thread.slice(0, 5000)}`,
         },
       ],
-      max_tokens: 180,
+      max_tokens: 220,
       temperature: 0.2,
     });
     const parsed = parseFollowUpJson(result);
@@ -1004,13 +1025,81 @@ Be strict: only set needsFollowUp=true if there is a clear unresolved action.`,
   }
 }
 
+async function generateFollowUpDraft(args: {
+  subject: string;
+  thread: string;
+  from: string;
+  intent: FollowUpIntent;
+}): Promise<{ subject: string; body: string }> {
+  const senderName = args.from.match(/^(.*?)\s*</)?.[1]?.trim() || args.from;
+  const toneGuide =
+    args.intent === "Sales"
+      ? "polite, confident, and persuasive — remind them of the value and create a soft sense of urgency"
+      : args.intent === "Support"
+      ? "empathetic, understanding, and helpful — show you care about their issue being resolved"
+      : "neutral, professional, and concise — keep it brief and direct";
+
+  const fallback = {
+    subject: `Re: ${args.subject}`,
+    body: `Hi ${senderName},\n\nI wanted to follow up on my previous email regarding "${args.subject}". I haven't heard back and wanted to check if you had any questions or if there's anything I can help with.\n\nLooking forward to your response.\n\nBest regards`,
+  };
+
+  if (!NVIDIA_API_KEY) return fallback;
+
+  try {
+    const result = await callNvidiaChatCompletions({
+      apiKey: NVIDIA_API_KEY,
+      messages: [
+        {
+          role: "system",
+          content: `You are a professional email writer. Write a follow-up email that is ${toneGuide}. Return ONLY valid JSON with keys "subject" (string) and "body" (string). The body should be 3–5 sentences maximum, friendly, and end without a sign-off (the user will add their name). Do not include any greeting in the subject.`,
+        },
+        {
+          role: "user",
+          content: `Original subject: "${args.subject}"\nContact: ${args.from}\nIntent: ${args.intent}\n\nOriginal thread (for context):\n${args.thread.slice(0, 3000)}\n\nWrite a follow-up email.`,
+        },
+      ],
+      max_tokens: 350,
+      temperature: 0.5,
+    });
+    const match = result.match(/\{[\s\S]*\}/);
+    if (match) {
+      const parsed = JSON.parse(match[0]);
+      if (typeof parsed.subject === "string" && typeof parsed.body === "string") {
+        return { subject: parsed.subject.trim(), body: parsed.body.trim() };
+      }
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 // POST /inbox/followup/detect
 inboxRouter.post("/followup/detect", express.json(), async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
-  const { subject, thread, intent } = req.body ?? {};
+  const { subject, thread, intent, threadId } = req.body ?? {};
   if (!subject || !thread) return res.status(400).json({ error: "subject and thread are required" });
   try {
+    await connectMongo();
+    if (threadId) {
+      const dismissed = await FollowUp.findOne({ uid, threadId, status: "dismissed" });
+      if (dismissed) {
+        return res.json({
+          detection: {
+            needsFollowUp: false,
+            reason: "You previously dismissed a follow-up for this thread.",
+            suggestedLabel: "",
+            suggestedDaysFromNow: 0,
+            intent: dismissed.intent ?? "General",
+            confidence: "low" as const,
+            tag: "General" as const,
+            alreadyDismissed: true,
+          },
+        });
+      }
+    }
     const detection = await detectFollowUpNeed({
       subject: String(subject),
       thread: String(thread),
@@ -1038,15 +1127,22 @@ inboxRouter.get("/followups", async (req, res) => {
 inboxRouter.post("/followups", express.json(), async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
-  const { messageId, threadId, subject, from, scheduledAt, reason } = req.body ?? {};
+  const { messageId, threadId, subject, from, scheduledAt, reason, intent, confidence, tag } = req.body ?? {};
   if (!messageId || !threadId || !subject || !scheduledAt || !reason) {
     return res.status(400).json({ error: "messageId, threadId, subject, scheduledAt, and reason are required" });
   }
   await connectMongo();
-  const existing = await FollowUp.findOne({ uid, messageId, status: "pending" });
+  // Don't re-create if this thread was dismissed
+  const dismissed = await FollowUp.findOne({ uid, threadId, status: "dismissed" });
+  if (dismissed) return res.status(409).json({ error: "Follow-up was previously dismissed for this thread." });
+
+  const existing = await FollowUp.findOne({ uid, threadId, status: "pending" });
   if (existing) {
     existing.scheduledAt = Number(scheduledAt);
     existing.reason = String(reason);
+    if (intent) existing.intent = intent;
+    if (confidence) existing.confidence = confidence;
+    if (tag) existing.tag = tag;
     await existing.save();
     return res.json({ followUp: existing.toObject() });
   }
@@ -1058,9 +1154,47 @@ inboxRouter.post("/followups", express.json(), async (req, res) => {
     from: String(from ?? ""),
     scheduledAt: Number(scheduledAt),
     reason: String(reason),
+    intent: ["Sales", "Support", "General"].includes(intent) ? intent : "General",
+    confidence: ["low", "medium", "high"].includes(confidence) ? confidence : "medium",
+    tag: ["Urgent", "Sales", "Waiting", "General"].includes(tag) ? tag : "General",
     status: "pending",
   });
   return res.status(201).json({ followUp: followUp.toObject() });
+});
+
+// POST /inbox/followup/auto-complete — auto-complete follow-up when reply received
+inboxRouter.post("/followup/auto-complete", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { threadId } = req.body ?? {};
+  if (!threadId) return res.status(400).json({ error: "threadId is required" });
+  await connectMongo();
+  const item = await FollowUp.findOne({ uid, threadId, status: "pending" });
+  if (!item) return res.json({ completed: false });
+  item.status = "completed";
+  await item.save();
+  return res.json({ completed: true, followUp: item.toObject() });
+});
+
+// POST /inbox/followup/generate-draft — generate AI follow-up draft
+inboxRouter.post("/followup/generate-draft", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { subject, thread, from, intent } = req.body ?? {};
+  if (!subject) return res.status(400).json({ error: "subject is required" });
+  try {
+    const validIntents: FollowUpIntent[] = ["Sales", "Support", "General"];
+    const resolvedIntent: FollowUpIntent = validIntents.includes(intent) ? intent : "General";
+    const draft = await generateFollowUpDraft({
+      subject: String(subject),
+      thread: String(thread ?? ""),
+      from: String(from ?? ""),
+      intent: resolvedIntent,
+    });
+    return res.json({ draft });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 // PATCH /inbox/followups/:id  — update status or reschedule

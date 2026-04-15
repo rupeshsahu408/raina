@@ -427,10 +427,27 @@ export default function InboxDashboard() {
 
   const [mobileView, setMobileView] = useState<"list" | "email">("list");
 
-  const [followUpDetection, setFollowUpDetection] = useState<{ needsFollowUp: boolean; reason: string; suggestedLabel: string; suggestedDaysFromNow: number } | null>(null);
+  const [followUpDetection, setFollowUpDetection] = useState<{
+    needsFollowUp: boolean;
+    reason: string;
+    suggestedLabel: string;
+    suggestedDaysFromNow: number;
+    intent?: "Sales" | "Support" | "General";
+    confidence?: "low" | "medium" | "high";
+    tag?: "Urgent" | "Sales" | "Waiting" | "General";
+    alreadyDismissed?: boolean;
+  } | null>(null);
   const [followUpDetecting, setFollowUpDetecting] = useState(false);
   const [followUpSaved, setFollowUpSaved] = useState(false);
   const [followUpSaving, setFollowUpSaving] = useState(false);
+  const [followUpGenerating, setFollowUpGenerating] = useState(false);
+  const [showFollowUpReason, setShowFollowUpReason] = useState(false);
+  const [pendingFollowUps, setPendingFollowUps] = useState<Array<{
+    _id: string; threadId: string; subject: string; from: string;
+    scheduledAt: number; reason: string; status: string;
+    intent?: string; confidence?: string; tag?: string;
+  }>>([]);
+  const [followUpsPanelOpen, setFollowUpsPanelOpen] = useState(true);
 
   const [newEmailsBanner, setNewEmailsBanner] = useState(0);
   const [newEmailItems, setNewEmailItems] = useState<EmailItem[]>([]);
@@ -587,17 +604,83 @@ export default function InboxDashboard() {
     }
   }
 
+  const loadPendingFollowUps = useCallback(async () => {
+    const token = tokenRef.current || await getToken();
+    if (!token) return;
+    try {
+      const res = await fetch(`${API}/inbox/followups?status=pending`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setPendingFollowUps(data.followUps ?? []);
+      }
+    } catch {}
+  }, [getToken]);
+
+  useEffect(() => {
+    if (user) loadPendingFollowUps();
+  }, [user, loadPendingFollowUps]);
+
+  async function autoCompleteFollowUp(threadId: string) {
+    const token = tokenRef.current || await getToken();
+    if (!token || !threadId) return;
+    try {
+      const res = await fetch(`${API}/inbox/followup/auto-complete`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.completed) {
+          setPendingFollowUps(prev => prev.filter(f => f.threadId !== threadId));
+        }
+      }
+    } catch {}
+  }
+
+  async function sendFollowUpDraft(email: EmailItem, intent: string) {
+    setFollowUpGenerating(true);
+    const token = await getToken();
+    const threadText = threadMessages.map(m => `From: ${m.from}\n${m.bodyText || m.body}`).join("\n\n---\n\n");
+    try {
+      const res = await fetch(`${API}/inbox/followup/generate-draft`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: email.subject, thread: threadText, from: email.from, intent }),
+      });
+      const data = await res.json();
+      if (res.ok && data.draft) {
+        setComposeInitialTo(email.from);
+        setComposeInitialSubject(data.draft.subject);
+        setComposeInitialBody(data.draft.body);
+        setComposeDraftId(undefined);
+        setComposeOpen(true);
+      }
+    } catch {}
+    finally { setFollowUpGenerating(false); }
+  }
+
   async function runFollowUpDetection(email: EmailItem, messages: { bodyText?: string; body: string; from: string }[], token: string, requestId: number) {
     if (!messages.length) return;
     setFollowUpDetecting(true);
     setFollowUpDetection(null);
     setFollowUpSaved(false);
+    setShowFollowUpReason(false);
     const threadText = messages.map(m => `From: ${m.from}\n${m.bodyText || m.body}`).join("\n\n---\n\n");
+
+    // Auto-complete: if the latest message is from someone else, a reply was received
+    const latestMsg = messages[messages.length - 1];
+    if (latestMsg && !latestMsg.from.includes(user?.email ?? "___")) {
+      void autoCompleteFollowUp(email.threadId);
+    }
+
     try {
       const res = await fetch(`${API}/inbox/followup/detect`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ subject: email.subject, thread: threadText, intent: email.intent }),
+        body: JSON.stringify({ subject: email.subject, thread: threadText, intent: email.intent, threadId: email.threadId }),
       });
       const data = await res.json();
       if (res.ok && activeThreadRequestRef.current === requestId) {
@@ -624,9 +707,15 @@ export default function InboxDashboard() {
           from: email.from,
           scheduledAt,
           reason,
+          intent: followUpDetection?.intent ?? "General",
+          confidence: followUpDetection?.confidence ?? "medium",
+          tag: followUpDetection?.tag ?? "General",
         }),
       });
-      if (res.ok) setFollowUpSaved(true);
+      if (res.ok) {
+        setFollowUpSaved(true);
+        loadPendingFollowUps();
+      }
     } catch {}
     finally { setFollowUpSaving(false); }
   }
@@ -695,6 +784,25 @@ export default function InboxDashboard() {
     if (user) loadEmails(folder);
   }, [user, folder]);
 
+  // Handoff from followups page: open compose with pre-filled draft
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const raw = sessionStorage.getItem("plyndrox_followup_compose");
+      if (raw) {
+        sessionStorage.removeItem("plyndrox_followup_compose");
+        const { to, subject, body } = JSON.parse(raw);
+        if (to && subject) {
+          setComposeInitialTo(to);
+          setComposeInitialSubject(subject);
+          setComposeInitialBody(body ?? "");
+          setComposeDraftId(undefined);
+          setComposeOpen(true);
+        }
+      }
+    } catch {}
+  }, [user]);
+
   // Close filter dropdown on outside click
   useEffect(() => {
     function handle(e: MouseEvent) {
@@ -725,6 +833,8 @@ export default function InboxDashboard() {
     setFollowUpDetection(null);
     setFollowUpDetecting(false);
     setFollowUpSaved(false);
+    setFollowUpGenerating(false);
+    setShowFollowUpReason(false);
     setThreadLoading(true);
     const token = await getToken();
     try {
@@ -1231,6 +1341,60 @@ export default function InboxDashboard() {
 
             {/* Email list */}
             <div className="flex-1 overflow-y-auto">
+              {/* ── Follow-Up Needed panel ──────────────────────────── */}
+              {folder === "inbox" && pendingFollowUps.length > 0 && (
+                <div className="border-b border-amber-100 bg-amber-50">
+                  <button
+                    onClick={() => setFollowUpsPanelOpen(v => !v)}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-left"
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-amber-200 text-amber-700">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                    </span>
+                    <span className="text-xs font-black text-amber-800 flex-1">Follow-Up Needed</span>
+                    <span className="rounded-full bg-amber-200 px-2 py-0.5 text-[10px] font-black text-amber-800">{pendingFollowUps.length}</span>
+                    <svg className={`w-3.5 h-3.5 text-amber-600 transition-transform ${followUpsPanelOpen ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+                  {followUpsPanelOpen && (
+                    <div className="px-3 pb-3 space-y-1.5">
+                      {pendingFollowUps.slice(0, 5).map(fu => {
+                        const isOverdueItem = fu.scheduledAt < Date.now();
+                        const tagColor = fu.tag === "Urgent" ? "bg-red-100 text-red-700" : fu.tag === "Sales" ? "bg-blue-100 text-blue-700" : "bg-gray-100 text-gray-500";
+                        return (
+                          <div
+                            key={fu._id}
+                            className={`flex items-center gap-2.5 rounded-xl border px-3 py-2 cursor-pointer hover:bg-amber-100 transition ${isOverdueItem ? "border-red-200 bg-red-50" : "border-amber-200 bg-white"}`}
+                            onClick={() => {
+                              const match = emails.find(e => e.threadId === fu.threadId);
+                              if (match) openEmail(match);
+                            }}
+                          >
+                            <div className="w-7 h-7 rounded-full bg-amber-300 flex items-center justify-center text-amber-900 text-xs font-black shrink-0">
+                              {(fu.from.match(/^(.*?)\s*</)?.[1]?.trim() || fu.from)[0]?.toUpperCase() ?? "?"}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-gray-900 truncate">{fu.subject}</p>
+                              <p className="text-[10px] text-gray-500 truncate">
+                                {isOverdueItem ? <span className="text-red-600 font-semibold">Overdue · </span> : null}
+                                {fu.reason.slice(0, 60)}{fu.reason.length > 60 ? "…" : ""}
+                              </p>
+                            </div>
+                            {fu.tag && fu.tag !== "General" && (
+                              <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase ${tagColor}`}>{fu.tag}</span>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {pendingFollowUps.length > 5 && (
+                        <Link href="/inbox/followups" className="block text-center text-[10px] font-bold text-amber-700 hover:text-amber-900 py-1">
+                          +{pendingFollowUps.length - 5} more — View all
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* ── New emails banner ───────────────────────────────── */}
               {newEmailsBanner > 0 && folder === "inbox" && (
                 <button
@@ -1696,7 +1860,39 @@ export default function InboxDashboard() {
                             </div>
                           ) : followUpDetection?.needsFollowUp ? (
                             <>
-                              <p className="text-sm text-amber-900 font-medium mb-1">{followUpDetection.reason}</p>
+                              {/* Tags row */}
+                              <div className="flex flex-wrap gap-1.5 mb-2.5">
+                                {followUpDetection.tag && followUpDetection.tag !== "General" && (
+                                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                                    followUpDetection.tag === "Urgent" ? "bg-red-100 text-red-700" :
+                                    followUpDetection.tag === "Sales" ? "bg-blue-100 text-blue-700" :
+                                    "bg-gray-100 text-gray-600"
+                                  }`}>{followUpDetection.tag}</span>
+                                )}
+                                {followUpDetection.intent && (
+                                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-700 uppercase tracking-wide">{followUpDetection.intent}</span>
+                                )}
+                                {followUpDetection.confidence && (
+                                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                                    followUpDetection.confidence === "high" ? "bg-emerald-100 text-emerald-700" :
+                                    followUpDetection.confidence === "medium" ? "bg-yellow-100 text-yellow-700" :
+                                    "bg-gray-100 text-gray-500"
+                                  }`}>{followUpDetection.confidence} confidence</span>
+                                )}
+                              </div>
+                              {/* Reason with tooltip toggle */}
+                              <div className="mb-1">
+                                <button
+                                  onClick={() => setShowFollowUpReason(v => !v)}
+                                  className="flex items-center gap-1.5 text-xs text-amber-700 hover:text-amber-900 font-semibold"
+                                >
+                                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                                  Why this follow-up?
+                                </button>
+                                {showFollowUpReason && (
+                                  <p className="mt-1.5 text-sm text-amber-900 font-medium bg-amber-100 rounded-xl px-3 py-2">{followUpDetection.reason}</p>
+                                )}
+                              </div>
                               <p className="text-xs text-amber-700 mb-3">
                                 Suggested: <span className="font-black">{followUpDetection.suggestedLabel}</span>
                               </p>
@@ -1704,9 +1900,19 @@ export default function InboxDashboard() {
                                 <div className="flex items-center gap-2 text-emerald-700 text-sm font-bold">
                                   <CheckCircleIcon />
                                   Reminder set for {followUpDetection.suggestedLabel}
+                                  {selectedEmail && (
+                                    <button
+                                      onClick={() => selectedEmail && sendFollowUpDraft(selectedEmail, followUpDetection.intent ?? "General")}
+                                      disabled={followUpGenerating}
+                                      className="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#5c4ff6] hover:bg-[#4f43e0] text-white text-xs font-black transition disabled:opacity-60"
+                                    >
+                                      {followUpGenerating ? <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" /> : <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>}
+                                      {followUpGenerating ? "Drafting…" : "Send Follow-Up"}
+                                    </button>
+                                  )}
                                 </div>
                               ) : (
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                   <button
                                     onClick={() => selectedEmail && saveFollowUp(selectedEmail, followUpDetection.suggestedDaysFromNow, followUpDetection.reason)}
                                     disabled={followUpSaving}
@@ -1715,10 +1921,20 @@ export default function InboxDashboard() {
                                     {followUpSaving ? <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" /> : <BellIcon />}
                                     {followUpSaving ? "Saving…" : "Set Reminder"}
                                   </button>
-                                  <Link href="/inbox/followups" className="text-xs text-amber-700 underline hover:text-amber-900">View all follow-ups</Link>
+                                  <button
+                                    onClick={() => selectedEmail && sendFollowUpDraft(selectedEmail, followUpDetection.intent ?? "General")}
+                                    disabled={followUpGenerating}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#5c4ff6] hover:bg-[#4f43e0] text-white text-xs font-black transition disabled:opacity-60"
+                                  >
+                                    {followUpGenerating ? <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" /> : <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>}
+                                    {followUpGenerating ? "Drafting…" : "Send Follow-Up"}
+                                  </button>
+                                  <Link href="/inbox/followups" className="text-xs text-amber-700 underline hover:text-amber-900">View all</Link>
                                 </div>
                               )}
                             </>
+                          ) : followUpDetection?.alreadyDismissed ? (
+                            <p className="text-xs text-amber-600 italic">Follow-up was dismissed for this thread — won&apos;t be recreated.</p>
                           ) : (
                             <p className="text-xs text-amber-700">No follow-up needed for this thread.</p>
                           )}

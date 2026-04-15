@@ -19,6 +19,9 @@ interface FollowUpItem {
   scheduledAt: number;
   reason: string;
   status: "pending" | "completed" | "dismissed";
+  intent?: "Sales" | "Support" | "General";
+  confidence?: "low" | "medium" | "high";
+  tag?: "Urgent" | "Sales" | "Waiting" | "General";
   createdAt: string;
 }
 
@@ -72,6 +75,25 @@ const TABS: { id: TabId; label: string; color: string }[] = [
   { id: "completed", label: "Completed", color: "text-emerald-700 border-emerald-500 bg-emerald-50" },
 ];
 
+function tagStyle(tag?: string) {
+  if (tag === "Urgent") return "bg-red-100 text-red-700";
+  if (tag === "Sales") return "bg-blue-100 text-blue-700";
+  if (tag === "Waiting") return "bg-gray-100 text-gray-600";
+  return "";
+}
+
+function confidenceStyle(conf?: string) {
+  if (conf === "high") return "bg-emerald-100 text-emerald-700";
+  if (conf === "medium") return "bg-yellow-100 text-yellow-700";
+  return "bg-gray-100 text-gray-500";
+}
+
+function intentStyle(intent?: string) {
+  if (intent === "Sales") return "bg-blue-50 text-blue-700";
+  if (intent === "Support") return "bg-purple-50 text-purple-700";
+  return "bg-gray-50 text-gray-500";
+}
+
 function BackIcon() {
   return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>;
 }
@@ -93,6 +115,9 @@ function RefreshIcon() {
 function SparkleIcon() {
   return <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>;
 }
+function SendIcon() {
+  return <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>;
+}
 
 export default function FollowUpsPage() {
   const router = useRouter();
@@ -106,6 +131,8 @@ export default function FollowUpsPage() {
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
   const [rescheduleValue, setRescheduleValue] = useState("");
   const [toast, setToast] = useState("");
+  const [sendingDraftId, setSendingDraftId] = useState<string | null>(null);
+  const [expandedReasonId, setExpandedReasonId] = useState<string | null>(null);
 
   useEffect(() => {
     let auth;
@@ -202,6 +229,38 @@ export default function FollowUpsPage() {
       }
     } catch {}
     finally { setUpdatingId(null); }
+  }
+
+  async function handleSendFollowUp(item: FollowUpItem) {
+    setSendingDraftId(item._id);
+    const token = await getToken();
+    try {
+      const res = await fetch(`${API}/inbox/followup/generate-draft`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: item.subject,
+          thread: "",
+          from: item.from,
+          intent: item.intent ?? "General",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.draft) {
+        sessionStorage.setItem("plyndrox_followup_compose", JSON.stringify({
+          to: item.from,
+          subject: data.draft.subject,
+          body: data.draft.body,
+        }));
+        router.push("/inbox/dashboard");
+      } else {
+        showToast("Could not generate draft. Try from the email view.");
+      }
+    } catch {
+      showToast("Error generating draft.");
+    } finally {
+      setSendingDraftId(null);
+    }
   }
 
   function showToast(msg: string) {
@@ -382,6 +441,8 @@ export default function FollowUpsPage() {
               const isTodayItem = isToday(item.scheduledAt) && item.status === "pending";
               const isWorking = updatingId === item._id;
               const isRescheduling = rescheduleId === item._id;
+              const isSendingDraft = sendingDraftId === item._id;
+              const reasonExpanded = expandedReasonId === item._id;
 
               return (
                 <div
@@ -403,11 +464,35 @@ export default function FollowUpsPage() {
                       <p className="text-sm font-bold text-gray-900 truncate">{item.subject}</p>
                       <p className="text-xs text-gray-500 truncate">{name} &lt;{item.from.match(/<(.+?)>/)?.[1] ?? item.from}&gt;</p>
 
-                      {/* Reason badge */}
-                      <div className={`mt-2.5 rounded-xl px-3 py-2 text-xs leading-5 ${
-                        isOverdueItem ? "bg-red-50 text-red-800" : isTodayItem ? "bg-amber-50 text-amber-800" : "bg-indigo-50 text-indigo-800"
-                      }`}>
-                        <span className="font-black">Reason: </span>{item.reason}
+                      {/* Tags row */}
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {item.tag && item.tag !== "General" && (
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${tagStyle(item.tag)}`}>{item.tag}</span>
+                        )}
+                        {item.intent && item.intent !== "General" && (
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${intentStyle(item.intent)}`}>{item.intent}</span>
+                        )}
+                        {item.confidence && (
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${confidenceStyle(item.confidence)}`}>{item.confidence} confidence</span>
+                        )}
+                      </div>
+
+                      {/* Reason with toggle */}
+                      <div className="mt-2">
+                        <button
+                          onClick={() => setExpandedReasonId(reasonExpanded ? null : item._id)}
+                          className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+                        >
+                          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                          Why this follow-up?
+                        </button>
+                        {reasonExpanded && (
+                          <div className={`mt-1.5 rounded-xl px-3 py-2 text-xs leading-5 ${
+                            isOverdueItem ? "bg-red-50 text-red-800" : isTodayItem ? "bg-amber-50 text-amber-800" : "bg-indigo-50 text-indigo-800"
+                          }`}>
+                            {item.reason}
+                          </div>
+                        )}
                       </div>
 
                       {/* Time row */}
@@ -458,6 +543,14 @@ export default function FollowUpsPage() {
                       {item.status === "pending" && !isRescheduling && (
                         <div className="mt-3 flex flex-wrap items-center gap-2">
                           <button
+                            onClick={() => handleSendFollowUp(item)}
+                            disabled={isSendingDraft || isWorking}
+                            className="flex items-center gap-1.5 rounded-full bg-[#5c4ff6] hover:bg-[#4f43e0] text-white px-3 py-1.5 text-xs font-bold transition disabled:opacity-50"
+                          >
+                            {isSendingDraft ? <div className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" /> : <SendIcon />}
+                            {isSendingDraft ? "Drafting…" : "Send Follow-Up"}
+                          </button>
+                          <button
                             onClick={() => updateStatus(item._id, "completed")}
                             disabled={isWorking}
                             className="flex items-center gap-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-bold transition disabled:opacity-50"
@@ -481,7 +574,7 @@ export default function FollowUpsPage() {
                             href="/inbox/dashboard"
                             className="flex items-center gap-1.5 rounded-full border border-indigo-200 hover:bg-indigo-50 text-indigo-700 px-3 py-1.5 text-xs font-bold transition"
                           >
-                            Open email
+                            Open Email
                           </Link>
                           <button
                             onClick={() => updateStatus(item._id, "dismissed")}
