@@ -220,6 +220,34 @@ function plainTextToHtml(value: string): string {
   return paragraphs ? `<div class="text-fallback">${paragraphs}</div>` : "<p></p>";
 }
 
+function replySubject(subject: string): string {
+  const trimmed = subject.trim() || "(no subject)";
+  return /^re:/i.test(trimmed) ? trimmed : `Re: ${trimmed}`;
+}
+
+function simpleTextToHtml(value: string): string {
+  return value
+    .split(/\n{2,}/)
+    .map(paragraph => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+}
+
+function parseSmartReplies(raw: string): string[] {
+  const cleaned = raw.trim();
+  if (!cleaned) return [];
+  try {
+    const parsed = JSON.parse(cleaned);
+    if (Array.isArray(parsed)) {
+      return parsed.map(item => String(item).trim()).filter(Boolean).slice(0, 5);
+    }
+  } catch {}
+  return cleaned
+    .split(/\|\|\||\n+/)
+    .map(item => item.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").trim())
+    .filter(Boolean)
+    .slice(0, 5);
+}
+
 function emailFrameDocument(message: ThreadMessage, fallback: string): string {
   const content = message.bodyHtml?.trim() || plainTextToHtml(message.bodyText || message.body || fallback);
   return `<!doctype html>
@@ -290,6 +318,8 @@ export default function InboxDashboard() {
   const [aiSummary, setAiSummary] = useState("");
   const [aiSummaryLoading, setAiSummaryLoading] = useState(false);
   const [smartReplies, setSmartReplies] = useState<string[]>([]);
+  const [smartRepliesLoading, setSmartRepliesLoading] = useState(false);
+  const [smartRepliesError, setSmartRepliesError] = useState("");
 
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyTone, setReplyTone] = useState("Formal");
@@ -316,6 +346,7 @@ export default function InboxDashboard() {
 
   const tokenRef = useRef("");
   const filterRef = useRef<HTMLDivElement>(null);
+  const activeThreadRequestRef = useRef(0);
 
   useEffect(() => {
     let auth;
@@ -339,6 +370,40 @@ export default function InboxDashboard() {
     tokenRef.current = t;
     return t;
   }, [user]);
+
+  async function generateSmartReplySuggestions(email: EmailItem, messages: ThreadMessage[], token: string, requestId: number) {
+    if (!messages.length) return;
+    setSmartRepliesLoading(true);
+    setSmartRepliesError("");
+    const threadText = messages.map(m => `From: ${m.from}\n${m.bodyText || m.body}`).join("\n\n---\n\n");
+    try {
+      const res = await fetch(`${API}/inbox/reply/generate`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: email.subject,
+          thread: threadText,
+          tone: "short",
+          instruction: "Generate 5 distinct, ready-to-send reply suggestions for the latest email. Each suggestion must be 1-3 sentences, useful on its own, and must not include a subject line. Separate suggestions only with |||. Do not add numbering, labels, greetings-only replies, or explanations.",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to generate reply suggestions");
+      if (activeThreadRequestRef.current === requestId) {
+        const parsed = parseSmartReplies(data.reply ?? "");
+        setSmartReplies(parsed.length ? parsed : []);
+      }
+    } catch (e: any) {
+      if (activeThreadRequestRef.current === requestId) {
+        setSmartRepliesError(e.message || "Could not generate reply suggestions.");
+        setSmartReplies([]);
+      }
+    } finally {
+      if (activeThreadRequestRef.current === requestId) {
+        setSmartRepliesLoading(false);
+      }
+    }
+  }
 
   const loadLocalDrafts = useCallback(() => {
     try {
@@ -401,10 +466,14 @@ export default function InboxDashboard() {
   }, []);
 
   async function openEmail(email: EmailItem) {
+    const requestId = activeThreadRequestRef.current + 1;
+    activeThreadRequestRef.current = requestId;
     setSelectedEmail(email);
     setThreadMessages([]);
     setAiSummary("");
     setSmartReplies([]);
+    setSmartRepliesError("");
+    setSmartRepliesLoading(false);
     setGeneratedReply("");
     setEditedReply("");
     setSendSuccess(false);
@@ -418,16 +487,21 @@ export default function InboxDashboard() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (res.ok) setThreadMessages(data.messages ?? []);
+      if (res.ok && activeThreadRequestRef.current === requestId) {
+        const messages = data.messages ?? [];
+        setThreadMessages(messages);
+        void generateSmartReplySuggestions(email, messages, token, requestId);
+      }
     } catch {}
-    finally { setThreadLoading(false); }
+    finally {
+      if (activeThreadRequestRef.current === requestId) setThreadLoading(false);
+    }
   }
 
   async function handleSummarize() {
     if (!selectedEmail || !threadMessages.length) return;
     setAiSummaryLoading(true);
     setAiSummary("");
-    setSmartReplies([]);
     const token = await getToken();
     const threadText = threadMessages.map(m => `From: ${m.from}\n${m.body}`).join("\n\n---\n\n");
     try {
@@ -444,20 +518,6 @@ export default function InboxDashboard() {
       const data = await res.json();
       if (res.ok && data.reply) {
         setAiSummary(data.reply);
-        const replies = await fetch(`${API}/inbox/reply/generate`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            subject: selectedEmail.subject,
-            thread: threadText,
-            tone: "casual",
-            instruction: "Generate 3 short one-sentence smart replies separated by ||| characters. No greetings, no sign-offs. Just the main sentence.",
-          }),
-        });
-        const rd = await replies.json();
-        if (replies.ok && rd.reply) {
-          setSmartReplies(rd.reply.split("|||").map((s: string) => s.trim()).filter(Boolean).slice(0, 3));
-        }
       }
     } catch {}
     finally { setAiSummaryLoading(false); }
@@ -595,6 +655,16 @@ export default function InboxDashboard() {
     setComposeInitialSubject("");
     setComposeInitialBody("");
     setComposeDraftId(undefined);
+    setComposeOpen(true);
+  }
+
+  function openSmartReplyInCompose(reply: string) {
+    if (!selectedEmail) return;
+    setComposeInitialTo(senderEmail(selectedEmail.from));
+    setComposeInitialSubject(replySubject(selectedEmail.subject));
+    setComposeInitialBody(simpleTextToHtml(reply));
+    setComposeDraftId(undefined);
+    setReplyOpen(false);
     setComposeOpen(true);
   }
 
@@ -1153,20 +1223,31 @@ export default function InboxDashboard() {
                       )}
 
                       {/* Smart replies */}
-                      {smartReplies.length > 0 && (
+                      {(smartRepliesLoading || smartRepliesError || smartReplies.length > 0) && (
                         <div className="mt-4">
-                          <p className="text-xs text-gray-500 mb-2 font-medium">Smart replies</p>
-                          <div className="flex flex-wrap gap-2">
-                            {smartReplies.map((sr, i) => (
-                              <button
-                                key={i}
-                                onClick={() => { setReplyOpen(true); setEditedReply(sr); setGeneratedReply(sr); }}
-                                className="rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 transition text-left"
-                              >
-                                {sr}
-                              </button>
-                            ))}
+                          <div className="mb-2 flex items-center gap-2">
+                            <p className="text-xs text-gray-500 font-medium">AI reply suggestions</p>
+                            {smartRepliesLoading && <div className="w-3 h-3 border border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />}
                           </div>
+                          {smartRepliesLoading ? (
+                            <div className="flex flex-wrap gap-2">
+                              {[1,2,3].map(i => <div key={i} className="h-8 w-36 rounded-full bg-indigo-50 animate-pulse" />)}
+                            </div>
+                          ) : smartRepliesError ? (
+                            <p className="text-xs text-red-500">{smartRepliesError}</p>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              {smartReplies.map((sr, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => openSmartReplyInCompose(sr)}
+                                  className="rounded-full border border-indigo-200 bg-white px-3 py-1.5 text-xs text-indigo-700 hover:bg-indigo-50 transition text-left"
+                                >
+                                  {sr}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
 
