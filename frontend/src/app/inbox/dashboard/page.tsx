@@ -277,6 +277,17 @@ export default function InboxDashboard() {
   const [replyError, setReplyError] = useState("");
   const [showTonePanel, setShowTonePanel] = useState(false);
 
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeTo, setComposeTo] = useState("");
+  const [composeCc, setComposeCc] = useState("");
+  const [composeBcc, setComposeBcc] = useState("");
+  const [composeSubject, setComposeSubject] = useState("");
+  const [composeBody, setComposeBody] = useState("");
+  const [composeSending, setComposeSending] = useState(false);
+  const [composeError, setComposeError] = useState("");
+  const [composeSuccess, setComposeSuccess] = useState("");
+  const [showComposeCcBcc, setShowComposeCcBcc] = useState(false);
+
   const [mobileView, setMobileView] = useState<"list" | "email">("list");
 
   const tokenRef = useRef("");
@@ -445,7 +456,7 @@ export default function InboxDashboard() {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          to: selectedEmail.from,
+          to: senderEmail(selectedEmail.from),
           subject: selectedEmail.subject,
           body: editedReply,
           threadId: selectedEmail.threadId,
@@ -462,6 +473,69 @@ export default function InboxDashboard() {
       setReplyError((e as Error).message);
     } finally {
       setSending(false);
+    }
+  }
+
+  function resetCompose() {
+    setComposeTo("");
+    setComposeCc("");
+    setComposeBcc("");
+    setComposeSubject("");
+    setComposeBody("");
+    setComposeError("");
+    setShowComposeCcBcc(false);
+  }
+
+  function openCompose() {
+    setComposeOpen(true);
+    setComposeSuccess("");
+    setComposeError("");
+  }
+
+  function closeCompose() {
+    if (composeSending) return;
+    setComposeOpen(false);
+    resetCompose();
+  }
+
+  async function handleSendCompose() {
+    const to = composeTo.trim();
+    const body = composeBody.trim();
+    if (!to) {
+      setComposeError("Add at least one recipient.");
+      return;
+    }
+    if (!body) {
+      setComposeError("Write a message before sending.");
+      return;
+    }
+    setComposeSending(true);
+    setComposeError("");
+    setComposeSuccess("");
+    const token = await getToken();
+    try {
+      const res = await fetch(`${API}/inbox/reply/send`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to,
+          cc: composeCc.trim() || undefined,
+          bcc: composeBcc.trim() || undefined,
+          subject: composeSubject.trim() || "(no subject)",
+          body,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to send");
+      setComposeOpen(false);
+      resetCompose();
+      setComposeSuccess("Message sent through Gmail.");
+      if (folder === "sent") loadEmails("sent");
+      window.setTimeout(() => setComposeSuccess(""), 4500);
+    } catch (e: any) {
+      setComposeError((e as Error).message);
+    } finally {
+      setComposeSending(false);
     }
   }
 
@@ -525,7 +599,7 @@ export default function InboxDashboard() {
         {/* New message */}
         <div className="px-3 mb-4">
           <button
-            onClick={() => { setReplyOpen(true); setSidebarOpen(w => w); }}
+            onClick={openCompose}
             className="w-full flex items-center justify-center gap-2 rounded-full bg-[#5c4ff6] hover:bg-[#4f43e0] py-3 text-sm font-bold transition"
           >
             <ComposeIcon />
@@ -966,7 +1040,7 @@ export default function InboxDashboard() {
 
                           {/* Reply text area */}
                           <div className="px-4 py-3">
-                            <div className="text-xs text-gray-500 mb-1">To: <span className="text-gray-700">{senderName(selectedEmail.from)}</span></div>
+                            <div className="text-xs text-gray-500 mb-1">To: <span className="text-gray-700">{senderName(selectedEmail.from)} &lt;{senderEmail(selectedEmail.from)}&gt;</span></div>
                             <textarea
                               value={editedReply}
                               onChange={e => setEditedReply(e.target.value)}
@@ -1007,6 +1081,154 @@ export default function InboxDashboard() {
           </div>
         </div>
       </div>
+
+      {composeSuccess && (
+        <div className="fixed bottom-5 right-5 z-50 rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-semibold text-emerald-700 shadow-2xl">
+          {composeSuccess}
+        </div>
+      )}
+
+      {composeOpen && (
+        <div className="fixed inset-0 z-40 bg-slate-950/30 backdrop-blur-sm">
+          <div className="absolute bottom-0 right-0 flex h-full w-full items-end justify-center p-3 sm:p-5 md:items-end md:justify-end">
+            <section className="flex h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_32px_90px_rgba(15,23,42,0.32)] md:h-[82vh]">
+              <div className="flex items-center justify-between border-b border-slate-200 bg-gradient-to-r from-[#15112c] via-[#2b2360] to-[#5c4ff6] px-5 py-4 text-white">
+                <div>
+                  <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/60">Gmail synced compose</p>
+                  <h3 className="mt-1 text-lg font-black tracking-tight">New message</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="hidden rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold text-white/80 sm:inline-flex">
+                    Sending as {user?.email ?? "connected Gmail"}
+                  </span>
+                  <button
+                    onClick={closeCompose}
+                    disabled={composeSending}
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/20 disabled:opacity-50"
+                    aria-label="Close compose"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto bg-slate-50/80">
+                <div className="mx-auto max-w-2xl px-4 py-5 sm:px-6">
+                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
+                      <label className="w-14 shrink-0 text-xs font-bold uppercase tracking-wide text-slate-400">To</label>
+                      <input
+                        value={composeTo}
+                        onChange={e => setComposeTo(e.target.value)}
+                        placeholder="name@example.com, team@example.com"
+                        autoFocus
+                        className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                      />
+                      <button
+                        onClick={() => setShowComposeCcBcc(o => !o)}
+                        className="rounded-full px-2 py-1 text-xs font-bold text-indigo-600 transition hover:bg-indigo-50"
+                      >
+                        Cc/Bcc
+                      </button>
+                    </div>
+
+                    {showComposeCcBcc && (
+                      <>
+                        <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
+                          <label className="w-14 shrink-0 text-xs font-bold uppercase tracking-wide text-slate-400">Cc</label>
+                          <input
+                            value={composeCc}
+                            onChange={e => setComposeCc(e.target.value)}
+                            placeholder="optional copied recipients"
+                            className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                          />
+                        </div>
+                        <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
+                          <label className="w-14 shrink-0 text-xs font-bold uppercase tracking-wide text-slate-400">Bcc</label>
+                          <input
+                            value={composeBcc}
+                            onChange={e => setComposeBcc(e.target.value)}
+                            placeholder="optional hidden recipients"
+                            className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                          />
+                        </div>
+                      </>
+                    )}
+
+                    <div className="flex items-center gap-3 border-b border-slate-100 px-4 py-3">
+                      <label className="w-14 shrink-0 text-xs font-bold uppercase tracking-wide text-slate-400">Subject</label>
+                      <input
+                        value={composeSubject}
+                        onChange={e => setComposeSubject(e.target.value)}
+                        placeholder="Add a subject"
+                        className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder:font-medium placeholder:text-slate-400"
+                      />
+                    </div>
+
+                    <div className="px-4 py-4">
+                      <textarea
+                        value={composeBody}
+                        onChange={e => setComposeBody(e.target.value)}
+                        placeholder="Write your email…"
+                        className="min-h-[320px] w-full resize-none bg-transparent text-[15px] leading-7 text-slate-800 outline-none placeholder:text-slate-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm sm:grid-cols-3">
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-wide text-indigo-600">Synced</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">Sent with Gmail API and appears in Gmail Sent Mail.</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-wide text-indigo-600">Recipients</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">Supports multiple addresses separated by commas.</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-black uppercase tracking-wide text-indigo-600">Thread safe</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">Replies still use the selected Gmail thread.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200 bg-white px-5 py-4">
+                {composeError && (
+                  <div className="mb-3 rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
+                    {composeError}
+                  </div>
+                )}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <button
+                    onClick={handleSendCompose}
+                    disabled={composeSending || !composeTo.trim() || !composeBody.trim()}
+                    className="flex items-center gap-2 rounded-full bg-[#5c4ff6] px-6 py-3 text-sm font-black text-white shadow-lg shadow-indigo-200 transition hover:bg-[#4f43e0] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {composeSending ? <div className="h-4 w-4 rounded-full border border-white/40 border-t-white animate-spin" /> : <SendIcon2 />}
+                    {composeSending ? "Sending through Gmail…" : "Send email"}
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={resetCompose}
+                      disabled={composeSending}
+                      className="rounded-full px-4 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      onClick={closeCompose}
+                      disabled={composeSending}
+                      className="rounded-full px-4 py-2 text-sm font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 disabled:opacity-50"
+                    >
+                      Discard
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -415,14 +415,17 @@ inboxRouter.post("/reply/generate", express.json(), async (req, res) => {
 inboxRouter.post("/reply/send", express.json(), async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
-  const { to, subject, body, threadId, inReplyTo } = req.body ?? {};
+  const { to, cc, bcc, subject, body, threadId, inReplyTo } = req.body ?? {};
   if (!to || !subject || !body) return res.status(400).json({ error: "to, subject, and body are required" });
   try {
     const auth = await getAuthenticatedClient(uid);
     const gmail = google.gmail({ version: "v1", auth });
-    const replySubject = subject.startsWith("Re:") ? subject : `Re: ${subject}`;
+    const isThreadReply = Boolean(threadId || inReplyTo);
+    const replySubject = isThreadReply && !subject.startsWith("Re:") ? `Re: ${subject}` : subject;
     const headers = [
       `To: ${to}`,
+      cc ? `Cc: ${cc}` : "",
+      bcc ? `Bcc: ${bcc}` : "",
       `Subject: ${replySubject}`,
       `Content-Type: text/plain; charset="UTF-8"`,
       inReplyTo ? `In-Reply-To: ${inReplyTo}` : "",
@@ -433,7 +436,7 @@ inboxRouter.post("/reply/send", express.json(), async (req, res) => {
     const raw = Buffer.from(`${headers}\r\n\r\n${body}`).toString("base64url");
     await gmail.users.messages.send({
       userId: "me",
-      requestBody: { raw, threadId },
+      requestBody: threadId ? { raw, threadId } : { raw },
     });
     return res.json({ success: true });
   } catch (err: any) {
