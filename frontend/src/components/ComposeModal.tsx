@@ -298,6 +298,97 @@ export default function ComposeModal({
   const [showFontPanel, setShowFontPanel] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState<"text" | "bg" | null>(null);
 
+  // ─── Paste handler — strip external styles, keep basic formatting ─────────
+
+  function handlePaste(e: React.ClipboardEvent<HTMLDivElement>) {
+    e.preventDefault();
+    const html = e.clipboardData.getData("text/html");
+    const text = e.clipboardData.getData("text/plain");
+
+    if (html) {
+      // Allow only safe tags; strip all inline styles, class, id, data-* attrs
+      // and problematic tags (script, style, table junk, etc.)
+      const ALLOWED_TAGS = new Set([
+        "b", "strong", "i", "em", "u", "s", "strike", "del",
+        "br", "p", "div", "span", "a", "blockquote", "pre", "code",
+        "h1", "h2", "h3", "h4", "h5", "h6",
+        "ul", "ol", "li", "hr", "img",
+      ]);
+
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+
+      function cleanNode(node: Node): Node | null {
+        if (node.nodeType === Node.TEXT_NODE) return node.cloneNode(true);
+        if (node.nodeType !== Node.ELEMENT_NODE) return null;
+        const el = node as Element;
+        const tag = el.tagName.toLowerCase();
+
+        if (!ALLOWED_TAGS.has(tag)) {
+          // Replace disallowed block elements with their text content
+          const frag = document.createDocumentFragment();
+          el.childNodes.forEach(child => {
+            const cleaned = cleanNode(child);
+            if (cleaned) frag.appendChild(cleaned);
+          });
+          // Add a line break after block-level replacements
+          const blockTags = new Set(["table", "tr", "td", "th", "thead", "tbody", "tfoot", "div"]);
+          if (blockTags.has(tag)) {
+            frag.appendChild(document.createElement("br"));
+          }
+          return frag;
+        }
+
+        const clean = document.createElement(tag) as HTMLElement;
+
+        // Preserve only safe attributes
+        if (tag === "a") {
+          const href = el.getAttribute("href");
+          if (href && /^https?:\/\//.test(href)) clean.setAttribute("href", href);
+          clean.setAttribute("target", "_blank");
+          clean.setAttribute("rel", "noopener noreferrer");
+        }
+        if (tag === "img") {
+          const src = el.getAttribute("src");
+          if (src && (src.startsWith("http") || src.startsWith("data:"))) {
+            clean.setAttribute("src", src);
+            clean.setAttribute("style", "max-width:100%;height:auto;display:block;margin:4px 0;");
+          }
+        }
+        // Strip all inline styles, class, id — only keep safe structural styles
+        // for tags that need them (pre, code keep their look)
+
+        el.childNodes.forEach(child => {
+          const cleaned = cleanNode(child);
+          if (cleaned) clean.appendChild(cleaned);
+        });
+        return clean;
+      }
+
+      const frag = document.createDocumentFragment();
+      doc.body.childNodes.forEach(child => {
+        const cleaned = cleanNode(child);
+        if (cleaned) frag.appendChild(cleaned);
+      });
+
+      // Serialize cleaned fragment to HTML string
+      const tmp = document.createElement("div");
+      tmp.appendChild(frag);
+      const cleanHtml = tmp.innerHTML;
+
+      document.execCommand("insertHTML", false, cleanHtml);
+    } else {
+      // Plain text: convert newlines to <br> and insert
+      const safeText = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br>");
+      document.execCommand("insertHTML", false, safeText);
+    }
+    syncBody();
+  }
+
   // ─── Exec command helper ──────────────────────────────────────────────────
 
   function exec(cmd: string, value?: string) {
@@ -1105,6 +1196,7 @@ export default function ComposeModal({
                 onKeyUp={updateFormatState}
                 onMouseUp={updateFormatState}
                 onFocus={updateFormatState}
+                onPaste={handlePaste}
                 data-placeholder="Write your email…"
                 className="min-h-[220px] px-4 py-4 text-sm text-slate-800 outline-none leading-relaxed"
                 style={{

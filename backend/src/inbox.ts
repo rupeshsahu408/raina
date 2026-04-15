@@ -411,110 +411,154 @@ inboxRouter.post("/reply/generate", express.json(), async (req, res) => {
   }
 });
 
-// ── Helpers for building MIME emails ─────────────────────────────────────────
+// ── Email send helpers ────────────────────────────────────────────────────────
 
-function htmlToPlainText(html: string): string {
+function htmlToPlain(html: string): string {
   return html
     .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<\/div>/gi, "\n")
-    .replace(/<\/li>/gi, "\n")
-    .replace(/<\/h[1-6]>/gi, "\n\n")
-    .replace(/<\/blockquote>/gi, "\n")
+    .replace(/<\/p>/gi, "\n").replace(/<\/div>/gi, "\n")
+    .replace(/<\/li>/gi, "\n").replace(/<\/h[1-6]>/gi, "\n\n")
     .replace(/<hr[^>]*>/gi, "\n---\n")
     .replace(/<[^>]+>/g, "")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;|&#39;/g, "'")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+    .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#039;|&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n").trim();
 }
 
-function buildMimeEmail(opts: {
-  to: string; cc?: string; bcc?: string;
-  subject: string; body: string;
-  threadId?: string; inReplyTo?: string;
+/** Encode subject per RFC 2047 if it contains non-ASCII characters */
+function encodeSubject(s: string): string {
+  return /[^\x20-\x7E]/.test(s)
+    ? `=?UTF-8?B?${Buffer.from(s, "utf8").toString("base64")}?=`
+    : s;
+}
+
+/** Fold base64 into 76-char lines as required by MIME spec */
+function foldBase64(b64: string): string {
+  return (b64.match(/.{1,76}/g) ?? [b64]).join("\r\n");
+}
+
+/**
+ * Build a complete RFC-2822 / MIME email that Gmail API can send.
+ * Uses multipart/alternative so recipients get both plain-text and HTML.
+ */
+function buildEmail(opts: {
+  to: string; cc?: string; bcc?: string; subject: string;
+  bodyHtml: string; inReplyTo?: string;
 }): string {
-  const { to, cc, bcc, subject, body, inReplyTo } = opts;
+  const { to, cc, bcc, subject, bodyHtml, inReplyTo } = opts;
 
-  const isHtml = /<[a-zA-Z][^>]*>/s.test(body);
+  const isHtml = /<[a-zA-Z][^>]*>/.test(bodyHtml);
 
-  const plainText = isHtml ? htmlToPlainText(body) : body;
-  const htmlBody = isHtml
-    ? `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#202124;margin:0;padding:0}a{color:#1a73e8;text-decoration:none}a:hover{text-decoration:underline}blockquote{margin:8px 0 8px 12px;padding-left:12px;border-left:3px solid #dadce0;color:#5f6368}pre{background:#f5f5f5;border-radius:6px;padding:10px 14px;font-family:'Courier New',monospace;font-size:13px;white-space:pre-wrap}img{max-width:100%;height:auto}h1,h2,h3{font-weight:700;margin:12px 0 6px}ul,ol{padding-left:1.5em;margin:4px 0}li{margin-bottom:4px}hr{border:0;border-top:1px solid #e8eaed;margin:14px 0}table{border-collapse:collapse}td,th{padding:6px 12px;border:1px solid #e8eaed}</style></head><body>${body}</body></html>`
-    : `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#202124">${body.replace(/\n/g, "<br>")}</div></body></html>`;
+  // Wrap body in a properly styled HTML document
+  const fullHtml = isHtml
+    ? `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.6; color: #202124; margin: 0; padding: 16px 20px; }
+    a { color: #1a73e8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    blockquote { margin: 8px 0 8px 12px; padding-left: 12px; border-left: 3px solid #dadce0; color: #5f6368; }
+    pre { background: #f5f5f5; border-radius: 6px; padding: 10px 14px; font-family: 'Courier New', monospace; font-size: 13px; white-space: pre-wrap; word-break: break-word; }
+    code { background: #f1f3f4; padding: 2px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 13px; }
+    img { max-width: 100%; height: auto; display: block; }
+    h1 { font-size: 1.6em; font-weight: 700; margin: 12px 0 6px; }
+    h2 { font-size: 1.3em; font-weight: 700; margin: 10px 0 5px; }
+    h3 { font-size: 1.1em; font-weight: 700; margin: 8px 0 4px; }
+    ul { list-style: disc; padding-left: 1.5em; margin: 6px 0; }
+    ol { list-style: decimal; padding-left: 1.5em; margin: 6px 0; }
+    li { margin-bottom: 3px; }
+    hr { border: 0; border-top: 1px solid #e8eaed; margin: 14px 0; }
+    table { border-collapse: collapse; }
+    td, th { padding: 6px 12px; border: 1px solid #e8eaed; }
+  </style>
+</head>
+<body>${bodyHtml}</body>
+</html>`
+    : `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#202124;white-space:pre-wrap">${bodyHtml}</div></body></html>`;
 
-  const encodedSubject = /[^\x00-\x7F]/.test(subject)
-    ? `=?UTF-8?B?${Buffer.from(subject).toString("base64")}?=`
-    : subject;
+  const plainText = htmlToPlain(bodyHtml);
 
-  const boundary = `plyndrox_${Date.now().toString(16)}_${Math.random().toString(36).slice(2)}`;
+  // Base64-encode each MIME part (safest, most compatible encoding)
+  const plainB64 = foldBase64(Buffer.from(plainText, "utf8").toString("base64"));
+  const htmlB64  = foldBase64(Buffer.from(fullHtml, "utf8").toString("base64"));
 
-  const lines: string[] = [
+  const boundary = `plyndrox_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+
+  const headers = [
     `To: ${to}`,
-    cc ? `Cc: ${cc}` : null,
-    bcc ? `Bcc: ${bcc}` : null,
-    `Subject: ${encodedSubject}`,
+    cc  ? `Cc: ${cc}`  : "",
+    bcc ? `Bcc: ${bcc}` : "",
+    `Subject: ${encodeSubject(subject)}`,
     `MIME-Version: 1.0`,
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
-    inReplyTo ? `In-Reply-To: <${inReplyTo}>` : null,
-    inReplyTo ? `References: <${inReplyTo}>` : null,
-    ``,
+    inReplyTo ? `In-Reply-To: <${inReplyTo}>` : "",
+    inReplyTo ? `References: <${inReplyTo}>` : "",
+  ].filter(Boolean).join("\r\n");
+
+  const body = [
     `--${boundary}`,
     `Content-Type: text/plain; charset="UTF-8"`,
-    `Content-Transfer-Encoding: 8bit`,
+    `Content-Transfer-Encoding: base64`,
     ``,
-    plainText,
+    plainB64,
     ``,
     `--${boundary}`,
     `Content-Type: text/html; charset="UTF-8"`,
-    `Content-Transfer-Encoding: 8bit`,
+    `Content-Transfer-Encoding: base64`,
     ``,
-    htmlBody,
+    htmlB64,
     ``,
     `--${boundary}--`,
-  ];
+  ].join("\r\n");
 
-  return lines.filter(l => l !== null).join("\r\n");
+  return `${headers}\r\n\r\n${body}`;
 }
 
 // POST /inbox/reply/send
 inboxRouter.post("/reply/send", express.json(), async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
   const { to, cc, bcc, subject, body, threadId, inReplyTo } = req.body ?? {};
 
-  const toStr = (typeof to === "string" ? to : "").trim();
-  const bodyStr = (typeof body === "string" ? body : "").trim();
+  const toStr      = (typeof to      === "string" ? to      : "").trim();
+  const bodyStr    = (typeof body    === "string" ? body    : "").trim();
   const subjectStr = (typeof subject === "string" ? subject : "").trim() || "(no subject)";
+  const ccStr      = (typeof cc      === "string" ? cc      : "").trim();
+  const bccStr     = (typeof bcc     === "string" ? bcc     : "").trim();
 
-  if (!toStr) return res.status(400).json({ error: "At least one recipient (To) is required." });
+  if (!toStr)   return res.status(400).json({ error: "At least one recipient (To) is required." });
   if (!bodyStr) return res.status(400).json({ error: "Message body cannot be empty." });
 
   try {
-    const auth = await getAuthenticatedClient(uid);
+    const auth  = await getAuthenticatedClient(uid);
     const gmail = google.gmail({ version: "v1", auth });
-    const isThreadReply = Boolean(threadId || inReplyTo);
-    const finalSubject = isThreadReply && !subjectStr.startsWith("Re:") ? `Re: ${subjectStr}` : subjectStr;
 
-    const mimeEmail = buildMimeEmail({
+    const isThreadReply = Boolean(threadId || inReplyTo);
+    const finalSubject  = isThreadReply && !subjectStr.startsWith("Re:")
+      ? `Re: ${subjectStr}` : subjectStr;
+
+    const mimeMessage = buildEmail({
       to: toStr,
-      cc: cc ? String(cc).trim() : undefined,
-      bcc: bcc ? String(bcc).trim() : undefined,
+      cc:  ccStr  || undefined,
+      bcc: bccStr || undefined,
       subject: finalSubject,
-      body: bodyStr,
-      threadId,
-      inReplyTo,
+      bodyHtml: bodyStr,
+      inReplyTo: inReplyTo ? String(inReplyTo) : undefined,
     });
 
-    const raw = Buffer.from(mimeEmail).toString("base64url");
+    // The Gmail API raw field must be base64url of the full RFC-2822 message
+    const raw = Buffer.from(mimeMessage, "utf8").toString("base64url");
+
     await gmail.users.messages.send({
       userId: "me",
-      requestBody: threadId ? { raw, threadId } : { raw },
+      requestBody: threadId ? { raw, threadId: String(threadId) } : { raw },
     });
+
     return res.json({ success: true });
   } catch (err: any) {
     console.error("[inbox/reply/send]", err.message);
