@@ -69,7 +69,7 @@ export default function BusinessAIPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 max-w-4xl mx-auto">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
           <Link
             href="/whatsapp-ai"
             className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-emerald-500/30 hover:bg-emerald-950/20 hover:shadow-2xl hover:shadow-emerald-950/40"
@@ -153,6 +153,54 @@ export default function BusinessAIPage() {
               </div>
 
               <div className="flex items-center gap-2 text-sm font-bold text-violet-400 group-hover:gap-3 transition-all">
+                Get started
+                <ArrowRightIcon className="h-4 w-4" />
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/inbox"
+            className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-fuchsia-500/30 hover:bg-fuchsia-950/20 hover:shadow-2xl hover:shadow-fuchsia-950/40"
+          >
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_20%,rgba(217,70,219,0.10),transparent_60%)]" />
+
+            <div className="relative">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20">
+                  <svg className="h-7 w-7 text-fuchsia-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                  </svg>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-full border border-fuchsia-400/20 bg-fuchsia-400/8 px-3 py-1 text-xs font-semibold text-fuchsia-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse" />
+                  Beta
+                </div>
+              </div>
+
+              <h2 className="text-3xl font-black tracking-tight text-white mb-3">
+                Inbox AI
+              </h2>
+              <p className="text-zinc-400 text-sm leading-7 mb-8">
+                Connect Gmail and let AI summarize every email, detect intent, and generate perfect replies in your tone — Formal, Casual, Sales, or Short.
+              </p>
+
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {[
+                  "Intent detection",
+                  "Smart replies",
+                  "AI summaries",
+                  "Auto-reply rules",
+                ].map((feat) => (
+                  <div key={feat} className="flex items-center gap-2 text-xs text-zinc-400">
+                    <span className="w-1 h-1 rounded-full bg-fuchsia-400 shrink-0" />
+                    {feat}
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 text-sm font-bold text-fuchsia-400 group-hover:gap-3 transition-all">
                 Get started
                 <ArrowRightIcon className="h-4 w-4" />
               </div>

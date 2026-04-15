@@ -139,6 +139,7 @@ export default function Home() {
             <Link href="/features" className="transition hover:text-white">Features</Link>
             <Link href="/bihar-ai" className="transition hover:text-white">Bihar AI</Link>
             <Link href="/business-ai" className="transition hover:text-white">Business</Link>
+            <Link href="/inbox" className="transition hover:text-white">Inbox AI</Link>
             <Link href="/blog" className="transition hover:text-white">Blog</Link>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">

@@ -1,9 +1,11 @@
 # Evara AI — Replit Project
 
 ## Overview
-A PWA AI companion app with two AI systems:
+A multi-platform AI suite with four AI systems:
 - **Evara AI** — emotionally intelligent personal companion (Simi / Loa personalities)
 - **Bihar AI** — Bihar-focused knowledge assistant (education, jobs, politics, culture, etc.)
+- **Business AI** — hub at `/business-ai` routing to WhatsApp AI (`/whatsapp-ai`) and Website AI/IBARA (`/ibara`)
+- **Plyndrox Inbox AI** — Gmail-connected email intelligence with AI summaries, intent detection, and smart reply generation
 
 ## Architecture
 - **Frontend** (`frontend/`) — Next.js 16 PWA, port 5000
@@ -59,3 +61,7 @@ Frontend proxies all `/v1/*` and `/health` requests to the backend via Next.js r
 - WhatsApp assistant credentials can be configured either as server-side environment variables/secrets (`WHATSAPP_CLOUD_API_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN`) or through the dashboard’s encrypted credential vault. The frontend only receives readiness/status booleans and metadata, never secret values.
 - WhatsApp webhook callback URL is `https://raina-1.onrender.com/v1/whatsapp/webhook`; default verify token fallback is `evara_ai_secure_2026`.
 - WhatsApp business setup uses a browser-stored `businessId` and persists profiles/logs in MongoDB collections `WhatsAppBusinessProfile` and `WhatsAppChatLog`. Set `EVARA_WHATSAPP_BUSINESS_ID` to choose which saved profile the production WhatsApp webhook uses.
+- **Inbox AI** Gmail OAuth flow: `GET /inbox/auth-url` → Google OAuth → `GET /inbox/callback` → stores tokens in MongoDB `InboxToken` → redirects to `/inbox/dashboard`. Requires `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI=https://raina-1.onrender.com/inbox/callback` env vars on Render. Also set `FRONTEND_URL=https://www.plyndrox.app`.
+- Inbox AI dashboard at `/inbox/dashboard` is a three-pane layout (thread list | email view | AI reply panel). Intent labels: Lead/Support/Payment/Meeting/FYI/Spam. Reply tones: Formal/Casual/Sales/Empathetic/Short.
+- `InboxToken` MongoDB model stores uid (Firebase UID), email, accessToken, refreshToken, expiresAt.
+- Cross-platform session (`platformSession.ts`) supports: evara | whatsapp-ai | ibara | inbox. `PlatformSwitcher` floating component allows one-tap switching between all four platforms.

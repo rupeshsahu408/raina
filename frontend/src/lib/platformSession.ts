@@ -1,4 +1,4 @@
-export type Platform = "evara" | "whatsapp-ai" | "ibara";
+export type Platform = "evara" | "whatsapp-ai" | "ibara" | "inbox";
 
 const LAST_PLATFORM_KEY = "evara_last_active_platform";
 
@@ -22,6 +22,8 @@ export function getPlatformRedirectPath(platform: Platform): string {
       return "/whatsapp-ai/dashboard";
     case "ibara":
       return "/ibara/dashboard";
+    case "inbox":
+      return "/inbox/dashboard";
   }
 }
 
@@ -46,5 +48,12 @@ export const PLATFORM_META: Record<Platform, { label: string; description: strin
     color: "text-cyan-300",
     bg: "bg-cyan-500/10",
     border: "border-cyan-500/20",
+  },
+  inbox: {
+    label: "Inbox AI",
+    description: "Smart email assistant",
+    color: "text-fuchsia-300",
+    bg: "bg-fuchsia-500/10",
+    border: "border-fuchsia-500/20",
   },
 };
