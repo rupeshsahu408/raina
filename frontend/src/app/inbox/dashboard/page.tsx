@@ -743,7 +743,7 @@ export default function InboxDashboard() {
     } catch { setScheduledEmails([]); }
   }, []);
 
-  const loadEmails = useCallback(async (fld = folder, pageToken?: string) => {
+  const loadEmails = useCallback(async (fld: Folder | GmailCategory = folder, pageToken?: string) => {
     if (fld === "scheduled") {
       setLoading(false);
       loadScheduled();
