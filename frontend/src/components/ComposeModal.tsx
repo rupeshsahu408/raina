@@ -5,6 +5,8 @@ import {
   useEffect,
   useRef,
   useState,
+  forwardRef,
+  useImperativeHandle,
   KeyboardEvent as RKeyboardEvent,
 } from "react";
 import type { User } from "firebase/auth";
@@ -145,19 +147,24 @@ function Divider() {
   return <div className="w-px h-5 bg-gray-200 mx-0.5 shrink-0" />;
 }
 
-function RecipientChips({
-  label,
-  chips,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  chips: string[];
-  onChange: (chips: string[]) => void;
-  placeholder?: string;
-}) {
+interface RecipientChipsHandle {
+  getAll: () => string[];
+}
+
+const RecipientChips = forwardRef<
+  RecipientChipsHandle,
+  { label: string; chips: string[]; onChange: (chips: string[]) => void; placeholder?: string }
+>(function RecipientChips({ label, chips, onChange, placeholder }, ref) {
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    getAll: () => {
+      const pending = input.trim();
+      if (pending && !chips.includes(pending)) return [...chips, pending];
+      return chips;
+    },
+  }));
 
   function add(value: string) {
     const v = value.trim();
@@ -211,7 +218,7 @@ function RecipientChips({
       />
     </div>
   );
-}
+});
 
 // ─── Main compose modal ────────────────────────────────────────────────────────
 
@@ -230,6 +237,9 @@ export default function ComposeModal({
   const [cc, setCc] = useState<string[]>([]);
   const [bcc, setBcc] = useState<string[]>([]);
   const [showCcBcc, setShowCcBcc] = useState(false);
+  const toRef = useRef<RecipientChipsHandle>(null);
+  const ccRef = useRef<RecipientChipsHandle>(null);
+  const bccRef = useRef<RecipientChipsHandle>(null);
 
   // ── Email fields ──
   const [subject, setSubject] = useState(initialSubject || "");
@@ -507,9 +517,21 @@ export default function ComposeModal({
   // ─── Send ─────────────────────────────────────────────────────────────────
 
   async function handleSend() {
-    if (!to.length) { setError("Add at least one recipient."); return; }
-    const body = editorRef.current?.innerHTML || "";
-    if (!body.trim() || body === "<br>") { setError("Write a message before sending."); return; }
+    // Flush any pending typed (not-yet-chipped) recipients
+    const allTo = toRef.current?.getAll() ?? to;
+    const allCc = ccRef.current?.getAll() ?? cc;
+    const allBcc = bccRef.current?.getAll() ?? bcc;
+
+    if (!allTo.length) { setError("Add at least one recipient."); return; }
+
+    // Get the raw HTML and check for real text content
+    const rawHtml = editorRef.current?.innerHTML || "";
+    const plainTextCheck = rawHtml
+      .replace(/<br\s*\/?>/gi, "")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .trim();
+    if (!plainTextCheck) { setError("Write a message before sending."); return; }
 
     setSending(true);
     setError("");
@@ -517,41 +539,22 @@ export default function ComposeModal({
       const token = await user?.getIdToken();
       if (!token) throw new Error("Not authenticated");
 
-      let htmlBody = body;
+      let htmlBody = rawHtml;
       if (confidential) {
-        htmlBody += `<br><br><div style="color:#c00;font-size:12px;padding:8px;border:1px solid #c00;border-radius:4px;">⚠️ This email is marked CONFIDENTIAL. Do not forward or share.</div>`;
+        htmlBody += `<br><br><div style="color:#c00;font-size:12px;padding:8px 12px;border:1px solid #c00;border-radius:6px;display:inline-block;margin-top:8px;">🔒 CONFIDENTIAL — Do not forward or share this message.</div>`;
       }
 
-      const formData = new FormData();
-      formData.append("to", to.join(", "));
-      if (cc.length) formData.append("cc", cc.join(", "));
-      if (bcc.length) formData.append("bcc", bcc.join(", "));
-      formData.append("subject", subject.trim() || "(no subject)");
-      formData.append("body", htmlBody);
-      formData.append("isHtml", "true");
-      attachments.forEach(a => formData.append("files", a.file));
-
-      let res: Response;
-      const hasAttachments = attachments.length > 0;
-      if (hasAttachments) {
-        res = await fetch(`${apiBase}/inbox/reply/send`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        });
-      } else {
-        res = await fetch(`${apiBase}/inbox/reply/send`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to: to.join(", "),
-            cc: cc.join(", ") || undefined,
-            bcc: bcc.join(", ") || undefined,
-            subject: subject.trim() || "(no subject)",
-            body: htmlBody,
-          }),
-        });
-      }
+      const res = await fetch(`${apiBase}/inbox/reply/send`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: allTo.join(", "),
+          cc: allCc.length ? allCc.join(", ") : undefined,
+          bcc: allBcc.length ? allBcc.join(", ") : undefined,
+          subject: subject.trim() || "(no subject)",
+          body: htmlBody,
+        }),
+      });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to send");
@@ -685,7 +688,7 @@ export default function ComposeModal({
               <div className="border-b border-gray-100">
                 <div className="flex items-start">
                   <div className="flex-1">
-                    <RecipientChips label="To" chips={to} onChange={setTo} placeholder="Recipients" />
+                    <RecipientChips ref={toRef} label="To" chips={to} onChange={setTo} placeholder="Recipients" />
                   </div>
                   <button
                     type="button"
@@ -699,10 +702,10 @@ export default function ComposeModal({
               {showCcBcc && (
                 <>
                   <div className="border-b border-gray-100">
-                    <RecipientChips label="Cc" chips={cc} onChange={setCc} />
+                    <RecipientChips ref={ccRef} label="Cc" chips={cc} onChange={setCc} />
                   </div>
                   <div className="border-b border-gray-100">
-                    <RecipientChips label="Bcc" chips={bcc} onChange={setBcc} />
+                    <RecipientChips ref={bccRef} label="Bcc" chips={bcc} onChange={setBcc} />
                   </div>
                 </>
               )}

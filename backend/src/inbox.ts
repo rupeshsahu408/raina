@@ -411,29 +411,106 @@ inboxRouter.post("/reply/generate", express.json(), async (req, res) => {
   }
 });
 
+// ── Helpers for building MIME emails ─────────────────────────────────────────
+
+function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>/gi, "\n")
+    .replace(/<\/div>/gi, "\n")
+    .replace(/<\/li>/gi, "\n")
+    .replace(/<\/h[1-6]>/gi, "\n\n")
+    .replace(/<\/blockquote>/gi, "\n")
+    .replace(/<hr[^>]*>/gi, "\n---\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;|&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function buildMimeEmail(opts: {
+  to: string; cc?: string; bcc?: string;
+  subject: string; body: string;
+  threadId?: string; inReplyTo?: string;
+}): string {
+  const { to, cc, bcc, subject, body, inReplyTo } = opts;
+
+  const isHtml = /<[a-zA-Z][^>]*>/s.test(body);
+
+  const plainText = isHtml ? htmlToPlainText(body) : body;
+  const htmlBody = isHtml
+    ? `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#202124;margin:0;padding:0}a{color:#1a73e8;text-decoration:none}a:hover{text-decoration:underline}blockquote{margin:8px 0 8px 12px;padding-left:12px;border-left:3px solid #dadce0;color:#5f6368}pre{background:#f5f5f5;border-radius:6px;padding:10px 14px;font-family:'Courier New',monospace;font-size:13px;white-space:pre-wrap}img{max-width:100%;height:auto}h1,h2,h3{font-weight:700;margin:12px 0 6px}ul,ol{padding-left:1.5em;margin:4px 0}li{margin-bottom:4px}hr{border:0;border-top:1px solid #e8eaed;margin:14px 0}table{border-collapse:collapse}td,th{padding:6px 12px;border:1px solid #e8eaed}</style></head><body>${body}</body></html>`
+    : `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#202124">${body.replace(/\n/g, "<br>")}</div></body></html>`;
+
+  const encodedSubject = /[^\x00-\x7F]/.test(subject)
+    ? `=?UTF-8?B?${Buffer.from(subject).toString("base64")}?=`
+    : subject;
+
+  const boundary = `plyndrox_${Date.now().toString(16)}_${Math.random().toString(36).slice(2)}`;
+
+  const lines: string[] = [
+    `To: ${to}`,
+    cc ? `Cc: ${cc}` : null,
+    bcc ? `Bcc: ${bcc}` : null,
+    `Subject: ${encodedSubject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    inReplyTo ? `In-Reply-To: <${inReplyTo}>` : null,
+    inReplyTo ? `References: <${inReplyTo}>` : null,
+    ``,
+    `--${boundary}`,
+    `Content-Type: text/plain; charset="UTF-8"`,
+    `Content-Transfer-Encoding: 8bit`,
+    ``,
+    plainText,
+    ``,
+    `--${boundary}`,
+    `Content-Type: text/html; charset="UTF-8"`,
+    `Content-Transfer-Encoding: 8bit`,
+    ``,
+    htmlBody,
+    ``,
+    `--${boundary}--`,
+  ];
+
+  return lines.filter(l => l !== null).join("\r\n");
+}
+
 // POST /inbox/reply/send
 inboxRouter.post("/reply/send", express.json(), async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
   const { to, cc, bcc, subject, body, threadId, inReplyTo } = req.body ?? {};
-  if (!to || !subject || !body) return res.status(400).json({ error: "to, subject, and body are required" });
+
+  const toStr = (typeof to === "string" ? to : "").trim();
+  const bodyStr = (typeof body === "string" ? body : "").trim();
+  const subjectStr = (typeof subject === "string" ? subject : "").trim() || "(no subject)";
+
+  if (!toStr) return res.status(400).json({ error: "At least one recipient (To) is required." });
+  if (!bodyStr) return res.status(400).json({ error: "Message body cannot be empty." });
+
   try {
     const auth = await getAuthenticatedClient(uid);
     const gmail = google.gmail({ version: "v1", auth });
     const isThreadReply = Boolean(threadId || inReplyTo);
-    const replySubject = isThreadReply && !subject.startsWith("Re:") ? `Re: ${subject}` : subject;
-    const headers = [
-      `To: ${to}`,
-      cc ? `Cc: ${cc}` : "",
-      bcc ? `Bcc: ${bcc}` : "",
-      `Subject: ${replySubject}`,
-      `Content-Type: text/plain; charset="UTF-8"`,
-      inReplyTo ? `In-Reply-To: ${inReplyTo}` : "",
-      inReplyTo ? `References: ${inReplyTo}` : "",
-    ]
-      .filter(Boolean)
-      .join("\r\n");
-    const raw = Buffer.from(`${headers}\r\n\r\n${body}`).toString("base64url");
+    const finalSubject = isThreadReply && !subjectStr.startsWith("Re:") ? `Re: ${subjectStr}` : subjectStr;
+
+    const mimeEmail = buildMimeEmail({
+      to: toStr,
+      cc: cc ? String(cc).trim() : undefined,
+      bcc: bcc ? String(bcc).trim() : undefined,
+      subject: finalSubject,
+      body: bodyStr,
+      threadId,
+      inReplyTo,
+    });
+
+    const raw = Buffer.from(mimeEmail).toString("base64url");
     await gmail.users.messages.send({
       userId: "me",
       requestBody: threadId ? { raw, threadId } : { raw },
