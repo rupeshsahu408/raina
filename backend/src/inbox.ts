@@ -36,30 +36,19 @@ async function getAuthenticatedClient(uid: string) {
   return oauth2;
 }
 
+function decodeBase64UrlToBuffer(str: string): Buffer {
+  let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+  const padding = base64.length % 4;
+  if (padding) base64 += "=".repeat(4 - padding);
+  return Buffer.from(base64, "base64");
+}
+
 function decodeBase64Url(str: string): string {
-  const base64 = str.replace(/-/g, "+").replace(/_/g, "/");
   try {
-    return Buffer.from(base64, "base64").toString("utf-8");
+    return decodeBase64UrlToBuffer(str).toString("utf-8");
   } catch {
     return "";
   }
-}
-
-function extractBody(payload: any): string {
-  if (!payload) return "";
-  if (payload.body?.data) return decodeBase64Url(payload.body.data);
-  if (payload.parts) {
-    for (const part of payload.parts) {
-      if (part.mimeType === "text/plain" && part.body?.data) {
-        return decodeBase64Url(part.body.data);
-      }
-    }
-    for (const part of payload.parts) {
-      const nested = extractBody(part);
-      if (nested) return nested;
-    }
-  }
-  return "";
 }
 
 function extractHeader(headers: any[], name: string): string {
@@ -67,7 +56,93 @@ function extractHeader(headers: any[], name: string): string {
 }
 
 function stripHtmlTags(html: string): string {
-  return html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 3000);
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>|<\/div>|<\/li>|<\/tr>/gi, "\n")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\n\s+/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+    .slice(0, 8000);
+}
+
+function normalizeContentId(value: string): string {
+  return value.trim().replace(/^</, "").replace(/>$/, "").replace(/^cid:/i, "").toLowerCase();
+}
+
+async function getPartText(gmail: any, messageId: string, part: any): Promise<string> {
+  if (part.body?.data) return decodeBase64Url(part.body.data);
+  if (!part.body?.attachmentId) return "";
+  try {
+    const attachment = await gmail.users.messages.attachments.get({
+      userId: "me",
+      messageId,
+      id: part.body.attachmentId,
+    });
+    return attachment.data.data ? decodeBase64Url(attachment.data.data) : "";
+  } catch {
+    return "";
+  }
+}
+
+async function getPartBase64(gmail: any, messageId: string, part: any): Promise<string> {
+  try {
+    if (part.body?.data) return decodeBase64UrlToBuffer(part.body.data).toString("base64");
+    if (!part.body?.attachmentId) return "";
+    const attachment = await gmail.users.messages.attachments.get({
+      userId: "me",
+      messageId,
+      id: part.body.attachmentId,
+    });
+    return attachment.data.data ? decodeBase64UrlToBuffer(attachment.data.data).toString("base64") : "";
+  } catch {
+    return "";
+  }
+}
+
+async function extractMessageContent(payload: any, gmail: any, messageId: string): Promise<{ html: string; text: string }> {
+  const htmlParts: string[] = [];
+  const textParts: string[] = [];
+  const inlineImages: Record<string, { mimeType: string; data: string }> = {};
+
+  async function walk(part: any): Promise<void> {
+    if (!part) return;
+    const mimeType = String(part.mimeType ?? "").toLowerCase();
+    const headers = part.headers ?? [];
+    const contentId = extractHeader(headers, "Content-ID");
+    const disposition = extractHeader(headers, "Content-Disposition").toLowerCase();
+
+    if (mimeType === "text/html") {
+      const html = await getPartText(gmail, messageId, part);
+      if (html) htmlParts.push(html);
+    } else if (mimeType === "text/plain") {
+      const text = await getPartText(gmail, messageId, part);
+      if (text) textParts.push(text);
+    } else if (contentId && mimeType.startsWith("image/") && (!disposition || disposition.includes("inline"))) {
+      const data = await getPartBase64(gmail, messageId, part);
+      if (data) inlineImages[normalizeContentId(contentId)] = { mimeType, data };
+    }
+
+    if (Array.isArray(part.parts)) {
+      for (const child of part.parts) {
+        await walk(child);
+      }
+    }
+  }
+
+  await walk(payload);
+
+  let html = htmlParts.join("<hr>");
+  for (const [cid, image] of Object.entries(inlineImages)) {
+    const escapedCid = cid.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    html = html.replace(new RegExp(`cid:${escapedCid}`, "gi"), `data:${image.mimeType};base64,${image.data}`);
+  }
+
+  const text = textParts.join("\n\n").trim() || stripHtmlTags(html);
+  return { html, text };
 }
 
 type IntentLabel = "Lead" | "Support" | "Payment" | "Meeting" | "Spam" | "FYI";
@@ -291,15 +366,17 @@ inboxRouter.get("/thread/:threadId", async (req, res) => {
     const auth = await getAuthenticatedClient(uid);
     const gmail = google.gmail({ version: "v1", auth });
     const threadRes = await gmail.users.threads.get({ userId: "me", id: threadId, format: "full" });
-    const threadMessages = (threadRes.data.messages ?? []).map((msg) => {
+    const threadMessages = await Promise.all((threadRes.data.messages ?? []).map(async (msg) => {
       const headers = msg.payload?.headers ?? [];
       const subject = extractHeader(headers, "Subject") || "(no subject)";
       const from = extractHeader(headers, "From");
+      const to = extractHeader(headers, "To");
+      const cc = extractHeader(headers, "Cc");
       const date = extractHeader(headers, "Date");
-      const rawBody = extractBody(msg.payload);
-      const body = rawBody ? stripHtmlTags(rawBody) : (msg.snippet ?? "");
-      return { id: msg.id, subject, from, date, body };
-    });
+      const content = await extractMessageContent(msg.payload, gmail, msg.id!);
+      const body = content.text || (msg.snippet ?? "");
+      return { id: msg.id, subject, from, to, cc, date, body, bodyText: body, bodyHtml: content.html };
+    }));
     return res.json({ messages: threadMessages });
   } catch (err: any) {
     console.error("[inbox/thread]", err.message);

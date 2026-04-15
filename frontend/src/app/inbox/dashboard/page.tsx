@@ -29,8 +29,12 @@ interface ThreadMessage {
   id: string;
   subject: string;
   from: string;
+  to?: string;
+  cc?: string;
   date: string;
   body: string;
+  bodyText?: string;
+  bodyHtml?: string;
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
@@ -96,14 +100,19 @@ const NAV_ITEMS: { id: Folder; label: string; icon: React.ReactNode }[] = [
   { id: "trash",   label: "Trash",     icon: <TrashIcon /> },
 ];
 
+function cleanAddressPart(value: string): string {
+  return value.trim().replace(/^["']|["']$/g, "");
+}
+
 function senderName(from: string): string {
   const match = from.match(/^(.*?)\s*<(.+?)>$/);
-  const name = match ? match[1].trim() : from;
+  const name = match ? cleanAddressPart(match[1]) : cleanAddressPart(from);
+  if (name.includes("@") && !match) return name.split("@")[0] || name;
   return name || from;
 }
 function senderEmail(from: string): string {
   const match = from.match(/<(.+?)>/);
-  return match ? match[1] : from;
+  return cleanAddressPart(match ? match[1] : from);
 }
 function senderInitial(from: string): string {
   return (senderName(from)[0] || "?").toUpperCase();
@@ -133,6 +142,63 @@ function formatDateLong(dateStr: string): string {
     const d = new Date(dateStr);
     return d.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" }) + ", " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   } catch { return dateStr; }
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function plainTextToHtml(value: string): string {
+  const paragraphs = value
+    .split(/\n{2,}/)
+    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+  return paragraphs || "<p></p>";
+}
+
+function emailFrameDocument(message: ThreadMessage, fallback: string): string {
+  const content = message.bodyHtml?.trim() || plainTextToHtml(message.bodyText || message.body || fallback);
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <base target="_blank">
+  <style>
+    html, body { margin: 0; padding: 0; background: #fff; color: #202124; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 1.6; }
+    body { padding: 2px 0 18px; overflow-wrap: anywhere; }
+    .email-root { max-width: 100%; }
+    img { max-width: 100% !important; height: auto !important; display: inline-block; }
+    table { max-width: 100% !important; border-collapse: collapse; }
+    td, th { vertical-align: top; }
+    p { margin: 0 0 12px; }
+    blockquote { margin: 12px 0 12px 12px; padding-left: 12px; border-left: 3px solid #dadce0; color: #5f6368; }
+    pre { white-space: pre-wrap; word-break: break-word; font-family: inherit; }
+    a { color: #1a73e8; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="email-root">${content}</div>
+</body>
+</html>`;
+}
+
+function EmailBodyFrame({ message, fallback }: { message: ThreadMessage; fallback: string }) {
+  return (
+    <iframe
+      title={`Email body ${message.id}`}
+      srcDoc={emailFrameDocument(message, fallback)}
+      sandbox=""
+      referrerPolicy="no-referrer"
+      className="h-[65vh] min-h-[360px] w-full rounded-xl border-0 bg-white"
+    />
+  );
 }
 
 export default function InboxDashboard() {
@@ -706,8 +772,13 @@ export default function InboxDashboard() {
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center justify-between gap-2">
                                   <div>
-                                    <span className="font-bold text-gray-900 text-sm">{name}</span>
-                                    <span className="ml-1.5 text-xs text-gray-400">&lt;{email}&gt;</span>
+                                    <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                                      <span className="font-bold text-gray-900 text-sm">{name}</span>
+                                      <span className="text-xs text-gray-500">&lt;{email}&gt;</span>
+                                    </div>
+                                    <p className="text-[11px] text-gray-500 mt-0.5">
+                                      to {msg.to ? senderName(msg.to) : "me"}
+                                    </p>
                                   </div>
                                   <div className="flex items-center gap-2 shrink-0">
                                     <span className="text-xs text-gray-400">{formatDateLong(msg.date)}</span>
@@ -723,6 +794,8 @@ export default function InboxDashboard() {
                                 {showDetails && (
                                   <div className="mt-2 text-[11px] text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
                                     <p><span className="font-semibold">From:</span> {msg.from}</p>
+                                    {msg.to && <p><span className="font-semibold">To:</span> {msg.to}</p>}
+                                    {msg.cc && <p><span className="font-semibold">Cc:</span> {msg.cc}</p>}
                                     <p><span className="font-semibold">Subject:</span> {msg.subject}</p>
                                     <p><span className="font-semibold">Date:</span> {formatDateLong(msg.date)}</p>
                                   </div>
@@ -731,8 +804,8 @@ export default function InboxDashboard() {
                             </div>
 
                             {/* Body */}
-                            <div className="text-sm text-gray-700 leading-7 whitespace-pre-wrap break-words">
-                              {msg.body || selectedEmail.snippet}
+                            <div className="overflow-hidden rounded-xl bg-white text-sm text-gray-700">
+                              <EmailBodyFrame message={msg} fallback={selectedEmail.snippet} />
                             </div>
 
                             {idx < threadMessages.length - 1 && (
