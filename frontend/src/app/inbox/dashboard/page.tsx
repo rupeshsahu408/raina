@@ -310,7 +310,7 @@ export default function InboxDashboard() {
           >
             Manage Gmail
           </Link>
-          <PlatformSwitcher currentPlatform="inbox" />
+          <PlatformSwitcher current="inbox" />
         </div>
       </header>
 
