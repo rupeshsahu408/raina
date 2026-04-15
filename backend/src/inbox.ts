@@ -245,7 +245,7 @@ inboxRouter.get("/auth-url", async (req, res) => {
     access_type: "offline",
     prompt: "consent",
     scope: [
-      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.modify",
       "https://www.googleapis.com/auth/gmail.send",
       "https://www.googleapis.com/auth/userinfo.email",
     ],
@@ -303,6 +303,7 @@ const FOLDER_CONFIG: Record<string, { labelIds?: string[]; q?: string }> = {
   trash:    { labelIds: ["TRASH"] },
   drafts:   { labelIds: ["DRAFT"] },
   starred:  { labelIds: ["STARRED"] },
+  archive:  { q: "-in:inbox -in:spam -in:trash -in:sent -in:draft" },
   all:      { q: "-in:spam -in:trash" },
 };
 

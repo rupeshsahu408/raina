@@ -10,7 +10,7 @@ import ComposeModal from "@/components/ComposeModal";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-type Folder = "inbox" | "sent" | "spam" | "drafts" | "starred" | "trash" | "scheduled";
+type Folder = "inbox" | "sent" | "spam" | "drafts" | "starred" | "trash" | "scheduled" | "archive";
 type FilterType = "all" | "read" | "unread" | "starred" | "unstarred";
 
 interface LocalDraft {
@@ -120,6 +120,7 @@ const NAV_ITEMS: { id: Folder; label: string; icon: React.ReactNode }[] = [
   { id: "drafts",    label: "Drafts",    icon: <DraftIcon /> },
   { id: "scheduled", label: "Scheduled", icon: <ScheduledIcon /> },
   { id: "starred",   label: "Starred",   icon: <StarIcon filled={false} /> },
+  { id: "archive",   label: "Archive",   icon: <ArchiveIcon /> },
   { id: "trash",     label: "Trash",     icon: <TrashIcon /> },
   { id: "spam",      label: "Spam",      icon: <SpamIcon /> },
 ];
@@ -527,27 +528,39 @@ export default function InboxDashboard() {
   async function handleTrash(email: EmailItem, e?: React.MouseEvent) {
     e?.stopPropagation();
     const token = await getToken();
+    // Optimistic remove
     setEmails(prev => prev.filter(em => em.id !== email.id));
     if (selectedEmail?.id === email.id) { setSelectedEmail(null); setMobileView("list"); }
     try {
-      await fetch(`${API}/inbox/trash/${email.id}`, {
+      const res = await fetch(`${API}/inbox/trash/${email.id}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 403) {
+        // Restore the email and ask to reconnect
+        setEmails(prev => [email, ...prev]);
+        setComposeSuccess("Permission error — please reconnect your Gmail account (Settings → Reconnect).");
+        window.setTimeout(() => setComposeSuccess(""), 6000);
+      }
     } catch {}
-    if (folder === "trash") loadEmails("trash");
   }
 
   async function handleArchive(email: EmailItem, e?: React.MouseEvent) {
     e?.stopPropagation();
     const token = await getToken();
+    // Optimistic remove
     setEmails(prev => prev.filter(em => em.id !== email.id));
     if (selectedEmail?.id === email.id) { setSelectedEmail(null); setMobileView("list"); }
     try {
-      await fetch(`${API}/inbox/archive/${email.id}`, {
+      const res = await fetch(`${API}/inbox/archive/${email.id}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (res.status === 403) {
+        setEmails(prev => [email, ...prev]);
+        setComposeSuccess("Permission error — please reconnect your Gmail account (Settings → Reconnect).");
+        window.setTimeout(() => setComposeSuccess(""), 6000);
+      }
     } catch {}
   }
 
@@ -586,24 +599,42 @@ export default function InboxDashboard() {
   }
 
   function handleComposeSent(fld?: string) {
-    setComposeSuccess("Message sent through Gmail.");
-    if (fld === "sent" || folder === "sent") loadEmails("sent");
-    else if (fld) loadEmails(fld as Folder);
+    if (fld === "scheduled") {
+      setComposeSuccess("Message scheduled successfully.");
+      loadScheduled();
+    } else {
+      setComposeSuccess("Message sent through Gmail.");
+      if (fld === "sent" || folder === "sent") loadEmails("sent");
+      else if (fld) loadEmails(fld as Folder);
+    }
     window.setTimeout(() => setComposeSuccess(""), 4500);
   }
 
   async function toggleStar(email: EmailItem, e: React.MouseEvent) {
     e.stopPropagation();
     const newStarred = !email.isStarred;
-    setEmails(prev => prev.map(em => em.id === email.id ? { ...em, isStarred: newStarred } : em));
-    if (selectedEmail?.id === email.id) setSelectedEmail(prev => prev ? { ...prev, isStarred: newStarred } : null);
+    if (folder === "starred" && !newStarred) {
+      // Remove from starred view immediately when un-starring
+      setEmails(prev => prev.filter(em => em.id !== email.id));
+      if (selectedEmail?.id === email.id) { setSelectedEmail(null); setMobileView("list"); }
+    } else {
+      setEmails(prev => prev.map(em => em.id === email.id ? { ...em, isStarred: newStarred } : em));
+      if (selectedEmail?.id === email.id) setSelectedEmail(prev => prev ? { ...prev, isStarred: newStarred } : null);
+    }
     const token = await getToken();
     try {
-      await fetch(`${API}/inbox/star/${email.id}`, {
+      const res = await fetch(`${API}/inbox/star/${email.id}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ starred: newStarred }),
       });
+      if (res.status === 403) {
+        // Revert the optimistic update
+        setEmails(prev => prev.map(em => em.id === email.id ? { ...em, isStarred: email.isStarred } : em));
+        if (selectedEmail?.id === email.id) setSelectedEmail(prev => prev ? { ...prev, isStarred: email.isStarred } : null);
+        setComposeSuccess("Permission error — please reconnect your Gmail account (Settings → Reconnect).");
+        window.setTimeout(() => setComposeSuccess(""), 6000);
+      }
     } catch {}
   }
 
@@ -889,10 +920,10 @@ export default function InboxDashboard() {
                 ) : (
                   <>
                     {filteredEmails.map(email => (
-                      <button
+                      <div
                         key={email.id}
                         onClick={() => openEmail(email)}
-                        className={`w-full text-left flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 transition group relative ${
+                        className={`w-full text-left flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 transition group relative cursor-pointer ${
                           selectedEmail?.id === email.id
                             ? "bg-[#eeebff]"
                             : email.isUnread
@@ -903,7 +934,6 @@ export default function InboxDashboard() {
                         {email.isUnread && (
                           <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r bg-indigo-600" />
                         )}
-                        <input type="checkbox" onClick={e => e.stopPropagation()} className="accent-indigo-600 mt-1 w-4 h-4 shrink-0" />
                         <div
                           className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-black mt-0.5"
                           style={{ background: avatarColor(senderName(email.from)) }}
@@ -915,20 +945,50 @@ export default function InboxDashboard() {
                             <span className={`text-sm truncate ${email.isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
                               {senderName(email.from)}
                             </span>
-                            <span className="text-[11px] text-gray-400 shrink-0">{formatDate(email.date)}</span>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {/* Date — hidden on hover, replaced by action buttons */}
+                              <span className="text-[11px] text-gray-400 group-hover:hidden">{formatDate(email.date)}</span>
+                              {/* Hover action buttons */}
+                              <div className="hidden group-hover:flex items-center gap-0.5">
+                                <button
+                                  onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
+                                  title={email.isStarred ? "Unstar" : "Star"}
+                                  className={`p-1 rounded transition ${email.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}
+                                >
+                                  <StarIcon filled={email.isStarred} />
+                                </button>
+                                <button
+                                  onClick={e => handleArchive(email, e)}
+                                  title="Archive"
+                                  className="p-1 rounded text-gray-400 hover:text-indigo-600 transition"
+                                >
+                                  <ArchiveIcon />
+                                </button>
+                                <button
+                                  onClick={e => handleTrash(email, e)}
+                                  title="Move to trash"
+                                  className="p-1 rounded text-gray-400 hover:text-red-500 transition"
+                                >
+                                  <TrashIcon />
+                                </button>
+                              </div>
+                              {/* Star — always visible when starred, even without hover */}
+                              {email.isStarred && (
+                                <button
+                                  onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
+                                  className="p-0.5 text-yellow-400 group-hover:hidden transition"
+                                >
+                                  <StarIcon filled />
+                                </button>
+                              )}
+                            </div>
                           </div>
                           <p className={`text-xs truncate mb-0.5 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>
                             {email.subject}
                           </p>
                           <p className="text-[11px] text-gray-400 truncate">{email.snippet}</p>
                         </div>
-                        <button
-                          onClick={e => toggleStar(email, e)}
-                          className="shrink-0 p-0.5 mt-0.5 text-gray-300 hover:text-yellow-400 transition opacity-0 group-hover:opacity-100"
-                        >
-                          <StarIcon filled={email.isStarred} />
-                        </button>
-                      </button>
+                      </div>
                     ))}
                     {nextPageToken && (
                       <div className="p-4">
@@ -1224,7 +1284,19 @@ export default function InboxDashboard() {
       </div>
 
       {composeSuccess && (
-        <div className="fixed bottom-5 right-5 z-50 rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-semibold text-emerald-700 shadow-2xl">
+        <div className={`fixed bottom-5 right-5 z-50 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-2xl bg-white flex items-center gap-2 max-w-sm ${
+          composeSuccess.startsWith("Permission") || composeSuccess.startsWith("Error")
+            ? "border-red-200 text-red-700"
+            : composeSuccess.startsWith("Message scheduled")
+            ? "border-indigo-200 text-indigo-700"
+            : "border-emerald-200 text-emerald-700"
+        }`}>
+          {composeSuccess.startsWith("Permission") || composeSuccess.startsWith("Error")
+            ? <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            : composeSuccess.startsWith("Message scheduled")
+            ? <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            : <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+          }
           {composeSuccess}
         </div>
       )}

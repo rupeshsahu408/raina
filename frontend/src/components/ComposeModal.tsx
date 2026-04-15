@@ -583,18 +583,31 @@ export default function ComposeModal({
   // ─── Schedule send ────────────────────────────────────────────────────────
 
   function handleSchedule() {
+    const allTo = toRef.current?.getAll() ?? to;
+    const allCc = ccRef.current?.getAll() ?? cc;
+    const allBcc = bccRef.current?.getAll() ?? bcc;
+
+    if (!allTo.length) {
+      setError("Add at least one recipient before scheduling.");
+      return;
+    }
     const ts = new Date(scheduleDate).getTime();
     if (isNaN(ts) || ts <= Date.now()) {
       setError("Please pick a future date and time.");
       return;
     }
     const body = editorRef.current?.innerHTML || "";
+    const plainCheck = body.replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").trim();
+    if (!plainCheck) {
+      setError("Write a message before scheduling.");
+      return;
+    }
     const item: ScheduledEmail = {
       id: uid(),
-      to,
-      cc,
-      bcc,
-      subject,
+      to: allTo,
+      cc: allCc,
+      bcc: allBcc,
+      subject: subject.trim() || "(no subject)",
       bodyHtml: body,
       scheduledAt: ts,
       attachments: attachments.map(a => ({ name: a.file.name, size: a.file.size, type: a.file.type })),
@@ -603,8 +616,9 @@ export default function ComposeModal({
     if (initialDraftId) removeDraftFromStorage(initialDraftId);
     removeDraftFromStorage(draftId);
     setShowSchedule(false);
-    setSuccessMsg(`Scheduled for ${new Date(ts).toLocaleString()}`);
-    setTimeout(() => { onSent(); onClose(); }, 2000);
+    setError("");
+    setSuccessMsg(`Scheduled for ${new Date(ts).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}`);
+    setTimeout(() => { onSent("scheduled"); onClose(); }, 2000);
   }
 
   // ─── Send ─────────────────────────────────────────────────────────────────
@@ -1458,32 +1472,43 @@ export default function ComposeModal({
 
             {/* ── Schedule panel ──────────────────────────────────────────── */}
             {showSchedule && (
-              <div className="border-t border-indigo-100 bg-indigo-50 px-4 py-3 shrink-0">
-                <div className="flex items-center gap-3 flex-wrap">
+              <div className="border-t border-indigo-100 bg-gradient-to-r from-indigo-50 to-violet-50 px-4 py-4 shrink-0">
+                <div className="flex items-center gap-2 mb-3">
                   <svg className="w-4 h-4 text-indigo-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  <span className="text-sm font-bold text-indigo-800">Schedule send</span>
-                  <input
-                    type="datetime-local"
-                    value={scheduleDate}
-                    onChange={e => setScheduleDate(e.target.value)}
-                    min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
-                    className="flex-1 min-w-[200px] text-sm border border-indigo-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSchedule}
-                    className="px-4 py-1.5 rounded-full bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition"
-                  >
-                    Schedule
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowSchedule(false)}
-                    className="text-indigo-400 hover:text-indigo-700 transition"
-                  >
-                    Cancel
-                  </button>
+                  <span className="text-sm font-bold text-indigo-800">Schedule Send</span>
+                  <span className="text-xs text-indigo-500 ml-auto">Message will be stored locally until sent</span>
                 </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="block text-[10px] font-bold uppercase tracking-wide text-indigo-500 mb-1">Send at</label>
+                    <input
+                      type="datetime-local"
+                      value={scheduleDate}
+                      onChange={e => setScheduleDate(e.target.value)}
+                      min={new Date(Date.now() + 60000).toISOString().slice(0, 16)}
+                      className="w-full text-sm border border-indigo-200 rounded-xl px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-300 bg-white shadow-sm"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 pt-5">
+                    <button
+                      type="button"
+                      onClick={handleSchedule}
+                      className="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition shadow-sm"
+                    >
+                      Schedule
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowSchedule(false)}
+                      className="px-3 py-2 rounded-xl text-sm text-indigo-500 hover:bg-indigo-100 transition font-medium"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+                <p className="text-[10px] text-indigo-400 mt-2">
+                  Tip: Scheduled messages appear in the Scheduled folder. They are saved in your browser and sent when the app is open at the scheduled time.
+                </p>
               </div>
             )}
 
