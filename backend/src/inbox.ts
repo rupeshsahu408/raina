@@ -485,15 +485,26 @@ inboxRouter.get("/status", async (req, res) => {
 });
 
 const FOLDER_CONFIG: Record<string, { labelIds?: string[]; q?: string }> = {
-  inbox:    { labelIds: ["INBOX"], q: "in:inbox -category:promotions -category:social" },
-  sent:     { labelIds: ["SENT"] },
-  spam:     { labelIds: ["SPAM"] },
-  trash:    { labelIds: ["TRASH"] },
-  drafts:   { labelIds: ["DRAFT"] },
-  starred:  { labelIds: ["STARRED"] },
-  archive:  { q: "-in:inbox -in:spam -in:trash -in:sent -in:draft" },
-  all:      { q: "-in:spam -in:trash" },
+  inbox:      { labelIds: ["INBOX"], q: "in:inbox -category:promotions -category:social" },
+  primary:    { q: "in:inbox category:primary" },
+  promotions: { q: "in:inbox category:promotions" },
+  social:     { q: "in:inbox category:social" },
+  sent:       { labelIds: ["SENT"] },
+  spam:       { labelIds: ["SPAM"] },
+  trash:      { labelIds: ["TRASH"] },
+  drafts:     { labelIds: ["DRAFT"] },
+  starred:    { labelIds: ["STARRED"] },
+  archive:    { q: "-in:inbox -in:spam -in:trash -in:sent -in:draft" },
+  all:        { q: "-in:spam -in:trash" },
 };
+
+function detectGmailCategory(labelIds: string[]): "primary" | "promotions" | "social" | "updates" | "forums" {
+  if (labelIds.includes("CATEGORY_PROMOTIONS")) return "promotions";
+  if (labelIds.includes("CATEGORY_SOCIAL")) return "social";
+  if (labelIds.includes("CATEGORY_UPDATES")) return "updates";
+  if (labelIds.includes("CATEGORY_FORUMS")) return "forums";
+  return "primary";
+}
 
 // GET /inbox/messages?maxResults=20&pageToken=xxx&folder=inbox
 inboxRouter.get("/messages", async (req, res) => {
@@ -535,6 +546,8 @@ inboxRouter.get("/messages", async (req, res) => {
           const isStarred = labelIds.includes("STARRED");
           const intent = detectIntent(subject, snippet);
           const priority = inferPriority(subject, snippet, intent, isUnread);
+          const gmailCategory = detectGmailCategory(labelIds);
+          const aiRescued = (gmailCategory === "promotions" || gmailCategory === "social") && priority.priorityScore >= 70;
           return {
             id: m.id,
             threadId,
@@ -552,6 +565,8 @@ inboxRouter.get("/messages", async (req, res) => {
             bestTone: priority.bestTone,
             isUnread,
             isStarred,
+            gmailCategory,
+            aiRescued,
           };
         } catch {
           return null;

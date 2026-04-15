@@ -14,6 +14,7 @@ type Folder = "inbox" | "sent" | "spam" | "drafts" | "starred" | "trash" | "sche
 type FilterType = "all" | "read" | "unread" | "starred" | "unstarred";
 type CommandView = "inbox" | "mission";
 type PriorityCategory = "Urgent" | "High-Value Lead" | "Payment" | "Support Issue" | "Risk Detected" | "Needs Reply" | "Low Priority";
+type GmailCategory = "primary" | "promotions" | "social";
 
 interface LocalDraft {
   id: string;
@@ -54,6 +55,8 @@ interface EmailItem {
   bestTone: string;
   isUnread: boolean;
   isStarred: boolean;
+  gmailCategory?: GmailCategory;
+  aiRescued?: boolean;
 }
 
 interface ThreadMessage {
@@ -323,6 +326,8 @@ function normalizeEmailItem(item: Partial<EmailItem> & { id: string; threadId: s
     bestTone: item.bestTone ?? "Neutral",
     isUnread: item.isUnread ?? false,
     isStarred: item.isStarred ?? false,
+    gmailCategory: item.gmailCategory,
+    aiRescued: item.aiRescued ?? false,
   };
 }
 
@@ -376,6 +381,7 @@ export default function InboxDashboard() {
   const [authLoading, setAuthLoading] = useState(true);
 
   const [folder, setFolder] = useState<Folder>("inbox");
+  const [gmailCategory, setGmailCategory] = useState<GmailCategory>("primary");
   const [filter, setFilter] = useState<FilterType>("all");
   const [filterOpen, setFilterOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -483,7 +489,8 @@ export default function InboxDashboard() {
   }, [user]);
 
   const pollForNewEmails = useCallback(async () => {
-    if (currentFolderRef.current !== "inbox") return;
+    const inboxFolders = ["inbox", "primary", "promotions", "social"];
+    if (!inboxFolders.includes(currentFolderRef.current)) return;
     const token = tokenRef.current;
     if (!token) return;
     try {
@@ -781,8 +788,12 @@ export default function InboxDashboard() {
   }, [getToken, router, folder, loadLocalDrafts, loadScheduled]);
 
   useEffect(() => {
-    if (user) loadEmails(folder);
+    if (user) loadEmails(folder === "inbox" ? gmailCategory : folder);
   }, [user, folder]);
+
+  useEffect(() => {
+    if (user && folder === "inbox") loadEmails(gmailCategory);
+  }, [gmailCategory]);
 
   // Handoff from followups page: open compose with pre-filled draft
   useEffect(() => {
@@ -1066,8 +1077,22 @@ export default function InboxDashboard() {
   }
 
   function switchFolder(f: Folder) {
-    currentFolderRef.current = f;
+    currentFolderRef.current = f === "inbox" ? "primary" : f;
     setFolder(f);
+    if (f === "inbox") setGmailCategory("primary");
+    setSelectedEmail(null);
+    setMobileView("list");
+    setFilter("all");
+    setPriorityFilter("All");
+    setCommandView("inbox");
+    setSearch("");
+    setNewEmailsBanner(0);
+    setNewEmailItems([]);
+  }
+
+  function switchGmailCategory(cat: GmailCategory) {
+    currentFolderRef.current = cat;
+    setGmailCategory(cat);
     setSelectedEmail(null);
     setMobileView("list");
     setFilter("all");
@@ -1281,6 +1306,30 @@ export default function InboxDashboard() {
                     </div>
                   </div>
                 )}
+
+                {/* Gmail Category Tabs */}
+                {folder === "inbox" && commandView !== "mission" && (
+                  <div className="mt-3 flex border-b border-gray-100">
+                    {([
+                      { id: "primary" as GmailCategory, label: "Primary", icon: "📥" },
+                      { id: "promotions" as GmailCategory, label: "Promotions", icon: "🏷️" },
+                      { id: "social" as GmailCategory, label: "Social", icon: "👥" },
+                    ]).map(tab => (
+                      <button
+                        key={tab.id}
+                        onClick={() => switchGmailCategory(tab.id)}
+                        className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold transition border-b-2 -mb-px ${
+                          gmailCategory === tab.id
+                            ? "border-[#5c4ff6] text-[#5c4ff6]"
+                            : "border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300"
+                        }`}
+                      >
+                        <span>{tab.icon}</span>
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <input type="checkbox" className="accent-indigo-600 w-4 h-4" />
@@ -1310,7 +1359,7 @@ export default function InboxDashboard() {
                 </div>
 
                 <button
-                  onClick={() => loadEmails(folder)}
+                  onClick={() => loadEmails(folder === "inbox" ? gmailCategory : folder)}
                   disabled={loading}
                   className="flex items-center gap-1.5 border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 transition ml-auto"
                 >
@@ -1504,7 +1553,7 @@ export default function InboxDashboard() {
                 ) : error ? (
                   <div className="p-6 text-center">
                     <p className="text-sm text-red-500 mb-3">{error}</p>
-                    <button onClick={() => loadEmails(folder)} className="text-sm text-indigo-600 underline">Retry</button>
+                    <button onClick={() => loadEmails(folder === "inbox" ? gmailCategory : folder)} className="text-sm text-indigo-600 underline">Retry</button>
                   </div>
                 ) : displayedEmails.length === 0 && !(folder === "drafts" && localDrafts.length > 0) ? (
                   <div className="p-8 text-center">
@@ -1585,6 +1634,12 @@ export default function InboxDashboard() {
                               {email.priorityCategory}
                             </span>
                             <span className="rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-semibold text-gray-500">{email.intent}</span>
+                            {email.aiRescued && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-[10px] font-black text-violet-700">
+                                <SparkleIcon />
+                                AI Rescued
+                              </span>
+                            )}
                           </div>
                           <p className={`text-xs truncate mb-0.5 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>
                             {email.subject}
@@ -1599,7 +1654,7 @@ export default function InboxDashboard() {
                     {nextPageToken && (
                       <div className="p-4">
                         <button
-                          onClick={() => loadEmails(folder, nextPageToken)}
+                          onClick={() => loadEmails(folder === "inbox" ? gmailCategory : folder, nextPageToken)}
                           disabled={loadingMore}
                           className="w-full py-2.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition"
                         >
