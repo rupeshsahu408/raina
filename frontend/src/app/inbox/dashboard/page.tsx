@@ -6,7 +6,7 @@ import { onAuthStateChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { setLastActivePlatform } from "@/lib/platformSession";
 import Link from "next/link";
-import ComposeModal from "@/components/ComposeModal";
+import ComposeModal, { type ComposeSentMeta } from "@/components/ComposeModal";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
@@ -15,6 +15,17 @@ type FilterType = "all" | "read" | "unread" | "starred" | "unstarred";
 type CommandView = "inbox" | "mission";
 type PriorityCategory = "Urgent" | "High-Value Lead" | "Payment" | "Support Issue" | "Risk Detected" | "Needs Reply" | "Low Priority";
 type GmailCategory = "primary" | "promotions" | "social";
+type WaitingUrgency = "normal" | "follow-up" | "high";
+interface WaitingReplyItem {
+  _id: string;
+  threadId: string;
+  subject: string;
+  to: string;
+  toName: string;
+  sentAt: number;
+  daysWaiting: number;
+  urgency: WaitingUrgency;
+}
 
 interface LocalDraft {
   id: string;
@@ -464,6 +475,10 @@ export default function InboxDashboard() {
   const [quickActionLoading, setQuickActionLoading] = useState<string | null>(null);
   const autoPaginationCountRef = useRef(0);
 
+  const [waitingReplies, setWaitingReplies] = useState<WaitingReplyItem[]>([]);
+  const [waitingRepliesPanelOpen, setWaitingRepliesPanelOpen] = useState(true);
+  const [waitingDraftLoading, setWaitingDraftLoading] = useState<string | null>(null);
+
   const tokenRef = useRef("");
   const filterRef = useRef<HTMLDivElement>(null);
   const activeThreadRequestRef = useRef(0);
@@ -738,6 +753,82 @@ export default function InboxDashboard() {
       } catch {}
     }
     setQuickActionLoading(null);
+  }
+
+  const loadWaitingReplies = useCallback(async () => {
+    const token = tokenRef.current || await getToken();
+    if (!token) return;
+    try {
+      const res = await fetch(`${API}/inbox/waiting-replies`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setWaitingReplies(data.items ?? []);
+      }
+    } catch {}
+  }, [getToken]);
+
+  useEffect(() => {
+    if (user) void loadWaitingReplies();
+  }, [user, loadWaitingReplies]);
+
+  async function trackWaitingReply(to: string, subject: string, threadId?: string, toName?: string) {
+    const token = tokenRef.current || await getToken();
+    if (!token || !to || !subject) return;
+    try {
+      const res = await fetch(`${API}/inbox/waiting-replies`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ to, subject, threadId, toName: toName ?? "", sentAt: Date.now() }),
+      });
+      if (res.ok) await loadWaitingReplies();
+    } catch {}
+  }
+
+  async function resolveWaiting(item: WaitingReplyItem) {
+    const token = tokenRef.current || await getToken();
+    if (!token) return;
+    setWaitingReplies(prev => prev.filter(w => w._id !== item._id));
+    try {
+      await fetch(`${API}/inbox/waiting-replies/${item._id}/resolve`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {}
+  }
+
+  async function removeWaiting(item: WaitingReplyItem) {
+    const token = tokenRef.current || await getToken();
+    if (!token) return;
+    setWaitingReplies(prev => prev.filter(w => w._id !== item._id));
+    try {
+      await fetch(`${API}/inbox/waiting-replies/${item._id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch {}
+  }
+
+  async function generateWaitingDraft(item: WaitingReplyItem) {
+    setWaitingDraftLoading(item._id);
+    const token = tokenRef.current || await getToken();
+    if (!token) { setWaitingDraftLoading(null); return; }
+    try {
+      const res = await fetch(`${API}/inbox/waiting-replies/draft`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ to: item.to, toName: item.toName, subject: item.subject, daysWaiting: item.daysWaiting }),
+      });
+      const data = await res.json();
+      setComposeInitialTo(item.to);
+      setComposeInitialSubject(replySubject(item.subject));
+      setComposeInitialBody(data.draft?.replace(/\n/g, "<br>") ?? "");
+      setComposeDraftId(undefined);
+      setComposeOpen(true);
+    } catch {} finally {
+      setWaitingDraftLoading(null);
+    }
   }
 
   async function autoCompleteFollowUp(threadId: string) {
@@ -1067,6 +1158,14 @@ export default function InboxDashboard() {
       setEditedReply("");
       setGeneratedReply("");
       setReplyOpen(false);
+      if (selectedEmail) {
+        void trackWaitingReply(
+          senderEmail(selectedEmail.from),
+          selectedEmail.subject,
+          selectedEmail.threadId,
+          senderName(selectedEmail.from)
+        );
+      }
     } catch (e: any) {
       setReplyError((e as Error).message);
     } finally {
@@ -1157,7 +1256,7 @@ export default function InboxDashboard() {
     setComposeOpen(true);
   }
 
-  function handleComposeSent(fld?: string) {
+  function handleComposeSent(fld?: string, meta?: ComposeSentMeta) {
     if (fld === "scheduled") {
       setComposeSuccess("Message scheduled successfully.");
       loadScheduled();
@@ -1165,6 +1264,9 @@ export default function InboxDashboard() {
       setComposeSuccess("Message sent through Gmail.");
       if (fld === "sent" || folder === "sent") loadEmails("sent");
       else if (fld) loadEmails(fld as Folder);
+      if (meta?.to && meta?.subject) {
+        void trackWaitingReply(meta.to, meta.subject, meta.threadId);
+      }
     }
     window.setTimeout(() => setComposeSuccess(""), 4500);
   }
@@ -1793,6 +1895,81 @@ export default function InboxDashboard() {
                         <Link href="/inbox/followups" className="block text-center text-[10px] font-bold text-amber-700 hover:text-amber-900 py-1">
                           +{pendingFollowUps.length - 5} more — View all
                         </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Waiting for Reply panel ─────────────────────────── */}
+              {folder === "inbox" && waitingReplies.length > 0 && (
+                <div className="border-b border-blue-100 bg-blue-50">
+                  <button
+                    onClick={() => setWaitingRepliesPanelOpen(v => !v)}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-left"
+                  >
+                    <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-blue-200 text-blue-700 shrink-0">
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </span>
+                    <span className="text-xs font-black text-blue-800 flex-1">Waiting for Reply</span>
+                    <span className="rounded-full bg-blue-200 px-2 py-0.5 text-[10px] font-black text-blue-800">{waitingReplies.length}</span>
+                    <svg className={`w-3.5 h-3.5 text-blue-600 transition-transform ${waitingRepliesPanelOpen ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  </button>
+                  {waitingRepliesPanelOpen && (
+                    <div className="px-3 pb-3 space-y-1.5">
+                      {waitingReplies.slice(0, 5).map(wr => {
+                        const urgencyBadge =
+                          wr.urgency === "high"
+                            ? { label: "7d+ — High Priority", cls: "bg-red-100 text-red-700" }
+                            : wr.urgency === "follow-up"
+                            ? { label: "3d — Follow-Up", cls: "bg-amber-100 text-amber-700" }
+                            : { label: `${wr.daysWaiting}d — Tracking`, cls: "bg-blue-100 text-blue-700" };
+                        const recipientName = wr.toName || wr.to.split("@")[0];
+                        return (
+                          <div key={wr._id} className={`rounded-xl border px-3 py-2.5 ${wr.urgency === "high" ? "border-red-200 bg-red-50" : wr.urgency === "follow-up" ? "border-amber-200 bg-amber-50" : "border-blue-200 bg-white"}`}>
+                            <div className="flex items-start gap-2 mb-1.5">
+                              <div className="w-6 h-6 rounded-full bg-blue-300 flex items-center justify-center text-blue-900 text-[10px] font-black shrink-0 mt-0.5">
+                                {(recipientName[0] || "?").toUpperCase()}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[11px] font-bold text-gray-900 truncate">{wr.subject}</p>
+                                <p className="text-[10px] text-gray-500 truncate">To: {recipientName}</p>
+                              </div>
+                              <button
+                                onClick={() => removeWaiting(wr)}
+                                className="text-gray-300 hover:text-gray-500 transition shrink-0 p-0.5"
+                                title="Remove from tracker"
+                              >
+                                <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-black uppercase ${urgencyBadge.cls}`}>{urgencyBadge.label}</span>
+                              <div className="ml-auto flex items-center gap-1">
+                                {(wr.urgency === "follow-up" || wr.urgency === "high") && (
+                                  <button
+                                    onClick={() => void generateWaitingDraft(wr)}
+                                    disabled={waitingDraftLoading === wr._id}
+                                    className="rounded-md bg-[#5c4ff6] text-white px-2 py-0.5 text-[9px] font-black hover:bg-[#4f43e0] disabled:opacity-50 transition"
+                                  >
+                                    {waitingDraftLoading === wr._id ? "…" : "✉ Send Follow-Up"}
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => void resolveWaiting(wr)}
+                                  className="rounded-md bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[9px] font-black hover:bg-emerald-200 transition"
+                                >
+                                  ✓ Got Reply
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {waitingReplies.length > 5 && (
+                        <p className="text-center text-[10px] font-bold text-blue-700 py-1">
+                          +{waitingReplies.length - 5} more tracked conversations
+                        </p>
                       )}
                     </div>
                   )}

@@ -4,6 +4,7 @@ import { google } from "googleapis";
 import { connectMongo } from "./db";
 import { InboxToken } from "./models/InboxToken";
 import { FollowUp } from "./models/FollowUp";
+import { WaitingReply } from "./models/WaitingReply";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 25 * 1024 * 1024 } });
@@ -1286,5 +1287,138 @@ inboxRouter.post("/mission-brief", express.json(), async (req, res) => {
     return res.json({ brief: result.trim().replace(/^["']|["']$/g, "") });
   } catch {
     return res.json({ brief: fallback });
+  }
+});
+
+// ─── Waiting-for-Reply Tracker ────────────────────────────────────────────────
+
+function waitingUrgency(sentAt: number): "normal" | "follow-up" | "high" {
+  const days = (Date.now() - sentAt) / 86_400_000;
+  if (days >= 7) return "high";
+  if (days >= 3) return "follow-up";
+  return "normal";
+}
+
+function daysWaiting(sentAt: number): number {
+  return Math.floor((Date.now() - sentAt) / 86_400_000);
+}
+
+// GET /inbox/waiting-replies
+inboxRouter.get("/waiting-replies", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  await connectMongo();
+  const items = await WaitingReply.find({ uid, status: "active" })
+    .sort({ sentAt: -1 })
+    .limit(50)
+    .lean();
+
+  // Auto-resolve any items where Gmail thread has a reply — check up to 8 oldest items
+  const toCheck = items.filter(i => (Date.now() - i.sentAt) > 3_600_000).slice(0, 8);
+  if (toCheck.length > 0) {
+    try {
+      const auth = await getAuthenticatedClient(uid);
+      const gmail = google.gmail({ version: "v1", auth });
+      const userProfile = await gmail.users.getProfile({ userId: "me" });
+      const userEmail = (userProfile.data.emailAddress ?? "").toLowerCase();
+      await Promise.allSettled(
+        toCheck.map(async item => {
+          try {
+            const thread = await gmail.users.threads.get({ userId: "me", id: item.threadId, format: "metadata", metadataHeaders: ["From"] });
+            const msgs = thread.data.messages ?? [];
+            if (msgs.length < 2) return;
+            const latestMsg = msgs[msgs.length - 1];
+            const fromHeader = latestMsg.payload?.headers?.find(h => h.name?.toLowerCase() === "from")?.value ?? "";
+            const fromEmail = (fromHeader.match(/<(.+?)>/) ?? [, fromHeader])[1]?.toLowerCase() ?? "";
+            if (fromEmail && fromEmail !== userEmail) {
+              await WaitingReply.findByIdAndUpdate(item._id, { status: "resolved", resolvedAt: Date.now() });
+            }
+          } catch {}
+        })
+      );
+    } catch {}
+  }
+
+  const active = await WaitingReply.find({ uid, status: "active" }).sort({ sentAt: -1 }).limit(50).lean();
+  return res.json({
+    items: active.map(i => ({
+      _id: i._id,
+      threadId: i.threadId,
+      subject: i.subject,
+      to: i.to,
+      toName: i.toName,
+      sentAt: i.sentAt,
+      daysWaiting: daysWaiting(i.sentAt),
+      urgency: waitingUrgency(i.sentAt),
+    })),
+  });
+});
+
+// POST /inbox/waiting-replies
+inboxRouter.post("/waiting-replies", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { threadId, subject, to, toName, sentAt } = req.body as {
+    threadId?: string; subject?: string; to?: string; toName?: string; sentAt?: number;
+  };
+  if (!to || !subject) return res.status(400).json({ error: "Missing to or subject" });
+  await connectMongo();
+  const id = threadId || `compose-${uid}-${Date.now()}`;
+  const item = await WaitingReply.findOneAndUpdate(
+    { uid, threadId: id },
+    { $setOnInsert: { uid, threadId: id, subject, to, toName: toName ?? "", sentAt: sentAt ?? Date.now(), status: "active" } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  return res.json({ item });
+});
+
+// POST /inbox/waiting-replies/:id/resolve
+inboxRouter.post("/waiting-replies/:id/resolve", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  await connectMongo();
+  await WaitingReply.findOneAndUpdate({ _id: req.params.id, uid }, { status: "resolved", resolvedAt: Date.now() });
+  return res.json({ success: true });
+});
+
+// DELETE /inbox/waiting-replies/:id
+inboxRouter.delete("/waiting-replies/:id", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  await connectMongo();
+  await WaitingReply.deleteOne({ _id: req.params.id, uid });
+  return res.json({ success: true });
+});
+
+// POST /inbox/waiting-replies/draft  — generate AI follow-up message
+inboxRouter.post("/waiting-replies/draft", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { to, toName, subject, daysWaiting: days } = req.body as {
+    to?: string; toName?: string; subject?: string; daysWaiting?: number;
+  };
+  if (!to || !subject) return res.status(400).json({ error: "Missing to or subject" });
+  const name = toName || to.split("@")[0];
+  const fallback = `Hi ${name},\n\nI wanted to follow up on my previous message regarding "${subject}". I just wanted to make sure it didn't get lost — happy to provide any additional info if needed.\n\nLooking forward to hearing from you.\n\nBest regards`;
+  if (!NVIDIA_API_KEY) return res.json({ draft: fallback });
+  try {
+    const result = await callNvidiaChatCompletions({
+      apiKey: NVIDIA_API_KEY,
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional email assistant. Write a short, polite, non-pushy follow-up email. Keep it to 3-4 sentences. Do not use placeholders like [Your Name] — just write the body ending with 'Best regards'. No subject line needed.",
+        },
+        {
+          role: "user",
+          content: `Write a follow-up email to ${name} (${to}) about the email subject "${subject}". They haven't replied in ${days ?? 3} day(s). Be warm and professional, not desperate.`,
+        },
+      ],
+      max_tokens: 180,
+      temperature: 0.4,
+    });
+    return res.json({ draft: result.trim().replace(/^["']|["']$/g, "") });
+  } catch {
+    return res.json({ draft: fallback });
   }
 });

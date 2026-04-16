@@ -42,11 +42,17 @@ interface AttachmentFile {
   status: "ready" | "uploading" | "done" | "error";
 }
 
+export interface ComposeSentMeta {
+  to: string;
+  subject: string;
+  threadId?: string;
+}
+
 export interface ComposeModalProps {
   user: User | null;
   apiBase: string;
   onClose: () => void;
-  onSent: (folder?: string) => void;
+  onSent: (folder?: string, meta?: ComposeSentMeta) => void;
   initialTo?: string;
   initialSubject?: string;
   initialBodyHtml?: string;
@@ -702,7 +708,7 @@ export default function ComposeModal({
 
       setAttachments(prev => prev.map(a => ({ ...a, status: "done" as const })));
       removeDraftFromStorage(draftId);
-      onSent("sent");
+      onSent("sent", { to: allTo.join(", "), subject: subject.trim() || "(no subject)" });
       onClose();
     } catch (e: any) {
       setAttachments(prev => prev.map(a => a.status === "uploading" ? { ...a, status: "error" as const } : a));
