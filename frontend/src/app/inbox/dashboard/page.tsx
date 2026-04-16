@@ -1474,142 +1474,145 @@ export default function InboxDashboard() {
   return (
     <div className="flex h-screen overflow-hidden bg-white text-gray-800 font-sans">
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <aside className={`${sidebarOpen ? "w-[240px]" : "w-0 overflow-hidden"} transition-all duration-200 shrink-0 bg-[#14112a] flex flex-col text-white`}>
+      <aside className={`${sidebarOpen ? "w-[260px]" : "w-0 overflow-hidden"} transition-all duration-300 shrink-0 flex flex-col text-white overflow-hidden`} style={{ background: "linear-gradient(180deg,#0d0b1f 0%,#12112c 100%)" }}>
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-5">
-          <Link href="/" className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain rounded-lg" />
-            <span className="text-base font-black tracking-tight">Plyndrox</span>
+        <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
+          <Link href="/" className="flex items-center gap-3 min-w-0">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#5c4ff6 0%,#7c3aed 100%)", boxShadow: "0 4px 12px rgba(92,79,246,0.45)" }}>
+              <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-black tracking-tight text-white leading-none">Plyndrox</p>
+              <p className="text-[10px] leading-none mt-0.5 text-violet-400/60">Inbox AI</p>
+            </div>
           </Link>
         </div>
 
-        {/* New message */}
-        <div className="px-3 mb-4">
+        {/* Compose */}
+        <div className="px-4 py-4 shrink-0">
           <button
             onClick={openCompose}
-            className="w-full flex items-center justify-center gap-2 rounded-full bg-[#5c4ff6] hover:bg-[#4f43e0] py-3 text-sm font-bold transition"
+            className="w-full flex items-center justify-center gap-2 rounded-2xl py-2.5 text-sm font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+            style={{ background: "linear-gradient(135deg,#5c4ff6 0%,#7c3aed 100%)", boxShadow: "0 4px 16px rgba(92,79,246,0.35)" }}
           >
             <ComposeIcon />
-            + New message
+            Compose
           </button>
         </div>
 
-        <div className="px-3 mb-4">
+        {/* Today's Mission */}
+        <div className="px-4 mb-4 shrink-0">
           <button
             onClick={openMission}
-            className={`w-full overflow-hidden rounded-2xl border p-3 text-left transition ${
+            className={`w-full rounded-2xl px-3.5 py-2.5 text-left transition-all duration-200 border ${
               commandView === "mission"
-                ? "border-[#8c82ff] bg-white text-[#14112a]"
-                : "border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.1]"
+                ? "border-violet-500/50 text-white"
+                : "border-white/[0.07] bg-white/[0.04] hover:bg-white/[0.08] text-white"
             }`}
+            style={commandView === "mission" ? { background: "linear-gradient(135deg,rgba(92,79,246,0.7) 0%,rgba(124,58,237,0.7) 100%)", boxShadow: "0 4px 14px rgba(92,79,246,0.25)" } : undefined}
           >
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className={`flex h-7 w-7 items-center justify-center rounded-xl ${commandView === "mission" ? "bg-[#5c4ff6] text-white" : "bg-[#5c4ff6]/30 text-[#b9b4ff]"}`}>
-                  <SparkleIcon />
-                </span>
-                <span className="text-sm font-black">Today’s Mission</span>
-              </div>
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${commandView === "mission" ? "bg-[#14112a] text-white" : "bg-white/10 text-white"}`}>
+            <div className="flex items-center gap-2.5">
+              <span className={`flex h-6 w-6 items-center justify-center rounded-lg shrink-0 ${commandView === "mission" ? "bg-white/20" : "bg-violet-500/20"}`}>
+                <SparkleIcon />
+              </span>
+              <span className="text-sm font-bold flex-1 text-left">Today&apos;s Mission</span>
+              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black shrink-0 ${commandView === "mission" ? "bg-white/25 text-white" : "bg-white/10 text-zinc-400"}`}>
                 {missionCount}
               </span>
             </div>
-            <p className={`mt-2 text-[11px] leading-4 ${commandView === "mission" ? "text-gray-600" : "text-zinc-400"}`}>
-              A focused action list pulled from your real Gmail priorities.
-            </p>
           </button>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-2 space-y-0.5">
-          {NAV_ITEMS.map(item => (
-            <button
-              key={item.id}
-              onClick={() => switchFolder(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
-                folder === item.id
-                  ? "bg-[#5c4ff6] text-white"
-                  : "text-zinc-400 hover:bg-white/8 hover:text-white"
-              }`}
-            >
-              <span className={folder === item.id ? "text-white" : "text-zinc-500"}>{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
+        {/* Nav: Mailbox */}
+        <div className="px-4 mb-3 shrink-0">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-2 px-1">Mailbox</p>
+          <nav className="space-y-0.5">
+            {NAV_ITEMS.map(item => (
+              <button
+                key={item.id}
+                onClick={() => switchFolder(item.id)}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                  folder === item.id
+                    ? "bg-white/10 text-white"
+                    : "text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200"
+                }`}
+              >
+                <span className={`transition-colors ${folder === item.id ? "text-violet-400" : "text-zinc-600"}`}>{item.icon}</span>
+                <span className="flex-1 text-left">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
 
-          <div className="px-3 pt-4 pb-1">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600">AI Features</p>
-          </div>
-          <Link
-            href="/inbox/leads"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-white/8 hover:text-white transition"
-          >
-            <span className="text-zinc-500"><SparkleIcon /></span>
-            Leads
-          </Link>
-          <Link
-            href="/inbox/followups"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-white/8 hover:text-white transition"
-          >
-            <span className="text-zinc-500"><BellIcon /></span>
-            Follow-Ups
-          </Link>
-          <Link
-            href="/inbox/health"
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-white/8 hover:text-white transition"
-          >
-            <span className="text-zinc-500">
-              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-            </span>
-            Inbox Health
-          </Link>
-        </nav>
+        {/* Nav: AI Tools */}
+        <div className="px-4 flex-1 overflow-y-auto">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-2 px-1">AI Tools</p>
+          <nav className="space-y-0.5">
+            <Link href="/inbox/leads" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
+              <span className="text-zinc-600"><SparkleIcon /></span>
+              Lead Intelligence
+            </Link>
+            <Link href="/inbox/followups" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
+              <span className="text-zinc-600"><BellIcon /></span>
+              Follow-Ups
+            </Link>
+            <Link href="/inbox/health" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
+              <span className="text-zinc-600">
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+              </span>
+              Inbox Health
+            </Link>
+          </nav>
+        </div>
 
-        {/* Bottom */}
-        <div className="px-2 pb-4 space-y-0.5 border-t border-white/8 pt-3">
-          <Link href="/inbox/connect" className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-zinc-500 hover:text-white hover:bg-white/8 transition">
-            <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.071 4.929A10 10 0 1 0 4.93 19.07A10 10 0 0 0 19.07 4.93"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/></svg>
+        {/* Bottom — user + settings */}
+        <div className="px-4 pb-4 pt-3 border-t border-white/[0.06] shrink-0">
+          <Link href="/inbox/connect" className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.05] transition-all mb-1">
+            <svg className="w-[17px] h-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.071 4.929A10 10 0 1 0 4.93 19.07A10 10 0 0 0 19.07 4.93"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/></svg>
             Settings
           </Link>
-          <div className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-zinc-500">
-            <div className="flex items-center gap-3">
-              <SparkleIcon />
-              <span>AI assistant</span>
+          {user?.email && (
+            <div className="flex items-center gap-3 px-3 py-2 rounded-xl">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0" style={{ background: avatarColor(user.email) }}>
+                {user.email[0].toUpperCase()}
+              </div>
+              <p className="text-xs text-zinc-500 truncate min-w-0">{user.email}</p>
             </div>
-            <span className="text-zinc-600 text-lg leading-none">+</span>
-          </div>
+          )}
         </div>
       </aside>
 
       {/* ── Main area ───────────────────────────────────────────────── */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar — always visible */}
-        <header className="flex items-center gap-3 border-b border-gray-200 px-4 py-2.5 shrink-0 bg-white">
-          <button onClick={() => setSidebarOpen(o => !o)} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition">
+        {/* Top bar — always visible */}
+        <header className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 shrink-0 bg-white" style={{ boxShadow: "0 1px 0 0 #f0f0f0" }}>
+          <button onClick={() => setSidebarOpen(o => !o)} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-all shrink-0">
             <MenuIcon />
           </button>
 
           {/* Search */}
-          <div className="flex-1 max-w-xl">
-            <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-[#f3f2ff] px-4 py-2">
-              <SearchIcon />
+          <div className="flex-1 max-w-lg">
+            <div className="flex items-center gap-2.5 rounded-xl border border-gray-200/80 bg-gray-50 px-3.5 py-2 transition-all focus-within:border-violet-300 focus-within:bg-white focus-within:shadow-sm">
+              <span className="text-gray-400 shrink-0"><SearchIcon /></span>
               <input
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="Search messages"
-                className="flex-1 bg-transparent text-sm outline-none placeholder-gray-500 text-gray-800"
+                placeholder="Search your emails..."
+                className="flex-1 bg-transparent text-sm outline-none placeholder-gray-400 text-gray-800 min-w-0"
               />
+              {aiSearch && <span className="text-[10px] font-bold text-violet-600 bg-violet-50 rounded-md px-1.5 py-0.5 shrink-0 border border-violet-200">AI</span>}
             </div>
-            <label className="flex items-center gap-1.5 mt-1 ml-2 cursor-pointer">
-              <input type="checkbox" checked={aiSearch} onChange={e => setAiSearch(e.target.checked)} className="accent-indigo-600 w-3 h-3" />
-              <span className="text-[11px] text-gray-500"><span className="text-indigo-600 font-semibold">AI</span> natural language search</span>
-            </label>
           </div>
 
-          {/* User avatar */}
-          <div className="ml-auto">
+          {/* AI toggle + avatar */}
+          <div className="flex items-center gap-3 ml-auto shrink-0">
+            <label className="hidden sm:flex items-center gap-1.5 cursor-pointer select-none">
+              <input type="checkbox" checked={aiSearch} onChange={e => setAiSearch(e.target.checked)} className="accent-indigo-600 w-3.5 h-3.5" />
+              <span className="text-xs text-gray-500 font-medium">AI Search</span>
+            </label>
             {user?.email && (
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-black" style={{ background: avatarColor(user.email) }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ring-2 ring-white shadow-sm" style={{ background: avatarColor(user.email) }}>
                 {user.email[0].toUpperCase()}
               </div>
             )}
@@ -1941,98 +1944,80 @@ export default function InboxDashboard() {
           )}
 
           {/* ── Email list panel ─────────────────────────────────────── */}
-          <div className={`${commandView === "mission" ? "hidden" : (selectedEmail ? "hidden md:flex" : "flex")} md:flex w-full md:w-[320px] lg:w-[360px] shrink-0 flex-col border-r border-gray-200 bg-white overflow-hidden`}>
+          {/* ── Email list panel ─────────────────────────────────────── */}
+          <div className={`${commandView === "mission" ? "hidden" : (selectedEmail ? "hidden md:flex" : "flex")} md:flex w-full md:w-[340px] lg:w-[380px] shrink-0 flex-col border-r border-gray-100 bg-white overflow-hidden`}>
             {/* List header */}
-            <div className="px-4 pt-3 pb-2 border-b border-gray-100">
-              <div className="mb-3">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="text-base font-bold text-gray-800">{commandView === "mission" ? "Today’s Mission" : folderLabel}</h2>
+            <div className="border-b border-gray-100 bg-white shrink-0">
+              {/* Title + toolbar */}
+              <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <h2 className="text-base font-bold text-gray-900 truncate">
+                    {folderLabel}
+                  </h2>
                   {folder === "inbox" && (
-                    <span className="rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-indigo-700">AI Priority</span>
+                    <span className="rounded-full bg-violet-50 border border-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-600 shrink-0">AI</span>
                   )}
                 </div>
-                {folder === "inbox" && (
-                  <div className={`mt-3 rounded-2xl border p-3 ${commandView === "mission" ? "border-indigo-100 bg-[#f6f4ff]" : "border-gray-100 bg-gray-50"}`}>
-                    <p className="text-xs font-bold text-gray-900">{missionHeadline(missionEmails)}</p>
-                    <div className="mt-3 grid grid-cols-3 gap-2">
-                      <div className="rounded-xl bg-white px-2 py-2 text-center shadow-sm">
-                        <p className="text-base font-black text-gray-900">{missionCount}</p>
-                        <p className="text-[10px] text-gray-400">Mission</p>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="relative" ref={filterRef}>
+                    <button
+                      onClick={() => setFilterOpen(o => !o)}
+                      className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 hover:bg-gray-100 transition border border-gray-200"
+                    >
+                      {FILTER_LABELS[filter]}
+                      <ChevronDown />
+                    </button>
+                    {filterOpen && (
+                      <div className="absolute top-full right-0 mt-1 w-36 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+                        {(["all", "read", "unread", "starred", "unstarred"] as FilterType[]).map(f => (
+                          <button
+                            key={f}
+                            onClick={() => { setFilter(f); setFilterOpen(false); }}
+                            className={`w-full text-left px-3.5 py-2 text-xs transition ${filter === f ? "bg-violet-600 text-white font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
+                          >
+                            {FILTER_LABELS[f]}
+                          </button>
+                        ))}
                       </div>
-                      <div className="rounded-xl bg-white px-2 py-2 text-center shadow-sm">
-                        <p className="text-base font-black text-red-600">{highPriorityCount}</p>
-                        <p className="text-[10px] text-gray-400">Hot</p>
-                      </div>
-                      <div className="rounded-xl bg-white px-2 py-2 text-center shadow-sm">
-                        <p className="text-base font-black text-gray-500">{lowPriorityCount}</p>
-                        <p className="text-[10px] text-gray-400">Can wait</p>
-                      </div>
-                    </div>
+                    )}
                   </div>
-                )}
-
-                {/* Gmail Category Tabs */}
-                {folder === "inbox" && commandView !== "mission" && (
-                  <div className="mt-3 flex border-b border-gray-100">
-                    {([
-                      { id: "primary" as GmailCategory, label: "Primary", icon: "📥" },
-                      { id: "promotions" as GmailCategory, label: "Promotions", icon: "🏷️" },
-                      { id: "social" as GmailCategory, label: "Social", icon: "👥" },
-                    ]).map(tab => (
-                      <button
-                        key={tab.id}
-                        onClick={() => switchGmailCategory(tab.id)}
-                        className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold transition border-b-2 -mb-px ${
-                          gmailCategory === tab.id
-                            ? "border-[#5c4ff6] text-[#5c4ff6]"
-                            : "border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300"
-                        }`}
-                      >
-                        <span>{tab.icon}</span>
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <input type="checkbox" className="accent-indigo-600 w-4 h-4" />
-
-                {/* Filter dropdown */}
-                <div className="relative" ref={filterRef}>
                   <button
-                    onClick={() => setFilterOpen(o => !o)}
-                    className="flex items-center gap-1.5 border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50 transition"
+                    onClick={() => loadEmails(folder === "inbox" ? gmailCategory : folder)}
+                    disabled={loading}
+                    title="Refresh"
+                    className="flex items-center justify-center w-7 h-7 rounded-lg text-gray-500 hover:bg-gray-100 transition border border-gray-200 disabled:opacity-50"
                   >
-                    {FILTER_LABELS[filter]}
-                    <ChevronDown />
+                    <RefreshIcon spinning={loading} />
                   </button>
-                  {filterOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-40 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
-                      {(["all", "read", "unread", "starred", "unstarred"] as FilterType[]).map(f => (
-                        <button
-                          key={f}
-                          onClick={() => { setFilter(f); setFilterOpen(false); }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition ${filter === f ? "bg-indigo-600 text-white font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
-                        >
-                          {FILTER_LABELS[f]}
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
-
-                <button
-                  onClick={() => loadEmails(folder === "inbox" ? gmailCategory : folder)}
-                  disabled={loading}
-                  className="flex items-center gap-1.5 border border-gray-300 rounded-md px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 transition ml-auto"
-                >
-                  <RefreshIcon spinning={loading} />
-                  Refresh
-                </button>
               </div>
+
+              {/* Gmail Category Tabs */}
               {folder === "inbox" && commandView !== "mission" && (
-                <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                <div className="flex gap-1.5 px-4 pb-3">
+                  {([
+                    { id: "primary" as GmailCategory, label: "Primary" },
+                    { id: "promotions" as GmailCategory, label: "Promos" },
+                    { id: "social" as GmailCategory, label: "Social" },
+                  ]).map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => switchGmailCategory(tab.id)}
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-150 ${
+                        gmailCategory === tab.id
+                          ? "bg-[#5c4ff6] text-white shadow-sm"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Priority filter chips */}
+              {folder === "inbox" && commandView !== "mission" && (
+                <div className="flex gap-1.5 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
                   {(["All", ...PRIORITY_ORDER] as (PriorityCategory | "All")[]).map(category => {
                     const selected = priorityFilter === category;
                     const count = category === "All" ? searchedEmails.length : searchedEmails.filter(em => em.priorityCategory === category).length;
@@ -2040,11 +2025,13 @@ export default function InboxDashboard() {
                       <button
                         key={category}
                         onClick={() => setPriorityFilter(category)}
-                        className={`shrink-0 rounded-full border px-3 py-1.5 text-[11px] font-bold transition ${
-                          selected ? "border-[#5c4ff6] bg-[#5c4ff6] text-white" : "border-gray-200 bg-white text-gray-600 hover:border-indigo-200 hover:bg-indigo-50"
+                        className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-all duration-150 ${
+                          selected
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
-                        {category} <span className={selected ? "text-white/75" : "text-gray-400"}>{count}</span>
+                        {category === "All" ? "All" : category.replace(" ", "\u00a0")} <span className={`opacity-60`}>{count}</span>
                       </button>
                     );
                   })}
@@ -2338,11 +2325,11 @@ export default function InboxDashboard() {
                           <div key={section.key}>
                             <button
                               onClick={() => setPrioritySectionsOpen(prev => ({ ...prev, [section.key]: !prev[section.key] }))}
-                              className={`w-full flex items-center gap-2 px-4 py-2.5 border-b ${section.headerBorder} ${section.headerBg} text-left sticky top-0 z-10`}
+                              className="w-full flex items-center gap-2 px-4 py-2 border-b border-gray-100 bg-gray-50/80 text-left sticky top-0 z-10 backdrop-blur"
                             >
-                              <span className="text-sm">{section.emoji}</span>
-                              <span className={`text-[11px] font-black uppercase tracking-widest flex-1 ${section.headerText}`}>{section.label}</span>
-                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${section.countBg}`}>{section.emails.length}</span>
+                              <span className={`h-2 w-2 rounded-full shrink-0 ${section.key === "important" ? "bg-red-500" : section.key === "medium" ? "bg-amber-400" : "bg-gray-400"}`} />
+                              <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500 flex-1">{section.label}</span>
+                              <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-600">{section.emails.length}</span>
                               <svg
                                 className={`w-3.5 h-3.5 ${section.headerText} transition-transform ${prioritySectionsOpen[section.key] ? "rotate-180" : ""}`}
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
@@ -2605,24 +2592,25 @@ export default function InboxDashboard() {
                     </div>
                   ) : (
                     <>
-                      <div className={`mb-5 rounded-3xl border p-4 ${selectedPriorityStyle.panel}`}>
+                      <div className="mb-5 rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <div className="mb-2 flex flex-wrap items-center gap-2">
-                              <span className={`inline-flex items-center gap-1.5 rounded-full border bg-white px-3 py-1 text-xs font-black ${selectedPriorityStyle.badge}`}>
-                                <span className={`h-2 w-2 rounded-full ${selectedPriorityStyle.dot}`} />
+                          <div className="min-w-0">
+                            <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
+                              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-bold ${selectedPriorityStyle.badge}`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${selectedPriorityStyle.dot}`} />
                                 {selectedEmail.priorityCategory}
                               </span>
-                              <span className="rounded-full border border-white bg-white px-3 py-1 text-xs font-bold text-gray-600">{selectedEmail.priorityScore}/100 priority</span>
-                              <span className="rounded-full border border-white bg-white px-3 py-1 text-xs font-bold text-gray-600">{selectedEmail.bestTone}</span>
+                              <span className="rounded-full border border-violet-200 bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-gray-600">{selectedEmail.priorityScore}/100</span>
+                              <span className="rounded-full border border-violet-200 bg-white/80 px-2.5 py-1 text-[11px] font-semibold text-gray-600">{selectedEmail.bestTone}</span>
                             </div>
-                            <h3 className="text-sm font-black text-gray-900">AI Action Plan</h3>
-                            <p className="mt-1 text-xs leading-5 text-gray-600">{selectedEmail.priorityReason}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-violet-500 mb-1">AI Insight</p>
+                            <p className="text-xs leading-5 text-gray-700">{selectedEmail.priorityReason}</p>
                           </div>
                           <button
                             onClick={() => smartReplies[0] ? openSmartReplyInCompose(smartReplies[0]) : setReplyOpen(true)}
                             disabled={!selectedEmail}
-                            className="shrink-0 rounded-full bg-[#14112a] px-4 py-2 text-xs font-black text-white transition hover:bg-[#25204a]"
+                            className="shrink-0 rounded-xl px-4 py-2 text-xs font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+                            style={{ background: "linear-gradient(135deg,#5c4ff6 0%,#7c3aed 100%)", boxShadow: "0 2px 10px rgba(92,79,246,0.3)" }}
                           >
                             {smartReplies[0] ? "Use best reply" : "Draft reply"}
                           </button>
