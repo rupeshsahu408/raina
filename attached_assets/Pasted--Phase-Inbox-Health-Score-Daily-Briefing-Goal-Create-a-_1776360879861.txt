@@ -1,0 +1,89 @@
+📊 Phase: Inbox Health Score & Daily Briefing
+
+🎯 Goal:
+Create a daily habit for users by giving them a clear “health score” of their inbox and guiding them on what actions to take to improve it.
+
+---
+
+🧠 Concept:
+The system evaluates the overall state of the user’s inbox and assigns a score out of 100 based on pending tasks, responsiveness, and missed opportunities.
+
+---
+
+🔄 Workflow:
+
+1. The system continuously analyzes the inbox and tracks key metrics such as:
+   → Unanswered emails (where the user needs to reply)
+   → Overdue follow-ups
+   → Waiting-for-reply threads
+   → Payment-related emails (pending payments)
+   → Average response time
+
+2. Based on these metrics, a score is calculated:
+
+   → Start from 100
+   → Deduct points based on issues (pending replies, delays, etc.)
+
+---
+
+📊 Example Output:
+
+Inbox Health: 78 / 100
+
+→ 3 urgent replies pending
+→ 2 follow-ups overdue
+→ 1 payment-related email pending
+
+---
+
+🖥️ UI Requirements:
+
+1. A top-level dashboard card showing:
+   → Inbox Health Score (out of 100)
+   → Key issues (e.g., urgent replies, follow-ups, payments)
+   → A “Fix Now” or “View Details” action
+
+2. A detailed breakdown view:
+   → Number of unanswered emails
+   → Overdue follow-ups
+   → Waiting-for-reply count
+   → Response time performance
+   → Suggestions to improve score
+
+---
+
+📅 Daily Briefing (Very Important):
+
+Each day, the user should see a short summary like:
+
+“Good Morning 👋
+Your Inbox Health is 78/100
+
+Top priorities today:
+→ Reply to 3 urgent emails
+→ Follow up with 2 leads
+→ Check 1 payment email
+
+Complete these to improve your score.”
+
+---
+
+⚡ Key Behavior:
+
+→ The score should update dynamically as the user takes actions
+→ Completing tasks (replying, following up, clearing emails) should increase the score
+→ The system should guide the user toward improving their inbox health daily
+
+---
+
+💥 Core Value:
+
+This feature turns the inbox into a measurable system.
+
+Instead of guessing what to do, the user:
+→ Clearly sees what is pending
+→ Knows what to prioritize
+→ Gets motivated to maintain a high score
+
+In simple terms:
+This adds habit + gamification + productivity to the inbox experience.
