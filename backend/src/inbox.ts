@@ -166,6 +166,8 @@ async function extractMessageContent(payload: any, gmail: any, messageId: string
 type IntentLabel = "Lead" | "Support" | "Payment" | "Meeting" | "Spam" | "FYI";
 type PriorityCategory = "Urgent" | "High-Value Lead" | "Payment" | "Support Issue" | "Risk Detected" | "Needs Reply" | "Low Priority";
 type RiskLevel = "High" | "Medium" | "Low";
+type LeadScore = "Hot" | "Warm" | "Cold";
+type BuyingIntent = "High" | "Medium" | "Low";
 
 interface PrioritySignal {
   priorityCategory: PriorityCategory;
@@ -184,6 +186,19 @@ interface ActionPlan {
   risk: string;
   bestTone: string;
   suggestedNextStep: string;
+  source: "ai" | "rules";
+}
+
+interface LeadIntelligence {
+  isLead: boolean;
+  leadScore: LeadScore;
+  buyingIntent: BuyingIntent;
+  opportunitySummary: string;
+  suggestedAction: string;
+  replyStrategy: string;
+  replyDraft: string;
+  confidence: number;
+  reason: string;
   source: "ai" | "rules";
 }
 
@@ -279,6 +294,135 @@ function inferPriority(subject: string, snippet: string, intent: IntentLabel, is
 function compactText(value: string, max = 220): string {
   const cleaned = value.replace(/\s+/g, " ").trim();
   return cleaned.length > max ? `${cleaned.slice(0, max - 1)}…` : cleaned;
+}
+
+function senderDisplayName(from: string): string {
+  const match = from.match(/^(.*?)\s*<(.+?)>$/);
+  const name = (match ? match[1] : from).trim().replace(/^["']|["']$/g, "");
+  if (name.includes("@") && !match) return name.split("@")[0] || name;
+  return name || "there";
+}
+
+function senderEmailAddress(from: string): string {
+  const match = from.match(/<(.+?)>/);
+  return (match ? match[1] : from).trim().replace(/^["']|["']$/g, "");
+}
+
+function sanitizeLeadScore(value: unknown): LeadScore {
+  return value === "Hot" || value === "Warm" || value === "Cold" ? value : "Cold";
+}
+
+function sanitizeBuyingIntent(value: unknown): BuyingIntent {
+  return value === "High" || value === "Medium" || value === "Low" ? value : "Low";
+}
+
+function heuristicLeadIntelligence(args: {
+  subject: string;
+  snippet: string;
+  thread?: string;
+  from: string;
+  intent?: IntentLabel;
+  priorityScore?: number;
+}): LeadIntelligence {
+  const text = `${args.subject} ${args.snippet} ${args.thread ?? ""}`.toLowerCase();
+  const highSignals = /(ready to buy|buy now|purchase|sign up|subscribe|pricing|price|quote|proposal|demo|book a call|schedule a call|how much|cost|budget|contract|invoice|interested in|move forward|start today)/i;
+  const mediumSignals = /(interested|learn more|details|plan|package|service|availability|consultation|call|meeting|trial|options|tell me more|send info)/i;
+  const coldSignals = /(newsletter|unsubscribe|promotion|discount|sale|webinar|update|fyi|press release)/i;
+  const high = highSignals.test(text);
+  const medium = mediumSignals.test(text);
+  const low = coldSignals.test(text);
+  const isLead = args.intent === "Lead" || high || medium || (args.priorityScore ?? 0) >= 80;
+  const buyingIntent: BuyingIntent = high ? "High" : medium ? "Medium" : "Low";
+  const leadScore: LeadScore = high ? "Hot" : medium || (args.priorityScore ?? 0) >= 70 ? "Warm" : "Cold";
+  const person = senderDisplayName(args.from);
+  const summary = compactText(args.snippet || args.thread || args.subject, 150) || `${person} may be exploring your offer.`;
+  const suggestedAction =
+    leadScore === "Hot"
+      ? "Reply immediately and offer a clear next step, ideally a call or purchase path."
+      : leadScore === "Warm"
+      ? "Send useful details, answer the main question, and ask one qualifying question."
+      : "Nurture lightly for now and avoid pushing for a close too early.";
+  const replyStrategy =
+    leadScore === "Hot"
+      ? "Be fast, specific, and conversion-focused. Confirm their need, remove friction, and propose a concrete call time or next step."
+      : leadScore === "Warm"
+      ? "Be helpful and consultative. Share the most relevant information and invite them to continue the conversation."
+      : "Keep the tone educational. Build trust, share value, and leave the door open.";
+  const replyDraft =
+    leadScore === "Hot"
+      ? `Hi ${person},\n\nThanks for reaching out. Based on what you mentioned, this looks like something we can help with. I can share the right details and also walk you through the best next step.\n\nWould you like to schedule a quick call today or tomorrow so we can move this forward?`
+      : leadScore === "Warm"
+      ? `Hi ${person},\n\nThanks for your message. I’d be happy to share more details and help you understand the best option for your needs.\n\nCould you tell me a little more about what you’re trying to achieve so I can point you in the right direction?`
+      : `Hi ${person},\n\nThanks for reaching out. I’m happy to share more context and answer any questions whenever you’re ready.\n\nHere’s the best place to start: let me know what you’re exploring, and I’ll guide you from there.`;
+  return {
+    isLead: isLead && !low,
+    leadScore,
+    buyingIntent,
+    opportunitySummary: summary,
+    suggestedAction,
+    replyStrategy,
+    replyDraft,
+    confidence: high ? 92 : medium ? 74 : isLead ? 58 : 24,
+    reason: high ? "Strong purchase, pricing, demo, or proposal language detected." : medium ? "Discovery or product-interest language detected." : isLead ? "Business opportunity signal detected." : "No clear revenue opportunity detected.",
+    source: "rules",
+  };
+}
+
+function parseLeadJson(raw: string): Omit<LeadIntelligence, "source"> | null {
+  try {
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    const parsed = JSON.parse(match[0]);
+    if (typeof parsed.isLead !== "boolean") return null;
+    const required = ["opportunitySummary", "suggestedAction", "replyStrategy", "replyDraft", "reason"];
+    if (!required.every(key => typeof parsed[key] === "string" && parsed[key].trim())) return null;
+    return {
+      isLead: parsed.isLead,
+      leadScore: sanitizeLeadScore(parsed.leadScore),
+      buyingIntent: sanitizeBuyingIntent(parsed.buyingIntent),
+      opportunitySummary: String(parsed.opportunitySummary).trim(),
+      suggestedAction: String(parsed.suggestedAction).trim(),
+      replyStrategy: String(parsed.replyStrategy).trim(),
+      replyDraft: String(parsed.replyDraft).trim(),
+      confidence: Math.max(0, Math.min(100, Number(parsed.confidence ?? 60))),
+      reason: String(parsed.reason).trim(),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function generateLeadIntelligence(args: {
+  subject: string;
+  snippet: string;
+  thread: string;
+  from: string;
+  intent?: IntentLabel;
+  priorityScore?: number;
+}): Promise<LeadIntelligence> {
+  const fallback = heuristicLeadIntelligence(args);
+  if (!fallback.isLead || !NVIDIA_API_KEY) return fallback;
+  try {
+    const result = await callNvidiaChatCompletions({
+      apiKey: NVIDIA_API_KEY,
+      messages: [
+        {
+          role: "system",
+          content: "You are Plyndrox Lead Intelligence, an AI sales inbox analyst. Analyze an email thread and return ONLY valid JSON with keys: isLead boolean, leadScore Hot|Warm|Cold, buyingIntent High|Medium|Low, opportunitySummary string max 2 lines, suggestedAction string, replyStrategy string, replyDraft string, confidence number 0-100, reason string. Mark isLead true only when the sender shows possible revenue opportunity, sales interest, pricing interest, partnership potential, demo interest, service inquiry, or buying/discovery intent. The replyDraft must be ready to send, professional, concise, and must not include a subject line.",
+        },
+        {
+          role: "user",
+          content: `From: ${args.from}\nSubject: ${args.subject}\nDetected intent: ${args.intent ?? "Unknown"}\nSnippet: ${args.snippet}\n\nThread:\n${args.thread.slice(0, 6000)}`,
+        },
+      ],
+      max_tokens: 650,
+      temperature: 0.25,
+    });
+    const parsed = parseLeadJson(result);
+    return parsed ? { ...parsed, source: "ai" } : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function heuristicActionPlan(args: {
@@ -631,6 +775,134 @@ inboxRouter.post("/action-plan", express.json(), async (req, res) => {
     });
     return res.json({ actionPlan });
   } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /inbox/leads — scan recent Gmail conversations for revenue opportunities
+inboxRouter.get("/leads", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const maxResults = Math.min(Number(req.query.maxResults ?? 40), 80);
+  const scoreFilter = String(req.query.score ?? "all").toLowerCase();
+  try {
+    const auth = await getAuthenticatedClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+    const listRes = await gmail.users.messages.list({
+      userId: "me",
+      maxResults,
+      q: "-in:spam -in:trash newer_than:180d",
+    });
+    const messageIds = listRes.data.messages ?? [];
+    const seenThreads = new Set<string>();
+    const metadata = await Promise.all(
+      messageIds.map(async (m) => {
+        try {
+          const msg = await gmail.users.messages.get({
+            userId: "me",
+            id: m.id!,
+            format: "metadata",
+            metadataHeaders: ["From", "Subject", "Date"],
+          });
+          const headers = msg.data.payload?.headers ?? [];
+          const subject = extractHeader(headers, "Subject") || "(no subject)";
+          const from = extractHeader(headers, "From");
+          const date = extractHeader(headers, "Date");
+          const snippet = msg.data.snippet ?? "";
+          const threadId = msg.data.threadId ?? m.id!;
+          const labelIds = msg.data.labelIds ?? [];
+          if (seenThreads.has(threadId)) return null;
+          seenThreads.add(threadId);
+          const intent = detectIntent(subject, snippet);
+          const priority = inferPriority(subject, snippet, intent, labelIds.includes("UNREAD"));
+          const initial = heuristicLeadIntelligence({
+            subject,
+            snippet,
+            from,
+            intent,
+            priorityScore: priority.priorityScore,
+          });
+          return {
+            id: m.id!,
+            threadId,
+            subject,
+            from,
+            date,
+            snippet,
+            intent,
+            priority,
+            initial,
+            isUnread: labelIds.includes("UNREAD"),
+          };
+        } catch {
+          return null;
+        }
+      })
+    );
+
+    const candidates = metadata
+      .filter((item): item is NonNullable<typeof item> => Boolean(item?.initial.isLead))
+      .sort((a, b) => (b.initial.confidence || 0) - (a.initial.confidence || 0))
+      .slice(0, 20);
+
+    const enriched = await Promise.all(
+      candidates.map(async (candidate, index) => {
+        let intelligence = candidate.initial;
+        if (index < 8) {
+          try {
+            const threadRes = await gmail.users.threads.get({ userId: "me", id: candidate.threadId, format: "full" });
+            const threadParts = await Promise.all((threadRes.data.messages ?? []).map(async (msg) => {
+              const headers = msg.payload?.headers ?? [];
+              const from = extractHeader(headers, "From");
+              const date = extractHeader(headers, "Date");
+              const content = await extractMessageContent(msg.payload, gmail, msg.id!);
+              return `From: ${from}\nDate: ${date}\n${content.text || msg.snippet || ""}`;
+            }));
+            intelligence = await generateLeadIntelligence({
+              subject: candidate.subject,
+              snippet: candidate.snippet,
+              thread: threadParts.join("\n\n---\n\n"),
+              from: candidate.from,
+              intent: candidate.intent,
+              priorityScore: candidate.priority.priorityScore,
+            });
+          } catch {
+            intelligence = candidate.initial;
+          }
+        }
+        if (!intelligence.isLead) return null;
+        return {
+          id: candidate.id,
+          threadId: candidate.threadId,
+          subject: candidate.subject,
+          from: candidate.from,
+          name: senderDisplayName(candidate.from),
+          email: senderEmailAddress(candidate.from),
+          date: candidate.date,
+          snippet: candidate.snippet,
+          isUnread: candidate.isUnread,
+          priorityScore: candidate.priority.priorityScore,
+          leadScore: intelligence.leadScore,
+          buyingIntent: intelligence.buyingIntent,
+          opportunitySummary: intelligence.opportunitySummary,
+          suggestedAction: intelligence.suggestedAction,
+          replyStrategy: intelligence.replyStrategy,
+          replyDraft: intelligence.replyDraft,
+          confidence: intelligence.confidence,
+          reason: intelligence.reason,
+          source: intelligence.source,
+        };
+      })
+    );
+
+    const leadRank: Record<LeadScore, number> = { Hot: 0, Warm: 1, Cold: 2 };
+    const leads = enriched
+      .filter(Boolean)
+      .filter((lead: any) => scoreFilter === "all" || String(lead.leadScore).toLowerCase() === scoreFilter)
+      .sort((a: any, b: any) => leadRank[a.leadScore as LeadScore] - leadRank[b.leadScore as LeadScore] || (b.confidence ?? 0) - (a.confidence ?? 0));
+    return res.json({ leads });
+  } catch (err: any) {
+    console.error("[inbox/leads]", err.message);
     return res.status(500).json({ error: err.message });
   }
 });

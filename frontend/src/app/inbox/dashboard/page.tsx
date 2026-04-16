@@ -1460,6 +1460,13 @@ export default function InboxDashboard() {
             <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-zinc-600">AI Features</p>
           </div>
           <Link
+            href="/inbox/leads"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-white/8 hover:text-white transition"
+          >
+            <span className="text-zinc-500"><SparkleIcon /></span>
+            Leads
+          </Link>
+          <Link
             href="/inbox/followups"
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-white/8 hover:text-white transition"
           >
