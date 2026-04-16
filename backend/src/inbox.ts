@@ -1236,3 +1236,55 @@ inboxRouter.delete("/followups/:id", async (req, res) => {
   await FollowUp.deleteOne({ _id: id, uid });
   return res.json({ success: true });
 });
+
+// POST /inbox/mission-brief
+function buildFallbackBrief(emails: Array<{ priorityCategory: string }>): string {
+  const urgent = emails.filter(e => ["Urgent", "Risk Detected"].includes(e.priorityCategory)).length;
+  const leads = emails.filter(e => e.priorityCategory === "High-Value Lead").length;
+  const payments = emails.filter(e => e.priorityCategory === "Payment").length;
+  const needsReply = emails.filter(e => e.priorityCategory === "Needs Reply").length;
+  const support = emails.filter(e => e.priorityCategory === "Support Issue").length;
+  const parts: string[] = [];
+  if (urgent) parts.push(`${urgent} urgent item${urgent > 1 ? "s" : ""} need your immediate attention`);
+  if (leads) parts.push(`${leads} high-value lead${leads > 1 ? "s" : ""} waiting for a response`);
+  if (payments) parts.push(`${payments} payment email${payments > 1 ? "s" : ""} to review`);
+  if (support) parts.push(`${support} support issue${support > 1 ? "s" : ""} that may need escalation`);
+  if (needsReply) parts.push(`${needsReply} conversation${needsReply > 1 ? "s" : ""} expecting a reply`);
+  if (!parts.length) return "Your inbox looks clean today. Review any pending emails and archive what you can to stay at inbox zero.";
+  return `You have ${parts.join(", ")}. Start with the highest-priority items to maximise your impact today.`;
+}
+
+inboxRouter.post("/mission-brief", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { emails } = req.body as {
+    emails?: Array<{ subject: string; from: string; priorityCategory: string; snippet: string }>;
+  };
+  if (!emails?.length) return res.json({ brief: "No emails found. Refresh your inbox and try again." });
+  const fallback = buildFallbackBrief(emails);
+  if (!NVIDIA_API_KEY) return res.json({ brief: fallback });
+  try {
+    const summary = emails.slice(0, 15).map(e => {
+      const sender = e.from.split("<")[0].trim() || e.from;
+      return `• [${e.priorityCategory}] ${sender}: "${e.subject}"`;
+    }).join("\n");
+    const result = await callNvidiaChatCompletions({
+      apiKey: NVIDIA_API_KEY,
+      messages: [
+        {
+          role: "system",
+          content: "You are Plyndrox, a smart executive email assistant. Given the user's inbox highlights, write a concise 2-3 sentence daily mission briefing. Be direct, specific, and action-oriented. Sound like a sharp chief of staff briefing their executive. Do not use bullet points — write in flowing prose. Do not start with 'I' or repeat 'you have'.",
+        },
+        {
+          role: "user",
+          content: `Today's inbox highlights:\n${summary}\n\nWrite a 2-3 sentence mission briefing covering what matters most and what to do first.`,
+        },
+      ],
+      max_tokens: 160,
+      temperature: 0.45,
+    });
+    return res.json({ brief: result.trim().replace(/^["']|["']$/g, "") });
+  } catch {
+    return res.json({ brief: fallback });
+  }
+});

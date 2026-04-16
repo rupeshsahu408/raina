@@ -458,6 +458,9 @@ export default function InboxDashboard() {
   const [newEmailsBanner, setNewEmailsBanner] = useState(0);
   const [newEmailItems, setNewEmailItems] = useState<EmailItem[]>([]);
 
+  const [missionBrief, setMissionBrief] = useState("");
+  const [missionBriefLoading, setMissionBriefLoading] = useState(false);
+
   const tokenRef = useRef("");
   const filterRef = useRef<HTMLDivElement>(null);
   const activeThreadRequestRef = useRef(0);
@@ -628,6 +631,59 @@ export default function InboxDashboard() {
   useEffect(() => {
     if (user) loadPendingFollowUps();
   }, [user, loadPendingFollowUps]);
+
+  function getMissionGreeting(): string {
+    const h = new Date().getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+  }
+
+  const loadMissionBrief = useCallback(async (emailList?: EmailItem[]) => {
+    const source = emailList ?? emails;
+    if (!source.length) {
+      setMissionBrief("Refresh your inbox first, then come back to see today's AI briefing.");
+      return;
+    }
+    setMissionBriefLoading(true);
+    setMissionBrief("");
+    const token = tokenRef.current || await getToken();
+    if (!token) { setMissionBriefLoading(false); return; }
+    try {
+      const res = await fetch(`${API}/inbox/mission-brief`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          emails: source.slice(0, 20).map(e => ({
+            subject: e.subject,
+            from: e.from,
+            priorityCategory: e.priorityCategory,
+            snippet: e.snippet,
+          })),
+        }),
+      });
+      const data = await res.json();
+      setMissionBrief(data.brief ?? "");
+    } catch {
+      setMissionBrief("Unable to generate briefing right now. Try refreshing.");
+    } finally {
+      setMissionBriefLoading(false);
+    }
+  }, [emails, getToken]);
+
+  function openEmailFromMission(email: EmailItem) {
+    setCommandView("inbox");
+    void openEmail(email);
+  }
+
+  function replyFromMission(email: EmailItem) {
+    setCommandView("inbox");
+    setComposeInitialTo(senderEmail(email.from));
+    setComposeInitialSubject(replySubject(email.subject));
+    setComposeInitialBody("");
+    setComposeDraftId(undefined);
+    setComposeOpen(true);
+  }
 
   async function autoCompleteFollowUp(threadId: string) {
     const token = tokenRef.current || await getToken();
@@ -1109,8 +1165,20 @@ export default function InboxDashboard() {
     setFilter("all");
     setSelectedEmail(null);
     setMobileView("list");
-    if (folder !== "inbox") setFolder("inbox");
+    setMissionBrief("");
+    if (folder !== "inbox") {
+      setFolder("inbox");
+      setGmailCategory("primary");
+    } else {
+      void loadMissionBrief();
+    }
   }
+
+  useEffect(() => {
+    if (commandView === "mission" && emails.length > 0 && !missionBrief && !missionBriefLoading) {
+      void loadMissionBrief(emails);
+    }
+  }, [commandView, emails.length]);
 
   const searchedEmails = emails.filter(em => {
     if (search && !em.subject.toLowerCase().includes(search.toLowerCase()) && !em.from.toLowerCase().includes(search.toLowerCase())) return false;
@@ -1131,6 +1199,14 @@ export default function InboxDashboard() {
   const missionCount = missionEmails.length;
   const highPriorityCount = searchedEmails.filter(em => ["Urgent", "Risk Detected", "High-Value Lead"].includes(em.priorityCategory)).length;
   const lowPriorityCount = searchedEmails.filter(em => em.priorityCategory === "Low Priority").length;
+
+  const missionUrgent = emails.filter(e => ["Urgent", "Risk Detected"].includes(e.priorityCategory)).sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
+  const missionLeads = emails.filter(e => e.priorityCategory === "High-Value Lead");
+  const missionPayments = emails.filter(e => e.priorityCategory === "Payment");
+  const missionSupport = emails.filter(e => e.priorityCategory === "Support Issue");
+  const missionNeedsReply = emails.filter(e => e.priorityCategory === "Needs Reply");
+  const missionCanWait = emails.filter(e => e.priorityCategory === "Low Priority");
+  const missionDate = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 
   const TONES = ["Formal", "Casual", "Sales", "Empathetic", "Short"];
   const FILTER_LABELS: Record<FilterType, string> = { all: "All", read: "Read", unread: "Unread", starred: "Starred", unstarred: "Unstarred" };
@@ -1276,8 +1352,198 @@ export default function InboxDashboard() {
         </header>
 
         <div className="flex flex-1 overflow-hidden">
+
+          {/* ── Today's Mission Panel ────────────────────────────────── */}
+          {commandView === "mission" && (
+            <div className="flex-1 overflow-y-auto">
+              {/* Dark header */}
+              <div className="bg-gradient-to-r from-[#14112a] via-[#1c183a] to-[#14112a] px-6 py-5 sticky top-0 z-10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2.5 mb-0.5">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#5c4ff6]">
+                        <SparkleIcon />
+                      </span>
+                      <h1 className="text-lg font-black text-white tracking-tight">Today's Mission</h1>
+                    </div>
+                    <p className="text-xs text-zinc-400 ml-10">{missionDate} · {getMissionGreeting()}! Here's what needs your focus.</p>
+                  </div>
+                  <button
+                    onClick={() => setCommandView("inbox")}
+                    className="flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 px-3 py-1.5 text-xs font-bold text-white transition"
+                  >
+                    <BackArrowIcon />
+                    Back to Inbox
+                  </button>
+                </div>
+              </div>
+
+              <div className="px-5 py-5 bg-[#f8f7ff] min-h-full">
+
+                {/* AI Briefing card */}
+                <div className="mb-5 rounded-2xl border border-indigo-100 bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b border-indigo-50">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#5c4ff6] text-white shrink-0">
+                        <SparkleIcon />
+                      </span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-indigo-700">AI Briefing</span>
+                    </div>
+                    <button
+                      onClick={() => void loadMissionBrief()}
+                      disabled={missionBriefLoading}
+                      className="flex items-center gap-1 text-[11px] font-semibold text-indigo-500 hover:text-indigo-700 disabled:opacity-50 transition"
+                    >
+                      <RefreshIcon spinning={missionBriefLoading} />
+                      {missionBriefLoading ? "Generating…" : "Refresh"}
+                    </button>
+                  </div>
+                  <div className="px-4 py-3.5">
+                    {missionBriefLoading ? (
+                      <div className="space-y-2">
+                        <div className="h-3 bg-indigo-50 rounded-full animate-pulse w-full" />
+                        <div className="h-3 bg-indigo-50 rounded-full animate-pulse w-5/6" />
+                        <div className="h-3 bg-indigo-50 rounded-full animate-pulse w-3/4" />
+                      </div>
+                    ) : missionBrief ? (
+                      <p className="text-sm text-gray-700 leading-relaxed">{missionBrief}</p>
+                    ) : (
+                      <p className="text-sm text-gray-400 italic">Click Refresh to generate your AI daily briefing.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Stats row */}
+                <div className="grid grid-cols-3 lg:grid-cols-6 gap-2.5 mb-6">
+                  {[
+                    { label: "Urgent", count: missionUrgent.length, color: "text-red-600", bg: "bg-red-50", border: "border-red-100", dot: "bg-red-500" },
+                    { label: "Leads", count: missionLeads.length, color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-100", dot: "bg-emerald-500" },
+                    { label: "Payments", count: missionPayments.length, color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-100", dot: "bg-amber-500" },
+                    { label: "Support", count: missionSupport.length, color: "text-blue-700", bg: "bg-blue-50", border: "border-blue-100", dot: "bg-blue-500" },
+                    { label: "Needs Reply", count: missionNeedsReply.length, color: "text-indigo-700", bg: "bg-indigo-50", border: "border-indigo-100", dot: "bg-indigo-500" },
+                    { label: "Can Wait", count: missionCanWait.length, color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200", dot: "bg-gray-400" },
+                  ].map(s => (
+                    <div key={s.label} className={`rounded-2xl border ${s.border} ${s.bg} px-2 py-3 text-center`}>
+                      <div className="flex justify-center mb-1.5">
+                        <span className={`h-2 w-2 rounded-full ${s.dot}`} />
+                      </div>
+                      <p className={`text-2xl font-black ${s.color}`}>{s.count}</p>
+                      <p className="text-[10px] text-gray-500 font-semibold mt-0.5 leading-tight">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Empty state */}
+                {emails.length === 0 && !loading && (
+                  <div className="text-center py-14">
+                    <div className="mx-auto mb-4 w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-400">
+                      <SparkleIcon />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-600">No emails loaded yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Go back to inbox and refresh to load your emails.</p>
+                    <button
+                      onClick={() => { setCommandView("inbox"); void loadEmails(gmailCategory); }}
+                      className="mt-4 rounded-full bg-[#5c4ff6] text-white px-5 py-2 text-sm font-bold hover:bg-[#4f43e0] transition"
+                    >
+                      Load Inbox
+                    </button>
+                  </div>
+                )}
+
+                {/* Category sections */}
+                {([
+                  { key: "urgent", label: "Needs Action Now", icon: "🔴", emails: missionUrgent, accentBorder: "border-l-red-500", headerColor: "text-red-700", headerBg: "bg-red-50", extraCount: 0 },
+                  { key: "leads", label: "High-Value Leads", icon: "💎", emails: missionLeads, accentBorder: "border-l-emerald-500", headerColor: "text-emerald-700", headerBg: "bg-emerald-50", extraCount: 0 },
+                  { key: "payments", label: "Payments & Invoices", icon: "💳", emails: missionPayments, accentBorder: "border-l-amber-500", headerColor: "text-amber-700", headerBg: "bg-amber-50", extraCount: 0 },
+                  { key: "support", label: "Support Issues", icon: "🔵", emails: missionSupport, accentBorder: "border-l-blue-500", headerColor: "text-blue-700", headerBg: "bg-blue-50", extraCount: 0 },
+                  { key: "reply", label: "Needs Reply", icon: "💬", emails: missionNeedsReply, accentBorder: "border-l-indigo-500", headerColor: "text-indigo-700", headerBg: "bg-indigo-50", extraCount: 0 },
+                  { key: "canwait", label: "Can Wait", icon: "⏳", emails: missionCanWait.slice(0, 4), accentBorder: "border-l-gray-300", headerColor: "text-gray-600", headerBg: "bg-gray-50", extraCount: Math.max(0, missionCanWait.length - 4) },
+                ] as const).filter(cat => cat.emails.length > 0).map(cat => (
+                  <section key={cat.key} className="mb-5">
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${cat.headerBg} mb-3`}>
+                      <span className="text-sm">{cat.icon}</span>
+                      <h3 className={`text-[11px] font-black uppercase tracking-wider ${cat.headerColor}`}>{cat.label}</h3>
+                      <span className={`ml-auto rounded-full bg-white/70 px-2 py-0.5 text-[10px] font-black ${cat.headerColor}`}>
+                        {cat.emails.length}{cat.extraCount > 0 ? `+${cat.extraCount}` : ""}
+                      </span>
+                    </div>
+                    <div className="space-y-2.5">
+                      {cat.emails.map(email => (
+                        <div
+                          key={email.id}
+                          className={`bg-white rounded-2xl border border-gray-100 border-l-4 ${cat.accentBorder} p-4 hover:shadow-md transition-shadow`}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div
+                              className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-black mt-0.5"
+                              style={{ background: avatarColor(senderName(email.from)) }}
+                            >
+                              {senderInitial(email.from)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2 mb-0.5">
+                                <span className="text-sm font-bold text-gray-900 truncate">{senderName(email.from)}</span>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  {email.isUnread && <span className="h-2 w-2 rounded-full bg-indigo-600 shrink-0" />}
+                                  <span className="text-[11px] text-gray-400">{formatDate(email.date)}</span>
+                                </div>
+                              </div>
+                              <p className="text-xs font-semibold text-gray-700 truncate mb-1">{email.subject}</p>
+                              <p className="text-[11px] text-gray-500 mb-2.5 line-clamp-2">{email.snippet}</p>
+                              <div className="flex items-center gap-1.5 mb-3 rounded-lg bg-indigo-50 px-2.5 py-1.5">
+                                <span className="text-indigo-500 shrink-0">→</span>
+                                <p className="text-[11px] text-indigo-700 font-medium leading-snug">{email.suggestedAction}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => openEmailFromMission(email)}
+                                  className="flex items-center gap-1.5 rounded-lg bg-[#5c4ff6] text-white px-3 py-1.5 text-xs font-bold hover:bg-[#4f43e0] transition"
+                                >
+                                  Open
+                                </button>
+                                <button
+                                  onClick={() => replyFromMission(email)}
+                                  className="flex items-center gap-1.5 rounded-lg border border-gray-200 text-gray-600 px-3 py-1.5 text-xs font-bold hover:bg-gray-50 transition"
+                                >
+                                  <ReplyIcon />
+                                  Reply
+                                </button>
+                                <button
+                                  onClick={e => { e.stopPropagation(); void toggleStar(email, e); }}
+                                  className={`ml-auto p-1.5 rounded-lg transition ${email.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}
+                                >
+                                  <StarIcon filled={email.isStarred} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      {cat.extraCount > 0 && (
+                        <button
+                          onClick={() => { setCommandView("inbox"); setPriorityFilter("Low Priority"); }}
+                          className="w-full py-2.5 rounded-xl border border-dashed border-gray-200 text-xs font-semibold text-gray-500 hover:bg-white hover:border-gray-300 transition"
+                        >
+                          +{cat.extraCount} more — View all in Inbox
+                        </button>
+                      )}
+                    </div>
+                  </section>
+                ))}
+
+                {emails.length > 0 && missionUrgent.length === 0 && missionLeads.length === 0 && missionPayments.length === 0 && missionSupport.length === 0 && missionNeedsReply.length === 0 && missionCanWait.length === 0 && (
+                  <div className="text-center py-10">
+                    <p className="text-2xl mb-2">🎉</p>
+                    <p className="text-sm font-bold text-gray-700">Inbox Zero achieved!</p>
+                    <p className="text-xs text-gray-400 mt-1">All caught up. Great work today.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ── Email list panel ─────────────────────────────────────── */}
-          <div className={`${selectedEmail ? "hidden md:flex" : "flex"} md:flex w-full md:w-[320px] lg:w-[360px] shrink-0 flex-col border-r border-gray-200 bg-white overflow-hidden`}>
+          <div className={`${commandView === "mission" ? "hidden" : (selectedEmail ? "hidden md:flex" : "flex")} md:flex w-full md:w-[320px] lg:w-[360px] shrink-0 flex-col border-r border-gray-200 bg-white overflow-hidden`}>
             {/* List header */}
             <div className="px-4 pt-3 pb-2 border-b border-gray-100">
               <div className="mb-3">
@@ -1669,7 +1935,7 @@ export default function InboxDashboard() {
           </div>
 
           {/* ── Reading pane ─────────────────────────────────────────── */}
-          <div className={`${selectedEmail ? "flex" : "hidden md:flex"} flex-1 flex-col overflow-hidden bg-white`}>
+          <div className={`${commandView === "mission" ? "hidden" : (selectedEmail ? "flex" : "hidden md:flex")} flex-1 flex-col overflow-hidden bg-white`}>
             {!selectedEmail ? (
               <div className="flex flex-1 items-center justify-center">
                 <div className="text-center">
