@@ -2086,31 +2086,148 @@ inboxRouter.get("/analyze", async (req, res) => {
     const peakDow = activityByDow.reduce((a: any, b: any) => (b.count > a.count ? b : a), { day: "Mon", count: 0 });
     const leadCount = intentCounts.Lead;
     const readRate = totalEmails > 0 ? Math.round(((totalEmails - unreadCount) / totalEmails) * 100) : 0;
+    const avgPerDay = days > 0 ? Math.round((totalEmails / days) * 10) / 10 : 0;
+
+    // Thread count (unique threadIds)
+    const threadIdSet = new Set(received.map((m: any) => m.id));
+    const threadCount = threadIdSet.size;
+
+    // Previous period comparison
+    const prevCutoff = new Date(cutoffDate);
+    prevCutoff.setDate(prevCutoff.getDate() - days);
+    const prevTimestamp = Math.floor(prevCutoff.getTime() / 1000);
+    let prevPeriodCount = 0;
+    try {
+      const prevList = await gmail.users.messages.list({
+        userId: "me",
+        maxResults: 200,
+        q: `after:${prevTimestamp} before:${afterTimestamp}`,
+        labelIds: ["INBOX"],
+      });
+      prevPeriodCount = (prevList.data.messages ?? []).length;
+    } catch { prevPeriodCount = 0; }
+    const volumeChange = prevPeriodCount > 0 ? Math.round(((totalEmails - prevPeriodCount) / prevPeriodCount) * 100) : 0;
+
+    // Subject keyword extraction
+    const stopWords = new Set(["re","fwd","fw","the","a","an","is","in","it","of","to","and","for","on","with","your","you","we","our","i","this","that","from","be","have","has","at","by","as","are","was","will","can","do","or","if","my","me","us","hi","hey","hello","dear","thanks","thank"]);
+    const wordFreq: Record<string, number> = {};
+    for (const m of received) {
+      const words = m.subject.toLowerCase().replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter((w: string) => w.length > 2 && !stopWords.has(w));
+      for (const w of words) wordFreq[w] = (wordFreq[w] ?? 0) + 1;
+    }
+    const keywords = Object.entries(wordFreq).sort((a, b) => b[1] - a[1]).slice(0, 30).map(([word, count]) => ({ word, count }));
+
+    // Sender relationship scoring
+    const scoredSenders = topSenders.map((s: any) => {
+      const intentValues: Record<string, number> = { Lead: 10, Payment: 9, Support: 7, Meeting: 6, FYI: 3, Spam: 0 };
+      const topIntent = Object.entries(s.intents).sort((a: any, b: any) => b[1] - a[1])[0]?.[0] ?? "FYI";
+      const intentScore = intentValues[topIntent] ?? 3;
+      const freqScore = Math.min(s.count * 2, 20);
+      const totalScore = Math.min(100, intentScore * 5 + freqScore + (s.count > 5 ? 10 : 0));
+      const relationship = totalScore >= 70 ? "Hot" : totalScore >= 40 ? "Warm" : "Cold";
+      return { ...s, relationshipScore: totalScore, relationship, topIntent };
+    });
+
+    // Unsubscribe candidates: high volume + low-priority intents
+    const unsubscribeCandidates = Object.values(senderMap)
+      .filter((s: any) => {
+        const topIntent = Object.entries(s.intents).sort((a: any, b: any) => b[1] - a[1])[0]?.[0] ?? "FYI";
+        return s.count >= 2 && (topIntent === "Spam" || topIntent === "FYI") && !["Lead","Payment","Support","Meeting"].some(i => (s.intents[i] ?? 0) > 0);
+      })
+      .sort((a: any, b: any) => b.count - a.count)
+      .slice(0, 8)
+      .map((s: any) => ({ name: senderDisplayName(s.name || s.email), email: s.email, count: s.count, domain: s.domain }));
+
+    // Response rate: % of received threads that have a sent reply (approximate)
+    const receivedThreadIds = new Set(received.map((m: any) => m.id));
+    const sentThreadIds = new Set(sent.map((m: any) => m.id));
+    const repliedCount = [...receivedThreadIds].filter((id) => sentThreadIds.has(id)).length;
+    const responseRate = totalEmails > 0 ? Math.round((sent.length / Math.max(totalEmails, 1)) * 100) : 0;
+
+    // Inbox score composite (0-100)
+    let inboxScore = 50;
+    inboxScore += Math.min(readRate * 0.2, 20);
+    inboxScore -= Math.min(riskCounts.High * 3, 15);
+    inboxScore += Math.min(aiRescuedCount * 2, 10);
+    inboxScore += leadCount > 0 ? 5 : 0;
+    inboxScore -= unreadCount > 50 ? 10 : unreadCount > 20 ? 5 : 0;
+    inboxScore = Math.max(0, Math.min(100, Math.round(inboxScore)));
+
+    // Reading time estimate (avg 250 wpm, ~15 words per snippet)
+    const estimatedReadingMins = Math.ceil((totalEmails * 15) / 250);
+
+    // Inbox zero days prediction
+    const dailyCapacity = 10;
+    const inboxZeroDays = unreadCount > 0 ? Math.ceil(unreadCount / dailyCapacity) : 0;
+
+    // Weekly volume (for multi-week view)
+    const weeklyVolume: Record<string, { received: number; sent: number }> = {};
+    for (const m of received) {
+      const d = new Date(m.parsedDate);
+      const weekStart = new Date(d);
+      weekStart.setDate(d.getDate() - d.getDay());
+      const wk = weekStart.toISOString().slice(0, 10);
+      if (!weeklyVolume[wk]) weeklyVolume[wk] = { received: 0, sent: 0 };
+      weeklyVolume[wk].received++;
+    }
+    for (const m of sent) {
+      const d = new Date(m.parsedDate);
+      const weekStart = new Date(d);
+      weekStart.setDate(d.getDate() - d.getDay());
+      const wk = weekStart.toISOString().slice(0, 10);
+      if (!weeklyVolume[wk]) weeklyVolume[wk] = { received: 0, sent: 0 };
+      weeklyVolume[wk].sent++;
+    }
+    const weeklyTrend = Object.entries(weeklyVolume).sort((a, b) => a[0].localeCompare(b[0])).map(([week, c]) => ({ week, ...c }));
+
+    // 7×24 heatmap grid
+    const weeklyHeatmap = Array.from({ length: 7 }, (_, dow) =>
+      Array.from({ length: 24 }, (_, hour) => ({ dow, hour, count: 0 }))
+    );
+    for (const m of received) {
+      const dow = m.parsedDate.getDay();
+      const hour = m.parsedDate.getHours();
+      weeklyHeatmap[dow][hour].count++;
+    }
+    const flatHeatmap = weeklyHeatmap.flat();
 
     const insights: string[] = [];
     if (riskCounts.High > 0) insights.push(`⚡ You have ${riskCounts.High} high-risk email${riskCounts.High > 1 ? "s" : ""} that need immediate attention.`);
     if (leadCount > 0) insights.push(`🎯 ${leadCount} potential lead${leadCount > 1 ? "s" : ""} detected — reply quickly to maximize conversion.`);
-    if (unreadCount > 20) insights.push(`📬 Your unread count is high (${unreadCount}). Consider a focused inbox session.`);
+    if (unreadCount > 20) insights.push(`📬 Your unread count is ${unreadCount}. At 10 emails/day you can reach Inbox Zero in ${inboxZeroDays} days.`);
     if (aiRescuedCount > 0) insights.push(`🤖 AI rescued ${aiRescuedCount} important email${aiRescuedCount > 1 ? "s" : ""} from promotions or social folders.`);
-    if (peakHour.count > 0) insights.push(`🕐 Your busiest email hour is ${peakHour.hour}:00–${peakHour.hour + 1}:00. Plan focused reply blocks around this time.`);
-    if (peakDow.count > 0) insights.push(`📅 ${peakDow.day} is your busiest day for incoming email.`);
-    if (intentCounts.Support > 5) insights.push(`🛠️ High support volume (${intentCounts.Support} emails). Consider templates or an FAQ to speed up replies.`);
-    if (intentCounts.Payment > 0) insights.push(`💳 ${intentCounts.Payment} payment-related email${intentCounts.Payment > 1 ? "s" : ""} detected — ensure none are overdue.`);
-    if (readRate < 50) insights.push(`👀 Less than half your emails are read. AI prioritization can help surface what matters.`);
-    if (topSenders.length > 0) insights.push(`📨 Your top sender is ${topSenders[0].name || topSenders[0].email} with ${topSenders[0].count} emails.`);
+    if (peakHour.count > 0) insights.push(`🕐 Your busiest email hour is ${peakHour.hour}:00–${peakHour.hour + 1}:00. Block this time for focused replies.`);
+    if (peakDow.count > 0) insights.push(`📅 ${peakDow.day} is your heaviest day — consider batch-processing email then.`);
+    if (intentCounts.Support > 5) insights.push(`🛠️ ${intentCounts.Support} support emails detected. Templates or an FAQ could save hours each week.`);
+    if (intentCounts.Payment > 0) insights.push(`💳 ${intentCounts.Payment} payment email${intentCounts.Payment > 1 ? "s" : ""} — verify none are overdue to avoid friction.`);
+    if (readRate < 50) insights.push(`👀 Only ${readRate}% of your inbox is read. AI triage is helping surface what matters.`);
+    if (topSenders.length > 0) insights.push(`📨 Top sender: ${topSenders[0].name || topSenders[0].email} (${topSenders[0].count} emails).`);
+    if (unsubscribeCandidates.length > 0) insights.push(`🔇 ${unsubscribeCandidates.length} low-value sender${unsubscribeCandidates.length > 1 ? "s" : ""} are generating noise. Unsubscribing could cut inbox load significantly.`);
+    if (volumeChange > 20) insights.push(`📈 Email volume is up ${volumeChange}% vs the previous ${days}-day period.`);
+    if (volumeChange < -20) insights.push(`📉 Email volume is down ${Math.abs(volumeChange)}% vs the previous period — great progress.`);
+    if (estimatedReadingMins > 60) insights.push(`⏱️ These ${totalEmails} emails represent ~${estimatedReadingMins} min of reading. Use summaries to save time.`);
 
     return res.json({
       period: { days, from: cutoffDate.toISOString(), to: new Date().toISOString() },
-      summary: { totalEmails, sentCount: sent.length, unreadCount, starredCount, aiRescuedCount, avgPriorityScore, readRate, leadCount },
+      summary: {
+        totalEmails, sentCount: sent.length, unreadCount, starredCount, aiRescuedCount,
+        avgPriorityScore, readRate, leadCount, avgPerDay, threadCount,
+        prevPeriodCount, volumeChange, responseRate, inboxScore,
+        estimatedReadingMins, inboxZeroDays,
+      },
       intentBreakdown: intentCounts,
       priorityBreakdown: priorityCounts,
       riskBreakdown: riskCounts,
       gmailCategories: gmailCategoryCounts,
       volumeTrend,
+      weeklyTrend,
       activityByHour,
       activityByDow,
-      topSenders,
+      flatHeatmap,
+      topSenders: scoredSenders,
       topDomains,
+      keywords,
+      unsubscribeCandidates,
       insights,
       generatedAt: new Date().toISOString(),
     });
