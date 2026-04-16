@@ -1548,6 +1548,13 @@ export default function InboxDashboard() {
         <div className="px-4 flex-1 overflow-y-auto">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-2 px-1">AI Tools</p>
           <nav className="space-y-0.5">
+            <Link href="/inbox/analyze" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all" style={{ background: "linear-gradient(135deg,rgba(92,79,246,0.18) 0%,rgba(124,58,237,0.12) 100%)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}>
+              <span style={{ color: "#a78bfa" }}>
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+              </span>
+              <span className="font-bold">Analyze</span>
+              <span className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-md" style={{ background: "rgba(139,92,246,0.25)", color: "#c4b5fd" }}>NEW</span>
+            </Link>
             <Link href="/inbox/leads" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
               <span className="text-zinc-600"><SparkleIcon /></span>
               Lead Intelligence

@@ -1950,6 +1950,176 @@ inboxRouter.get("/health-score", async (req, res) => {
   }
 });
 
+// GET /inbox/analyze — comprehensive Gmail analytics
+inboxRouter.get("/analyze", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
+  const days = Math.min(Number(req.query.days ?? 30), 90);
+  const maxMessages = 200;
+
+  try {
+    const auth = await getAuthenticatedClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    const afterTimestamp = Math.floor(cutoffDate.getTime() / 1000);
+
+    const listRes = await gmail.users.messages.list({
+      userId: "me",
+      maxResults: maxMessages,
+      q: `after:${afterTimestamp}`,
+    });
+    const messageIds = listRes.data.messages ?? [];
+
+    const messages = (await Promise.all(
+      messageIds.map(async (m) => {
+        try {
+          const msg = await gmail.users.messages.get({
+            userId: "me",
+            id: m.id!,
+            format: "metadata",
+            metadataHeaders: ["From", "Subject", "Date"],
+          });
+          const headers = msg.data.payload?.headers ?? [];
+          const subject = extractHeader(headers, "Subject") || "(no subject)";
+          const from = extractHeader(headers, "From");
+          const date = extractHeader(headers, "Date");
+          const snippet = msg.data.snippet ?? "";
+          const labelIds = msg.data.labelIds ?? [];
+          const isUnread = labelIds.includes("UNREAD");
+          const isStarred = labelIds.includes("STARRED");
+          const isSent = labelIds.includes("SENT");
+          const intent = detectIntent(subject, snippet);
+          const priority = inferPriority(subject, snippet, intent, isUnread);
+          const gmailCategory = detectGmailCategory(labelIds);
+          const aiRescued = (gmailCategory === "promotions" || gmailCategory === "social") && priority.priorityScore >= 70;
+          const parsedDate = date ? new Date(date) : new Date();
+          const emailAddress = senderEmailAddress(from);
+          const domain = emailAddress.includes("@") ? emailAddress.split("@")[1].toLowerCase() : "unknown";
+          return {
+            id: m.id,
+            subject,
+            from,
+            emailAddress,
+            domain,
+            date,
+            parsedDate,
+            snippet,
+            intent,
+            priorityCategory: priority.priorityCategory,
+            priorityScore: priority.priorityScore,
+            riskLevel: priority.riskLevel,
+            isUnread,
+            isStarred,
+            isSent,
+            gmailCategory,
+            aiRescued,
+          };
+        } catch {
+          return null;
+        }
+      })
+    )).filter(Boolean) as any[];
+
+    const received = messages.filter((m) => !m.isSent);
+    const sent = messages.filter((m) => m.isSent);
+    const totalEmails = received.length;
+    const unreadCount = received.filter((m) => m.isUnread).length;
+    const starredCount = messages.filter((m) => m.isStarred).length;
+    const aiRescuedCount = received.filter((m) => m.aiRescued).length;
+    const avgPriorityScore = totalEmails > 0 ? Math.round(received.reduce((s: number, m: any) => s + m.priorityScore, 0) / totalEmails) : 0;
+
+    const intentCounts: Record<string, number> = { Lead: 0, Support: 0, Payment: 0, Meeting: 0, Spam: 0, FYI: 0 };
+    for (const m of received) intentCounts[m.intent] = (intentCounts[m.intent] ?? 0) + 1;
+
+    const priorityCounts: Record<string, number> = {};
+    for (const m of received) priorityCounts[m.priorityCategory] = (priorityCounts[m.priorityCategory] ?? 0) + 1;
+
+    const riskCounts = { High: 0, Medium: 0, Low: 0 };
+    for (const m of received) riskCounts[m.riskLevel as keyof typeof riskCounts]++;
+
+    const gmailCategoryCounts: Record<string, number> = {};
+    for (const m of received) gmailCategoryCounts[m.gmailCategory] = (gmailCategoryCounts[m.gmailCategory] ?? 0) + 1;
+
+    const senderMap: Record<string, { name: string; email: string; count: number; domain: string; intents: Record<string, number> }> = {};
+    for (const m of received) {
+      const key = m.emailAddress.toLowerCase();
+      if (!senderMap[key]) senderMap[key] = { name: senderDisplayName(m.from), email: m.emailAddress, count: 0, domain: m.domain, intents: {} };
+      senderMap[key].count++;
+      senderMap[key].intents[m.intent] = (senderMap[key].intents[m.intent] ?? 0) + 1;
+    }
+    const topSenders = Object.values(senderMap).sort((a, b) => b.count - a.count).slice(0, 10);
+
+    const domainMap: Record<string, number> = {};
+    for (const m of received) domainMap[m.domain] = (domainMap[m.domain] ?? 0) + 1;
+    const topDomains = Object.entries(domainMap).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([domain, count]) => ({ domain, count }));
+
+    const volumeByDay: Record<string, { received: number; sent: number }> = {};
+    for (let i = 0; i < days; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (days - 1 - i));
+      const key = d.toISOString().slice(0, 10);
+      volumeByDay[key] = { received: 0, sent: 0 };
+    }
+    for (const m of received) {
+      const key = m.parsedDate.toISOString().slice(0, 10);
+      if (volumeByDay[key]) volumeByDay[key].received++;
+    }
+    for (const m of sent) {
+      const key = m.parsedDate.toISOString().slice(0, 10);
+      if (volumeByDay[key]) volumeByDay[key].sent++;
+    }
+    const volumeTrend = Object.entries(volumeByDay).map(([date, counts]) => ({ date, ...counts }));
+
+    const activityByHour = Array.from({ length: 24 }, (_, h) => ({ hour: h, count: 0 }));
+    const activityByDow = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => ({ day, count: 0 }));
+    for (const m of received) {
+      const h = m.parsedDate.getHours();
+      const d = m.parsedDate.getDay();
+      activityByHour[h].count++;
+      activityByDow[d].count++;
+    }
+
+    const peakHour = activityByHour.reduce((a: any, b: any) => (b.count > a.count ? b : a), { hour: 0, count: 0 });
+    const peakDow = activityByDow.reduce((a: any, b: any) => (b.count > a.count ? b : a), { day: "Mon", count: 0 });
+    const leadCount = intentCounts.Lead;
+    const readRate = totalEmails > 0 ? Math.round(((totalEmails - unreadCount) / totalEmails) * 100) : 0;
+
+    const insights: string[] = [];
+    if (riskCounts.High > 0) insights.push(`⚡ You have ${riskCounts.High} high-risk email${riskCounts.High > 1 ? "s" : ""} that need immediate attention.`);
+    if (leadCount > 0) insights.push(`🎯 ${leadCount} potential lead${leadCount > 1 ? "s" : ""} detected — reply quickly to maximize conversion.`);
+    if (unreadCount > 20) insights.push(`📬 Your unread count is high (${unreadCount}). Consider a focused inbox session.`);
+    if (aiRescuedCount > 0) insights.push(`🤖 AI rescued ${aiRescuedCount} important email${aiRescuedCount > 1 ? "s" : ""} from promotions or social folders.`);
+    if (peakHour.count > 0) insights.push(`🕐 Your busiest email hour is ${peakHour.hour}:00–${peakHour.hour + 1}:00. Plan focused reply blocks around this time.`);
+    if (peakDow.count > 0) insights.push(`📅 ${peakDow.day} is your busiest day for incoming email.`);
+    if (intentCounts.Support > 5) insights.push(`🛠️ High support volume (${intentCounts.Support} emails). Consider templates or an FAQ to speed up replies.`);
+    if (intentCounts.Payment > 0) insights.push(`💳 ${intentCounts.Payment} payment-related email${intentCounts.Payment > 1 ? "s" : ""} detected — ensure none are overdue.`);
+    if (readRate < 50) insights.push(`👀 Less than half your emails are read. AI prioritization can help surface what matters.`);
+    if (topSenders.length > 0) insights.push(`📨 Your top sender is ${topSenders[0].name || topSenders[0].email} with ${topSenders[0].count} emails.`);
+
+    return res.json({
+      period: { days, from: cutoffDate.toISOString(), to: new Date().toISOString() },
+      summary: { totalEmails, sentCount: sent.length, unreadCount, starredCount, aiRescuedCount, avgPriorityScore, readRate, leadCount },
+      intentBreakdown: intentCounts,
+      priorityBreakdown: priorityCounts,
+      riskBreakdown: riskCounts,
+      gmailCategories: gmailCategoryCounts,
+      volumeTrend,
+      activityByHour,
+      activityByDow,
+      topSenders,
+      topDomains,
+      insights,
+      generatedAt: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    console.error("[inbox/analyze]", err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /inbox/waiting-replies/draft  — generate AI follow-up message
 inboxRouter.post("/waiting-replies/draft", express.json(), async (req, res) => {
   const uid = (req as any).user?.uid;
