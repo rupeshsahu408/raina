@@ -955,32 +955,43 @@ export default function InboxDashboard() {
       loadLocalDrafts();
     }
     currentFolderRef.current = fld;
+    const expectedFolder = fld;
     const token = await getToken();
     if (!token) return;
-    if (pageToken) setLoadingMore(true);
-    else {
+    if (pageToken) {
+      setLoadingMore(true);
+    } else {
+      autoPaginationCountRef.current = 0;
       setLoading(true);
       setEmails([]);
+      setNextPageToken(null);
       setNewEmailsBanner(0);
       setNewEmailItems([]);
     }
     setError("");
     try {
-      const url = `${API}/inbox/messages?maxResults=50&folder=${fld}${pageToken ? `&pageToken=${pageToken}` : ""}`;
+      const url = `${API}/inbox/messages?maxResults=100&folder=${fld}${pageToken ? `&pageToken=${pageToken}` : ""}`;
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (res.status === 401 || res.status === 403) { router.replace("/inbox/connect"); return; }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to load");
       const loaded = (data.messages ?? []).map(normalizeEmailItem);
       if (pageToken) {
-        setEmails(prev => [...prev, ...loaded]);
+        setEmails(prev => {
+          const existingIds = new Set(prev.map((e: EmailItem) => e.id));
+          return [...prev, ...loaded.filter((e: EmailItem) => !existingIds.has(e.id))];
+        });
       } else {
         setEmails(loaded);
-        if (fld === "inbox") {
-          knownEmailIdsRef.current = new Set(loaded.map((e: EmailItem) => e.id));
-        }
+        knownEmailIdsRef.current = new Set(loaded.map((e: EmailItem) => e.id));
       }
-      setNextPageToken(data.nextPageToken ?? null);
+      const nextToken: string | null = data.nextPageToken ?? null;
+      setNextPageToken(nextToken);
+      // Auto-continue to next page — abort if folder switched or limit hit
+      if (nextToken && autoPaginationCountRef.current < 10 && currentFolderRef.current === expectedFolder) {
+        autoPaginationCountRef.current += 1;
+        void loadEmails(fld, nextToken);
+      }
     } catch (e: any) {
       setError(e.message);
     } finally {
@@ -990,22 +1001,12 @@ export default function InboxDashboard() {
   }, [getToken, router, folder, loadLocalDrafts, loadScheduled]);
 
   useEffect(() => {
-    autoPaginationCountRef.current = 0;
     if (user) loadEmails(folder === "inbox" ? gmailCategory : folder);
   }, [user, folder]);
 
   useEffect(() => {
-    autoPaginationCountRef.current = 0;
     if (user && folder === "inbox") loadEmails(gmailCategory);
   }, [gmailCategory]);
-
-  // Auto-paginate: silently load all pages (up to 6 × 50 = 300 emails) without user clicking Load More
-  useEffect(() => {
-    if (nextPageToken && !loadingMore && !loading && autoPaginationCountRef.current < 6) {
-      autoPaginationCountRef.current += 1;
-      void loadEmails(folder === "inbox" ? gmailCategory : folder as any, nextPageToken);
-    }
-  }, [nextPageToken, loadingMore, loading]);
 
   // Handoff from followups page: open compose with pre-filled draft
   useEffect(() => {

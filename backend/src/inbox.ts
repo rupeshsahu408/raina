@@ -486,10 +486,10 @@ inboxRouter.get("/status", async (req, res) => {
 });
 
 const FOLDER_CONFIG: Record<string, { labelIds?: string[]; q?: string }> = {
-  inbox:      { labelIds: ["INBOX"], q: "in:inbox -category:promotions -category:social" },
-  primary:    { q: "in:inbox category:primary" },
-  promotions: { q: "in:inbox category:promotions" },
-  social:     { q: "in:inbox category:social" },
+  inbox:      { labelIds: ["INBOX"] },
+  primary:    { labelIds: ["INBOX"], q: "-category:promotions -category:social -category:updates -category:forums" },
+  promotions: { labelIds: ["INBOX", "CATEGORY_PROMOTIONS"] },
+  social:     { labelIds: ["INBOX", "CATEGORY_SOCIAL"] },
   sent:       { labelIds: ["SENT"] },
   spam:       { labelIds: ["SPAM"] },
   trash:      { labelIds: ["TRASH"] },
