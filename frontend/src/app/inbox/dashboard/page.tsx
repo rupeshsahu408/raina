@@ -2529,8 +2529,7 @@ export default function InboxDashboard() {
                             )}
                           </div>
                         </div>
-                      );})}
-                    )}
+                      );}))}
                     {loadingMore && (
                       <div className="p-4 flex justify-center">
                         <div className="flex items-center gap-2 text-xs text-gray-400">
