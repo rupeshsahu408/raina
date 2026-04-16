@@ -1679,6 +1679,153 @@ inboxRouter.delete("/waiting-replies/:id", async (req, res) => {
   return res.json({ success: true });
 });
 
+// GET /inbox/health-score  — Inbox Health Score & Daily Briefing
+inboxRouter.get("/health-score", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
+  try {
+    await connectMongo();
+
+    const followUps = await FollowUp.find({ uid, status: "pending" }).lean();
+    const overdueFollowUps = followUps.filter((f: any) => f.scheduledAt < Date.now());
+
+    const waitingRepliesAll = await WaitingReply.find({ uid, status: "active" }).lean();
+    const overdueWaiting = waitingRepliesAll.filter((w: any) => {
+      const daysWaiting = (Date.now() - (w.sentAt ?? 0)) / 86400000;
+      return daysWaiting >= 2;
+    });
+
+    let urgentCount = 0;
+    let paymentCount = 0;
+    let leadCount = 0;
+    let unreadTotal = 0;
+
+    try {
+      const auth = await getAuthenticatedClient(uid);
+      const gmail = google.gmail({ version: "v1", auth });
+      const response = await gmail.users.messages.list({
+        userId: "me",
+        labelIds: ["INBOX", "UNREAD"],
+        maxResults: 40,
+      });
+      const messages = response.data.messages ?? [];
+      for (const msg of messages.slice(0, 25)) {
+        try {
+          const detail = await gmail.users.messages.get({
+            userId: "me",
+            id: msg.id!,
+            format: "metadata",
+            metadataHeaders: ["Subject", "From"],
+          });
+          const headers = detail.data.payload?.headers ?? [];
+          const subject = headers.find((h: any) => h.name === "Subject")?.value ?? "";
+          const snippet = detail.data.snippet ?? "";
+          const text = `${subject} ${snippet}`;
+          if (/urgent|asap|immediately|today|deadline|final notice|overdue|last chance|time.sensitive/i.test(text)) urgentCount++;
+          if (/invoice|payment|due|amount|bill|pay now|overdue/i.test(text)) paymentCount++;
+          if (/pricing|quote|proposal|interested|demo|trial|buy|purchase|book a call/i.test(text)) leadCount++;
+          unreadTotal++;
+        } catch {}
+      }
+    } catch {}
+
+    let score = 100;
+    const issues: Array<{
+      type: string;
+      label: string;
+      count: number;
+      deduction: number;
+      action: string;
+      href: string;
+      severity: "high" | "medium" | "low";
+    }> = [];
+
+    if (urgentCount > 0) {
+      const deduction = Math.min(urgentCount * 8, 32);
+      score -= deduction;
+      issues.push({ type: "urgent", label: "Urgent emails need reply", count: urgentCount, deduction, action: "Reply now", href: "/inbox/dashboard", severity: "high" });
+    }
+    if (overdueFollowUps.length > 0) {
+      const deduction = Math.min(overdueFollowUps.length * 6, 24);
+      score -= deduction;
+      issues.push({ type: "followup", label: "Follow-ups are overdue", count: overdueFollowUps.length, deduction, action: "View follow-ups", href: "/inbox/followups", severity: "high" });
+    }
+    if (overdueWaiting.length > 0) {
+      const deduction = Math.min(overdueWaiting.length * 5, 20);
+      score -= deduction;
+      issues.push({ type: "waiting", label: "Waiting for reply (2+ days)", count: overdueWaiting.length, deduction, action: "Send reminder", href: "/inbox/dashboard", severity: "medium" });
+    }
+    if (paymentCount > 0) {
+      const deduction = Math.min(paymentCount * 8, 16);
+      score -= deduction;
+      issues.push({ type: "payment", label: "Payment emails unresolved", count: paymentCount, deduction, action: "Review payments", href: "/inbox/dashboard", severity: "high" });
+    }
+    if (leadCount > 0) {
+      const deduction = Math.min(leadCount * 3, 9);
+      score -= deduction;
+      issues.push({ type: "lead", label: "Sales leads awaiting response", count: leadCount, deduction, action: "View leads", href: "/inbox/leads", severity: "medium" });
+    }
+    const generalUnread = Math.max(0, unreadTotal - urgentCount - paymentCount - leadCount);
+    if (generalUnread > 0) {
+      const deduction = Math.min(generalUnread * 2, 10);
+      score -= deduction;
+      issues.push({ type: "unread", label: "Unread messages need attention", count: generalUnread, deduction, action: "Clear inbox", href: "/inbox/dashboard", severity: "low" });
+    }
+
+    score = Math.max(0, Math.round(score));
+
+    const grade =
+      score >= 90 ? "Excellent" :
+      score >= 75 ? "Good" :
+      score >= 60 ? "Fair" :
+      score >= 40 ? "Needs Attention" : "Critical";
+
+    const gradeColor =
+      score >= 90 ? "emerald" :
+      score >= 75 ? "blue" :
+      score >= 60 ? "amber" : "red";
+
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+
+    const priorities: string[] = [];
+    if (urgentCount > 0) priorities.push(`Reply to ${urgentCount} urgent email${urgentCount > 1 ? "s" : ""}`);
+    if (overdueFollowUps.length > 0) priorities.push(`Follow up with ${overdueFollowUps.length} overdue contact${overdueFollowUps.length > 1 ? "s" : ""}`);
+    if (paymentCount > 0) priorities.push(`Resolve ${paymentCount} payment email${paymentCount > 1 ? "s" : ""}`);
+    if (overdueWaiting.length > 0 && priorities.length < 3) priorities.push(`Chase ${overdueWaiting.length} awaited repl${overdueWaiting.length > 1 ? "ies" : "y"}`);
+    if (leadCount > 0 && priorities.length < 3) priorities.push(`Respond to ${leadCount} sales lead${leadCount > 1 ? "s" : ""}`);
+    if (generalUnread > 0 && priorities.length < 3) priorities.push(`Clear ${generalUnread} unread message${generalUnread > 1 ? "s" : ""}`);
+
+    return res.json({
+      score,
+      grade,
+      gradeColor,
+      issues,
+      briefing: {
+        greeting,
+        priorities: priorities.slice(0, 3),
+        message: issues.length === 0
+          ? "Your inbox is in great shape today. Keep it up!"
+          : "Complete these to bring your score to 100.",
+      },
+      metrics: {
+        urgentCount,
+        overdueFollowUps: overdueFollowUps.length,
+        totalFollowUps: followUps.length,
+        overdueWaiting: overdueWaiting.length,
+        totalWaiting: waitingRepliesAll.length,
+        paymentCount,
+        leadCount,
+        unreadCount: unreadTotal,
+      },
+      generatedAt: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /inbox/waiting-replies/draft  — generate AI follow-up message
 inboxRouter.post("/waiting-replies/draft", express.json(), async (req, res) => {
   const uid = (req as any).user?.uid;

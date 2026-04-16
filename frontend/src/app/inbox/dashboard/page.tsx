@@ -479,6 +479,9 @@ export default function InboxDashboard() {
   const [waitingRepliesPanelOpen, setWaitingRepliesPanelOpen] = useState(true);
   const [waitingDraftLoading, setWaitingDraftLoading] = useState<string | null>(null);
 
+  const [healthScore, setHealthScore] = useState<{ score: number; grade: string; gradeColor: string; issues: Array<{ label: string; count: number; severity: string }> } | null>(null);
+  const [healthLoading, setHealthLoading] = useState(false);
+
   const tokenRef = useRef("");
   const filterRef = useRef<HTMLDivElement>(null);
   const activeThreadRequestRef = useRef(0);
@@ -649,6 +652,27 @@ export default function InboxDashboard() {
   useEffect(() => {
     if (user) loadPendingFollowUps();
   }, [user, loadPendingFollowUps]);
+
+  const loadHealthScore = useCallback(async () => {
+    const token = tokenRef.current || await getToken();
+    if (!token) return;
+    setHealthLoading(true);
+    try {
+      const res = await fetch(`${API}/inbox/health-score`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setHealthScore(json);
+      }
+    } catch {} finally {
+      setHealthLoading(false);
+    }
+  }, [getToken]);
+
+  useEffect(() => {
+    if (user) void loadHealthScore();
+  }, [user, loadHealthScore]);
 
   function getMissionGreeting(): string {
     const h = new Date().getHours();
@@ -1473,6 +1497,15 @@ export default function InboxDashboard() {
             <span className="text-zinc-500"><BellIcon /></span>
             Follow-Ups
           </Link>
+          <Link
+            href="/inbox/health"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:bg-white/8 hover:text-white transition"
+          >
+            <span className="text-zinc-500">
+              <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            </span>
+            Inbox Health
+          </Link>
         </nav>
 
         {/* Bottom */}
@@ -1606,6 +1639,63 @@ export default function InboxDashboard() {
                       <p className="text-[10px] text-gray-500 font-semibold mt-0.5 leading-tight">{s.label}</p>
                     </div>
                   ))}
+                </div>
+
+                {/* Inbox Health Score Card */}
+                <div className="mb-6 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-rose-100 text-rose-600 shrink-0">
+                        <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                      </span>
+                      <span className="text-[11px] font-black uppercase tracking-widest text-rose-700">Inbox Health</span>
+                    </div>
+                    <Link href="/inbox/health" className="text-[11px] font-semibold text-indigo-500 hover:text-indigo-700 transition">View Details →</Link>
+                  </div>
+                  <div className="px-4 py-3">
+                    {healthLoading ? (
+                      <div className="flex items-center gap-4">
+                        <div className="h-14 w-14 rounded-full animate-pulse bg-slate-100 shrink-0" />
+                        <div className="flex-1 space-y-1.5">
+                          <div className="h-3 bg-slate-100 rounded-full animate-pulse w-1/2" />
+                          <div className="h-2 bg-slate-100 rounded-full animate-pulse w-3/4" />
+                        </div>
+                      </div>
+                    ) : healthScore ? (
+                      <div className="flex items-center gap-4">
+                        <div className="relative shrink-0">
+                          <svg width="56" height="56" style={{ transform: "rotate(-90deg)" }}>
+                            <circle cx="28" cy="28" r="22" fill="none" stroke={healthScore.score >= 90 ? "#d1fae5" : healthScore.score >= 75 ? "#dbeafe" : healthScore.score >= 60 ? "#fef3c7" : "#fee2e2"} strokeWidth="6" />
+                            <circle cx="28" cy="28" r="22" fill="none" stroke={healthScore.score >= 90 ? "#10b981" : healthScore.score >= 75 ? "#3b82f6" : healthScore.score >= 60 ? "#f59e0b" : "#ef4444"} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 22}`} strokeDashoffset={`${2 * Math.PI * 22 * (1 - healthScore.score / 100)}`} />
+                          </svg>
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-xs font-black text-slate-800">{healthScore.score}</span>
+                          </div>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-sm font-black ${healthScore.score >= 90 ? "text-emerald-700" : healthScore.score >= 75 ? "text-blue-700" : healthScore.score >= 60 ? "text-amber-700" : "text-red-700"}`}>{healthScore.grade}</span>
+                            <span className="text-xs text-slate-400">/ 100</span>
+                          </div>
+                          {healthScore.issues.length > 0 ? (
+                            <ul className="mt-1 space-y-0.5">
+                              {healthScore.issues.slice(0, 3).map((issue) => (
+                                <li key={issue.label} className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${issue.severity === "high" ? "bg-red-500" : issue.severity === "medium" ? "bg-amber-500" : "bg-slate-400"}`} />
+                                  {issue.count} {issue.label.toLowerCase()}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="mt-1 text-[11px] text-emerald-600 font-semibold">Inbox looking great! ✓</p>
+                          )}
+                        </div>
+                        <Link href="/inbox/health" className="shrink-0 rounded-xl bg-[#14112a] text-white px-3 py-1.5 text-[11px] font-black hover:bg-[#1c183a] transition">Fix Now</Link>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400 italic text-center py-1">Health score unavailable — check connection.</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Empty state */}
