@@ -7,6 +7,7 @@ import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { setLastActivePlatform } from "@/lib/platformSession";
 import Link from "next/link";
 import ComposeModal, { type ComposeSentMeta } from "@/components/ComposeModal";
+import DailyBriefingModal, { type BriefingData } from "@/components/DailyBriefingModal";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
@@ -482,6 +483,11 @@ export default function InboxDashboard() {
   const [healthScore, setHealthScore] = useState<{ score: number; grade: string; gradeColor: string; issues: Array<{ label: string; count: number; severity: string }> } | null>(null);
   const [healthLoading, setHealthLoading] = useState(false);
 
+  const [briefingData, setBriefingData] = useState<BriefingData | null>(null);
+  const [briefingModalOpen, setBriefingModalOpen] = useState(false);
+  const [briefingBannerVisible, setBriefingBannerVisible] = useState(false);
+  const briefingFetchedRef = useRef(false);
+
   const tokenRef = useRef("");
   const filterRef = useRef<HTMLDivElement>(null);
   const activeThreadRequestRef = useRef(0);
@@ -673,6 +679,49 @@ export default function InboxDashboard() {
   useEffect(() => {
     if (user) void loadHealthScore();
   }, [user, loadHealthScore]);
+
+  const BRIEFING_STORAGE_KEY = "plyndrox_daily_briefing";
+  const BRIEFING_DATE_KEY = "plyndrox_daily_briefing_date";
+
+  const loadDailyBriefing = useCallback(async (force = false) => {
+    if (briefingFetchedRef.current && !force) return;
+    briefingFetchedRef.current = true;
+
+    const today = new Date().toDateString();
+    const cachedDate = localStorage.getItem(BRIEFING_DATE_KEY);
+    const cachedRaw = localStorage.getItem(BRIEFING_STORAGE_KEY);
+
+    if (!force && cachedDate === today && cachedRaw) {
+      try {
+        const cached = JSON.parse(cachedRaw) as BriefingData;
+        setBriefingData(cached);
+        setBriefingBannerVisible(true);
+        return;
+      } catch {}
+    }
+
+    const token = tokenRef.current || await getToken();
+    if (!token) return;
+    try {
+      const res = await fetch(`${API}/inbox/daily-briefing`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json() as BriefingData;
+      setBriefingData(data);
+      localStorage.setItem(BRIEFING_STORAGE_KEY, JSON.stringify(data));
+
+      if (cachedDate !== today) {
+        localStorage.setItem(BRIEFING_DATE_KEY, today);
+        setBriefingModalOpen(true);
+      }
+      setBriefingBannerVisible(true);
+    } catch {}
+  }, [getToken]);
+
+  useEffect(() => {
+    if (user) void loadDailyBriefing();
+  }, [user, loadDailyBriefing]);
 
   function getMissionGreeting(): string {
     const h = new Date().getHours();
@@ -1558,6 +1607,58 @@ export default function InboxDashboard() {
             )}
           </div>
         </header>
+
+        {/* ── Daily Briefing compact banner ───────────────────────── */}
+        {briefingBannerVisible && briefingData && (
+          <div className="shrink-0 border-b border-indigo-100 bg-gradient-to-r from-[#f0eeff] to-[#f5f0ff] px-4 py-2.5">
+            <div className="flex items-center gap-3 overflow-x-auto">
+              <button
+                onClick={() => setBriefingModalOpen(true)}
+                className="flex items-center gap-2 shrink-0"
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#5c4ff6] text-white shrink-0">
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3Z" /></svg>
+                </span>
+                <span className="text-[11px] font-black uppercase tracking-widest text-indigo-700">Today</span>
+              </button>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto">
+                {[
+                  { label: "Urgent", count: briefingData.categories.urgent.count, href: "/inbox/dashboard", color: "bg-red-100 text-red-700 border-red-200", dot: "bg-red-500" },
+                  { label: "Leads", count: briefingData.categories.leads.count, href: "/inbox/leads", color: "bg-emerald-100 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
+                  { label: "Payments", count: briefingData.categories.payments.count, href: "/inbox/dashboard", color: "bg-amber-100 text-amber-700 border-amber-200", dot: "bg-amber-500" },
+                  { label: "Follow-ups", count: briefingData.categories.followups.count, href: "/inbox/followups", color: "bg-indigo-100 text-indigo-700 border-indigo-200", dot: "bg-indigo-500" },
+                  { label: "Ignore", count: briefingData.categories.ignore.count, href: "/inbox/dashboard", color: "bg-slate-100 text-slate-600 border-slate-200", dot: "bg-slate-400" },
+                ].map(cat => (
+                  <Link
+                    key={cat.label}
+                    href={cat.href}
+                    className={`shrink-0 flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-black transition hover:opacity-80 ${cat.color}`}
+                  >
+                    <span className={`h-1.5 w-1.5 rounded-full ${cat.dot}`} />
+                    {cat.count} {cat.label}
+                  </Link>
+                ))}
+              </div>
+
+              <div className="ml-auto flex items-center gap-2 shrink-0">
+                <p className="hidden sm:block text-[11px] text-indigo-600 font-semibold italic truncate max-w-[200px]">{briefingData.focusMessage}</p>
+                <button
+                  onClick={() => setBriefingModalOpen(true)}
+                  className="rounded-full bg-[#5c4ff6] px-3 py-1 text-[11px] font-black text-white hover:bg-[#4f43e0] transition"
+                >
+                  Full Briefing
+                </button>
+                <button
+                  onClick={() => setBriefingBannerVisible(false)}
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-indigo-400 hover:bg-indigo-100 hover:text-indigo-700 transition"
+                >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-1 overflow-hidden">
 
@@ -2752,6 +2853,17 @@ export default function InboxDashboard() {
           }
           {composeSuccess}
         </div>
+      )}
+
+      {briefingModalOpen && briefingData && (
+        <DailyBriefingModal
+          data={briefingData}
+          userName={user?.displayName || user?.email || ""}
+          onDismiss={() => {
+            setBriefingModalOpen(false);
+            setBriefingBannerVisible(true);
+          }}
+        />
       )}
 
       {composeOpen && (

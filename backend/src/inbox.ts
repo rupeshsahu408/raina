@@ -1679,6 +1679,130 @@ inboxRouter.delete("/waiting-replies/:id", async (req, res) => {
   return res.json({ success: true });
 });
 
+// GET /inbox/daily-briefing  — Daily AI Briefing (categories + focus message)
+inboxRouter.get("/daily-briefing", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
+  type EmailPreview = { id: string; subject: string; from: string; snippet: string; isUnread: boolean };
+
+  try {
+    const auth = await getAuthenticatedClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+
+    const listRes = await gmail.users.messages.list({
+      userId: "me",
+      labelIds: ["INBOX"],
+      maxResults: 60,
+    });
+
+    const messages = listRes.data.messages ?? [];
+    const allEmails: EmailPreview[] = [];
+
+    for (const msg of messages.slice(0, 45)) {
+      try {
+        const detail = await gmail.users.messages.get({
+          userId: "me",
+          id: msg.id!,
+          format: "metadata",
+          metadataHeaders: ["Subject", "From", "Date"],
+        });
+        const headers = detail.data.payload?.headers ?? [];
+        const labelIds = detail.data.labelIds ?? [];
+        allEmails.push({
+          id: msg.id!,
+          subject: String(headers.find((h: any) => h.name === "Subject")?.value ?? "(no subject)").slice(0, 80),
+          from: String(headers.find((h: any) => h.name === "From")?.value ?? "").replace(/<.*>/, "").trim(),
+          snippet: String(detail.data.snippet ?? "").slice(0, 120),
+          isUnread: labelIds.includes("UNREAD"),
+        });
+      } catch {}
+    }
+
+    const urgent: EmailPreview[] = [];
+    const leads: EmailPreview[] = [];
+    const payments: EmailPreview[] = [];
+    const followups: EmailPreview[] = [];
+    const ignore: EmailPreview[] = [];
+
+    for (const email of allEmails) {
+      const text = `${email.subject} ${email.snippet}`.toLowerCase();
+      if (/refund|cancel(?:lation)?|angry|upset|legal|lawsuit|chargeback|breach|escalat|complaint|blocked|urgent|asap|immediately|today|deadline|final notice|overdue|last chance|time.?sensitive/i.test(text)) {
+        urgent.push(email);
+      } else if (/invoice|payment|due|amount|bill|pay now|balance|receipt/i.test(text)) {
+        payments.push(email);
+      } else if (/pricing|price|quote|proposal|interested|demo|trial|buy|purchase|book.?a.?call|want to connect|partnership|collaboration/i.test(text)) {
+        leads.push(email);
+      } else if (/following.?up|checking in|any update|did you (get|see|receive)|haven.?t heard|just wanted to|quick question|circling back|bumping/i.test(text)) {
+        followups.push(email);
+      } else if (/unsubscribe|newsletter|promotion|sale|% off|deal|offer|notification|alert|digest|weekly|monthly|no.?reply/i.test(text)) {
+        ignore.push(email);
+      } else if (email.isUnread) {
+        followups.push(email);
+      } else {
+        ignore.push(email);
+      }
+    }
+
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+
+    let focusMessage = "";
+    const buildFocus = () => {
+      const parts: string[] = [];
+      if (urgent.length) parts.push(`reply to ${urgent.length} urgent email${urgent.length > 1 ? "s" : ""}`);
+      if (leads.length) parts.push(`close ${leads.length} lead${leads.length > 1 ? "s" : ""}`);
+      if (payments.length) parts.push(`resolve ${payments.length} payment${payments.length > 1 ? "s" : ""}`);
+      if (followups.length && parts.length < 2) parts.push(`follow up with ${followups.length} contact${followups.length > 1 ? "s" : ""}`);
+      if (!parts.length) return "Your inbox is clean. Stay proactive and maintain inbox zero today.";
+      return `Focus today: ${parts.slice(0, 2).join(", then ")}.`;
+    };
+
+    if (NVIDIA_API_KEY && allEmails.length > 0) {
+      try {
+        const summary = `Urgent: ${urgent.length}, Leads: ${leads.length}, Payments: ${payments.length}, Follow-ups: ${followups.length}, Ignore: ${ignore.length}. Total emails: ${allEmails.length}.`;
+        const result = await callNvidiaChatCompletions({
+          apiKey: NVIDIA_API_KEY,
+          messages: [
+            {
+              role: "system",
+              content: "You are Plyndrox AI, a sharp personal inbox assistant. Based on the inbox summary, write ONE short punchy action sentence (max 14 words) telling the user what to focus on first today. Be specific and direct. No filler words.",
+            },
+            { role: "user", content: summary },
+          ],
+          max_tokens: 55,
+          temperature: 0.3,
+        });
+        focusMessage = result.trim().replace(/^["']|["']$/g, "").replace(/\.$/, "") + ".";
+      } catch {
+        focusMessage = buildFocus();
+      }
+    } else {
+      focusMessage = buildFocus();
+    }
+
+    const preview = (arr: EmailPreview[]) =>
+      arr.slice(0, 4).map(e => ({ id: e.id, subject: e.subject, from: e.from || "Unknown", snippet: e.snippet, isUnread: e.isUnread }));
+
+    return res.json({
+      date: new Date().toISOString().slice(0, 10),
+      greeting,
+      categories: {
+        urgent:   { count: urgent.length,   preview: preview(urgent) },
+        leads:    { count: leads.length,     preview: preview(leads) },
+        payments: { count: payments.length,  preview: preview(payments) },
+        followups:{ count: followups.length, preview: preview(followups) },
+        ignore:   { count: ignore.length,    preview: preview(ignore) },
+      },
+      totalEmails: allEmails.length,
+      focusMessage,
+      generatedAt: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /inbox/health-score  — Inbox Health Score & Daily Briefing
 inboxRouter.get("/health-score", async (req, res) => {
   const uid = (req as any).user?.uid;
