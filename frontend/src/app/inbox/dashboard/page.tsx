@@ -401,6 +401,7 @@ export default function InboxDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [commandView, setCommandView] = useState<CommandView>("inbox");
   const [priorityFilter, setPriorityFilter] = useState<PriorityCategory | "All">("All");
+  const [prioritySectionsOpen, setPrioritySectionsOpen] = useState<Record<"important" | "medium" | "low", boolean>>({ important: true, medium: false, low: false });
 
   const [emails, setEmails] = useState<EmailItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -1441,6 +1442,13 @@ export default function InboxDashboard() {
   const highPriorityCount = searchedEmails.filter(em => ["Urgent", "Risk Detected", "High-Value Lead"].includes(em.priorityCategory)).length;
   const lowPriorityCount = searchedEmails.filter(em => em.priorityCategory === "Low Priority").length;
 
+  const IMPORTANT_CATEGORIES: PriorityCategory[] = ["Urgent", "Risk Detected", "High-Value Lead", "Payment"];
+  const MEDIUM_CATEGORIES: PriorityCategory[] = ["Support Issue", "Needs Reply"];
+  const importantEmails = priorityFilteredEmails.filter(e => IMPORTANT_CATEGORIES.includes(e.priorityCategory));
+  const mediumEmails = priorityFilteredEmails.filter(e => MEDIUM_CATEGORIES.includes(e.priorityCategory));
+  const lowEmails = priorityFilteredEmails.filter(e => e.priorityCategory === "Low Priority");
+  const showPriorityGroups = commandView === "inbox" && folder === "inbox";
+
   const missionUrgent = emails.filter(e => ["Urgent", "Risk Detected"].includes(e.priorityCategory) && !snoozedIds.has(e.id)).sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
   const missionLeads = emails.filter(e => e.priorityCategory === "High-Value Lead" && !snoozedIds.has(e.id));
   const missionPayments = emails.filter(e => e.priorityCategory === "Payment" && !snoozedIds.has(e.id));
@@ -2293,95 +2301,236 @@ export default function InboxDashboard() {
                   </div>
                 ) : (
                   <>
-                    {displayedEmails.map(email => {
-                      const style = priorityStyle(email.priorityCategory);
-                      return (
-                      <div
-                        key={email.id}
-                        onClick={() => openEmail(email)}
-                        className={`w-full text-left flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 transition group relative cursor-pointer ${
-                          selectedEmail?.id === email.id
-                            ? "bg-[#eeebff]"
-                            : email.isUnread
-                            ? "bg-white hover:bg-[#f8f7ff]"
-                            : "bg-white hover:bg-gray-50"
-                        }`}
-                      >
-                        {email.isUnread && (
-                          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r bg-indigo-600" />
-                        )}
-                        <div
-                          className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-black mt-0.5"
-                          style={{ background: avatarColor(senderName(email.from)) }}
-                        >
-                          {senderInitial(email.from)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-1 mb-0.5">
-                            <span className={`text-sm truncate ${email.isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
-                              {senderName(email.from)}
-                            </span>
-                            <div className="flex items-center gap-1 shrink-0">
-                              {/* Date — hidden on hover, replaced by action buttons */}
-                              <span className="text-[11px] text-gray-400 group-hover:hidden">{formatDate(email.date)}</span>
-                              {/* Hover action buttons */}
-                              <div className="hidden group-hover:flex items-center gap-0.5">
-                                <button
-                                  onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
-                                  title={email.isStarred ? "Unstar" : "Star"}
-                                  className={`p-1 rounded transition ${email.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}
-                                >
-                                  <StarIcon filled={email.isStarred} />
-                                </button>
-                                <button
-                                  onClick={e => handleArchive(email, e)}
-                                  title="Archive"
-                                  className="p-1 rounded text-gray-400 hover:text-indigo-600 transition"
-                                >
-                                  <ArchiveIcon />
-                                </button>
-                                <button
-                                  onClick={e => handleTrash(email, e)}
-                                  title="Move to trash"
-                                  className="p-1 rounded text-gray-400 hover:text-red-500 transition"
-                                >
-                                  <TrashIcon />
-                                </button>
-                              </div>
-                              {/* Star — always visible when starred, even without hover */}
-                              {email.isStarred && (
-                                <button
-                                  onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
-                                  className="p-0.5 text-yellow-400 group-hover:hidden transition"
-                                >
-                                  <StarIcon filled />
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                          <div className="mb-1 flex flex-wrap items-center gap-1.5">
-                            <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black ${style.badge}`}>
-                              <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
-                              {email.priorityCategory}
-                            </span>
-                            <span className="rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-semibold text-gray-500">{email.intent}</span>
-                            {email.aiRescued && (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-[10px] font-black text-violet-700">
-                                <SparkleIcon />
-                                AI Rescued
-                              </span>
+                    {showPriorityGroups ? (
+                      <>
+                        {([
+                          {
+                            key: "important" as const,
+                            label: "Important",
+                            emoji: "🔴",
+                            emails: importantEmails,
+                            headerBg: "bg-red-50",
+                            headerBorder: "border-red-100",
+                            headerText: "text-red-700",
+                            countBg: "bg-red-100 text-red-700",
+                          },
+                          {
+                            key: "medium" as const,
+                            label: "Medium",
+                            emoji: "🟡",
+                            emails: mediumEmails,
+                            headerBg: "bg-amber-50",
+                            headerBorder: "border-amber-100",
+                            headerText: "text-amber-700",
+                            countBg: "bg-amber-100 text-amber-700",
+                          },
+                          {
+                            key: "low" as const,
+                            label: "Low",
+                            emoji: "⚪",
+                            emails: lowEmails,
+                            headerBg: "bg-gray-50",
+                            headerBorder: "border-gray-200",
+                            headerText: "text-gray-500",
+                            countBg: "bg-gray-200 text-gray-600",
+                          },
+                        ]).map(section => (
+                          <div key={section.key}>
+                            <button
+                              onClick={() => setPrioritySectionsOpen(prev => ({ ...prev, [section.key]: !prev[section.key] }))}
+                              className={`w-full flex items-center gap-2 px-4 py-2.5 border-b ${section.headerBorder} ${section.headerBg} text-left sticky top-0 z-10`}
+                            >
+                              <span className="text-sm">{section.emoji}</span>
+                              <span className={`text-[11px] font-black uppercase tracking-widest flex-1 ${section.headerText}`}>{section.label}</span>
+                              <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${section.countBg}`}>{section.emails.length}</span>
+                              <svg
+                                className={`w-3.5 h-3.5 ${section.headerText} transition-transform ${prioritySectionsOpen[section.key] ? "rotate-180" : ""}`}
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                              >
+                                <path d="m6 9 6 6 6-6"/>
+                              </svg>
+                            </button>
+                            {prioritySectionsOpen[section.key] && (
+                              section.emails.length === 0 ? (
+                                <div className="py-4 text-center text-[11px] text-gray-400 border-b border-gray-100">No emails in this category</div>
+                              ) : (
+                                section.emails.map(email => {
+                                  const style = priorityStyle(email.priorityCategory);
+                                  return (
+                                    <div
+                                      key={email.id}
+                                      onClick={() => openEmail(email)}
+                                      className={`w-full text-left flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 transition group relative cursor-pointer ${
+                                        selectedEmail?.id === email.id
+                                          ? "bg-[#eeebff]"
+                                          : email.isUnread
+                                          ? "bg-white hover:bg-[#f8f7ff]"
+                                          : "bg-white hover:bg-gray-50"
+                                      }`}
+                                    >
+                                      {email.isUnread && (
+                                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r bg-indigo-600" />
+                                      )}
+                                      <div
+                                        className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-black mt-0.5"
+                                        style={{ background: avatarColor(senderName(email.from)) }}
+                                      >
+                                        {senderInitial(email.from)}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                                          <span className={`text-sm truncate ${email.isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
+                                            {senderName(email.from)}
+                                          </span>
+                                          <div className="flex items-center gap-1 shrink-0">
+                                            <span className="text-[11px] text-gray-400 group-hover:hidden">{formatDate(email.date)}</span>
+                                            <div className="hidden group-hover:flex items-center gap-0.5">
+                                              <button
+                                                onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
+                                                title={email.isStarred ? "Unstar" : "Star"}
+                                                className={`p-1 rounded transition ${email.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}
+                                              >
+                                                <StarIcon filled={email.isStarred} />
+                                              </button>
+                                              <button
+                                                onClick={e => handleArchive(email, e)}
+                                                title="Archive"
+                                                className="p-1 rounded text-gray-400 hover:text-indigo-600 transition"
+                                              >
+                                                <ArchiveIcon />
+                                              </button>
+                                              <button
+                                                onClick={e => handleTrash(email, e)}
+                                                title="Move to trash"
+                                                className="p-1 rounded text-gray-400 hover:text-red-500 transition"
+                                              >
+                                                <TrashIcon />
+                                              </button>
+                                            </div>
+                                            {email.isStarred && (
+                                              <button
+                                                onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
+                                                className="p-0.5 text-yellow-400 group-hover:hidden transition"
+                                              >
+                                                <StarIcon filled />
+                                              </button>
+                                            )}
+                                          </div>
+                                        </div>
+                                        <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                                          <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black ${style.badge}`}>
+                                            <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                                            {email.priorityCategory}
+                                          </span>
+                                          <span className="rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-semibold text-gray-500">{email.intent}</span>
+                                          {email.aiRescued && (
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-[10px] font-black text-violet-700">
+                                              <SparkleIcon />
+                                              AI Rescued
+                                            </span>
+                                          )}
+                                        </div>
+                                        <p className={`text-xs truncate mb-0.5 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>
+                                          {email.subject}
+                                        </p>
+                                        <p className="text-[11px] text-gray-400 truncate">{email.snippet}</p>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              )
                             )}
                           </div>
-                          <p className={`text-xs truncate mb-0.5 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>
-                            {email.subject}
-                          </p>
-                          <p className="text-[11px] text-gray-400 truncate">{email.snippet}</p>
-                          {commandView === "mission" && (
-                            <p className="mt-1 rounded-lg bg-white/80 px-2 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-gray-100">{email.suggestedAction}</p>
+                        ))}
+                      </>
+                    ) : (
+                      displayedEmails.map(email => {
+                        const style = priorityStyle(email.priorityCategory);
+                        return (
+                        <div
+                          key={email.id}
+                          onClick={() => openEmail(email)}
+                          className={`w-full text-left flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 transition group relative cursor-pointer ${
+                            selectedEmail?.id === email.id
+                              ? "bg-[#eeebff]"
+                              : email.isUnread
+                              ? "bg-white hover:bg-[#f8f7ff]"
+                              : "bg-white hover:bg-gray-50"
+                          }`}
+                        >
+                          {email.isUnread && (
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r bg-indigo-600" />
                           )}
+                          <div
+                            className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-black mt-0.5"
+                            style={{ background: avatarColor(senderName(email.from)) }}
+                          >
+                            {senderInitial(email.from)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1 mb-0.5">
+                              <span className={`text-sm truncate ${email.isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
+                                {senderName(email.from)}
+                              </span>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <span className="text-[11px] text-gray-400 group-hover:hidden">{formatDate(email.date)}</span>
+                                <div className="hidden group-hover:flex items-center gap-0.5">
+                                  <button
+                                    onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
+                                    title={email.isStarred ? "Unstar" : "Star"}
+                                    className={`p-1 rounded transition ${email.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}
+                                  >
+                                    <StarIcon filled={email.isStarred} />
+                                  </button>
+                                  <button
+                                    onClick={e => handleArchive(email, e)}
+                                    title="Archive"
+                                    className="p-1 rounded text-gray-400 hover:text-indigo-600 transition"
+                                  >
+                                    <ArchiveIcon />
+                                  </button>
+                                  <button
+                                    onClick={e => handleTrash(email, e)}
+                                    title="Move to trash"
+                                    className="p-1 rounded text-gray-400 hover:text-red-500 transition"
+                                  >
+                                    <TrashIcon />
+                                  </button>
+                                </div>
+                                {email.isStarred && (
+                                  <button
+                                    onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
+                                    className="p-0.5 text-yellow-400 group-hover:hidden transition"
+                                  >
+                                    <StarIcon filled />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black ${style.badge}`}>
+                                <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                                {email.priorityCategory}
+                              </span>
+                              <span className="rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-semibold text-gray-500">{email.intent}</span>
+                              {email.aiRescued && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-[10px] font-black text-violet-700">
+                                  <SparkleIcon />
+                                  AI Rescued
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-xs truncate mb-0.5 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>
+                              {email.subject}
+                            </p>
+                            <p className="text-[11px] text-gray-400 truncate">{email.snippet}</p>
+                            {commandView === "mission" && (
+                              <p className="mt-1 rounded-lg bg-white/80 px-2 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-gray-100">{email.suggestedAction}</p>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );})}
+                      );})}
+                    )}
                     {loadingMore && (
                       <div className="p-4 flex justify-center">
                         <div className="flex items-center gap-2 text-xs text-gray-400">
