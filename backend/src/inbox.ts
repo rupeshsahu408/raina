@@ -779,8 +779,7 @@ inboxRouter.post("/action-plan", express.json(), async (req, res) => {
   }
 });
 
-// GET /inbox/leads — scan recent Gmail conversations for revenue opportunities
-inboxRouter.get("/leads", async (req, res) => {
+async function handleLeadIntelligence(req: express.Request, res: express.Response) {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
   const maxResults = Math.min(Number(req.query.maxResults ?? 40), 80);
@@ -900,12 +899,30 @@ inboxRouter.get("/leads", async (req, res) => {
       .filter(Boolean)
       .filter((lead: any) => scoreFilter === "all" || String(lead.leadScore).toLowerCase() === scoreFilter)
       .sort((a: any, b: any) => leadRank[a.leadScore as LeadScore] - leadRank[b.leadScore as LeadScore] || (b.confidence ?? 0) - (a.confidence ?? 0));
-    return res.json({ leads });
+    return res.json({
+      leads,
+      pipeline: {
+        generatedAt: new Date().toISOString(),
+        scanned: messageIds.length,
+        candidates: candidates.length,
+        analyzedWithAi: leads.filter((lead: any) => lead.source === "ai").length,
+        counts: {
+          total: leads.length,
+          hot: leads.filter((lead: any) => lead.leadScore === "Hot").length,
+          warm: leads.filter((lead: any) => lead.leadScore === "Warm").length,
+          cold: leads.filter((lead: any) => lead.leadScore === "Cold").length,
+          highIntent: leads.filter((lead: any) => lead.buyingIntent === "High").length,
+        },
+      },
+    });
   } catch (err: any) {
     console.error("[inbox/leads]", err.message);
     return res.status(500).json({ error: err.message });
   }
-});
+}
+
+inboxRouter.get("/leads", handleLeadIntelligence);
+inboxRouter.get("/lead-intelligence", handleLeadIntelligence);
 
 // POST /inbox/reply/generate
 inboxRouter.post("/reply/generate", express.json(), async (req, res) => {

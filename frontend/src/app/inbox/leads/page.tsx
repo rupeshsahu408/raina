@@ -35,6 +35,20 @@ interface LeadItem {
   source: "ai" | "rules";
 }
 
+interface PipelineStats {
+  generatedAt?: string;
+  scanned: number;
+  candidates: number;
+  analyzedWithAi: number;
+  counts: {
+    total: number;
+    hot: number;
+    warm: number;
+    cold: number;
+    highIntent: number;
+  };
+}
+
 function avatarColor(name: string): string {
   const colors = ["#dc2626", "#ea580c", "#059669", "#2563eb", "#7c3aed", "#0891b2", "#be123c", "#4f46e5"];
   let h = 0;
@@ -106,6 +120,7 @@ export default function LeadsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [leads, setLeads] = useState<LeadItem[]>([]);
+  const [pipeline, setPipeline] = useState<PipelineStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState<ScoreFilter>("All");
@@ -146,12 +161,15 @@ export default function LeadsPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API}/inbox/leads?maxResults=60`, {
+      const res = await fetch(`${API}/inbox/lead-intelligence?maxResults=60`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) throw new Error("Lead API routing is not configured correctly.");
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to load leads");
       setLeads(data.leads ?? []);
+      setPipeline(data.pipeline ?? null);
     } catch (e: any) {
       setError(e.message || "Could not load leads.");
     } finally {
@@ -164,11 +182,11 @@ export default function LeadsPage() {
   }, [user, loadLeads]);
 
   const counts = useMemo(() => ({
-    All: leads.length,
-    Hot: leads.filter(l => l.leadScore === "Hot").length,
-    Warm: leads.filter(l => l.leadScore === "Warm").length,
-    Cold: leads.filter(l => l.leadScore === "Cold").length,
-  }), [leads]);
+    All: pipeline?.counts.total ?? leads.length,
+    Hot: pipeline?.counts.hot ?? leads.filter(l => l.leadScore === "Hot").length,
+    Warm: pipeline?.counts.warm ?? leads.filter(l => l.leadScore === "Warm").length,
+    Cold: pipeline?.counts.cold ?? leads.filter(l => l.leadScore === "Cold").length,
+  }), [leads, pipeline]);
 
   const filteredLeads = useMemo(() => {
     return leads.filter(lead => filter === "All" || lead.leadScore === filter);
@@ -225,6 +243,34 @@ export default function LeadsPage() {
 
       <main className="mx-auto grid max-w-7xl gap-5 px-4 py-6 lg:grid-cols-[390px_1fr]">
         <section className="space-y-4">
+          <div className="rounded-3xl border border-indigo-100 bg-white p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-black text-slate-900">Pipeline snapshot</p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  {pipeline ? `${pipeline.scanned} Gmail messages scanned, ${pipeline.candidates} possible opportunities found.` : "Analyze your inbox to rank active revenue conversations."}
+                </p>
+              </div>
+              <span className="rounded-full bg-indigo-50 px-3 py-1 text-[11px] font-black uppercase text-indigo-700">
+                {pipeline?.analyzedWithAi ?? 0} AI reviewed
+              </span>
+            </div>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              <div className="rounded-2xl bg-emerald-50 p-3">
+                <p className="text-[10px] font-black uppercase text-emerald-600">High intent</p>
+                <p className="mt-1 text-xl font-black text-emerald-700">{pipeline?.counts.highIntent ?? leads.filter(l => l.buyingIntent === "High").length}</p>
+              </div>
+              <div className="rounded-2xl bg-violet-50 p-3">
+                <p className="text-[10px] font-black uppercase text-violet-600">Reply-ready</p>
+                <p className="mt-1 text-xl font-black text-violet-700">{leads.filter(l => l.replyDraft).length}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[10px] font-black uppercase text-slate-500">Updated</p>
+                <p className="mt-1 text-sm font-black text-slate-700">{pipeline?.generatedAt ? formatDate(pipeline.generatedAt) : "Pending"}</p>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-4 gap-2">
             {(["All", "Hot", "Warm", "Cold"] as ScoreFilter[]).map(item => {
               const active = filter === item;
@@ -330,6 +376,12 @@ export default function LeadsPage() {
                     <SendIcon />
                     Reply Now
                   </button>
+                  <Link
+                    href="/inbox/dashboard"
+                    className="flex shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Open Inbox
+                  </Link>
                 </div>
               </div>
 
