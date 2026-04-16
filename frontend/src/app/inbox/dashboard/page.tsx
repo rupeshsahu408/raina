@@ -460,6 +460,9 @@ export default function InboxDashboard() {
 
   const [missionBrief, setMissionBrief] = useState("");
   const [missionBriefLoading, setMissionBriefLoading] = useState(false);
+  const [snoozedIds, setSnoozedIds] = useState<Set<string>>(new Set());
+  const [quickActionLoading, setQuickActionLoading] = useState<string | null>(null);
+  const autoPaginationCountRef = useRef(0);
 
   const tokenRef = useRef("");
   const filterRef = useRef<HTMLDivElement>(null);
@@ -685,6 +688,58 @@ export default function InboxDashboard() {
     setComposeOpen(true);
   }
 
+  async function markDoneEmail(email: EmailItem) {
+    if (quickActionLoading) return;
+    setQuickActionLoading(`done-${email.id}`);
+    const token = tokenRef.current || await getToken();
+    if (token) {
+      try {
+        await fetch(`${API}/inbox/archive/${email.id}`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch {}
+    }
+    setEmails(prev => prev.filter(e => e.id !== email.id));
+    setQuickActionLoading(null);
+  }
+
+  function snoozeEmail(email: EmailItem) {
+    setSnoozedIds(prev => new Set([...prev, email.id]));
+    setTimeout(() => {
+      setSnoozedIds(prev => {
+        const next = new Set(prev);
+        next.delete(email.id);
+        return next;
+      });
+    }, 60 * 60 * 1000);
+  }
+
+  async function setFollowUpEmail(email: EmailItem) {
+    if (quickActionLoading) return;
+    setQuickActionLoading(`followup-${email.id}`);
+    const token = tokenRef.current || await getToken();
+    if (token) {
+      try {
+        await fetch(`${API}/inbox/followup`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            threadId: email.threadId ?? email.id,
+            subject: email.subject,
+            from: email.from,
+            status: "pending",
+            tag: "General",
+            intent: "General",
+            confidence: "medium",
+          }),
+        });
+        await loadPendingFollowUps();
+      } catch {}
+    }
+    setQuickActionLoading(null);
+  }
+
   async function autoCompleteFollowUp(threadId: string) {
     const token = tokenRef.current || await getToken();
     if (!token || !threadId) return;
@@ -820,7 +875,7 @@ export default function InboxDashboard() {
     }
     setError("");
     try {
-      const url = `${API}/inbox/messages?maxResults=25&folder=${fld}${pageToken ? `&pageToken=${pageToken}` : ""}`;
+      const url = `${API}/inbox/messages?maxResults=50&folder=${fld}${pageToken ? `&pageToken=${pageToken}` : ""}`;
       const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (res.status === 401 || res.status === 403) { router.replace("/inbox/connect"); return; }
       const data = await res.json();
@@ -844,12 +899,22 @@ export default function InboxDashboard() {
   }, [getToken, router, folder, loadLocalDrafts, loadScheduled]);
 
   useEffect(() => {
+    autoPaginationCountRef.current = 0;
     if (user) loadEmails(folder === "inbox" ? gmailCategory : folder);
   }, [user, folder]);
 
   useEffect(() => {
+    autoPaginationCountRef.current = 0;
     if (user && folder === "inbox") loadEmails(gmailCategory);
   }, [gmailCategory]);
+
+  // Auto-paginate: silently load all pages (up to 6 × 50 = 300 emails) without user clicking Load More
+  useEffect(() => {
+    if (nextPageToken && !loadingMore && !loading && autoPaginationCountRef.current < 6) {
+      autoPaginationCountRef.current += 1;
+      void loadEmails(folder === "inbox" ? gmailCategory : folder as any, nextPageToken);
+    }
+  }, [nextPageToken, loadingMore, loading]);
 
   // Handoff from followups page: open compose with pre-filled draft
   useEffect(() => {
@@ -1200,12 +1265,12 @@ export default function InboxDashboard() {
   const highPriorityCount = searchedEmails.filter(em => ["Urgent", "Risk Detected", "High-Value Lead"].includes(em.priorityCategory)).length;
   const lowPriorityCount = searchedEmails.filter(em => em.priorityCategory === "Low Priority").length;
 
-  const missionUrgent = emails.filter(e => ["Urgent", "Risk Detected"].includes(e.priorityCategory)).sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
-  const missionLeads = emails.filter(e => e.priorityCategory === "High-Value Lead");
-  const missionPayments = emails.filter(e => e.priorityCategory === "Payment");
-  const missionSupport = emails.filter(e => e.priorityCategory === "Support Issue");
-  const missionNeedsReply = emails.filter(e => e.priorityCategory === "Needs Reply");
-  const missionCanWait = emails.filter(e => e.priorityCategory === "Low Priority");
+  const missionUrgent = emails.filter(e => ["Urgent", "Risk Detected"].includes(e.priorityCategory) && !snoozedIds.has(e.id)).sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
+  const missionLeads = emails.filter(e => e.priorityCategory === "High-Value Lead" && !snoozedIds.has(e.id));
+  const missionPayments = emails.filter(e => e.priorityCategory === "Payment" && !snoozedIds.has(e.id));
+  const missionSupport = emails.filter(e => e.priorityCategory === "Support Issue" && !snoozedIds.has(e.id));
+  const missionNeedsReply = emails.filter(e => e.priorityCategory === "Needs Reply" && !snoozedIds.has(e.id));
+  const missionCanWait = emails.filter(e => e.priorityCategory === "Low Priority" && !snoozedIds.has(e.id));
   const missionDate = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 
   const TONES = ["Formal", "Casual", "Sales", "Empathetic", "Short"];
@@ -1494,7 +1559,8 @@ export default function InboxDashboard() {
                                 <span className="text-indigo-500 shrink-0">→</span>
                                 <p className="text-[11px] text-indigo-700 font-medium leading-snug">{email.suggestedAction}</p>
                               </div>
-                              <div className="flex items-center gap-2">
+                              {/* Primary actions */}
+                              <div className="flex items-center gap-2 mb-2">
                                 <button
                                   onClick={() => openEmailFromMission(email)}
                                   className="flex items-center gap-1.5 rounded-lg bg-[#5c4ff6] text-white px-3 py-1.5 text-xs font-bold hover:bg-[#4f43e0] transition"
@@ -1513,6 +1579,29 @@ export default function InboxDashboard() {
                                   className={`ml-auto p-1.5 rounded-lg transition ${email.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}
                                 >
                                   <StarIcon filled={email.isStarred} />
+                                </button>
+                              </div>
+                              {/* Quick actions row */}
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => void markDoneEmail(email)}
+                                  disabled={quickActionLoading === `done-${email.id}`}
+                                  className="flex items-center gap-1 rounded-md bg-emerald-50 border border-emerald-100 text-emerald-700 px-2.5 py-1 text-[11px] font-bold hover:bg-emerald-100 disabled:opacity-50 transition"
+                                >
+                                  {quickActionLoading === `done-${email.id}` ? "…" : "✓ Mark Done"}
+                                </button>
+                                <button
+                                  onClick={() => snoozeEmail(email)}
+                                  className="flex items-center gap-1 rounded-md bg-amber-50 border border-amber-100 text-amber-700 px-2.5 py-1 text-[11px] font-bold hover:bg-amber-100 transition"
+                                >
+                                  ⏰ Snooze
+                                </button>
+                                <button
+                                  onClick={() => void setFollowUpEmail(email)}
+                                  disabled={quickActionLoading === `followup-${email.id}`}
+                                  className="flex items-center gap-1 rounded-md bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-1 text-[11px] font-bold hover:bg-indigo-100 disabled:opacity-50 transition"
+                                >
+                                  {quickActionLoading === `followup-${email.id}` ? "…" : "📌 Follow-Up"}
                                 </button>
                               </div>
                             </div>
@@ -1917,15 +2006,12 @@ export default function InboxDashboard() {
                         </div>
                       </div>
                     );})}
-                    {nextPageToken && (
-                      <div className="p-4">
-                        <button
-                          onClick={() => loadEmails(folder === "inbox" ? gmailCategory : folder, nextPageToken)}
-                          disabled={loadingMore}
-                          className="w-full py-2.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition"
-                        >
-                          {loadingMore ? "Loading..." : "Load more"}
-                        </button>
+                    {loadingMore && (
+                      <div className="p-4 flex justify-center">
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+                          <span className="h-3 w-3 rounded-full border-2 border-indigo-400 border-t-transparent animate-spin" />
+                          Loading more emails…
+                        </div>
                       </div>
                     )}
                   </>

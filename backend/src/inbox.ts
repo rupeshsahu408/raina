@@ -510,7 +510,7 @@ function detectGmailCategory(labelIds: string[]): "primary" | "promotions" | "so
 inboxRouter.get("/messages", async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
-  const maxResults = Math.min(Number(req.query.maxResults ?? 25), 50);
+  const maxResults = Math.min(Number(req.query.maxResults ?? 50), 100);
   const pageToken = req.query.pageToken as string | undefined;
   const folder = (req.query.folder as string) || "inbox";
   const folderCfg = FOLDER_CONFIG[folder] ?? FOLDER_CONFIG.inbox;
