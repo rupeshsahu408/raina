@@ -12,7 +12,7 @@ import DailyBriefingModal, { type BriefingData } from "@/components/DailyBriefin
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 type Folder = "inbox" | "sent" | "spam" | "drafts" | "starred" | "trash" | "scheduled" | "archive";
-type FilterType = "all" | "read" | "unread" | "starred" | "unstarred";
+type FilterType = "all" | "read" | "unread" | "starred" | "unstarred" | "important" | "medium" | "low";
 type CommandView = "inbox" | "mission";
 type PriorityCategory = "Urgent" | "High-Value Lead" | "Payment" | "Support Issue" | "Risk Detected" | "Needs Reply" | "Low Priority";
 type GmailCategory = "primary" | "updates";
@@ -1442,12 +1442,18 @@ export default function InboxDashboard() {
     }
   }, [commandView, emails.length]);
 
+  const IMPORTANT_CATEGORIES: PriorityCategory[] = ["Urgent", "Risk Detected", "High-Value Lead", "Payment"];
+  const MEDIUM_CATEGORIES: PriorityCategory[] = ["Support Issue", "Needs Reply"];
+
   const searchedEmails = emails.filter(em => {
     if (search && !em.subject.toLowerCase().includes(search.toLowerCase()) && !em.from.toLowerCase().includes(search.toLowerCase())) return false;
     if (filter === "read" && em.isUnread) return false;
     if (filter === "unread" && !em.isUnread) return false;
     if (filter === "starred" && !em.isStarred) return false;
     if (filter === "unstarred" && em.isStarred) return false;
+    if (filter === "important" && !IMPORTANT_CATEGORIES.includes(em.priorityCategory)) return false;
+    if (filter === "medium" && !MEDIUM_CATEGORIES.includes(em.priorityCategory)) return false;
+    if (filter === "low" && em.priorityCategory !== "Low Priority") return false;
     return true;
   });
   const priorityFilteredEmails = searchedEmails
@@ -1462,12 +1468,10 @@ export default function InboxDashboard() {
   const highPriorityCount = searchedEmails.filter(em => ["Urgent", "Risk Detected", "High-Value Lead"].includes(em.priorityCategory)).length;
   const lowPriorityCount = searchedEmails.filter(em => em.priorityCategory === "Low Priority").length;
 
-  const IMPORTANT_CATEGORIES: PriorityCategory[] = ["Urgent", "Risk Detected", "High-Value Lead", "Payment"];
-  const MEDIUM_CATEGORIES: PriorityCategory[] = ["Support Issue", "Needs Reply"];
+  const showPriorityGroups = false;
   const importantEmails = priorityFilteredEmails.filter(e => IMPORTANT_CATEGORIES.includes(e.priorityCategory));
   const mediumEmails = priorityFilteredEmails.filter(e => MEDIUM_CATEGORIES.includes(e.priorityCategory));
   const lowEmails = priorityFilteredEmails.filter(e => e.priorityCategory === "Low Priority");
-  const showPriorityGroups = commandView === "inbox" && folder === "inbox";
 
   const missionUrgent = emails.filter(e => ["Urgent", "Risk Detected"].includes(e.priorityCategory) && !snoozedIds.has(e.id)).sort((a, b) => (b.priorityScore || 0) - (a.priorityScore || 0));
   const missionLeads = emails.filter(e => e.priorityCategory === "High-Value Lead" && !snoozedIds.has(e.id));
@@ -1478,7 +1482,7 @@ export default function InboxDashboard() {
   const missionDate = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
 
   const TONES = ["Formal", "Casual", "Sales", "Empathetic", "Short"];
-  const FILTER_LABELS: Record<FilterType, string> = { all: "All", read: "Read", unread: "Unread", starred: "Starred", unstarred: "Unstarred" };
+  const FILTER_LABELS: Record<FilterType, string> = { all: "All", read: "Read", unread: "Unread", starred: "Starred", unstarred: "Unstarred", important: "Important", medium: "Medium", low: "Low" };
 
   if (authLoading) {
     return (
@@ -2009,13 +2013,17 @@ export default function InboxDashboard() {
                   <div className="relative" ref={filterRef}>
                     <button
                       onClick={() => setFilterOpen(o => !o)}
-                      className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 hover:bg-gray-100 transition border border-gray-200"
+                      className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-gray-600 hover:bg-gray-100 transition border border-gray-200"
                     >
+                      {filter === "important" && <span className="h-2 w-2 rounded-full bg-red-500 shrink-0" />}
+                      {filter === "medium" && <span className="h-2 w-2 rounded-full bg-amber-400 shrink-0" />}
+                      {filter === "low" && <span className="h-2 w-2 rounded-full bg-gray-400 shrink-0" />}
                       {FILTER_LABELS[filter]}
                       <ChevronDown />
                     </button>
                     {filterOpen && (
-                      <div className="absolute top-full right-0 mt-1 w-36 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+                      <div className="absolute top-full right-0 mt-1 w-44 rounded-xl border border-gray-200 bg-white shadow-xl z-50 overflow-hidden">
+                        <div className="px-3 pt-2.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Status</div>
                         {(["all", "read", "unread", "starred", "unstarred"] as FilterType[]).map(f => (
                           <button
                             key={f}
@@ -2023,6 +2031,21 @@ export default function InboxDashboard() {
                             className={`w-full text-left px-3.5 py-2 text-xs transition ${filter === f ? "bg-violet-600 text-white font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
                           >
                             {FILTER_LABELS[f]}
+                          </button>
+                        ))}
+                        <div className="px-3 pt-2.5 pb-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400 border-t border-gray-100 mt-1">Priority</div>
+                        {([
+                          { f: "important" as FilterType, dot: "bg-red-500", label: "Important" },
+                          { f: "medium" as FilterType, dot: "bg-amber-400", label: "Medium" },
+                          { f: "low" as FilterType, dot: "bg-gray-400", label: "Low" },
+                        ]).map(({ f, dot, label }) => (
+                          <button
+                            key={f}
+                            onClick={() => { setFilter(f); setFilterOpen(false); }}
+                            className={`w-full text-left flex items-center gap-2 px-3.5 py-2 text-xs transition ${filter === f ? "bg-violet-600 text-white font-semibold" : "text-gray-700 hover:bg-gray-50"}`}
+                          >
+                            <span className={`h-2 w-2 rounded-full shrink-0 ${filter === f ? "bg-white" : dot}`} />
+                            {label}
                           </button>
                         ))}
                       </div>
