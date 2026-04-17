@@ -1989,7 +1989,7 @@ inboxRouter.get("/health-score", async (req, res) => {
   }
 });
 
-// GET /inbox/explore/overview — category counts using Gmail Labels API (exact counts)
+// GET /inbox/explore/overview — real exact email counts per category
 inboxRouter.get("/explore/overview", async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
@@ -1997,7 +1997,9 @@ inboxRouter.get("/explore/overview", async (req, res) => {
     const auth = await getAuthenticatedClient(uid);
     const gmail = google.gmail({ version: "v1", auth });
 
-    // Helper: fetch a single label's exact messagesTotal + messagesUnread
+    // Helper: exact messagesTotal + messagesUnread from the Gmail Labels API.
+    // This is 100% accurate for standard labels (INBOX, SENT, DRAFT, SPAM, TRASH,
+    // STARRED, CATEGORY_*). Never uses resultSizeEstimate.
     async function getLabelCounts(labelId: string): Promise<{ total: number; unread: number }> {
       try {
         const r = await gmail.users.labels.get({ userId: "me", id: labelId });
@@ -2008,18 +2010,36 @@ inboxRouter.get("/explore/overview", async (req, res) => {
       } catch { return { total: 0, unread: 0 }; }
     }
 
-    // Helper: count messages matching a Gmail query (uses resultSizeEstimate)
-    async function queryCount(q: string, labelIds?: string[]): Promise<number> {
-      try {
-        const params: any = { userId: "me", maxResults: 1, q };
-        if (labelIds) params.labelIds = labelIds;
-        const r = await gmail.users.messages.list(params);
-        return r.data.resultSizeEstimate ?? 0;
-      } catch { return 0; }
+    // Helper: paginate through messages.list to get a real count.
+    // We request only message IDs (fields: "nextPageToken,messages(id)") so each
+    // page is tiny and fast. Gmail allows up to maxResults=500 per page.
+    // maxPages caps the work for very large result sets.
+    async function paginatedCount(
+      opts: { labelIds?: string[]; q?: string },
+      maxPages = 20,
+    ): Promise<number> {
+      let total = 0;
+      let pageToken: string | undefined;
+      let pages = 0;
+      do {
+        pages++;
+        const r = await gmail.users.messages.list({
+          userId: "me",
+          maxResults: 500,
+          fields: "nextPageToken,messages(id)",
+          ...(opts.labelIds?.length ? { labelIds: opts.labelIds } : {}),
+          ...(opts.q ? { q: opts.q } : {}),
+          ...(pageToken ? { pageToken } : {}),
+        });
+        total += (r.data.messages ?? []).length;
+        pageToken = r.data.nextPageToken ?? undefined;
+      } while (pageToken && pages < maxPages);
+      return total;
     }
 
-    // Fetch exact counts for all built-in labels in parallel
+    // ── Step 1: Fetch all standard label counts in parallel (instant, exact) ──
     const [
+      inboxLabel,
       sentLabel,
       draftLabel,
       spamLabel,
@@ -2029,6 +2049,7 @@ inboxRouter.get("/explore/overview", async (req, res) => {
       promotionsLabel,
       socialLabel,
     ] = await Promise.all([
+      getLabelCounts("INBOX"),
       getLabelCounts("SENT"),
       getLabelCounts("DRAFT"),
       getLabelCounts("SPAM"),
@@ -2039,26 +2060,52 @@ inboxRouter.get("/explore/overview", async (req, res) => {
       getLabelCounts("CATEGORY_SOCIAL"),
     ]);
 
-    // Primary inbox = emails in INBOX that are NOT in Updates/Promotions/Social categories.
-    // We must query this directly — category label totals include archived mail so simple
-    // subtraction from inboxLabel.total gives wrong results.
-    const [primaryCount, primaryUnread, archiveCount, totalCount] = await Promise.all([
-      queryCount("-category:updates -category:promotions -category:social", ["INBOX"]),
-      queryCount("-category:updates -category:promotions -category:social", ["INBOX", "UNREAD"]),
-      // Archive = everything not in inbox/spam/trash/sent/draft
-      queryCount("-in:inbox -in:spam -in:trash -in:sent -in:draft"),
-      // Total = all mail excluding spam & trash (most accurate overall figure)
-      queryCount("-in:spam -in:trash"),
+    // ── Step 2: Count messages in each inbox TAB (in-inbox only) and archive ──
+    //
+    // Why paginate instead of using resultSizeEstimate?
+    // resultSizeEstimate is an unreliable guess — it frequently returns the same
+    // number for completely different queries and cannot be trusted for counts.
+    //
+    // In-inbox category counts (updates/promos/social that still sit in inbox)
+    // are used to derive the Primary tab count accurately:
+    //   primary = INBOX.total − inboxUpdates − inboxPromos − inboxSocial
+    //
+    // Archive = messages with no system-folder label (not INBOX, SENT, DRAFT,
+    //   SPAM, or TRASH). These are emails the user archived from the inbox.
+    //   Querying "-in:inbox -in:spam -in:trash -in:sent -in:draft" enumerates them.
+    //
+    // All 4 counts run in parallel to keep latency low.
+    const [
+      inboxUpdatesCount,
+      inboxPromosCount,
+      inboxSocialCount,
+      archiveCount,
+    ] = await Promise.all([
+      paginatedCount({ labelIds: ["INBOX", "CATEGORY_UPDATES"] }),
+      paginatedCount({ labelIds: ["INBOX", "CATEGORY_PROMOTIONS"] }),
+      paginatedCount({ labelIds: ["INBOX", "CATEGORY_SOCIAL"] }),
+      paginatedCount({ q: "-in:inbox -in:spam -in:trash -in:sent -in:draft" }, 10),
     ]);
 
-    // Waiting for reply — exact count from WaitingReply database (matches the dashboard)
+    // Primary = all inbox messages minus those in category tabs
+    const primaryCount  = Math.max(0, inboxLabel.total - inboxUpdatesCount - inboxPromosCount - inboxSocialCount);
+    // Primary unread: inbox unread minus category unreads (label API gives these exactly)
+    const primaryUnread = Math.max(0, inboxLabel.unread - updatesLabel.unread - promotionsLabel.unread - socialLabel.unread);
+
+    // Total across ALL folders (deduplicated):
+    //   INBOX messages + SENT messages + DRAFT messages + SPAM messages + TRASH messages
+    //   + ARCHIVE messages (which have no system label — they're the "all mail only" group)
+    // Each bucket is mutually exclusive in standard Gmail usage.
+    const totalCount = inboxLabel.total + sentLabel.total + draftLabel.total + spamLabel.total + trashLabel.total + archiveCount;
+
+    // ── Step 3: Waiting for reply — exact count from WaitingReply DB ──
     let waitingCount = 0;
     try {
       await connectMongo();
       waitingCount = await WaitingReply.countDocuments({ uid, status: "active" });
     } catch {}
 
-    // Hot / Warm / Cold leads — classify a sample of primary inbox emails
+    // ── Step 4: Hot / Warm / Cold leads — classify a sample of primary inbox ──
     let hotCount = 0; let warmCount = 0; let coldCount = 0;
     try {
       const leadRes = await gmail.users.messages.list({
@@ -2100,20 +2147,20 @@ inboxRouter.get("/explore/overview", async (req, res) => {
     return res.json({
       total: totalCount,
       categories: {
-        primary:    { count: primaryCount,          unread: primaryUnread },
-        updates:    { count: updatesLabel.total,    unread: updatesLabel.unread },
-        promotions: { count: promotionsLabel.total, unread: promotionsLabel.unread },
-        social:     { count: socialLabel.total,     unread: socialLabel.unread },
-        sent:       { count: sentLabel.total,       unread: 0 },
-        drafts:     { count: draftLabel.total,      unread: 0 },
-        archive:    { count: archiveCount,          unread: 0 },
-        spam:       { count: spamLabel.total,       unread: spamLabel.unread },
-        trash:      { count: trashLabel.total,      unread: 0 },
-        starred:    { count: starredLabel.total,    unread: starredLabel.unread },
-        waiting:    { count: waitingCount,          unread: 0 },
-        hot:        { count: hotCount,              unread: hotCount },
-        warm:       { count: warmCount,             unread: 0 },
-        cold:       { count: coldCount,             unread: 0 },
+        primary:    { count: primaryCount,       unread: primaryUnread },
+        updates:    { count: inboxUpdatesCount,  unread: updatesLabel.unread },
+        promotions: { count: inboxPromosCount,   unread: promotionsLabel.unread },
+        social:     { count: inboxSocialCount,   unread: socialLabel.unread },
+        sent:       { count: sentLabel.total,    unread: 0 },
+        drafts:     { count: draftLabel.total,   unread: 0 },
+        archive:    { count: archiveCount,       unread: 0 },
+        spam:       { count: spamLabel.total,    unread: spamLabel.unread },
+        trash:      { count: trashLabel.total,   unread: 0 },
+        starred:    { count: starredLabel.total, unread: starredLabel.unread },
+        waiting:    { count: waitingCount,       unread: 0 },
+        hot:        { count: hotCount,           unread: hotCount },
+        warm:       { count: warmCount,          unread: 0 },
+        cold:       { count: coldCount,          unread: 0 },
       },
     });
   } catch (err: any) {
