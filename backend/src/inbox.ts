@@ -1224,7 +1224,26 @@ inboxRouter.delete("/disconnect", async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
   await connectMongo();
-  await InboxToken.deleteOne({ uid });
+
+  const record = await InboxToken.findOne({ uid });
+  if (record) {
+    try {
+      const oauth2 = makeOAuth2Client();
+      oauth2.setCredentials({
+        access_token: record.accessToken,
+        refresh_token: record.refreshToken ?? undefined,
+      });
+      await oauth2.revokeCredentials();
+    } catch {
+      // Revocation best-effort — continue cleanup even if Google rejects
+    }
+    await InboxToken.deleteOne({ uid });
+  }
+
+  // Wipe all user data tied to the old Gmail account
+  try { await FollowUp.deleteMany({ uid }); } catch {}
+  try { await WaitingReply.deleteMany({ uid }); } catch {}
+
   return res.json({ success: true });
 });
 

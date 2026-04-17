@@ -92,6 +92,18 @@ function ConnectContent() {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      // Wipe every inbox-related cache so the new account starts completely fresh
+      const inboxLocalKeys = [
+        "plyndrox_daily_briefing",
+        "plyndrox_daily_briefing_date",
+        "plyndrox_drafts",
+        "plyndrox_scheduled",
+        "inbox_health_briefing_date",
+      ];
+      inboxLocalKeys.forEach(k => localStorage.removeItem(k));
+      sessionStorage.clear();
+
       setStatus("idle");
       setConnectedEmail("");
     } catch {

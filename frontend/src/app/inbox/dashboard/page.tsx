@@ -489,6 +489,8 @@ export default function InboxDashboard() {
   const [briefingBannerVisible, setBriefingBannerVisible] = useState(false);
   const briefingFetchedRef = useRef(false);
 
+  const [connectedGmailEmail, setConnectedGmailEmail] = useState("");
+
   const tokenRef = useRef("");
   const filterRef = useRef<HTMLDivElement>(null);
   const activeThreadRequestRef = useRef(0);
@@ -518,6 +520,24 @@ export default function InboxDashboard() {
     tokenRef.current = t;
     return t;
   }, [user]);
+
+  const loadConnectedEmail = useCallback(async () => {
+    const token = tokenRef.current || await (user ? user.getIdToken() : Promise.resolve(""));
+    if (!token) return;
+    try {
+      const res = await fetch(`${API}/inbox/status`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.connected && data.email) setConnectedGmailEmail(data.email);
+      }
+    } catch {}
+  }, [user]);
+
+  useEffect(() => {
+    if (user) void loadConnectedEmail();
+  }, [user, loadConnectedEmail]);
 
   const pollForNewEmails = useCallback(async () => {
     const inboxFolders = ["inbox", "primary", "updates"];
@@ -1584,13 +1604,27 @@ export default function InboxDashboard() {
             <svg className="w-[17px] h-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.071 4.929A10 10 0 1 0 4.93 19.07A10 10 0 0 0 19.07 4.93"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/></svg>
             Settings
           </Link>
-          {user?.email && (
-            <div className="flex items-center gap-3 px-3 py-2 rounded-xl">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0" style={{ background: avatarColor(user.email) }}>
-                {user.email[0].toUpperCase()}
+          {(connectedGmailEmail || user?.email) && (
+            <Link href="/inbox/connect" className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/[0.04] transition-all group">
+              <div className="relative shrink-0">
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black" style={{ background: avatarColor(connectedGmailEmail || user?.email || "") }}>
+                  {(connectedGmailEmail || user?.email || "?")[0].toUpperCase()}
+                </div>
+                {connectedGmailEmail && (
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-[#14112a]" title="Gmail connected" />
+                )}
               </div>
-              <p className="text-xs text-zinc-500 truncate min-w-0">{user.email}</p>
-            </div>
+              <div className="min-w-0 flex-1">
+                {connectedGmailEmail ? (
+                  <>
+                    <p className="text-[10px] text-emerald-400 font-bold truncate leading-none mb-0.5">Gmail Connected</p>
+                    <p className="text-[11px] text-zinc-400 truncate leading-none">{connectedGmailEmail}</p>
+                  </>
+                ) : (
+                  <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
+                )}
+              </div>
+            </Link>
           )}
         </div>
       </aside>
