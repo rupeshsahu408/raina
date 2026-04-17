@@ -170,6 +170,19 @@ export default function CategoryPage() {
     else setLoadingMore(true);
     const token = await getToken();
     try {
+      // "Waiting for Reply" uses its own dedicated endpoint backed by the FollowUp database
+      if (category === "waiting") {
+        const res = await fetch(`${API}/inbox/explore/waiting`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setEmails(data.messages ?? []);
+        }
+        setNextPageToken(null);
+        return;
+      }
+
       const folder = meta.folder;
       const pageToken = append && nextPageToken ? `&pageToken=${nextPageToken}` : "";
       const res = await fetch(`${API}/inbox/messages?folder=${folder}&maxResults=50${pageToken}`, {
@@ -179,7 +192,7 @@ export default function CategoryPage() {
         const data = await res.json();
         let msgs: EmailItem[] = data.messages ?? [];
 
-        // Special filtering for hot/warm/cold/waiting
+        // Hot/Warm/Cold leads — filter the primary inbox emails client-side
         if (category === "hot") {
           msgs = msgs.filter(m => m.priorityCategory === "High-Value Lead" && m.isUnread);
         } else if (category === "warm") {
