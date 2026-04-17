@@ -16,14 +16,28 @@ function getUid(req: express.Request): string {
 }
 
 function safeJson(text: string): any {
-  try {
-    const match = text.match(/```json\s*([\s\S]*?)```/) ||
-      text.match(/```\s*([\s\S]*?)```/) ||
-      text.match(/(\{[\s\S]*\})/);
-    return JSON.parse(match ? match[1] : text);
-  } catch {
-    return null;
+  const attempts = [
+    () => JSON.parse(text),
+    () => {
+      const m = text.match(/```json\s*([\s\S]*?)```/);
+      return m ? JSON.parse(m[1]) : null;
+    },
+    () => {
+      const m = text.match(/```\s*([\s\S]*?)```/);
+      return m ? JSON.parse(m[1]) : null;
+    },
+    () => {
+      const m = text.match(/(\{[\s\S]*\})/);
+      return m ? JSON.parse(m[1]) : null;
+    },
+  ];
+  for (const attempt of attempts) {
+    try {
+      const result = attempt();
+      if (result !== null) return result;
+    } catch { /* try next */ }
   }
+  return null;
 }
 
 function generateToken(): string {
@@ -246,57 +260,49 @@ async function generateAssessmentQuestions(args: {
   jd: string;
 }): Promise<{ id: string; text: string }[]> {
   const rubricText = args.rubric
-    .map((r) => `- ${r.name}: ${r.description}`)
+    .map((r, i) => `${i + 1}. ${r.name} (${r.weight} pts): ${r.description}`)
     .join("\n");
 
-  const prompt = `You are a senior hiring manager. Generate exactly 5 thoughtful, role-specific interview assessment questions for the following job.
+  const prompt = `You are a senior hiring manager at a fast-growing company. Generate exactly 5 written assessment questions for a candidate applying to be a ${args.jobTitle}.
 
-Role: ${args.jobTitle}
-Scoring Rubric:
+SCORING RUBRIC (your questions must each probe a different criterion):
 ${rubricText}
 
-Job Description (excerpt):
-${args.jd.slice(0, 1500)}
+JOB DESCRIPTION EXCERPT:
+${args.jd.slice(0, 1200)}
 
-Rules:
-- Questions must be open-ended and require substantive written answers (2-4 paragraphs)
-- Each question should probe a different rubric criterion
-- Questions should reveal critical thinking, real experience, and communication quality
-- Avoid yes/no questions or trivial questions
-- Make each question specific to this role, not generic
+STRICT REQUIREMENTS:
+- Every question MUST be specific to the ${args.jobTitle} role — no generic questions
+- Questions must require 2-4 paragraph written answers based on real experience
+- Each question tests a DIFFERENT rubric criterion (match question 1 to criterion 1, etc.)
+- Questions should reveal: depth of expertise, problem-solving, communication quality, judgment
+- Do NOT ask trivial, yes/no, or easily-Googled questions
+- Start each question with "Tell us about a time...", "Describe how you...", "Walk us through...", or "How would you approach..."
 
-Respond with valid JSON only (no markdown):
-{
-  "questions": [
-    { "id": "q1", "text": "question text here" },
-    { "id": "q2", "text": "question text here" },
-    { "id": "q3", "text": "question text here" },
-    { "id": "q4", "text": "question text here" },
-    { "id": "q5", "text": "question text here" }
-  ]
-}`;
+Respond with ONLY this exact JSON structure, no markdown, no extra text:
+{"questions":[{"id":"q1","text":"..."},{"id":"q2","text":"..."},{"id":"q3","text":"..."},{"id":"q4","text":"..."},{"id":"q5","text":"..."}]}`;
 
   const raw = await callNvidiaChatCompletions({
     apiKey: NVIDIA_API_KEY,
     messages: [{ role: "user", content: prompt }],
-    temperature: 0.6,
-    max_tokens: 1000,
+    temperature: 0.5,
+    max_tokens: 1200,
   });
 
   const parsed = safeJson(raw);
   if (parsed && Array.isArray(parsed.questions) && parsed.questions.length >= 3) {
     return parsed.questions.slice(0, 5).map((q: any, i: number) => ({
       id: q.id ?? `q${i + 1}`,
-      text: q.text ?? "",
-    }));
+      text: (q.text ?? "").trim(),
+    })).filter((q: { id: string; text: string }) => q.text.length > 10);
   }
 
   return [
-    { id: "q1", text: `Describe a challenging project relevant to the ${args.jobTitle} role. What was your specific contribution and what was the outcome?` },
-    { id: "q2", text: `What is your approach to solving complex problems in this domain? Walk us through a real example.` },
-    { id: "q3", text: `How do you prioritize your work when handling multiple responsibilities at once? Give a specific situation.` },
-    { id: "q4", text: `Tell us about a time you had to learn something quickly to deliver results. What was the skill and how did you apply it?` },
-    { id: "q5", text: `Why are you the right fit for this ${args.jobTitle} role, and what would you focus on in your first 90 days?` },
+    { id: "q1", text: `Describe a challenging technical problem you solved in a previous ${args.jobTitle} role. What was the situation, what actions did you take, and what was the measurable outcome?` },
+    { id: "q2", text: `Walk us through a project where you had to work across teams or stakeholders with competing priorities. How did you navigate it and what did you learn?` },
+    { id: "q3", text: `Tell us about a time you had to rapidly learn a new skill or technology under a tight deadline. How did you approach it and what was the result?` },
+    { id: "q4", text: `Describe a situation where your initial approach to a problem was wrong. How did you identify it, course-correct, and what did you do differently afterward?` },
+    { id: "q5", text: `As a ${args.jobTitle}, how would you approach your first 90 days — what would you prioritize, how would you measure early success, and what concerns would you flag to your manager?` },
   ];
 }
 
@@ -315,111 +321,130 @@ async function analyzeAssessmentAnswers(args: {
   impact: { strengths: string[]; weaknesses: string[]; reasoning: string };
 }> {
   const rubricText = args.rubric
-    .map((r) => `- ${r.name} (max ${r.weight} pts): ${r.description}`)
+    .map((r) => `- ${r.name} (${r.weight} pts): ${r.description}`)
     .join("\n");
-
-  const qaText = args.questions.map((q) => {
-    const ans = args.answers.find((a) => a.questionId === q.id);
-    const timeTaken = ans ? ans.timeTakenSeconds : 0;
-    const speedFlag = timeTaken > 0 && timeTaken < 30 ? " [NOTE: Very fast response — possible copy-paste]" : "";
-    return `Q: ${q.text}\nA: ${ans?.answer ?? "(No answer provided)"}${speedFlag}`;
-  }).join("\n\n");
 
   const resumePct = args.maxScore > 0 ? Math.round((args.resumeScore / args.maxScore) * 100) : 0;
 
-  const prompt = `You are a senior talent acquisition specialist evaluating a candidate's written assessment responses.
+  const qaText = args.questions.map((q, i) => {
+    const ans = args.answers.find((a) => a.questionId === q.id);
+    const timeTaken = ans?.timeTakenSeconds ?? 0;
+    const answerText = ans?.answer?.trim() ?? "";
+    const wordCount = answerText.split(/\s+/).filter(Boolean).length;
+    const warnings: string[] = [];
+    if (timeTaken > 0 && timeTaken < 25) warnings.push("⚠ Answered in under 25 seconds — possible copy-paste or very brief effort");
+    if (wordCount < 20 && answerText.length > 0) warnings.push("⚠ Very short answer (fewer than 20 words)");
+    if (answerText.length === 0) warnings.push("⚠ No answer provided");
+    const warningLine = warnings.length > 0 ? `\n[${warnings.join("; ")}]` : "";
+    return `Q${i + 1}: ${q.text}\nAnswer: ${answerText || "(blank)"}${warningLine}`;
+  }).join("\n\n---\n\n");
 
-Candidate: ${args.candidateName}
-Role: ${args.jobTitle}
-Resume Score: ${args.resumeScore}/${args.maxScore} (${resumePct}%)
-Resume Summary: ${args.resumeSummary}
+  const prompt = `You are a senior talent acquisition specialist. Evaluate the written assessment responses below for the ${args.jobTitle} role.
 
-Scoring Rubric:
+CANDIDATE: ${args.candidateName}
+RESUME SCORE: ${resumePct}% (${args.resumeScore}/${args.maxScore} points)
+RESUME SUMMARY: ${args.resumeSummary}
+
+SCORING RUBRIC:
 ${rubricText}
 
-Assessment Q&A:
+ASSESSMENT RESPONSES:
 ${qaText}
 
-Evaluate the written responses holistically. Assess: communication clarity, depth of thinking, relevance of examples, alignment with rubric criteria, and any concerning signals.
+Your task: Combine the resume quality (${resumePct}%) with the assessment quality to produce a final combined score.
 
-Respond with valid JSON only (no markdown):
-{
-  "assessmentScoreAdjustment": 5,
-  "hiringDecision": "strong_yes",
-  "impact": {
-    "strengths": ["strength 1 from assessment", "strength 2", "strength 3"],
-    "weaknesses": ["weakness 1 if any", "weakness 2 if any"],
-    "reasoning": "2-3 sentence explanation of why the score changed and what the assessment revealed"
-  }
-}
+SCORING GUIDANCE:
+- If assessment answers are EXCELLENT (specific, detailed, clearly experienced): raise score up to +15 points from resume
+- If answers MATCH the resume quality (solid, relevant): keep score within ±5 points of resume
+- If answers are WEAK (vague, generic, very short, copy-paste signals): lower score by 10-20 points
+- If answers are COMPLETELY EMPTY or nonsensical: lower score by 20-30 points
+
+Respond with ONLY this JSON (no markdown, no extra text):
+{"combinedScorePercent":72,"hiringDecision":"maybe","impact":{"strengths":["strength from assessment","another strength"],"weaknesses":["weakness if any"],"reasoning":"2-3 sentences explaining what the assessment revealed and why the score changed"}}
 
 Rules:
-- assessmentScoreAdjustment: integer between -20 and +20 (how much to adjust the resume score based on assessment quality)
-  - Strong answers that confirm or exceed resume claims: +10 to +20
-  - Average answers that match resume: -5 to +5
-  - Weak, vague, or suspiciously fast answers: -10 to -20
-- hiringDecision must be one of: "strong_yes" (total score ≥75%), "maybe" (50-74%), "no" (<50%)
-- strengths: 2-4 specific observations from the assessment answers
-- weaknesses: 0-3 genuine concerns identified
-- reasoning: explain what the assessment revealed beyond the resume`;
+- combinedScorePercent: integer 0-100 (the final combined score as a percentage, informed by BOTH resume and assessment)
+- hiringDecision: "strong_yes" if ≥78%, "maybe" if 55-77%, "no" if <55%
+- strengths: 2-4 specific, concrete observations from the actual answers (quote or reference what they said)
+- weaknesses: 0-3 genuine concerns (if none, use empty array)
+- reasoning: specific explanation of what the assessment revealed that the resume did not show`;
 
   const raw = await callNvidiaChatCompletions({
     apiKey: NVIDIA_API_KEY,
     messages: [{ role: "user", content: prompt }],
-    temperature: 0.3,
-    max_tokens: 800,
+    temperature: 0.25,
+    max_tokens: 700,
   });
 
   const parsed = safeJson(raw);
-  const adjustment = parsed?.assessmentScoreAdjustment ?? 0;
-  const rawNewScore = args.resumeScore + Math.round((adjustment / 100) * args.maxScore);
-  const newTotalScore = Math.max(0, Math.min(args.maxScore, rawNewScore));
-  const newPct = args.maxScore > 0 ? (newTotalScore / args.maxScore) * 100 : 0;
+
+  const combinedPct = typeof parsed?.combinedScorePercent === "number"
+    ? Math.max(0, Math.min(100, parsed.combinedScorePercent))
+    : resumePct;
+
+  const newTotalScore = Math.round((combinedPct / 100) * args.maxScore);
 
   const hiringDecision: "strong_yes" | "maybe" | "no" =
     parsed?.hiringDecision === "strong_yes" || parsed?.hiringDecision === "maybe" || parsed?.hiringDecision === "no"
       ? parsed.hiringDecision
-      : newPct >= 75 ? "strong_yes" : newPct >= 50 ? "maybe" : "no";
+      : combinedPct >= 78 ? "strong_yes" : combinedPct >= 55 ? "maybe" : "no";
+
+  const strengths = Array.isArray(parsed?.impact?.strengths)
+    ? parsed.impact.strengths.filter((s: unknown) => typeof s === "string" && s.trim().length > 0)
+    : [];
+  const weaknesses = Array.isArray(parsed?.impact?.weaknesses)
+    ? parsed.impact.weaknesses.filter((w: unknown) => typeof w === "string" && w.trim().length > 0)
+    : [];
+  const reasoning = typeof parsed?.impact?.reasoning === "string" && parsed.impact.reasoning.trim().length > 0
+    ? parsed.impact.reasoning
+    : `Assessment completed. Final combined score: ${combinedPct}%.`;
 
   return {
     newTotalScore,
     hiringDecision,
-    impact: {
-      strengths: Array.isArray(parsed?.impact?.strengths) ? parsed.impact.strengths : [],
-      weaknesses: Array.isArray(parsed?.impact?.weaknesses) ? parsed.impact.weaknesses : [],
-      reasoning: parsed?.impact?.reasoning ?? "Assessment completed and score updated.",
-    },
+    impact: { strengths, weaknesses, reasoning },
   };
 }
 
 async function generateRejectionEmail(args: {
   candidateName: string;
   jobTitle: string;
-  companyName?: string;
   stage: string;
 }): Promise<string> {
-  const prompt = `You are an HR professional. Write a personalized, warm, and respectful rejection email for a job candidate.
+  const stageContext: Record<string, string> = {
+    applied: "after reviewing their application",
+    screened: "after an initial review of their profile",
+    assessed: "after reviewing their written assessment",
+    interview: "after the interview stage",
+    offer: "after careful consideration of the offer stage",
+  };
+  const context = stageContext[args.stage] ?? "after careful consideration";
 
-Candidate Name: ${args.candidateName}
-Role Applied For: ${args.jobTitle}
-Company: ${args.companyName || "our company"}
-Stage Rejected At: ${args.stage}
+  const prompt = `Write a rejection email for a job candidate. The email should feel human, warm, and genuinely respectful — not a corporate template.
 
-Requirements:
-- Personalize it with their name and the role
-- Be genuinely warm and encouraging — not corporate/cold
-- Acknowledge their effort
-- Leave the door open for future opportunities
-- Keep it concise (3-4 short paragraphs)
-- End with a professional closing
+Candidate first name: ${args.candidateName.split(" ")[0]}
+Role: ${args.jobTitle}
+Stage: ${context}
 
-Write only the email body (no subject line), plain text.`;
+Write the email body only (no subject line). Follow this structure:
+1. Open with their first name and a warm, specific acknowledgment of their interest in the ${args.jobTitle} role
+2. Deliver the news clearly but kindly in one sentence — do not be vague or overly corporate
+3. Offer one genuine, positive observation (e.g., "We were impressed by your background in X" or "It was clear you put genuine thought into your application")
+4. Close with encouragement — keep the door open for future roles, wish them well
+5. End with a warm sign-off
+
+TONE RULES:
+- Sound like a real person wrote this, not an HR bot
+- Avoid clichés: "we regret to inform", "we had many strong candidates", "we'll keep your resume on file"
+- Use contractions naturally (we're, we've, you've)
+- Keep it under 200 words
+- Do not use bullet points or formal headers`;
 
   const email = await callNvidiaChatCompletions({
     apiKey: NVIDIA_API_KEY,
     messages: [{ role: "user", content: prompt }],
-    temperature: 0.65,
-    max_tokens: 400,
+    temperature: 0.75,
+    max_tokens: 350,
   });
 
   return email;

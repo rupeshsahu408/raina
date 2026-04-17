@@ -53,14 +53,14 @@ export interface IRecruitCandidate extends Document {
   notes: string;
   interviewBrief: string;
   assessmentStatus: AssessmentStatus;
-  assessmentToken: string;
+  assessmentToken?: string;
   assessmentSentAt?: Date;
   assessmentCompletedAt?: Date;
   assessmentReminderSentAt?: Date;
   assessmentQuestions: IAssessmentQuestion[];
   assessmentAnswers: IAssessmentAnswer[];
   previousResumeScore: number;
-  hiringDecision: HiringDecision;
+  hiringDecision?: HiringDecision;
   assessmentImpact?: IAssessmentImpact;
   createdAt: Date;
   updatedAt: Date;
@@ -128,7 +128,7 @@ const RecruitCandidateSchema = new Schema<IRecruitCandidate>(
       enum: ["not_sent", "sent", "completed"],
       default: "not_sent",
     },
-    assessmentToken: { type: String, default: "", index: true, sparse: true },
+    assessmentToken: { type: String, index: true, sparse: true },
     assessmentSentAt: { type: Date },
     assessmentCompletedAt: { type: Date },
     assessmentReminderSentAt: { type: Date },
@@ -137,8 +137,7 @@ const RecruitCandidateSchema = new Schema<IRecruitCandidate>(
     previousResumeScore: { type: Number, default: 0 },
     hiringDecision: {
       type: String,
-      enum: ["strong_yes", "maybe", "no", null],
-      default: null,
+      enum: ["strong_yes", "maybe", "no"],
     },
     assessmentImpact: { type: AssessmentImpactSchema },
   },
