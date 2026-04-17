@@ -306,6 +306,87 @@ export default function ComposeModal({
   const [showFontPanel, setShowFontPanel] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState<"text" | "bg" | null>(null);
 
+  // ── AI compose panel ──
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  const [aiMessages, setAiMessages] = useState<{ role: "user" | "assistant"; content: string }[]>([]);
+  const [aiInput, setAiInput] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiEmail, setAiEmail] = useState<{ subject: string; body: string } | null>(null);
+  const aiChatEndRef = useRef<HTMLDivElement>(null);
+
+  // ─── AI compose helpers ───────────────────────────────────────────────────
+
+  async function sendAiMessage() {
+    const text = aiInput.trim();
+    if (!text || aiLoading) return;
+
+    const newMessages: { role: "user" | "assistant"; content: string }[] = [
+      ...aiMessages,
+      { role: "user", content: text },
+    ];
+    setAiMessages(newMessages);
+    setAiInput("");
+    setAiLoading(true);
+    setAiEmail(null);
+
+    try {
+      const token = await user?.getIdToken();
+      const res = await fetch(`${apiBase}/inbox/compose/ai-chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          messages: newMessages,
+          senderName: user?.displayName || undefined,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        setAiMessages(prev => [
+          ...prev,
+          { role: "assistant", content: `Sorry, something went wrong: ${err.error || res.statusText}` },
+        ]);
+        return;
+      }
+
+      const data = await res.json();
+      setAiMessages(prev => [...prev, { role: "assistant", content: data.reply }]);
+
+      if (data.subject && data.body) {
+        setAiEmail({ subject: data.subject, body: data.body });
+      }
+    } catch (err: any) {
+      setAiMessages(prev => [
+        ...prev,
+        { role: "assistant", content: "Network error. Please check your connection and try again." },
+      ]);
+    } finally {
+      setAiLoading(false);
+      setTimeout(() => aiChatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
+    }
+  }
+
+  function acceptAiEmail() {
+    if (!aiEmail) return;
+    setSubject(aiEmail.subject);
+    if (editorRef.current) {
+      editorRef.current.innerHTML = aiEmail.body
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n\n/g, "</p><p>")
+        .replace(/\n/g, "<br>")
+        .replace(/^/, "<p>")
+        .replace(/$/, "</p>");
+      syncBody();
+    }
+    setShowAiPanel(false);
+    setAiEmail(null);
+  }
+
   // ─── Paste handler — strip external styles, keep basic formatting ─────────
 
   function handlePaste(e: React.ClipboardEvent<HTMLDivElement>) {
@@ -1375,6 +1456,123 @@ export default function ComposeModal({
               </div>
             )}
 
+            {/* ── AI Compose Panel ─────────────────────────────────────────── */}
+            {showAiPanel && (
+              <div className="border-t border-violet-200 bg-gradient-to-b from-violet-50 to-indigo-50 flex flex-col shrink-0" style={{ height: 300 }}>
+                {/* Panel header */}
+                <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 shrink-0">
+                  <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5m9 0a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+                  <span className="text-white text-xs font-bold tracking-wide">AI Email Writer</span>
+                  <span className="text-violet-200 text-[10px] ml-1">Ask me to write an email in any language or style</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowAiPanel(false)}
+                    className="ml-auto text-white/60 hover:text-white transition text-lg leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Chat messages */}
+                <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
+                  {aiMessages.length === 0 && (
+                    <div className="flex flex-col items-center justify-center h-full text-center gap-2 py-4">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center shadow-md">
+                        <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5m9 0a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+                      </div>
+                      <p className="text-xs font-semibold text-indigo-700">Tell me what email to write</p>
+                      <div className="flex flex-wrap gap-1.5 justify-center max-w-xs">
+                        {[
+                          "Write a formal apology email",
+                          "Write a follow-up email in Hindi",
+                          "Write a sales pitch email",
+                        ].map(s => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => { setAiInput(s); }}
+                            className="px-2.5 py-1 rounded-full bg-white border border-indigo-200 text-[11px] text-indigo-600 font-medium hover:bg-indigo-50 transition shadow-sm"
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {aiMessages.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                      {msg.role === "assistant" && (
+                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center mr-1.5 mt-0.5 shrink-0">
+                          <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5m9 0a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+                        </div>
+                      )}
+                      <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap shadow-sm ${
+                        msg.role === "user"
+                          ? "bg-indigo-600 text-white rounded-br-md"
+                          : "bg-white text-slate-800 border border-violet-100 rounded-bl-md"
+                      }`}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+
+                  {aiLoading && (
+                    <div className="flex justify-start">
+                      <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center mr-1.5 mt-0.5 shrink-0">
+                        <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5m9 0a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+                      </div>
+                      <div className="bg-white border border-violet-100 rounded-2xl rounded-bl-md px-3 py-2 shadow-sm">
+                        <div className="flex gap-1 items-center h-4">
+                          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={aiChatEndRef} />
+                </div>
+
+                {/* Accept Email button */}
+                {aiEmail && (
+                  <div className="px-3 pb-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={acceptAiEmail}
+                      className="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-md hover:shadow-lg hover:from-emerald-600 hover:to-teal-600 transition"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                      Accept Email — Fill into Compose
+                    </button>
+                  </div>
+                )}
+
+                {/* Input row */}
+                <div className="px-2 pb-2 shrink-0">
+                  <div className="flex items-center gap-1.5 bg-white rounded-2xl border border-violet-200 shadow-sm px-3 py-1.5">
+                    <input
+                      type="text"
+                      value={aiInput}
+                      onChange={e => setAiInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendAiMessage(); } }}
+                      placeholder="Ask AI to write an email…"
+                      disabled={aiLoading}
+                      className="flex-1 text-xs bg-transparent outline-none text-slate-700 placeholder:text-slate-400 disabled:opacity-50"
+                    />
+                    <button
+                      type="button"
+                      onClick={sendAiMessage}
+                      disabled={!aiInput.trim() || aiLoading}
+                      className="w-7 h-7 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white flex items-center justify-center hover:opacity-90 transition disabled:opacity-40"
+                    >
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ── Footer ─────────────────────────────────────────────────── */}
             <div className="border-t border-gray-100 px-3 py-2.5 flex items-center gap-2 bg-white shrink-0">
               {/* Send */}
@@ -1450,6 +1648,25 @@ export default function ComposeModal({
                 className={`p-2 rounded-full transition ${showEmojiPicker ? "bg-yellow-50 text-yellow-600" : "text-gray-500 hover:bg-gray-100"}`}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              </button>
+
+              {/* AI Email Writer */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAiPanel(o => !o);
+                  setShowEmojiPicker(false);
+                  setShowGifDialog(false);
+                }}
+                title="AI Email Writer"
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-bold transition ${
+                  showAiPanel
+                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md"
+                    : "bg-gradient-to-r from-violet-50 to-indigo-50 text-violet-600 border border-violet-200 hover:from-violet-100 hover:to-indigo-100"
+                }`}
+              >
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 0 2h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1 0-2h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5m9 0a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>
+                AI
               </button>
 
               {/* Spacer */}

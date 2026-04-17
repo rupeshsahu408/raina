@@ -2686,3 +2686,93 @@ inboxRouter.post("/waiting-replies/draft", express.json(), async (req, res) => {
     return res.json({ draft: fallback });
   }
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /inbox/compose/ai-chat  — AI email writing assistant for the compose panel
+//
+// The AI always outputs in this format when producing an email:
+//   SUBJECT: <subject line>
+//   BODY:
+//   <email body>
+//
+// The backend parses subject/body and returns them separately so the frontend
+// can auto-fill the compose fields when the user accepts the email.
+// ─────────────────────────────────────────────────────────────────────────────
+inboxRouter.post("/compose/ai-chat", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
+  const { messages, senderName } = req.body as {
+    messages: { role: "user" | "assistant"; content: string }[];
+    senderName?: string;
+  };
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: "messages array is required" });
+  }
+
+  const apiKey = NVIDIA_API_KEY;
+  if (!apiKey) {
+    return res.status(503).json({ error: "AI service not configured" });
+  }
+
+  const SYSTEM_PROMPT = `You are Plyndrox AI — a world-class email writing assistant built into a compose window.
+
+YOUR CORE JOB:
+When the user asks you to write, draft, or create an email — produce it immediately in this exact format:
+
+SUBJECT: <concise, professional subject line>
+
+BODY:
+<full email body here>
+
+RULES FOR EMAIL OUTPUT:
+- Always write in the language the user asks for (Hindi, English, Spanish, French, etc.)
+- Match the tone requested: formal, casual, apologetic, persuasive, friendly, etc.
+- Write complete, ready-to-send emails — no placeholders like [your name] unless the user provides no context
+- If the user says "sign as Rahul" → end with "Regards,\\nRahul" — use actual names
+- Keep body well-structured: greeting → main content → call to action or closing → sign-off
+- DO NOT add any explanation, commentary, or text before SUBJECT: or after the body ends
+
+WHEN THE USER IS JUST CHATTING (not requesting an email):
+- Respond naturally and helpfully in their language
+- Do NOT output SUBJECT: / BODY: format — just have a conversation
+- Help them refine their idea if they're not sure what they want
+
+WHEN THE USER WANTS A REWRITE OR CHANGE:
+- Immediately produce the updated email in the SUBJECT: / BODY: format
+- Apply exactly the changes they described (shorter, different tone, different language, etc.)
+
+${senderName ? `The user's name is ${senderName}. Use it in email sign-offs if appropriate.` : ""}
+
+Detect the user's language from their message and respond in the same language (unless the email itself should be in a different language — follow their instructions exactly).`;
+
+  try {
+    const reply = await callNvidiaChatCompletions({
+      apiKey,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        ...messages,
+      ],
+      temperature: 0.7,
+      max_tokens: 1200,
+    });
+
+    // Parse subject and body from the response
+    let subject: string | undefined;
+    let body: string | undefined;
+
+    const subjectMatch = reply.match(/^SUBJECT:\s*(.+)/im);
+    const bodyMatch = reply.match(/^BODY:\s*\n([\s\S]+)/im);
+
+    if (subjectMatch && bodyMatch) {
+      subject = subjectMatch[1].trim();
+      body = bodyMatch[1].trim();
+    }
+
+    return res.json({ reply, subject, body });
+  } catch (err: any) {
+    console.error("[compose/ai-chat]", err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
