@@ -1574,95 +1574,100 @@ export default function InboxDashboard() {
           </Link>
         </div>
 
-        {/* Compose */}
-        <div className="px-4 py-4 shrink-0">
-          <button
-            onClick={openCompose}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl py-2.5 text-sm font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
-            style={{ background: "linear-gradient(135deg,#5c4ff6 0%,#7c3aed 100%)", boxShadow: "0 4px 16px rgba(92,79,246,0.35)" }}
-          >
-            <ComposeIcon />
-            Compose
-          </button>
-        </div>
+        {/* ── Scrollable middle section ────────────────────────────── */}
+        <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
 
-        {/* Today's Mission */}
-        <div className="px-4 mb-4 shrink-0">
-          <button
-            onClick={openMission}
-            className={`w-full rounded-2xl px-3.5 py-2.5 text-left transition-all duration-200 border ${
-              commandView === "mission"
-                ? "border-violet-500/50 text-white"
-                : "border-white/[0.07] bg-white/[0.04] hover:bg-white/[0.08] text-white"
-            }`}
-            style={commandView === "mission" ? { background: "linear-gradient(135deg,rgba(92,79,246,0.7) 0%,rgba(124,58,237,0.7) 100%)", boxShadow: "0 4px 14px rgba(92,79,246,0.25)" } : undefined}
-          >
-            <div className="flex items-center gap-2.5">
-              <span className={`flex h-6 w-6 items-center justify-center rounded-lg shrink-0 ${commandView === "mission" ? "bg-white/20" : "bg-violet-500/20"}`}>
-                <SparkleIcon />
-              </span>
-              <span className="text-sm font-bold flex-1 text-left">Today&apos;s Mission</span>
-              <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black shrink-0 ${commandView === "mission" ? "bg-white/25 text-white" : "bg-white/10 text-zinc-400"}`}>
-                {missionCount}
-              </span>
-            </div>
-          </button>
-        </div>
+          {/* Compose */}
+          <div className="px-4 py-3">
+            <button
+              onClick={openCompose}
+              className="w-full flex items-center justify-center gap-2 rounded-2xl py-2.5 text-sm font-bold text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+              style={{ background: "linear-gradient(135deg,#5c4ff6 0%,#7c3aed 100%)", boxShadow: "0 4px 16px rgba(92,79,246,0.35)" }}
+            >
+              <ComposeIcon />
+              Compose
+            </button>
+          </div>
 
-        {/* Nav: Mailbox */}
-        <div className="px-4 mb-3 shrink-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-2 px-1">Mailbox</p>
-          <nav className="space-y-0.5">
-            {NAV_ITEMS.map(item => (
-              <button
-                key={item.id}
-                onClick={() => switchFolder(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
-                  folder === item.id
-                    ? "bg-white/10 text-white"
-                    : "text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200"
-                }`}
-              >
-                <span className={`transition-colors ${folder === item.id ? "text-violet-400" : "text-zinc-600"}`}>{item.icon}</span>
-                <span className="flex-1 text-left">{item.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
+          {/* Today's Mission */}
+          <div className="px-4 mb-3">
+            <button
+              onClick={openMission}
+              className={`w-full rounded-2xl px-3.5 py-2.5 text-left transition-all duration-200 border ${
+                commandView === "mission"
+                  ? "border-violet-500/50 text-white"
+                  : "border-white/[0.07] bg-white/[0.04] hover:bg-white/[0.08] text-white"
+              }`}
+              style={commandView === "mission" ? { background: "linear-gradient(135deg,rgba(92,79,246,0.7) 0%,rgba(124,58,237,0.7) 100%)", boxShadow: "0 4px 14px rgba(92,79,246,0.25)" } : undefined}
+            >
+              <div className="flex items-center gap-2.5">
+                <span className={`flex h-6 w-6 items-center justify-center rounded-lg shrink-0 ${commandView === "mission" ? "bg-white/20" : "bg-violet-500/20"}`}>
+                  <SparkleIcon />
+                </span>
+                <span className="text-sm font-bold flex-1 text-left">Today&apos;s Mission</span>
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black shrink-0 ${commandView === "mission" ? "bg-white/25 text-white" : "bg-white/10 text-zinc-400"}`}>
+                  {missionCount}
+                </span>
+              </div>
+            </button>
+          </div>
 
-        {/* Nav: AI Tools */}
-        <div className="px-4 flex-1 overflow-y-auto">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-2 px-1">AI Tools</p>
-          <nav className="space-y-0.5">
-            <Link href="/inbox/analyze" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all" style={{ background: "linear-gradient(135deg,rgba(92,79,246,0.18) 0%,rgba(124,58,237,0.12) 100%)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}>
-              <span style={{ color: "#a78bfa" }}>
-                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
-              </span>
-              <span className="font-bold">Analyze</span>
-              <span className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-md" style={{ background: "rgba(139,92,246,0.25)", color: "#c4b5fd" }}>NEW</span>
-            </Link>
-            <Link href="/inbox/smart-digest" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
-              <span className="text-zinc-600">
-                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44l-1.74-9.7A2.5 2.5 0 0 1 7.76 6.7L9.5 6"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44l1.74-9.7a2.5 2.5 0 0 0-1.96-2.86L14.5 6"/></svg>
-              </span>
-              Smart Digest
-            </Link>
-            <Link href="/inbox/leads" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
-              <span className="text-zinc-600"><SparkleIcon /></span>
-              Lead Intelligence
-            </Link>
-            <Link href="/inbox/followups" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
-              <span className="text-zinc-600"><BellIcon /></span>
-              Follow-Ups
-            </Link>
-            <Link href="/inbox/health" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
-              <span className="text-zinc-600">
-                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-              </span>
-              Inbox Health
-            </Link>
-          </nav>
-        </div>
+          {/* Nav: Mailbox */}
+          <div className="px-4 mb-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-2 px-1">Mailbox</p>
+            <nav className="space-y-0.5">
+              {NAV_ITEMS.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => switchFolder(item.id)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                    folder === item.id
+                      ? "bg-white/10 text-white"
+                      : "text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200"
+                  }`}
+                >
+                  <span className={`transition-colors ${folder === item.id ? "text-violet-400" : "text-zinc-600"}`}>{item.icon}</span>
+                  <span className="flex-1 text-left">{item.label}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Nav: AI Tools */}
+          <div className="px-4 pb-3">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-2 px-1">AI Tools</p>
+            <nav className="space-y-0.5">
+              <Link href="/inbox/analyze" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all" style={{ background: "linear-gradient(135deg,rgba(92,79,246,0.18) 0%,rgba(124,58,237,0.12) 100%)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}>
+                <span style={{ color: "#a78bfa" }}>
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
+                </span>
+                <span className="font-bold">Analyze</span>
+                <span className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-md" style={{ background: "rgba(139,92,246,0.25)", color: "#c4b5fd" }}>NEW</span>
+              </Link>
+              <Link href="/inbox/smart-digest" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
+                <span className="text-zinc-600">
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44l-1.74-9.7A2.5 2.5 0 0 1 7.76 6.7L9.5 6"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44l1.74-9.7a2.5 2.5 0 0 0-1.96-2.86L14.5 6"/></svg>
+                </span>
+                Smart Digest
+              </Link>
+              <Link href="/inbox/leads" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
+                <span className="text-zinc-600"><SparkleIcon /></span>
+                Lead Intelligence
+              </Link>
+              <Link href="/inbox/followups" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
+                <span className="text-zinc-600"><BellIcon /></span>
+                Follow-Ups
+              </Link>
+              <Link href="/inbox/health" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
+                <span className="text-zinc-600">
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                </span>
+                Inbox Health
+              </Link>
+            </nav>
+          </div>
+
+        </div>{/* end scrollable middle */}
 
         {/* Bottom — user + settings */}
         <div className="px-4 pb-4 pt-3 border-t border-white/[0.06] shrink-0">
