@@ -398,7 +398,7 @@ export default function InboxDashboard() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [aiSearch, setAiSearch] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [commandView, setCommandView] = useState<CommandView>("inbox");
   const [priorityFilter, setPriorityFilter] = useState<PriorityCategory | "All">("All");
   const [prioritySectionsOpen, setPrioritySectionsOpen] = useState<Record<"important" | "medium" | "low", boolean>>({ important: true, medium: false, low: false });
@@ -445,6 +445,28 @@ export default function InboxDashboard() {
   const [scheduledEmails, setScheduledEmails] = useState<ScheduledEmailItem[]>([]);
 
   const [mobileView, setMobileView] = useState<"list" | "email">("list");
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartXRef.current;
+    const dy = e.changedTouches[0].clientY - touchStartYRef.current;
+    if (Math.abs(dx) < Math.abs(dy) * 1.2) { touchStartXRef.current = null; touchStartYRef.current = null; return; }
+    if (dx > 72) {
+      if (!sidebarOpen && mobileView === "list") setSidebarOpen(true);
+      else if (mobileView === "email") { setSelectedEmail(null); setMobileView("list"); }
+    } else if (dx < -72) {
+      if (sidebarOpen) setSidebarOpen(false);
+    }
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+  }
 
   const [followUpDetection, setFollowUpDetection] = useState<{
     needsFollowUp: boolean;
@@ -513,6 +535,12 @@ export default function InboxDashboard() {
     });
     return () => unsub();
   }, [router]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setSidebarOpen(window.innerWidth >= 1024);
+    }
+  }, []);
 
   const getToken = useCallback(async () => {
     if (!user) return "";
@@ -1423,6 +1451,7 @@ export default function InboxDashboard() {
     setSearch("");
     setNewEmailsBanner(0);
     setNewEmailItems([]);
+    if (typeof window !== "undefined" && window.innerWidth < 1024) setSidebarOpen(false);
   }
 
   function switchGmailCategory(cat: GmailCategory) {
@@ -1445,6 +1474,7 @@ export default function InboxDashboard() {
     setSelectedEmail(null);
     setMobileView("list");
     setMissionBrief("");
+    if (typeof window !== "undefined" && window.innerWidth < 1024) setSidebarOpen(false);
     if (folder !== "inbox") {
       setFolder("inbox");
       setGmailCategory("primary");
@@ -1514,8 +1544,23 @@ export default function InboxDashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-white text-gray-800 font-sans">
+      {/* ── Mobile sidebar backdrop ──────────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* ── Sidebar ─────────────────────────────────────────────────── */}
-      <aside className={`${sidebarOpen ? "w-[260px]" : "w-0 overflow-hidden"} transition-all duration-300 shrink-0 flex flex-col text-white overflow-hidden`} style={{ background: "linear-gradient(180deg,#0d0b1f 0%,#12112c 100%)" }}>
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 flex flex-col text-white transition-all duration-300 ease-in-out w-[260px]
+          lg:static lg:inset-auto lg:z-auto lg:shrink-0
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:w-0 lg:overflow-hidden"}
+        `}
+        style={{ background: "linear-gradient(180deg,#0d0b1f 0%,#12112c 100%)" }}
+      >
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
           <Link href="/" className="flex items-center gap-3 min-w-0">
@@ -1651,17 +1696,30 @@ export default function InboxDashboard() {
       </aside>
 
       {/* ── Main area ───────────────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div
+        className="flex flex-1 flex-col overflow-hidden min-w-0"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {/* Top bar — always visible */}
-        {/* Top bar — always visible */}
-        <header className="flex items-center gap-3 border-b border-gray-100 px-4 py-3 shrink-0 bg-white" style={{ boxShadow: "0 1px 0 0 #f0f0f0" }}>
+        <header className="flex items-center gap-2 sm:gap-3 border-b border-gray-100 px-3 sm:px-4 py-2.5 sm:py-3 shrink-0 bg-white" style={{ boxShadow: "0 1px 0 0 #f0f0f0" }}>
           <button onClick={() => setSidebarOpen(o => !o)} className="p-2 rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-all shrink-0">
             <MenuIcon />
           </button>
 
+          {/* Mobile: back button when viewing email */}
+          {mobileView === "email" && selectedEmail && (
+            <button
+              onClick={() => { setSelectedEmail(null); setMobileView("list"); }}
+              className="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 transition shrink-0"
+            >
+              <BackArrowIcon />
+            </button>
+          )}
+
           {/* Search */}
-          <div className="flex-1 max-w-lg">
-            <div className="flex items-center gap-2.5 rounded-xl border border-gray-200/80 bg-gray-50 px-3.5 py-2 transition-all focus-within:border-violet-300 focus-within:bg-white focus-within:shadow-sm">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 rounded-xl border border-gray-200/80 bg-gray-50 px-3 py-2 transition-all focus-within:border-violet-300 focus-within:bg-white focus-within:shadow-sm">
               <span className="text-gray-400 shrink-0"><SearchIcon /></span>
               <input
                 value={search}
@@ -1674,7 +1732,7 @@ export default function InboxDashboard() {
           </div>
 
           {/* AI toggle + avatar */}
-          <div className="flex items-center gap-3 ml-auto shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <label className="hidden sm:flex items-center gap-1.5 cursor-pointer select-none">
               <input type="checkbox" checked={aiSearch} onChange={e => setAiSearch(e.target.checked)} className="accent-indigo-600 w-3.5 h-3.5" />
               <span className="text-xs text-gray-500 font-medium">AI Search</span>
@@ -2012,8 +2070,7 @@ export default function InboxDashboard() {
           )}
 
           {/* ── Email list panel ─────────────────────────────────────── */}
-          {/* ── Email list panel ─────────────────────────────────────── */}
-          <div className={`${commandView === "mission" ? "hidden" : (selectedEmail ? "hidden md:flex" : "flex")} md:flex w-full md:w-[340px] lg:w-[380px] shrink-0 flex-col border-r border-gray-100 bg-white overflow-hidden`}>
+          <div className={`${commandView === "mission" ? "hidden" : (mobileView === "email" ? "hidden lg:flex" : "flex")} lg:flex w-full lg:w-[340px] xl:w-[380px] shrink-0 flex-col border-r border-gray-100 bg-white overflow-hidden`}>
             {/* List header */}
             <div className="border-b border-gray-100 bg-white shrink-0">
               {/* Title + toolbar */}
@@ -2628,14 +2685,15 @@ export default function InboxDashboard() {
           </div>
 
           {/* ── Reading pane ─────────────────────────────────────────── */}
-          <div className={`${commandView === "mission" ? "hidden" : (selectedEmail ? "flex" : "hidden md:flex")} flex-1 flex-col overflow-hidden bg-white`}>
+          <div className={`${commandView === "mission" ? "hidden" : (mobileView === "list" ? "hidden lg:flex" : "flex")} flex-1 flex-col overflow-hidden bg-white min-w-0`}>
             {!selectedEmail ? (
-              <div className="flex flex-1 items-center justify-center">
-                <div className="text-center">
-                  <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center">
-                    <InboxIcon />
+              <div className="flex flex-1 items-center justify-center bg-gray-50/50">
+                <div className="text-center px-8 max-w-xs">
+                  <div className="mx-auto mb-5 w-20 h-20 rounded-3xl flex items-center justify-center text-violet-400" style={{ background: "linear-gradient(135deg,#f0eeff 0%,#e8e0ff 100%)", boxShadow: "0 8px 32px rgba(92,79,246,0.12)" }}>
+                    <svg className="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                   </div>
-                  <p className="text-sm text-gray-400">Select an email to read</p>
+                  <p className="text-base font-bold text-gray-700 mb-1.5">No email selected</p>
+                  <p className="text-sm text-gray-400 leading-relaxed">Choose an email from the list to read it here, or swipe right from the list to open the sidebar.</p>
                 </div>
               </div>
             ) : (
@@ -3069,8 +3127,20 @@ export default function InboxDashboard() {
         </div>
       </div>
 
+      {/* ── Mobile FAB compose ──────────────────────────────────────── */}
+      {!composeOpen && mobileView !== "email" && commandView !== "mission" && (
+        <button
+          onClick={openCompose}
+          className="lg:hidden fixed bottom-6 right-5 z-40 flex items-center gap-2 rounded-2xl py-3.5 px-5 text-sm font-bold text-white shadow-2xl transition-all active:scale-95"
+          style={{ background: "linear-gradient(135deg,#5c4ff6 0%,#7c3aed 100%)", boxShadow: "0 6px 24px rgba(92,79,246,0.45)" }}
+        >
+          <ComposeIcon />
+          Compose
+        </button>
+      )}
+
       {composeSuccess && (
-        <div className={`fixed bottom-5 right-5 z-50 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-2xl bg-white flex items-center gap-2 max-w-sm ${
+        <div className={`fixed bottom-20 lg:bottom-5 right-5 z-50 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-2xl bg-white flex items-center gap-2 max-w-sm ${
           composeSuccess.startsWith("Permission") || composeSuccess.startsWith("Error")
             ? "border-red-200 text-red-700"
             : composeSuccess.startsWith("Message scheduled")
