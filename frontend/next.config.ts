@@ -69,6 +69,10 @@ const nextConfig: NextConfig = {
               destination: `${BACKEND_URL}/v1/:path*`,
             },
             {
+              source: "/inbox/:path*",
+              destination: `${BACKEND_URL}/inbox/:path*`,
+            },
+            {
               source: "/health",
               destination: `${BACKEND_URL}/health`,
             },

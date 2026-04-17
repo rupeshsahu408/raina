@@ -42,6 +42,7 @@ export default function ExploreOverviewPage() {
   const [authReady, setAuthReady] = useState(false);
   const [data, setData] = useState<OverviewData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -56,14 +57,23 @@ export default function ExploreOverviewPage() {
   const fetchOverview = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setError(null);
     try {
       const token = await user.getIdToken();
       const res = await fetch(`${API}/inbox/explore/overview`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) setData(await res.json());
-    } catch {}
-    finally { setLoading(false); }
+      if (res.ok) {
+        setData(await res.json());
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? `Server error (${res.status})`);
+      }
+    } catch (err: any) {
+      setError("Unable to reach server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
 
   useEffect(() => {
@@ -102,6 +112,15 @@ export default function ExploreOverviewPage() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Error banner */}
+        {error && (
+          <div className="mb-6 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <span className="shrink-0 text-base">⚠️</span>
+            <span className="flex-1">{error}</span>
+            <button onClick={fetchOverview} className="shrink-0 font-semibold underline hover:no-underline">Retry</button>
+          </div>
+        )}
+
         {/* Hero total */}
         <div className="mb-8 text-center">
           <div className="inline-flex flex-col items-center gap-2 rounded-[2rem] border border-violet-100 bg-white px-12 py-8 shadow-sm">

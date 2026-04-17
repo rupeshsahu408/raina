@@ -16,6 +16,7 @@ interface EmailItem {
   priorityScore: number; priorityReason: string; suggestedAction: string;
   riskLevel: "High" | "Medium" | "Low"; bestTone: string;
   isUnread: boolean; isStarred: boolean; aiRescued?: boolean;
+  isComposeOnly?: boolean;
 }
 interface ThreadMessage {
   id: string; subject: string; from: string; to?: string; cc?: string;
@@ -101,6 +102,10 @@ function priorityDot(cat: PriorityCategory): string {
   return map[cat] ?? "bg-gray-300";
 }
 
+function isComposeOnlyThread(threadId: string): boolean {
+  return !threadId || threadId.startsWith("compose-");
+}
+
 function emailFrameDoc(msg: ThreadMessage, fallback: string): string {
   const content = msg.bodyHtml?.trim() || `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#202124;padding:0 0 18px">${(msg.bodyText || msg.body || fallback).replace(/\n/g, "<br>")}</div>`;
   return `<!doctype html><html><head><meta charset="utf-8"><base target="_blank"><style>html,body{margin:0;padding:0;background:#fff;color:#202124;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6}body{padding:2px 0 18px;overflow-wrap:anywhere}img{max-width:100%!important;height:auto!important}a{color:#1a73e8}hr{border:0;border-top:1px solid #e8eaed;margin:18px 0}p{margin:0 0 12px}blockquote{margin:12px 0 12px 12px;padding-left:12px;border-left:3px solid #dadce0;color:#5f6368}</style></head><body>${content}</body></html>`;
@@ -127,6 +132,7 @@ export default function CategoryPage() {
   const [authReady, setAuthReady] = useState(false);
   const [emails, setEmails] = useState<EmailItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -138,6 +144,7 @@ export default function CategoryPage() {
   const [selectedEmail, setSelectedEmail] = useState<EmailItem | null>(null);
   const [thread, setThread] = useState<ThreadMessage[]>([]);
   const [threadLoading, setThreadLoading] = useState(false);
+  const [threadError, setThreadError] = useState<string | null>(null);
 
   const [replyOpen, setReplyOpen] = useState(false);
   const [replyTone, setReplyTone] = useState("Formal");
@@ -149,6 +156,11 @@ export default function CategoryPage() {
   const [replyError, setReplyError] = useState("");
 
   const requestRef = useRef(0);
+  const nextPageTokenRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    nextPageTokenRef.current = nextPageToken;
+  }, [nextPageToken]);
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -166,58 +178,88 @@ export default function CategoryPage() {
 
   const loadEmails = useCallback(async (append = false) => {
     if (!user) return;
-    if (!append) { setLoading(true); setEmails([]); }
+    if (!append) { setLoading(true); setEmails([]); setError(null); setNextPageToken(null); }
     else setLoadingMore(true);
     const token = await getToken();
     try {
-      // "Waiting for Reply" uses its own dedicated endpoint backed by the FollowUp database
+      // "Waiting for Reply" uses its own dedicated endpoint
       if (category === "waiting") {
         const res = await fetch(`${API}/inbox/explore/waiting`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           const data = await res.json();
+          const msgs = (data.messages ?? []).map((m: any) => ({
+            ...m,
+            isComposeOnly: isComposeOnlyThread(m.threadId),
+          }));
+          setEmails(msgs);
+        } else {
+          const body = await res.json().catch(() => ({}));
+          setError(body.error ?? `Failed to load emails (${res.status})`);
+        }
+        setNextPageToken(null);
+        return;
+      }
+
+      // Hot / Warm / Cold leads — use dedicated backend endpoint
+      if (category === "hot" || category === "warm" || category === "cold") {
+        const res = await fetch(`${API}/inbox/explore/leads?type=${category}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
           setEmails(data.messages ?? []);
+        } else {
+          const body = await res.json().catch(() => ({}));
+          setError(body.error ?? `Failed to load emails (${res.status})`);
         }
         setNextPageToken(null);
         return;
       }
 
       const folder = meta.folder;
-      const pageToken = append && nextPageToken ? `&pageToken=${nextPageToken}` : "";
-      const res = await fetch(`${API}/inbox/messages?folder=${folder}&maxResults=50${pageToken}`, {
+      const currentToken = append ? nextPageTokenRef.current : null;
+      const pageParam = currentToken ? `&pageToken=${currentToken}` : "";
+      const res = await fetch(`${API}/inbox/messages?folder=${folder}&maxResults=50${pageParam}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const data = await res.json();
-        let msgs: EmailItem[] = data.messages ?? [];
-
-        // Hot/Warm/Cold leads — filter the primary inbox emails client-side
-        if (category === "hot") {
-          msgs = msgs.filter(m => m.priorityCategory === "High-Value Lead" && m.isUnread);
-        } else if (category === "warm") {
-          msgs = msgs.filter(m => (m.intent === "Lead" || m.priorityCategory === "High-Value Lead") && !m.isUnread);
-        } else if (category === "cold") {
-          msgs = msgs.filter(m => m.intent === "Lead" && m.priorityCategory !== "High-Value Lead");
-        }
-
+        const msgs: EmailItem[] = data.messages ?? [];
         setEmails(prev => append ? [...prev, ...msgs] : msgs);
         setNextPageToken(data.nextPageToken ?? null);
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setError(body.error ?? `Failed to load emails (${res.status})`);
       }
-    } catch {}
-    finally { setLoading(false); setLoadingMore(false); }
-  }, [user, getToken, meta.folder, category, nextPageToken]);
+    } catch {
+      setError("Unable to reach server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [user, getToken, meta.folder, category]);
 
   useEffect(() => {
     if (authReady && user) loadEmails();
-  }, [authReady, user]);
+  }, [authReady, user, loadEmails]);
 
   const openEmail = useCallback(async (email: EmailItem) => {
     const rid = ++requestRef.current;
     setSelectedEmail({ ...email, isUnread: false });
     setEmails(prev => prev.map(e => e.id === email.id ? { ...e, isUnread: false } : e));
     setThread([]); setReplyOpen(false); setReplyDraft(""); setReplyEditing("");
-    setReplySent(false); setReplyError(""); setThreadLoading(true);
+    setReplySent(false); setReplyError(""); setThreadError(null);
+
+    // Compose-only waiting items have no real Gmail thread — show placeholder
+    if (email.isComposeOnly || isComposeOnlyThread(email.threadId)) {
+      setThreadLoading(false);
+      setThreadError("This email was tracked locally and has no Gmail thread to display.");
+      return;
+    }
+
+    setThreadLoading(true);
     const token = await getToken();
     if (email.isUnread) {
       fetch(`${API}/inbox/mark-read/${email.id}`, { method: "POST", headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
@@ -227,9 +269,15 @@ export default function CategoryPage() {
       if (res.ok && requestRef.current === rid) {
         const data = await res.json();
         setThread(data.messages ?? []);
+      } else if (requestRef.current === rid) {
+        const body = await res.json().catch(() => ({}));
+        setThreadError(body.error ?? "Failed to load thread.");
       }
-    } catch {}
-    finally { if (requestRef.current === rid) setThreadLoading(false); }
+    } catch {
+      if (requestRef.current === rid) setThreadError("Unable to load thread. Check your connection.");
+    } finally {
+      if (requestRef.current === rid) setThreadLoading(false);
+    }
   }, [getToken]);
 
   const handleStar = useCallback(async (email: EmailItem, e: React.MouseEvent) => {
@@ -261,7 +309,7 @@ export default function CategoryPage() {
     if (!selectedEmail || !thread.length) return;
     setReplyGenerating(true); setReplyDraft(""); setReplyEditing(""); setReplyError("");
     const token = await getToken();
-    const threadText = thread.map(m => `From: ${m.from}\n${m.body}`).join("\n\n---\n\n");
+    const threadText = thread.map(m => `From: ${m.from}\n${m.bodyText || m.body}`).join("\n\n---\n\n");
     try {
       const res = await fetch(`${API}/inbox/reply/generate`, {
         method: "POST",
@@ -270,7 +318,7 @@ export default function CategoryPage() {
       });
       const data = await res.json();
       if (res.ok && data.reply) { setReplyDraft(data.reply); setReplyEditing(data.reply); }
-      else setReplyError("Failed to generate reply");
+      else setReplyError(data.error ?? "Failed to generate reply");
     } catch { setReplyError("Failed to generate reply"); }
     finally { setReplyGenerating(false); }
   }, [selectedEmail, thread, getToken, replyTone]);
@@ -291,8 +339,11 @@ export default function CategoryPage() {
         body: form,
       });
       if (res.ok) { setReplySent(true); setReplyOpen(false); }
-      else setReplyError("Failed to send");
-    } catch { setReplyError("Failed to send"); }
+      else {
+        const body = await res.json().catch(() => ({}));
+        setReplyError(body.error ?? "Failed to send");
+      }
+    } catch { setReplyError("Failed to send. Check your connection."); }
     finally { setReplySending(false); }
   }, [selectedEmail, replyEditing, getToken]);
 
@@ -416,6 +467,15 @@ export default function CategoryPage() {
           </div>
         </div>
 
+        {/* Error banner */}
+        {error && (
+          <div className="mx-4 mt-3 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 shrink-0">
+            <span className="shrink-0 text-base">⚠️</span>
+            <span className="flex-1">{error}</span>
+            <button onClick={() => loadEmails()} className="shrink-0 font-semibold underline hover:no-underline">Retry</button>
+          </div>
+        )}
+
         {/* Read/Unread tabs (no-filter categories) */}
         {showNoFilters && (
           <div className="flex gap-1 px-4 py-2.5 bg-white border-b border-gray-100 shrink-0">
@@ -453,7 +513,7 @@ export default function CategoryPage() {
                     </div>
                   </div>
                 ))
-              ) : filteredEmails.length === 0 ? (
+              ) : filteredEmails.length === 0 && !error ? (
                 <div className="py-16 text-center text-sm text-gray-400">No emails found</div>
               ) : (
                 filteredEmails.map(email => (
@@ -475,8 +535,12 @@ export default function CategoryPage() {
                           <span className="text-[10px] text-gray-400 group-hover:hidden">{formatDate(email.date)}</span>
                           <div className="hidden group-hover:flex items-center gap-0.5">
                             <button onClick={e => handleStar(email, e)} className={`p-0.5 rounded transition ${email.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}><StarIcon filled={email.isStarred}/></button>
-                            <button onClick={e => handleArchive(email, e)} className="p-0.5 rounded text-gray-300 hover:text-indigo-500 transition"><ArchiveIcon/></button>
-                            <button onClick={e => handleTrash(email, e)} className="p-0.5 rounded text-gray-300 hover:text-red-500 transition"><TrashIcon/></button>
+                            {!email.isComposeOnly && (
+                              <>
+                                <button onClick={e => handleArchive(email, e)} className="p-0.5 rounded text-gray-300 hover:text-indigo-500 transition"><ArchiveIcon/></button>
+                                <button onClick={e => handleTrash(email, e)} className="p-0.5 rounded text-gray-300 hover:text-red-500 transition"><TrashIcon/></button>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -485,6 +549,9 @@ export default function CategoryPage() {
                           <span className={`h-1.5 w-1.5 rounded-full ${priorityDot(email.priorityCategory)}`}/>
                           {email.priorityCategory}
                         </span>
+                        {email.isComposeOnly && (
+                          <span className="inline-flex items-center rounded-full border border-orange-200 bg-orange-50 px-1.5 py-px text-[9px] font-black text-orange-600">tracked only</span>
+                        )}
                       </div>
                       <p className={`text-xs truncate ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>{email.subject}</p>
                       <p className="text-[11px] text-gray-400 truncate mt-0.5">{email.snippet}</p>
@@ -512,11 +579,13 @@ export default function CategoryPage() {
                   <h2 className="text-sm font-bold text-gray-900 truncate">{selectedEmail.subject}</h2>
                   <p className="text-xs text-gray-500">from {selectedEmail.from}</p>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={e => handleStar(selectedEmail, e)} className={`p-1.5 rounded-lg transition ${selectedEmail.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}><StarIcon filled={selectedEmail.isStarred}/></button>
-                  <button onClick={e => handleArchive(selectedEmail, e)} className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition"><ArchiveIcon/></button>
-                  <button onClick={e => handleTrash(selectedEmail, e)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition"><TrashIcon/></button>
-                </div>
+                {!selectedEmail.isComposeOnly && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button onClick={e => handleStar(selectedEmail, e)} className={`p-1.5 rounded-lg transition ${selectedEmail.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}><StarIcon filled={selectedEmail.isStarred}/></button>
+                    <button onClick={e => handleArchive(selectedEmail, e)} className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition"><ArchiveIcon/></button>
+                    <button onClick={e => handleTrash(selectedEmail, e)} className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition"><TrashIcon/></button>
+                  </div>
+                )}
               </div>
 
               {/* Priority & intent badges */}
@@ -537,8 +606,13 @@ export default function CategoryPage() {
                   <div className="flex items-center justify-center py-12">
                     <div className="w-6 h-6 rounded-full border-2 border-violet-300 border-t-violet-600 animate-spin"/>
                   </div>
+                ) : threadError ? (
+                  <div className="flex flex-col items-center gap-3 py-12 text-center">
+                    <span className="text-3xl">📭</span>
+                    <p className="text-sm text-gray-500">{threadError}</p>
+                  </div>
                 ) : thread.length === 0 ? (
-                  <div className="py-8 text-center text-sm text-gray-400">Loading thread…</div>
+                  <div className="py-8 text-center text-sm text-gray-400">No messages in thread</div>
                 ) : (
                   thread.map((msg, i) => (
                     <div key={msg.id} className={`rounded-2xl border overflow-hidden ${i === thread.length - 1 ? "border-gray-200 shadow-sm" : "border-gray-100"}`}>
@@ -555,7 +629,7 @@ export default function CategoryPage() {
                         <iframe
                           title={`msg-${msg.id}`}
                           srcDoc={emailFrameDoc(msg, selectedEmail.snippet)}
-                          sandbox=""
+                          sandbox="allow-same-origin"
                           referrerPolicy="no-referrer"
                           className="h-[55vh] min-h-[260px] w-full rounded-b-2xl border-0"
                         />
@@ -566,7 +640,7 @@ export default function CategoryPage() {
               </div>
 
               {/* Reply Panel */}
-              {category !== "sent" && category !== "drafts" && category !== "trash" && (
+              {!selectedEmail.isComposeOnly && category !== "sent" && category !== "drafts" && category !== "trash" && (
                 <div className="shrink-0 border-t border-gray-100 bg-gray-50">
                   {!replyOpen ? (
                     <div className="px-5 py-3 flex items-center gap-2">

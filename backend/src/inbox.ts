@@ -2231,6 +2231,95 @@ inboxRouter.get("/explore/waiting", async (req, res) => {
   }
 });
 
+// GET /inbox/explore/leads?type=hot|warm|cold — backend-driven lead classification
+inboxRouter.get("/explore/leads", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
+  const type = (req.query.type as string) || "hot";
+  if (!["hot", "warm", "cold"].includes(type)) {
+    return res.status(400).json({ error: "type must be hot, warm, or cold" });
+  }
+
+  try {
+    const auth = await getAuthenticatedClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+
+    const listRes = await gmail.users.messages.list({
+      userId: "me",
+      maxResults: 100,
+      labelIds: ["INBOX"],
+      q: "-category:promotions -category:social -category:updates",
+    });
+    const messageIds = listRes.data.messages ?? [];
+
+    const allMessages = (await Promise.all(
+      messageIds.slice(0, 100).map(async (m) => {
+        try {
+          const msg = await gmail.users.messages.get({
+            userId: "me",
+            id: m.id!,
+            format: "metadata",
+            metadataHeaders: ["From", "Subject", "Date"],
+          });
+          const headers = msg.data.payload?.headers ?? [];
+          const subject = extractHeader(headers, "Subject") || "(no subject)";
+          const from = extractHeader(headers, "From");
+          const date = extractHeader(headers, "Date");
+          const snippet = msg.data.snippet ?? "";
+          const threadId = msg.data.threadId ?? m.id!;
+          const labelIds = msg.data.labelIds ?? [];
+          const isUnread = labelIds.includes("UNREAD");
+          const isStarred = labelIds.includes("STARRED");
+          const intent = detectIntent(subject, snippet);
+          const priority = inferPriority(subject, snippet, intent, isUnread);
+          const gmailCategory = detectGmailCategory(labelIds);
+          const aiRescued = (gmailCategory === "promotions" || gmailCategory === "social") && priority.priorityScore >= 70;
+          const dateMs = date ? new Date(date).getTime() : 0;
+          const daysOld = dateMs ? Math.floor((Date.now() - dateMs) / 86_400_000) : 99;
+          const isLead = intent === "Lead" || priority.priorityCategory === "High-Value Lead";
+          return {
+            id: m.id,
+            threadId,
+            subject,
+            from,
+            date,
+            snippet,
+            summary: snippet.slice(0, 120),
+            intent,
+            priorityCategory: priority.priorityCategory,
+            priorityScore: priority.priorityScore,
+            priorityReason: priority.priorityReason,
+            suggestedAction: priority.suggestedAction,
+            riskLevel: priority.riskLevel,
+            bestTone: priority.bestTone,
+            isUnread,
+            isStarred,
+            gmailCategory,
+            aiRescued,
+            daysOld,
+            isLead,
+          };
+        } catch { return null; }
+      })
+    )).filter(Boolean) as any[];
+
+    let filtered: any[];
+    if (type === "hot") {
+      filtered = allMessages.filter(m => m.priorityCategory === "High-Value Lead" && m.daysOld <= 7);
+    } else if (type === "warm") {
+      filtered = allMessages.filter(m => m.isLead && !(m.priorityCategory === "High-Value Lead" && m.daysOld <= 7) && m.daysOld <= 21);
+    } else {
+      filtered = allMessages.filter(m => m.isLead && m.daysOld > 21);
+    }
+
+    return res.json({ messages: filtered, nextPageToken: null });
+  } catch (err: any) {
+    console.error("[inbox/explore/leads]", err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /inbox/analyze — comprehensive Gmail analytics
 inboxRouter.get("/analyze", async (req, res) => {
   const uid = (req as any).user?.uid;
