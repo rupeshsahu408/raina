@@ -1,0 +1,390 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { onAuthStateChanged } from "firebase/auth";
+import { getFirebaseAuth } from "@/lib/firebaseClient";
+import Link from "next/link";
+
+const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+
+function ChevronLeftIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+function SparkIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
+const STEPS = ["Role Basics", "Skills & Scope", "Compensation", "Review & Generate"];
+const SENIORITY_OPTIONS = ["Intern", "Junior", "Mid-level", "Senior", "Lead", "Manager", "Director", "VP"];
+const WORK_MODES = [
+  { value: "remote", label: "Remote" },
+  { value: "onsite", label: "On-site" },
+  { value: "hybrid", label: "Hybrid" },
+];
+const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD"];
+
+type FormData = {
+  title: string;
+  department: string;
+  seniority: string;
+  location: string;
+  workMode: string;
+  responsibilities: string;
+  mustHaveSkills: string;
+  niceToHaveSkills: string;
+  salaryMin: string;
+  salaryMax: string;
+  salaryCurrency: string;
+};
+
+const DEFAULT: FormData = {
+  title: "", department: "", seniority: "Mid-level", location: "",
+  workMode: "remote", responsibilities: "", mustHaveSkills: "",
+  niceToHaveSkills: "", salaryMin: "", salaryMax: "", salaryCurrency: "INR",
+};
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500">{children}</span>;
+}
+
+function Input({ value, onChange, placeholder, type = "text" }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
+}) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-indigo-500/30"
+    />
+  );
+}
+
+function Textarea({ value, onChange, placeholder, rows = 4 }: {
+  value: string; onChange: (v: string) => void; placeholder?: string; rows?: number;
+}) {
+  return (
+    <textarea
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      placeholder={placeholder}
+      rows={rows}
+      className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-indigo-500/30 resize-none"
+    />
+  );
+}
+
+export default function NewJobPage() {
+  const router = useRouter();
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState<FormData>(DEFAULT);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const auth = getFirebaseAuth();
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (u) setToken(await u.getIdToken());
+      else router.push("/login");
+    });
+    return () => unsub();
+  }, [router]);
+
+  function update(key: keyof FormData) {
+    return (val: string) => setForm(prev => ({ ...prev, [key]: val }));
+  }
+
+  function canProceed() {
+    if (step === 0) return form.title.trim().length > 0 && form.location.trim().length > 0;
+    if (step === 1) return form.responsibilities.trim().length > 10 && form.mustHaveSkills.trim().length > 5;
+    return true;
+  }
+
+  async function handleSubmit() {
+    if (!token) return;
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${API}/recruit/jobs`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          ...form,
+          salaryMin: form.salaryMin ? Number(form.salaryMin) : undefined,
+          salaryMax: form.salaryMax ? Number(form.salaryMax) : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create job.");
+      router.push(`/recruit/jobs/${data.job._id}`);
+    } catch (e: any) {
+      setError(e.message);
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-[#050506] text-zinc-100">
+      <div className="fixed inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(99,102,241,0.18),transparent_36%),linear-gradient(180deg,#050506,#07070a)]" />
+
+      <header className="relative z-10 border-b border-white/[0.07] bg-black/30 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-4 sm:px-6">
+          <Link href="/recruit/dashboard" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition">
+            <ChevronLeftIcon /> Dashboard
+          </Link>
+          <span className="text-zinc-700">·</span>
+          <span className="text-xs text-zinc-400 font-medium">New Job Posting</span>
+        </div>
+      </header>
+
+      <main className="relative z-10 mx-auto max-w-3xl px-4 py-10 sm:px-6">
+        <div className="mb-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-400/20 bg-indigo-400/8 px-3 py-1 text-[11px] font-semibold text-indigo-300 mb-4">
+            <SparkIcon /> AI Job Description Generator
+          </div>
+          <h1 className="text-2xl font-semibold text-white sm:text-3xl">Create a New Job Posting</h1>
+          <p className="mt-2 text-sm text-zinc-500">Answer a few questions. The AI generates a full JD and scoring rubric automatically.</p>
+        </div>
+
+        <div className="mb-8 flex items-center gap-2">
+          {STEPS.map((s, i) => (
+            <div key={s} className="flex items-center gap-2 flex-1">
+              <button
+                onClick={() => i < step && setStep(i)}
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
+                  i < step ? "bg-indigo-500 text-white cursor-pointer"
+                  : i === step ? "border-2 border-indigo-500 text-indigo-400"
+                  : "border border-white/10 text-zinc-600"
+                }`}
+              >
+                {i < step ? <CheckIcon /> : i + 1}
+              </button>
+              <span className={`hidden text-xs sm:block truncate ${i === step ? "text-white font-medium" : "text-zinc-600"}`}>{s}</span>
+              {i < STEPS.length - 1 && <div className={`flex-1 h-px ${i < step ? "bg-indigo-500/40" : "bg-white/[0.06]"}`} />}
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-[2rem] border border-white/[0.08] bg-white/[0.03] p-6 sm:p-8">
+          {step === 0 && (
+            <div className="space-y-5">
+              <h2 className="text-base font-semibold text-white mb-6">Role Basics</h2>
+              <div>
+                <FieldLabel>Job Title *</FieldLabel>
+                <Input value={form.title} onChange={update("title")} placeholder="e.g. Senior Frontend Engineer" />
+              </div>
+              <div>
+                <FieldLabel>Department</FieldLabel>
+                <Input value={form.department} onChange={update("department")} placeholder="e.g. Engineering, Marketing, Sales" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <FieldLabel>Seniority Level</FieldLabel>
+                  <select
+                    value={form.seniority}
+                    onChange={e => update("seniority")(e.target.value)}
+                    className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+                  >
+                    {SENIORITY_OPTIONS.map(s => <option key={s} value={s} className="bg-zinc-900">{s}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <FieldLabel>Work Mode</FieldLabel>
+                  <div className="flex gap-2">
+                    {WORK_MODES.map(m => (
+                      <button
+                        key={m.value}
+                        onClick={() => update("workMode")(m.value)}
+                        className={`flex-1 rounded-2xl border py-3 text-xs font-semibold transition ${
+                          form.workMode === m.value
+                            ? "border-indigo-500/50 bg-indigo-500/15 text-indigo-300"
+                            : "border-white/[0.08] bg-white/[0.02] text-zinc-500 hover:text-zinc-300"
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <FieldLabel>Location *</FieldLabel>
+                <Input value={form.location} onChange={update("location")} placeholder="e.g. Bangalore, India or Anywhere" />
+              </div>
+            </div>
+          )}
+
+          {step === 1 && (
+            <div className="space-y-5">
+              <h2 className="text-base font-semibold text-white mb-6">Skills & Responsibilities</h2>
+              <div>
+                <FieldLabel>Key Responsibilities * <span className="text-zinc-600 normal-case font-normal">(what they'll actually do)</span></FieldLabel>
+                <Textarea
+                  rows={5}
+                  value={form.responsibilities}
+                  onChange={update("responsibilities")}
+                  placeholder="e.g. Lead architecture decisions for our React frontend, mentor junior developers, collaborate with design and product to ship new features bi-weekly..."
+                />
+              </div>
+              <div>
+                <FieldLabel>Must-Have Skills * <span className="text-zinc-600 normal-case font-normal">(non-negotiable)</span></FieldLabel>
+                <Textarea
+                  rows={3}
+                  value={form.mustHaveSkills}
+                  onChange={update("mustHaveSkills")}
+                  placeholder="e.g. 4+ years React, TypeScript, REST API experience, strong communication skills..."
+                />
+              </div>
+              <div>
+                <FieldLabel>Nice-to-Have Skills <span className="text-zinc-600 normal-case font-normal">(preferred but not required)</span></FieldLabel>
+                <Textarea
+                  rows={3}
+                  value={form.niceToHaveSkills}
+                  onChange={update("niceToHaveSkills")}
+                  placeholder="e.g. Next.js experience, prior startup experience, familiarity with Figma..."
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-5">
+              <h2 className="text-base font-semibold text-white mb-2">Compensation</h2>
+              <p className="text-xs text-zinc-500 mb-6">Adding a salary range helps attract better-fit candidates and reduces time wasted on mismatched expectations. You can skip this.</p>
+              <div>
+                <FieldLabel>Currency</FieldLabel>
+                <div className="flex flex-wrap gap-2">
+                  {CURRENCIES.map(c => (
+                    <button
+                      key={c}
+                      onClick={() => update("salaryCurrency")(c)}
+                      className={`rounded-xl border px-4 py-2 text-xs font-semibold transition ${
+                        form.salaryCurrency === c
+                          ? "border-indigo-500/50 bg-indigo-500/15 text-indigo-300"
+                          : "border-white/[0.08] text-zinc-500 hover:text-zinc-300"
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <FieldLabel>Minimum (per year)</FieldLabel>
+                  <Input type="number" value={form.salaryMin} onChange={update("salaryMin")} placeholder="e.g. 800000" />
+                </div>
+                <div>
+                  <FieldLabel>Maximum (per year)</FieldLabel>
+                  <Input type="number" value={form.salaryMax} onChange={update("salaryMax")} placeholder="e.g. 1400000" />
+                </div>
+              </div>
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+                <p className="text-xs text-zinc-500">
+                  Salary information is used only by the AI to write better job descriptions. It is not shown publicly unless you paste the generated JD on a job board.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-5">
+              <h2 className="text-base font-semibold text-white mb-6">Review & Generate</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  ["Role", `${form.seniority} ${form.title}`],
+                  ["Department", form.department || "—"],
+                  ["Work Mode", form.workMode],
+                  ["Location", form.location],
+                  ["Salary", form.salaryMin && form.salaryMax ? `${form.salaryCurrency} ${Number(form.salaryMin).toLocaleString()} – ${Number(form.salaryMax).toLocaleString()}` : "Not disclosed"],
+                ].map(([k, v]) => (
+                  <div key={k} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600">{k}</p>
+                    <p className="mt-1 text-sm text-white">{v}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-2">Must-Have Skills</p>
+                <p className="text-sm text-zinc-300 leading-6">{form.mustHaveSkills}</p>
+              </div>
+
+              <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.06] p-4">
+                <div className="flex items-center gap-2 text-indigo-300 mb-2">
+                  <SparkIcon />
+                  <span className="text-xs font-semibold">What the AI will generate</span>
+                </div>
+                <ul className="space-y-1 text-xs text-zinc-400">
+                  <li>✦ Full job description (400–600 words, bias-reduced)</li>
+                  <li>✦ 4–6 criterion scoring rubric with descriptions</li>
+                  <li>✦ Rubric automatically used to score every future candidate</li>
+                </ul>
+              </div>
+
+              {error && (
+                <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">{error}</div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="mt-6 flex items-center justify-between">
+          <button
+            onClick={() => step > 0 ? setStep(s => s - 1) : router.push("/recruit/dashboard")}
+            className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-2.5 text-sm text-zinc-400 transition hover:text-white"
+          >
+            {step === 0 ? "Cancel" : "Back"}
+          </button>
+
+          {step < STEPS.length - 1 ? (
+            <button
+              onClick={() => setStep(s => s + 1)}
+              disabled={!canProceed()}
+              className="rounded-2xl bg-indigo-500 px-7 py-2.5 text-sm font-bold text-white transition hover:bg-indigo-400 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Continue
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="flex items-center gap-2 rounded-2xl bg-indigo-500 px-7 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/25 transition hover:bg-indigo-400 disabled:opacity-60"
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Generating JD...
+                </>
+              ) : (
+                <><SparkIcon /> Generate Job Posting</>
+              )}
+            </button>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}

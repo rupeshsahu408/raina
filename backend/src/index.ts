@@ -8,6 +8,7 @@ import multer from "multer";
 import FormData from "form-data";
 import { ibaraRouter } from "./ibara";
 import { inboxRouter, inboxPublicRouter } from "./inbox";
+import { recruitRouter } from "./recruit";
 import { connectMongo } from "./db";
 import {
   buildBiharSystemPrompt,
@@ -175,6 +176,7 @@ app.use(express.json({ limit: "2mb" }));
 app.use("/api/ibara", ibaraRouter);
 app.use("/inbox", inboxPublicRouter);
 app.use("/inbox", requireFirebaseAuth, inboxRouter);
+app.use("/recruit", requireFirebaseAuth, recruitRouter);
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "evara-backend" });
