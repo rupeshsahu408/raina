@@ -1133,7 +1133,15 @@ export default function InboxDashboard() {
   async function openEmail(email: EmailItem) {
     const requestId = activeThreadRequestRef.current + 1;
     activeThreadRequestRef.current = requestId;
-    setSelectedEmail(email);
+
+    // Immediately mark as read in local state so filters update right away
+    const wasUnread = email.isUnread;
+    const readEmail = { ...email, isUnread: false };
+    setSelectedEmail(readEmail);
+    if (wasUnread) {
+      setEmails(prev => prev.map(e => e.id === email.id ? { ...e, isUnread: false } : e));
+    }
+
     setThreadMessages([]);
     setAiSummary("");
     setSmartReplies([]);
@@ -1155,6 +1163,15 @@ export default function InboxDashboard() {
     setShowFollowUpReason(false);
     setThreadLoading(true);
     const token = await getToken();
+
+    // Fire-and-forget: sync read status to Gmail so it persists across sessions
+    if (wasUnread) {
+      fetch(`${API}/inbox/mark-read/${email.id}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
+
     try {
       const res = await fetch(`${API}/inbox/thread/${email.threadId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -1163,9 +1180,9 @@ export default function InboxDashboard() {
       if (res.ok && activeThreadRequestRef.current === requestId) {
         const messages = data.messages ?? [];
         setThreadMessages(messages);
-        void loadActionPlan(email, messages, token, requestId);
-        void generateSmartReplySuggestions(email, messages, token, requestId);
-        void runFollowUpDetection(email, messages, token, requestId);
+        void loadActionPlan(readEmail, messages, token, requestId);
+        void generateSmartReplySuggestions(readEmail, messages, token, requestId);
+        void runFollowUpDetection(readEmail, messages, token, requestId);
       }
     } catch {}
     finally {

@@ -1197,6 +1197,25 @@ inboxRouter.post("/archive/:messageId", express.json(), async (req, res) => {
   }
 });
 
+// POST /inbox/mark-read/:messageId  — remove UNREAD label (mark as read)
+inboxRouter.post("/mark-read/:messageId", express.json(), async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  const { messageId } = req.params;
+  try {
+    const auth = await getAuthenticatedClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+    await gmail.users.messages.modify({
+      userId: "me",
+      id: messageId,
+      requestBody: { removeLabelIds: ["UNREAD"] },
+    });
+    return res.json({ success: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /inbox/star/:messageId  — toggle star
 inboxRouter.post("/star/:messageId", express.json(), async (req, res) => {
   const uid = (req as any).user?.uid;
