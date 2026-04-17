@@ -263,6 +263,39 @@ export default function ComposeModal({
   const [minimized, setMinimized] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
 
+  // ── Mobile swipe-to-dismiss ──
+  const [dragY, setDragY] = useState(0);
+  const swipeTouchStartY = useRef(0);
+  const swipeTouchCurrentY = useRef(0);
+  const isDraggingHeader = useRef(false);
+
+  function onHeaderTouchStart(e: React.TouchEvent) {
+    swipeTouchStartY.current = e.touches[0].clientY;
+    swipeTouchCurrentY.current = e.touches[0].clientY;
+    isDraggingHeader.current = true;
+  }
+
+  function onHeaderTouchMove(e: React.TouchEvent) {
+    if (!isDraggingHeader.current) return;
+    const dy = e.touches[0].clientY - swipeTouchStartY.current;
+    swipeTouchCurrentY.current = e.touches[0].clientY;
+    if (dy > 0) setDragY(dy);
+  }
+
+  function onHeaderTouchEnd() {
+    isDraggingHeader.current = false;
+    const dy = swipeTouchCurrentY.current - swipeTouchStartY.current;
+    if (dy > 200) {
+      setDragY(0);
+      onClose();
+    } else if (dy > 80) {
+      setDragY(0);
+      setMinimized(true);
+    } else {
+      setDragY(0);
+    }
+  }
+
   // ── Sending / errors ──
   const [sending, setSending] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -840,20 +873,37 @@ export default function ComposeModal({
   const windowClass = fullscreen
     ? "fixed inset-0 z-50 flex flex-col bg-white"
     : minimized
-    ? "fixed bottom-0 right-6 z-50 w-[400px] rounded-t-2xl shadow-2xl border border-gray-200 bg-white overflow-hidden"
-    : "fixed bottom-0 right-6 z-50 flex flex-col bg-white rounded-t-2xl shadow-[0_8px_50px_rgba(0,0,0,0.3)] border border-gray-200 w-[580px] max-w-[calc(100vw-24px)]";
+    ? "fixed bottom-0 inset-x-0 sm:inset-x-auto sm:right-6 z-50 sm:w-[400px] rounded-t-2xl shadow-2xl border border-gray-200 bg-white overflow-hidden"
+    : "fixed bottom-0 inset-x-0 sm:inset-x-auto sm:right-6 z-50 flex flex-col bg-white rounded-t-3xl sm:rounded-t-2xl shadow-[0_-4px_40px_rgba(0,0,0,0.18)] sm:shadow-[0_8px_50px_rgba(0,0,0,0.3)] border border-gray-200 sm:w-[580px]";
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
     <>
-      <div className={windowClass} style={{ maxHeight: fullscreen ? "100vh" : minimized ? "auto" : "90vh" }}>
+      <div
+        className={windowClass}
+        style={{
+          maxHeight: fullscreen ? "100vh" : minimized ? "auto" : "88vh",
+          transform: dragY > 0 ? `translateY(${dragY}px)` : undefined,
+          transition: dragY > 0 ? "none" : "transform 0.25s cubic-bezier(0.32,0.72,0,1)",
+        }}
+      >
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
         <div
-          className="flex items-center justify-between px-4 py-3 bg-[#18163a] text-white shrink-0 cursor-default select-none"
-          style={{ borderRadius: fullscreen ? 0 : "16px 16px 0 0" }}
+          className="flex flex-col bg-[#18163a] text-white shrink-0 select-none"
+          style={{ borderRadius: fullscreen ? 0 : "24px 24px 0 0" }}
+          onTouchStart={onHeaderTouchStart}
+          onTouchMove={onHeaderTouchMove}
+          onTouchEnd={onHeaderTouchEnd}
         >
+          {/* Drag handle — mobile only */}
+          {!fullscreen && (
+            <div className="flex justify-center pt-2.5 pb-1 sm:hidden cursor-grab touch-none">
+              <div className="w-10 h-1 rounded-full bg-white/25" />
+            </div>
+          )}
+          <div className="flex items-center justify-between px-4 pb-3 pt-1 sm:pt-3 cursor-default">
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             <span className="text-sm font-bold">New Message</span>
@@ -911,7 +961,8 @@ export default function ComposeModal({
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </div>
-        </div>
+          </div>{/* end inner header row */}
+        </div>{/* end header wrapper */}
 
         {minimized ? null : (
           <>

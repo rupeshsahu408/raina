@@ -2595,49 +2595,51 @@ export default function InboxDashboard() {
                         <div
                           key={email.id}
                           onClick={() => openEmail(email)}
-                          className={`w-full text-left flex items-start gap-2.5 px-4 py-3 border-b border-gray-100 transition group relative cursor-pointer ${
+                          className={`w-full text-left flex items-start gap-3 px-4 py-3.5 border-b border-gray-100/80 transition-colors group relative cursor-pointer ${
                             selectedEmail?.id === email.id
-                              ? "bg-[#eeebff]"
+                              ? "bg-violet-50/60 border-l-2 border-l-violet-500"
                               : email.isUnread
-                              ? "bg-white hover:bg-[#f8f7ff]"
-                              : "bg-white hover:bg-gray-50"
+                              ? "bg-white hover:bg-violet-50/30"
+                              : "bg-white/80 hover:bg-gray-50/80"
                           }`}
                         >
-                          {email.isUnread && (
-                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r bg-indigo-600" />
+                          {email.isUnread && selectedEmail?.id !== email.id && (
+                            <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-9 rounded-r-full bg-violet-500" />
                           )}
+                          {/* Avatar */}
                           <div
-                            className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center text-white text-xs font-black mt-0.5"
+                            className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center text-white text-[13px] font-black mt-0.5 ring-1 ring-black/5"
                             style={{ background: avatarColor(senderName(email.from)) }}
                           >
                             {senderInitial(email.from)}
                           </div>
                           <div className="flex-1 min-w-0">
+                            {/* Row 1: sender + time */}
                             <div className="flex items-center justify-between gap-1 mb-0.5">
-                              <span className={`text-sm truncate ${email.isUnread ? "font-bold text-gray-900" : "font-medium text-gray-700"}`}>
+                              <span className={`text-[13px] truncate leading-snug ${email.isUnread ? "font-bold text-gray-900" : "font-medium text-gray-600"}`}>
                                 {senderName(email.from)}
                               </span>
                               <div className="flex items-center gap-1 shrink-0">
-                                <span className="text-[11px] text-gray-400 group-hover:hidden">{formatDate(email.date)}</span>
+                                <span className="text-[10px] text-gray-400 tabular-nums group-hover:hidden">{formatDate(email.date)}</span>
                                 <div className="hidden group-hover:flex items-center gap-0.5">
                                   <button
                                     onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
                                     title={email.isStarred ? "Unstar" : "Star"}
-                                    className={`p-1 rounded transition ${email.isStarred ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`}
+                                    className={`p-1 rounded-lg transition ${email.isStarred ? "text-amber-400" : "text-gray-300 hover:text-amber-400"}`}
                                   >
                                     <StarIcon filled={email.isStarred} />
                                   </button>
                                   <button
                                     onClick={e => handleArchive(email, e)}
                                     title="Archive"
-                                    className="p-1 rounded text-gray-400 hover:text-indigo-600 transition"
+                                    className="p-1 rounded-lg text-gray-400 hover:text-violet-600 transition"
                                   >
                                     <ArchiveIcon />
                                   </button>
                                   <button
                                     onClick={e => handleTrash(email, e)}
                                     title="Move to trash"
-                                    className="p-1 rounded text-gray-400 hover:text-red-500 transition"
+                                    className="p-1 rounded-lg text-gray-400 hover:text-red-500 transition"
                                   >
                                     <TrashIcon />
                                   </button>
@@ -2645,32 +2647,35 @@ export default function InboxDashboard() {
                                 {email.isStarred && (
                                   <button
                                     onClick={e => { e.stopPropagation(); toggleStar(email, e); }}
-                                    className="p-0.5 text-yellow-400 group-hover:hidden transition"
+                                    className="p-0.5 text-amber-400 group-hover:hidden transition"
                                   >
                                     <StarIcon filled />
                                   </button>
                                 )}
                               </div>
                             </div>
-                            <div className="mb-1 flex flex-wrap items-center gap-1.5">
-                              <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-black ${style.badge}`}>
-                                <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                            {/* Row 2: subject */}
+                            <p className={`text-[12.5px] truncate leading-snug mb-1 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-500 font-normal"}`}>
+                              {email.subject}
+                            </p>
+                            {/* Row 3: snippet */}
+                            <p className="text-[11.5px] text-gray-400 truncate leading-snug mb-1.5">{email.snippet}</p>
+                            {/* Row 4: badges */}
+                            <div className="flex flex-wrap items-center gap-1">
+                              <span className={`inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9.5px] font-bold ${style.badge}`}>
+                                <span className={`h-1 w-1 rounded-full ${style.dot}`} />
                                 {email.priorityCategory}
                               </span>
-                              <span className="rounded-full bg-gray-50 px-2 py-0.5 text-[10px] font-semibold text-gray-500">{email.intent}</span>
+                              <span className="rounded-full bg-gray-100/80 px-1.5 py-0.5 text-[9.5px] font-medium text-gray-500">{email.intent}</span>
                               {email.aiRescued && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-[10px] font-black text-violet-700">
+                                <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-50 border border-violet-200 px-1.5 py-0.5 text-[9.5px] font-bold text-violet-600">
                                   <SparkleIcon />
-                                  AI Rescued
+                                  AI
                                 </span>
                               )}
                             </div>
-                            <p className={`text-xs truncate mb-0.5 ${email.isUnread ? "font-semibold text-gray-800" : "text-gray-600"}`}>
-                              {email.subject}
-                            </p>
-                            <p className="text-[11px] text-gray-400 truncate">{email.snippet}</p>
                             {commandView === "mission" && (
-                              <p className="mt-1 rounded-lg bg-white/80 px-2 py-1 text-[11px] font-medium text-gray-600 ring-1 ring-gray-100">{email.suggestedAction}</p>
+                              <p className="mt-1.5 rounded-xl bg-amber-50/80 px-2.5 py-1.5 text-[11px] font-medium text-amber-800 border border-amber-100">{email.suggestedAction}</p>
                             )}
                           </div>
                         </div>
@@ -2690,15 +2695,15 @@ export default function InboxDashboard() {
           </div>
 
           {/* ── Reading pane ─────────────────────────────────────────── */}
-          <div className={`${commandView === "mission" ? "hidden" : (mobileView === "list" ? "hidden lg:flex" : "flex")} flex-1 flex-col overflow-hidden bg-white min-w-0`}>
+          <div className={`${commandView === "mission" ? "hidden" : (mobileView === "list" ? "hidden lg:flex" : "flex")} flex-1 flex-col overflow-hidden min-w-0`} style={{ background: "#fafafa" }}>
             {!selectedEmail ? (
-              <div className="flex flex-1 items-center justify-center bg-gray-50/50">
+              <div className="flex flex-1 items-center justify-center">
                 <div className="text-center px-8 max-w-xs">
-                  <div className="mx-auto mb-5 w-20 h-20 rounded-3xl flex items-center justify-center text-violet-400" style={{ background: "linear-gradient(135deg,#f0eeff 0%,#e8e0ff 100%)", boxShadow: "0 8px 32px rgba(92,79,246,0.12)" }}>
-                    <svg className="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  <div className="mx-auto mb-6 w-24 h-24 rounded-[28px] flex items-center justify-center text-violet-400" style={{ background: "linear-gradient(135deg,#f5f3ff 0%,#ede9fe 100%)", boxShadow: "0 12px 40px rgba(92,79,246,0.14)" }}>
+                    <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                   </div>
-                  <p className="text-base font-bold text-gray-700 mb-1.5">No email selected</p>
-                  <p className="text-sm text-gray-400 leading-relaxed">Choose an email from the list to read it here, or swipe right from the list to open the sidebar.</p>
+                  <p className="text-[15px] font-bold text-gray-700 mb-2">Select an email to read</p>
+                  <p className="text-[13px] text-gray-400 leading-relaxed">Click any email from the list on the left to read it here.</p>
                 </div>
               </div>
             ) : (
