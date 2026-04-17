@@ -69,13 +69,14 @@ export default function BusinessAIPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 max-w-6xl mx-auto">
+
+          {/* WhatsApp AI */}
           <Link
             href="/whatsapp-ai"
             className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-emerald-500/30 hover:bg-emerald-950/20 hover:shadow-2xl hover:shadow-emerald-950/40"
           >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_30%_20%,rgba(52,211,153,0.08),transparent_60%)]" />
-
             <div className="relative">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400/10 border border-emerald-400/20">
@@ -86,28 +87,18 @@ export default function BusinessAIPage() {
                   Live
                 </div>
               </div>
-
-              <h2 className="text-3xl font-black tracking-tight text-white mb-3">
-                WhatsApp AI
-              </h2>
+              <h2 className="text-3xl font-black tracking-tight text-white mb-3">WhatsApp AI</h2>
               <p className="text-zinc-400 text-sm leading-7 mb-8">
                 Automate customer support, bookings, and inquiries directly on WhatsApp. Connect your Cloud API and let AI handle the conversations — 24/7, in multiple languages.
               </p>
-
               <div className="grid grid-cols-2 gap-3 mb-8">
-                {[
-                  "Multilingual support",
-                  "Instant replies",
-                  "Custom knowledge",
-                  "Cloud API ready",
-                ].map((feat) => (
+                {["Multilingual support", "Instant replies", "Custom knowledge", "Cloud API ready"].map((feat) => (
                   <div key={feat} className="flex items-center gap-2 text-xs text-zinc-400">
                     <span className="w-1 h-1 rounded-full bg-emerald-400 shrink-0" />
                     {feat}
                   </div>
                 ))}
               </div>
-
               <div className="flex items-center gap-2 text-sm font-bold text-emerald-400 group-hover:gap-3 transition-all">
                 Get started
                 <ArrowRightIcon className="h-4 w-4" />
@@ -115,12 +106,12 @@ export default function BusinessAIPage() {
             </div>
           </Link>
 
+          {/* Website AI */}
           <Link
             href="/ibara"
             className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-violet-500/30 hover:bg-violet-950/20 hover:shadow-2xl hover:shadow-violet-950/40"
           >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_70%_20%,rgba(124,58,237,0.10),transparent_60%)]" />
-
             <div className="relative">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/10 border border-violet-500/20">
@@ -130,28 +121,18 @@ export default function BusinessAIPage() {
                   <span className="text-[10px] font-black">NEW</span>
                 </div>
               </div>
-
-              <h2 className="text-3xl font-black tracking-tight text-white mb-3">
-                Website AI
-              </h2>
+              <h2 className="text-3xl font-black tracking-tight text-white mb-3">Website AI</h2>
               <p className="text-zinc-400 text-sm leading-7 mb-8">
                 Embed an intelligent AI chatbot on any website — WordPress, Shopify, Wix, or custom. Train it on your business and go live in minutes. No code required.
               </p>
-
               <div className="grid grid-cols-2 gap-3 mb-8">
-                {[
-                  "No code needed",
-                  "DNS verified",
-                  "Custom training",
-                  "Any platform",
-                ].map((feat) => (
+                {["No code needed", "DNS verified", "Custom training", "Any platform"].map((feat) => (
                   <div key={feat} className="flex items-center gap-2 text-xs text-zinc-400">
                     <span className="w-1 h-1 rounded-full bg-violet-400 shrink-0" />
                     {feat}
                   </div>
                 ))}
               </div>
-
               <div className="flex items-center gap-2 text-sm font-bold text-violet-400 group-hover:gap-3 transition-all">
                 Get started
                 <ArrowRightIcon className="h-4 w-4" />
@@ -159,12 +140,12 @@ export default function BusinessAIPage() {
             </div>
           </Link>
 
+          {/* Inbox AI */}
           <Link
             href="/inbox"
             className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-fuchsia-500/30 hover:bg-fuchsia-950/20 hover:shadow-2xl hover:shadow-fuchsia-950/40"
           >
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_20%,rgba(217,70,219,0.10),transparent_60%)]" />
-
             <div className="relative">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20">
@@ -178,37 +159,67 @@ export default function BusinessAIPage() {
                   Beta
                 </div>
               </div>
-
-              <h2 className="text-3xl font-black tracking-tight text-white mb-3">
-                Inbox AI
-              </h2>
+              <h2 className="text-3xl font-black tracking-tight text-white mb-3">Inbox AI</h2>
               <p className="text-zinc-400 text-sm leading-7 mb-8">
                 Connect Gmail and let AI summarize every email, detect intent, and generate perfect replies in your tone — Formal, Casual, Sales, or Short.
               </p>
-
               <div className="grid grid-cols-2 gap-3 mb-8">
-                {[
-                  "Intent detection",
-                  "Smart replies",
-                  "AI summaries",
-                  "Auto-reply rules",
-                ].map((feat) => (
+                {["Intent detection", "Smart replies", "AI summaries", "Auto-reply rules"].map((feat) => (
                   <div key={feat} className="flex items-center gap-2 text-xs text-zinc-400">
                     <span className="w-1 h-1 rounded-full bg-fuchsia-400 shrink-0" />
                     {feat}
                   </div>
                 ))}
               </div>
-
               <div className="flex items-center gap-2 text-sm font-bold text-fuchsia-400 group-hover:gap-3 transition-all">
                 Get started
                 <ArrowRightIcon className="h-4 w-4" />
               </div>
             </div>
           </Link>
+
+          {/* Recruit AI */}
+          <Link
+            href="/recruit/dashboard"
+            className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-indigo-500/30 hover:bg-indigo-950/20 hover:shadow-2xl hover:shadow-indigo-950/40"
+          >
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.10),transparent_60%)]" />
+            <div className="relative">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
+                  <svg className="h-7 w-7 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </div>
+                <div className="flex items-center gap-1.5 rounded-full border border-indigo-400/20 bg-indigo-400/8 px-3 py-1 text-xs font-semibold text-indigo-300">
+                  <span className="text-[10px] font-black">NEW</span>
+                </div>
+              </div>
+              <h2 className="text-3xl font-black tracking-tight text-white mb-3">Recruit AI</h2>
+              <p className="text-zinc-400 text-sm leading-7 mb-8">
+                AI-powered hiring from job description to final decision. Score resumes, send smart assessments, and get AI hiring recommendations — all in one pipeline.
+              </p>
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {["AI resume scoring", "Smart assessments", "Hiring decisions", "Candidate pipeline"].map((feat) => (
+                  <div key={feat} className="flex items-center gap-2 text-xs text-zinc-400">
+                    <span className="w-1 h-1 rounded-full bg-indigo-400 shrink-0" />
+                    {feat}
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 text-sm font-bold text-indigo-400 group-hover:gap-3 transition-all">
+                Get started
+                <ArrowRightIcon className="h-4 w-4" />
+              </div>
+            </div>
+          </Link>
+
         </div>
 
-        <div className="mt-20 max-w-4xl mx-auto rounded-[2rem] border border-white/8 bg-white/[0.025] p-8 sm:p-10 text-center">
+        <div className="mt-20 max-w-4xl mx-auto rounded-3xl border border-white/8 bg-white/[0.025] p-8 sm:p-10 text-center">
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500 mb-3">Not sure which to pick?</p>
           <h3 className="text-2xl font-black text-white mb-3">Use both together</h3>
           <p className="text-zinc-400 text-sm leading-7 max-w-lg mx-auto">
