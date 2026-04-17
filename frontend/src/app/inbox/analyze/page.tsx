@@ -516,6 +516,25 @@ export default function AnalyzePage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+        {/* ── Email Universe Entry ─────────────────────────────── */}
+        <Link
+          href="/inbox/analyze/explore"
+          className="group mb-6 flex items-center gap-4 rounded-2xl border border-violet-100 bg-white px-5 py-4 shadow-sm hover:shadow-md hover:border-violet-200 transition-all duration-200"
+        >
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 text-2xl shadow-sm">
+            🔭
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-violet-400 mb-0.5">Ideas</p>
+            <p className="text-base font-black text-gray-900">Email Universe</p>
+            <p className="text-xs text-gray-400 mt-0.5">Explore every category — Primary, Promotions, Leads, Spam and more — in one deep-dive view</p>
+          </div>
+          <div className="shrink-0 text-violet-400 group-hover:translate-x-1 transition-transform">
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        </Link>
+
         {/* Loading */}
         {loading && !data && (
           <div className="flex flex-col items-center justify-center py-28 gap-4">

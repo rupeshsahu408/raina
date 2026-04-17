@@ -1989,6 +1989,136 @@ inboxRouter.get("/health-score", async (req, res) => {
   }
 });
 
+// GET /inbox/explore/overview — category counts for the Ideas explorer
+inboxRouter.get("/explore/overview", async (req, res) => {
+  const uid = (req as any).user?.uid;
+  if (!uid) return res.status(401).json({ error: "Unauthorized" });
+  try {
+    const auth = await getAuthenticatedClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+
+    async function countCategory(cfg: { labelIds?: string[]; q?: string }): Promise<number> {
+      try {
+        const r = await gmail.users.messages.list({
+          userId: "me",
+          maxResults: 1,
+          ...(cfg.labelIds ? { labelIds: cfg.labelIds } : {}),
+          ...(cfg.q ? { q: cfg.q } : {}),
+        });
+        return r.data.resultSizeEstimate ?? 0;
+      } catch { return 0; }
+    }
+
+    async function countUnread(cfg: { labelIds?: string[]; q?: string }): Promise<number> {
+      try {
+        const baseQ = cfg.q ? `${cfg.q} is:unread` : "is:unread";
+        const r = await gmail.users.messages.list({
+          userId: "me",
+          maxResults: 1,
+          ...(cfg.labelIds ? { labelIds: [...(cfg.labelIds), "UNREAD"] } : {}),
+          ...(cfg.q ? { q: baseQ } : (!cfg.labelIds ? { q: baseQ } : {})),
+        });
+        return r.data.resultSizeEstimate ?? 0;
+      } catch { return 0; }
+    }
+
+    // Fetch all counts in parallel
+    const [
+      primaryCount, primaryUnread,
+      updatesCount, updatesUnread,
+      promotionsCount, promotionsUnread,
+      socialCount, socialUnread,
+      sentCount,
+      draftsCount,
+      archiveCount,
+      spamCount,
+      trashCount,
+      starredCount,
+      allCount,
+    ] = await Promise.all([
+      countCategory({ labelIds: ["INBOX"], q: "-category:promotions -category:social -category:updates -category:forums" }),
+      countUnread({ labelIds: ["INBOX"], q: "-category:promotions -category:social -category:updates -category:forums" }),
+      countCategory({ labelIds: ["INBOX", "CATEGORY_UPDATES"] }),
+      countUnread({ labelIds: ["INBOX", "CATEGORY_UPDATES"] }),
+      countCategory({ labelIds: ["INBOX", "CATEGORY_PROMOTIONS"] }),
+      countUnread({ labelIds: ["INBOX", "CATEGORY_PROMOTIONS"] }),
+      countCategory({ labelIds: ["INBOX", "CATEGORY_SOCIAL"] }),
+      countUnread({ labelIds: ["INBOX", "CATEGORY_SOCIAL"] }),
+      countCategory({ labelIds: ["SENT"] }),
+      countCategory({ labelIds: ["DRAFT"] }),
+      countCategory({ q: "-in:inbox -in:spam -in:trash -in:sent -in:draft" }),
+      countCategory({ labelIds: ["SPAM"] }),
+      countCategory({ labelIds: ["TRASH"] }),
+      countCategory({ labelIds: ["STARRED"] }),
+      countCategory({ q: "-in:spam -in:trash" }),
+    ]);
+
+    // Fetch a small batch to compute Hot/Warm/Cold lead classification
+    let hotCount = 0; let warmCount = 0; let coldCount = 0;
+    try {
+      const leadRes = await gmail.users.messages.list({
+        userId: "me", maxResults: 100,
+        labelIds: ["INBOX"],
+        q: "-category:promotions -category:social",
+      });
+      const leadIds = leadRes.data.messages ?? [];
+      const leadMessages = (await Promise.all(
+        leadIds.slice(0, 50).map(async (m) => {
+          try {
+            const msg = await gmail.users.messages.get({ userId: "me", id: m.id!, format: "metadata", metadataHeaders: ["From", "Subject", "Date"] });
+            const headers = msg.data.payload?.headers ?? [];
+            const subject = extractHeader(headers, "Subject") || "";
+            const snippet = msg.data.snippet ?? "";
+            const labelIds2 = msg.data.labelIds ?? [];
+            const isUnread = labelIds2.includes("UNREAD");
+            const intent = detectIntent(subject, snippet);
+            const priority = inferPriority(subject, snippet, intent, isUnread);
+            const dateStr = extractHeader(headers, "Date");
+            const daysOld = dateStr ? Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000) : 99;
+            return { intent, priorityCategory: priority.priorityCategory, isUnread, daysOld };
+          } catch { return null; }
+        })
+      )).filter(Boolean) as any[];
+      for (const m of leadMessages) {
+        const isLead = m.intent === "Lead" || m.priorityCategory === "High-Value Lead";
+        if (!isLead) continue;
+        if (m.priorityCategory === "High-Value Lead" && m.daysOld <= 7) hotCount++;
+        else if (m.daysOld <= 21) warmCount++;
+        else coldCount++;
+      }
+    } catch {}
+
+    // Waiting for reply count from follow-up tracking
+    let waitingCount = 0;
+    try {
+      await connectMongo();
+      waitingCount = await FollowUp.countDocuments({ uid, status: "pending" });
+    } catch {}
+
+    return res.json({
+      total: allCount,
+      categories: {
+        primary:    { count: primaryCount,    unread: primaryUnread },
+        updates:    { count: updatesCount,    unread: updatesUnread },
+        promotions: { count: promotionsCount, unread: promotionsUnread },
+        social:     { count: socialCount,     unread: socialUnread },
+        sent:       { count: sentCount,       unread: 0 },
+        drafts:     { count: draftsCount,     unread: 0 },
+        archive:    { count: archiveCount,    unread: 0 },
+        spam:       { count: spamCount,       unread: 0 },
+        trash:      { count: trashCount,      unread: 0 },
+        starred:    { count: starredCount,    unread: 0 },
+        waiting:    { count: waitingCount,    unread: 0 },
+        hot:        { count: hotCount,        unread: hotCount },
+        warm:       { count: warmCount,       unread: 0 },
+        cold:       { count: coldCount,       unread: 0 },
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /inbox/analyze — comprehensive Gmail analytics
 inboxRouter.get("/analyze", async (req, res) => {
   const uid = (req as any).user?.uid;
