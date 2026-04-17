@@ -10,6 +10,14 @@ const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 type ScoreBreakdown = { criterion: string; score: number; maxScore: number; reasoning: string };
 type CandidateStage = "applied" | "screened" | "assessed" | "interview" | "offer" | "hired" | "rejected";
+type AssessmentStatus = "not_sent" | "sent" | "completed";
+type HiringDecision = "strong_yes" | "maybe" | "no" | null;
+
+type AssessmentImpact = {
+  strengths: string[];
+  weaknesses: string[];
+  reasoning: string;
+};
 
 type Candidate = {
   _id: string;
@@ -25,6 +33,14 @@ type Candidate = {
   notes: string;
   interviewBrief: string;
   createdAt: string;
+  assessmentStatus: AssessmentStatus;
+  assessmentToken?: string;
+  assessmentSentAt?: string;
+  assessmentCompletedAt?: string;
+  assessmentReminderSentAt?: string;
+  previousResumeScore: number;
+  hiringDecision: HiringDecision;
+  assessmentImpact?: AssessmentImpact;
 };
 
 type RubricCriteria = { name: string; weight: number; description: string };
@@ -69,6 +85,25 @@ function scoreBarColor(pct: number) {
   return "bg-rose-500";
 }
 
+function decisionBadge(decision: HiringDecision) {
+  if (!decision) return null;
+  const map = {
+    strong_yes: { label: "Strong Yes", icon: "✅", cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25" },
+    maybe: { label: "Maybe", icon: "🤔", cls: "bg-amber-500/15 text-amber-400 border-amber-500/25" },
+    no: { label: "No", icon: "❌", cls: "bg-rose-500/15 text-rose-400 border-rose-500/25" },
+  };
+  return map[decision] ?? null;
+}
+
+function assessmentStatusBadge(status: AssessmentStatus) {
+  const map = {
+    not_sent: { label: "Not Sent", cls: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20" },
+    sent: { label: "Pending", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
+    completed: { label: "Completed", cls: "bg-violet-500/10 text-violet-400 border-violet-500/20" },
+  };
+  return map[status] ?? map.not_sent;
+}
+
 function ChevronLeftIcon() {
   return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>;
 }
@@ -86,6 +121,120 @@ function AlertIcon() {
 }
 function CheckCircleIcon() {
   return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></svg>;
+}
+function SendIcon() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" /></svg>;
+}
+function CopyIcon() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>;
+}
+function BellIcon() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>;
+}
+
+function AssessmentLinkModal({ link, candidateName, candidateEmail, onClose }: {
+  link: string; candidateName: string; candidateEmail: string; onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    navigator.clipboard.writeText(link).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-[2rem] border border-white/[0.09] bg-[#0a0a0f] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Assessment Link Ready</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">Share this with {candidateName}</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-600 hover:text-white transition"><XIcon /></button>
+        </div>
+        <div className="p-6 space-y-4">
+          {candidateEmail && (
+            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-2.5">
+              <p className="text-[10px] text-zinc-600 mb-0.5">Email</p>
+              <p className="text-sm text-zinc-300">{candidateEmail}</p>
+            </div>
+          )}
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-widest text-zinc-500 mb-2">Assessment URL</label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-xs text-zinc-400 break-all min-w-0">
+                {link}
+              </div>
+              <button
+                onClick={copy}
+                className={`shrink-0 flex items-center gap-1.5 rounded-2xl px-4 py-3 text-xs font-semibold transition ${
+                  copied ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-indigo-500/15 text-indigo-400 border border-indigo-500/25 hover:bg-indigo-500/25"
+                }`}
+              >
+                <CopyIcon /> {copied ? "Copied!" : "Copy"}
+              </button>
+            </div>
+          </div>
+          <div className="rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.05] px-4 py-3">
+            <p className="text-[11px] text-indigo-300/70 leading-5">
+              Send this link to <strong>{candidateName}</strong> via email or WhatsApp. When they complete it, the AI will analyze their answers and update their score automatically.
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-end border-t border-white/[0.07] px-6 py-4">
+          <button onClick={onClose} className="rounded-xl bg-indigo-500 px-5 py-2 text-sm font-bold text-white hover:bg-indigo-400 transition">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RejectionEmailModal({ email, candidateName, candidateEmail, onClose }: {
+  email: string; candidateName: string; candidateEmail: string; onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    navigator.clipboard.writeText(email).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="w-full max-w-xl rounded-[2rem] border border-white/[0.09] bg-[#0a0a0f] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4">
+          <div>
+            <h2 className="text-sm font-semibold text-white">AI Rejection Email</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">For {candidateName}{candidateEmail ? ` · ${candidateEmail}` : ""}</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-600 hover:text-white transition"><XIcon /></button>
+        </div>
+        <div className="p-6">
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4 max-h-72 overflow-y-auto">
+            <p className="text-sm text-zinc-300 leading-7 whitespace-pre-wrap">{email}</p>
+          </div>
+          <p className="mt-3 text-[11px] text-zinc-600">Copy and send via your email client. You can edit before sending.</p>
+        </div>
+        <div className="flex justify-end gap-3 border-t border-white/[0.07] px-6 py-4">
+          <button onClick={onClose} className="rounded-xl border border-white/[0.08] px-4 py-2 text-sm text-zinc-500 hover:text-white transition">Close</button>
+          <button
+            onClick={copy}
+            className={`flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-bold transition ${
+              copied ? "bg-emerald-500 text-white" : "bg-indigo-500 text-white hover:bg-indigo-400"
+            }`}
+          >
+            <CopyIcon /> {copied ? "Copied!" : "Copy Email"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function AddCandidateModal({ jobId, token, onClose, onAdded }: {
@@ -137,7 +286,7 @@ function AddCandidateModal({ jobId, token, onClose, onAdded }: {
           />
           {error && <p className="mt-3 text-xs text-rose-400">{error}</p>}
           <div className="mt-4 rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.05] px-4 py-3">
-            <p className="text-[11px] text-indigo-300/70">
+            <p className="text-[11px] text-indigo-300/70 flex items-center gap-1">
               <SparkIcon /> The AI will extract the candidate's name, score against the job rubric, identify strengths and red flags, and write a summary — automatically.
             </p>
           </div>
@@ -169,8 +318,20 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
   const [expanded, setExpanded] = useState(false);
   const [loadingBrief, setLoadingBrief] = useState(false);
   const [brief, setBrief] = useState(c.interviewBrief || "");
+  const [loadingAssessment, setLoadingAssessment] = useState(false);
+  const [assessmentLink, setAssessmentLink] = useState<string | null>(null);
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
+  const [loadingReject, setLoadingReject] = useState(false);
+  const [rejectionEmail, setRejectionEmail] = useState("");
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [loadingReminder, setLoadingReminder] = useState(false);
+
   const pct = c.maxScore > 0 ? Math.round((c.totalScore / c.maxScore) * 100) : 0;
+  const prevPct = c.maxScore > 0 && c.previousResumeScore ? Math.round((c.previousResumeScore / c.maxScore) * 100) : null;
   const stageStyle = getStageStyle(c.stage);
+  const decision = decisionBadge(c.hiringDecision);
+  const assessBadge = assessmentStatusBadge(c.assessmentStatus ?? "not_sent");
+  const scoreChanged = c.assessmentStatus === "completed" && prevPct !== null && prevPct !== pct;
 
   async function updateStage(stage: CandidateStage) {
     try {
@@ -197,6 +358,63 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
     finally { setLoadingBrief(false); setExpanded(true); }
   }
 
+  async function sendAssessment() {
+    setLoadingAssessment(true);
+    try {
+      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}/assessment/send`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      const link = data.assessmentUrl;
+      setAssessmentLink(link);
+      setShowAssessmentModal(true);
+      onUpdate(c._id, { assessmentStatus: "sent", assessmentSentAt: new Date().toISOString() });
+    } catch (e: any) {
+      alert(e.message || "Failed to send assessment.");
+    } finally {
+      setLoadingAssessment(false);
+    }
+  }
+
+  async function sendReminder() {
+    setLoadingReminder(true);
+    try {
+      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}/reminder`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setAssessmentLink(data.assessmentUrl);
+      setShowAssessmentModal(true);
+      onUpdate(c._id, { assessmentReminderSentAt: new Date().toISOString() });
+    } catch (e: any) {
+      alert(e.message || "Failed to send reminder.");
+    } finally {
+      setLoadingReminder(false);
+    }
+  }
+
+  async function generateRejectionEmail() {
+    setLoadingReject(true);
+    try {
+      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}/reject-email`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setRejectionEmail(data.email);
+      setShowRejectModal(true);
+    } catch (e: any) {
+      alert(e.message || "Failed to generate rejection email.");
+    } finally {
+      setLoadingReject(false);
+    }
+  }
+
   async function handleDelete() {
     if (!confirm(`Remove ${c.name} from this pipeline?`)) return;
     try {
@@ -209,116 +427,233 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
   }
 
   return (
-    <div className="rounded-3xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-sm font-semibold text-white truncate">{c.name}</h3>
-              {c.redFlags.length > 0 && (
-                <span className="flex items-center gap-1 text-rose-400 text-[10px]"><AlertIcon /> {c.redFlags.length} flag{c.redFlags.length > 1 ? "s" : ""}</span>
-              )}
-            </div>
-            {c.email && <p className="text-[11px] text-zinc-600">{c.email}</p>}
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="text-right">
-              <p className={`text-lg font-bold leading-none ${scoreColor(pct)}`}>{pct}%</p>
-              <p className="text-[10px] text-zinc-600 mt-0.5">{c.totalScore}/{c.maxScore} pts</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mb-3 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
-          <div className={`h-full rounded-full transition-all ${scoreBarColor(pct)}`} style={{ width: `${pct}%` }} />
-        </div>
-
-        <p className="text-xs text-zinc-500 leading-5 line-clamp-2 mb-4">{c.aiSummary}</p>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <select
-            value={c.stage}
-            onChange={e => updateStage(e.target.value as CandidateStage)}
-            className={`rounded-xl border text-[11px] font-semibold px-3 py-1.5 outline-none cursor-pointer bg-transparent ${stageStyle.bg} ${stageStyle.color}`}
-          >
-            {STAGES.map(s => (
-              <option key={s.id} value={s.id} className="bg-zinc-900 text-white">{s.label}</option>
-            ))}
-          </select>
-          <button
-            onClick={() => setExpanded(e => !e)}
-            className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 py-1.5 text-[11px] text-zinc-500 hover:text-white transition"
-          >
-            {expanded ? "Collapse" : "Score Details"}
-          </button>
-          <button
-            onClick={fetchBrief}
-            className="flex items-center gap-1 rounded-xl border border-indigo-500/20 bg-indigo-500/[0.07] px-3 py-1.5 text-[11px] text-indigo-400 hover:bg-indigo-500/15 transition"
-          >
-            {loadingBrief ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> : <SparkIcon />}
-            Interview Brief
-          </button>
-          <button onClick={handleDelete} className="ml-auto text-zinc-700 hover:text-rose-400 transition"><XIcon /></button>
-        </div>
-      </div>
-
-      {expanded && (
-        <div className="border-t border-white/[0.06] p-5 space-y-4">
-          {c.strengths.length > 0 && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500/70 mb-2">Strengths</p>
-              <div className="space-y-1">
-                {c.strengths.map((s, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-zinc-400">
-                    <span className="text-emerald-400 mt-0.5"><CheckCircleIcon /></span>{s}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {c.redFlags.length > 0 && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-rose-500/70 mb-2">Red Flags</p>
-              <div className="space-y-1">
-                {c.redFlags.map((f, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-zinc-400">
-                    <span className="text-rose-400 mt-0.5"><AlertIcon /></span>{f}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {c.scoreBreakdown.length > 0 && (
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Score Breakdown</p>
-              <div className="space-y-3">
-                {c.scoreBreakdown.map((b, i) => {
-                  const bPct = b.maxScore > 0 ? Math.round((b.score / b.maxScore) * 100) : 0;
-                  return (
-                    <div key={i}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs text-zinc-400">{b.criterion}</span>
-                        <span className={`text-xs font-semibold ${scoreColor(bPct)}`}>{b.score}/{b.maxScore}</span>
-                      </div>
-                      <div className="h-1 w-full rounded-full bg-white/[0.05]">
-                        <div className={`h-full rounded-full ${scoreBarColor(bPct)}`} style={{ width: `${bPct}%` }} />
-                      </div>
-                      <p className="mt-1 text-[10px] text-zinc-600">{b.reasoning}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          {brief && (
-            <div className="rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.05] p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400/70 mb-2 flex items-center gap-1"><SparkIcon /> Interview Brief</p>
-              <p className="text-xs text-zinc-300 leading-6 whitespace-pre-wrap">{brief}</p>
-            </div>
-          )}
-        </div>
+    <>
+      {showAssessmentModal && assessmentLink && (
+        <AssessmentLinkModal
+          link={assessmentLink}
+          candidateName={c.name}
+          candidateEmail={c.email}
+          onClose={() => setShowAssessmentModal(false)}
+        />
       )}
-    </div>
+      {showRejectModal && rejectionEmail && (
+        <RejectionEmailModal
+          email={rejectionEmail}
+          candidateName={c.name}
+          candidateEmail={c.email}
+          onClose={() => setShowRejectModal(false)}
+        />
+      )}
+
+      <div className="rounded-3xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
+        <div className="p-5">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <h3 className="text-sm font-semibold text-white truncate">{c.name}</h3>
+                {decision && (
+                  <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${decision.cls}`}>
+                    {decision.icon} {decision.label}
+                  </span>
+                )}
+                {c.redFlags.length > 0 && (
+                  <span className="flex items-center gap-1 text-rose-400 text-[10px]"><AlertIcon /> {c.redFlags.length} flag{c.redFlags.length > 1 ? "s" : ""}</span>
+                )}
+              </div>
+              {c.email && <p className="text-[11px] text-zinc-600">{c.email}</p>}
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="text-right">
+                <p className={`text-lg font-bold leading-none ${scoreColor(pct)}`}>{pct}%</p>
+                {scoreChanged && prevPct !== null && (
+                  <p className="text-[10px] text-zinc-600 mt-0.5">
+                    <span className="line-through text-zinc-700">{prevPct}%</span>
+                    <span className={pct > prevPct ? " text-emerald-500" : " text-rose-500"}>
+                      {" "}{pct > prevPct ? "▲" : "▼"}
+                    </span>
+                  </p>
+                )}
+                <p className="text-[10px] text-zinc-600 mt-0.5">{c.totalScore}/{c.maxScore} pts</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-3 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+            <div className={`h-full rounded-full transition-all ${scoreBarColor(pct)}`} style={{ width: `${pct}%` }} />
+          </div>
+
+          <p className="text-xs text-zinc-500 leading-5 line-clamp-2 mb-3">{c.aiSummary}</p>
+
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${assessBadge.cls}`}>
+              Assessment: {assessBadge.label}
+            </span>
+            {c.assessmentSentAt && c.assessmentStatus === "sent" && (
+              <span className="text-[10px] text-zinc-700">
+                Sent {new Date(c.assessmentSentAt).toLocaleDateString()}
+              </span>
+            )}
+            {c.assessmentCompletedAt && (
+              <span className="text-[10px] text-zinc-700">
+                Completed {new Date(c.assessmentCompletedAt).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <select
+              value={c.stage}
+              onChange={e => updateStage(e.target.value as CandidateStage)}
+              className={`rounded-xl border text-[11px] font-semibold px-3 py-1.5 outline-none cursor-pointer bg-transparent ${stageStyle.bg} ${stageStyle.color}`}
+            >
+              {STAGES.map(s => (
+                <option key={s.id} value={s.id} className="bg-zinc-900 text-white">{s.label}</option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => setExpanded(e => !e)}
+              className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 py-1.5 text-[11px] text-zinc-500 hover:text-white transition"
+            >
+              {expanded ? "Collapse" : "Details"}
+            </button>
+
+            <button
+              onClick={fetchBrief}
+              className="flex items-center gap-1 rounded-xl border border-indigo-500/20 bg-indigo-500/[0.07] px-3 py-1.5 text-[11px] text-indigo-400 hover:bg-indigo-500/15 transition"
+            >
+              {loadingBrief ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> : <SparkIcon />}
+              Brief
+            </button>
+
+            {c.assessmentStatus === "not_sent" && (
+              <button
+                onClick={sendAssessment}
+                disabled={loadingAssessment}
+                className="flex items-center gap-1 rounded-xl border border-violet-500/20 bg-violet-500/[0.07] px-3 py-1.5 text-[11px] text-violet-400 hover:bg-violet-500/15 transition disabled:opacity-50"
+              >
+                {loadingAssessment ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> : <SendIcon />}
+                Send Assessment
+              </button>
+            )}
+
+            {c.assessmentStatus === "sent" && (
+              <button
+                onClick={sendReminder}
+                disabled={loadingReminder}
+                className="flex items-center gap-1 rounded-xl border border-amber-500/20 bg-amber-500/[0.07] px-3 py-1.5 text-[11px] text-amber-400 hover:bg-amber-500/15 transition disabled:opacity-50"
+              >
+                {loadingReminder ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> : <BellIcon />}
+                Reminder
+              </button>
+            )}
+
+            <button
+              onClick={generateRejectionEmail}
+              disabled={loadingReject}
+              className="flex items-center gap-1 rounded-xl border border-rose-500/20 bg-rose-500/[0.07] px-3 py-1.5 text-[11px] text-rose-400 hover:bg-rose-500/15 transition disabled:opacity-50"
+            >
+              {loadingReject ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> : <XIcon />}
+              Reject
+            </button>
+
+            <button onClick={handleDelete} className="ml-auto text-zinc-700 hover:text-rose-400 transition"><XIcon /></button>
+          </div>
+        </div>
+
+        {expanded && (
+          <div className="border-t border-white/[0.06] p-5 space-y-4">
+            {c.assessmentStatus === "completed" && c.assessmentImpact && (
+              <div className="rounded-2xl border border-violet-500/20 bg-violet-500/[0.05] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-violet-400/70 mb-2 flex items-center gap-1"><SparkIcon /> Assessment Impact</p>
+                {scoreChanged && prevPct !== null && (
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-sm text-zinc-500">{prevPct}%</span>
+                    <svg width="20" height="12" viewBox="0 0 20 12" fill="none"><path d="M1 6h16M13 1l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                    <span className={`text-lg font-bold ${scoreColor(pct)}`}>{pct}%</span>
+                    <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${pct > prevPct ? "bg-emerald-500/15 text-emerald-400" : pct < prevPct ? "bg-rose-500/15 text-rose-400" : "bg-zinc-500/15 text-zinc-400"}`}>
+                      {pct > prevPct ? `+${pct - prevPct}%` : pct < prevPct ? `-${prevPct - pct}%` : "No change"}
+                    </span>
+                  </div>
+                )}
+                <p className="text-xs text-zinc-400 leading-5 mb-3">{c.assessmentImpact.reasoning}</p>
+                {c.assessmentImpact.strengths.length > 0 && (
+                  <div className="space-y-1 mb-2">
+                    {c.assessmentImpact.strengths.map((s, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-[11px] text-emerald-400">
+                        <CheckCircleIcon /> {s}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {c.assessmentImpact.weaknesses.length > 0 && (
+                  <div className="space-y-1">
+                    {c.assessmentImpact.weaknesses.map((w, i) => (
+                      <div key={i} className="flex items-start gap-1.5 text-[11px] text-amber-400">
+                        <AlertIcon /> {w}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {c.strengths.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500/70 mb-2">Resume Strengths</p>
+                <div className="space-y-1">
+                  {c.strengths.map((s, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                      <span className="text-emerald-400 mt-0.5"><CheckCircleIcon /></span>{s}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {c.redFlags.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-rose-500/70 mb-2">Red Flags</p>
+                <div className="space-y-1">
+                  {c.redFlags.map((f, i) => (
+                    <div key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                      <span className="text-rose-400 mt-0.5"><AlertIcon /></span>{f}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {c.scoreBreakdown.length > 0 && (
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Score Breakdown</p>
+                <div className="space-y-3">
+                  {c.scoreBreakdown.map((b, i) => {
+                    const bPct = b.maxScore > 0 ? Math.round((b.score / b.maxScore) * 100) : 0;
+                    return (
+                      <div key={i}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-zinc-400">{b.criterion}</span>
+                          <span className={`text-xs font-semibold ${scoreColor(bPct)}`}>{b.score}/{b.maxScore}</span>
+                        </div>
+                        <div className="h-1 w-full rounded-full bg-white/[0.05]">
+                          <div className={`h-full rounded-full ${scoreBarColor(bPct)}`} style={{ width: `${bPct}%` }} />
+                        </div>
+                        <p className="mt-1 text-[10px] text-zinc-600">{b.reasoning}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            {brief && (
+              <div className="rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.05] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400/70 mb-2 flex items-center gap-1"><SparkIcon /> Interview Brief</p>
+                <p className="text-xs text-zinc-300 leading-6 whitespace-pre-wrap">{brief}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 
@@ -394,9 +729,22 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   };
   candidates.forEach(c => { if (byStage[c.stage]) byStage[c.stage].push(c); });
 
+  const strongYesCount = candidates.filter(c => c.hiringDecision === "strong_yes").length;
+  const maybeCount = candidates.filter(c => c.hiringDecision === "maybe").length;
+  const assessedCount = candidates.filter(c => c.assessmentStatus === "completed").length;
+
   return (
     <div className="min-h-screen bg-[#050506] text-zinc-100">
       <div className="fixed inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(99,102,241,0.15),transparent_36%),linear-gradient(180deg,#050506,#07070a)]" />
+
+      {showAddModal && (
+        <AddCandidateModal
+          jobId={id}
+          token={token!}
+          onClose={() => setShowAddModal(false)}
+          onAdded={fetchData}
+        />
+      )}
 
       <header className="relative z-10 border-b border-white/[0.07] bg-black/30 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
@@ -428,7 +776,25 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                 {" · "}{job.workMode}
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              {assessedCount > 0 && (
+                <div className="rounded-2xl border border-violet-500/20 bg-violet-500/[0.07] px-4 py-2">
+                  <p className="text-[10px] text-zinc-500">Assessed</p>
+                  <p className="text-sm font-bold text-violet-400">{assessedCount}</p>
+                </div>
+              )}
+              {strongYesCount > 0 && (
+                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-2">
+                  <p className="text-[10px] text-zinc-500">Strong Yes</p>
+                  <p className="text-sm font-bold text-emerald-400">{strongYesCount}</p>
+                </div>
+              )}
+              {maybeCount > 0 && (
+                <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.07] px-4 py-2">
+                  <p className="text-[10px] text-zinc-500">Maybe</p>
+                  <p className="text-sm font-bold text-amber-400">{maybeCount}</p>
+                </div>
+              )}
               {topCandidates.length > 0 && (
                 <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-2">
                   <p className="text-[10px] text-zinc-500">Top Score</p>
@@ -509,7 +875,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       </span>
                       <span className="text-xs text-zinc-600">{byStage.rejected.length}</span>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 opacity-60">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {byStage.rejected.map(c => (
                         <CandidateCard key={c._id} c={c} jobId={id} token={token!} onUpdate={handleUpdate} onDelete={handleDelete} />
                       ))}
@@ -522,38 +888,25 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         )}
 
         {activeTab === "jd" && (
-          <div className="rounded-[2rem] border border-white/[0.08] bg-white/[0.03] p-6 sm:p-8">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400/70 mb-4 flex items-center gap-1.5"><SparkIcon /> AI-Generated Job Description</p>
-            <div className="prose prose-sm prose-invert max-w-none">
-              <pre className="text-sm text-zinc-300 leading-7 whitespace-pre-wrap font-sans">{job.generatedJD}</pre>
-            </div>
+          <div className="rounded-3xl border border-white/[0.07] bg-white/[0.02] p-6 sm:p-8">
+            <p className="text-sm text-zinc-300 leading-8 whitespace-pre-wrap">{job.generatedJD}</p>
           </div>
         )}
 
         {activeTab === "rubric" && (
           <div className="space-y-4">
-            <p className="text-xs text-zinc-500 mb-6">This rubric was automatically generated from your job details. It's used to score every candidate you add.</p>
             {job.rubric.map((r, i) => (
-              <div key={i} className="rounded-3xl border border-white/[0.07] bg-white/[0.03] p-5">
+              <div key={i} className="rounded-3xl border border-white/[0.07] bg-white/[0.02] p-5">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-sm font-semibold text-white">{r.name}</h3>
-                  <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-0.5 text-xs font-bold text-indigo-300">{r.weight} pts</span>
+                  <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs font-bold text-indigo-400">{r.weight} pts</span>
                 </div>
-                <p className="text-xs text-zinc-500 leading-6">{r.description}</p>
+                <p className="text-xs text-zinc-500 leading-5">{r.description}</p>
               </div>
             ))}
           </div>
         )}
       </main>
-
-      {showAddModal && token && (
-        <AddCandidateModal
-          jobId={id}
-          token={token}
-          onClose={() => setShowAddModal(false)}
-          onAdded={fetchData}
-        />
-      )}
     </div>
   );
 }

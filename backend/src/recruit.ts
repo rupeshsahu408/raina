@@ -1,12 +1,15 @@
 import express from "express";
+import crypto from "crypto";
 import { connectMongo } from "./db";
 import { RecruitJob } from "./models/RecruitJob";
 import { RecruitCandidate } from "./models/RecruitCandidate";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 
 export const recruitRouter = express.Router();
+export const recruitPublicRouter = express.Router();
 
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY ?? "";
+const FRONTEND_URL = process.env.FRONTEND_URL ?? "https://www.plyndrox.app";
 
 function getUid(req: express.Request): string {
   return (req as any).user?.uid ?? "";
@@ -21,6 +24,10 @@ function safeJson(text: string): any {
   } catch {
     return null;
   }
+}
+
+function generateToken(): string {
+  return crypto.randomBytes(24).toString("hex");
 }
 
 async function generateJobDescription(args: {
@@ -233,6 +240,191 @@ Write in plain text, no JSON, no markdown headers.`;
   return brief;
 }
 
+async function generateAssessmentQuestions(args: {
+  jobTitle: string;
+  rubric: { name: string; weight: number; description: string }[];
+  jd: string;
+}): Promise<{ id: string; text: string }[]> {
+  const rubricText = args.rubric
+    .map((r) => `- ${r.name}: ${r.description}`)
+    .join("\n");
+
+  const prompt = `You are a senior hiring manager. Generate exactly 5 thoughtful, role-specific interview assessment questions for the following job.
+
+Role: ${args.jobTitle}
+Scoring Rubric:
+${rubricText}
+
+Job Description (excerpt):
+${args.jd.slice(0, 1500)}
+
+Rules:
+- Questions must be open-ended and require substantive written answers (2-4 paragraphs)
+- Each question should probe a different rubric criterion
+- Questions should reveal critical thinking, real experience, and communication quality
+- Avoid yes/no questions or trivial questions
+- Make each question specific to this role, not generic
+
+Respond with valid JSON only (no markdown):
+{
+  "questions": [
+    { "id": "q1", "text": "question text here" },
+    { "id": "q2", "text": "question text here" },
+    { "id": "q3", "text": "question text here" },
+    { "id": "q4", "text": "question text here" },
+    { "id": "q5", "text": "question text here" }
+  ]
+}`;
+
+  const raw = await callNvidiaChatCompletions({
+    apiKey: NVIDIA_API_KEY,
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.6,
+    max_tokens: 1000,
+  });
+
+  const parsed = safeJson(raw);
+  if (parsed && Array.isArray(parsed.questions) && parsed.questions.length >= 3) {
+    return parsed.questions.slice(0, 5).map((q: any, i: number) => ({
+      id: q.id ?? `q${i + 1}`,
+      text: q.text ?? "",
+    }));
+  }
+
+  return [
+    { id: "q1", text: `Describe a challenging project relevant to the ${args.jobTitle} role. What was your specific contribution and what was the outcome?` },
+    { id: "q2", text: `What is your approach to solving complex problems in this domain? Walk us through a real example.` },
+    { id: "q3", text: `How do you prioritize your work when handling multiple responsibilities at once? Give a specific situation.` },
+    { id: "q4", text: `Tell us about a time you had to learn something quickly to deliver results. What was the skill and how did you apply it?` },
+    { id: "q5", text: `Why are you the right fit for this ${args.jobTitle} role, and what would you focus on in your first 90 days?` },
+  ];
+}
+
+async function analyzeAssessmentAnswers(args: {
+  candidateName: string;
+  jobTitle: string;
+  rubric: { name: string; weight: number; description: string }[];
+  questions: { id: string; text: string }[];
+  answers: { questionId: string; answer: string; timeTakenSeconds: number }[];
+  resumeScore: number;
+  maxScore: number;
+  resumeSummary: string;
+}): Promise<{
+  newTotalScore: number;
+  hiringDecision: "strong_yes" | "maybe" | "no";
+  impact: { strengths: string[]; weaknesses: string[]; reasoning: string };
+}> {
+  const rubricText = args.rubric
+    .map((r) => `- ${r.name} (max ${r.weight} pts): ${r.description}`)
+    .join("\n");
+
+  const qaText = args.questions.map((q) => {
+    const ans = args.answers.find((a) => a.questionId === q.id);
+    const timeTaken = ans ? ans.timeTakenSeconds : 0;
+    const speedFlag = timeTaken > 0 && timeTaken < 30 ? " [NOTE: Very fast response — possible copy-paste]" : "";
+    return `Q: ${q.text}\nA: ${ans?.answer ?? "(No answer provided)"}${speedFlag}`;
+  }).join("\n\n");
+
+  const resumePct = args.maxScore > 0 ? Math.round((args.resumeScore / args.maxScore) * 100) : 0;
+
+  const prompt = `You are a senior talent acquisition specialist evaluating a candidate's written assessment responses.
+
+Candidate: ${args.candidateName}
+Role: ${args.jobTitle}
+Resume Score: ${args.resumeScore}/${args.maxScore} (${resumePct}%)
+Resume Summary: ${args.resumeSummary}
+
+Scoring Rubric:
+${rubricText}
+
+Assessment Q&A:
+${qaText}
+
+Evaluate the written responses holistically. Assess: communication clarity, depth of thinking, relevance of examples, alignment with rubric criteria, and any concerning signals.
+
+Respond with valid JSON only (no markdown):
+{
+  "assessmentScoreAdjustment": 5,
+  "hiringDecision": "strong_yes",
+  "impact": {
+    "strengths": ["strength 1 from assessment", "strength 2", "strength 3"],
+    "weaknesses": ["weakness 1 if any", "weakness 2 if any"],
+    "reasoning": "2-3 sentence explanation of why the score changed and what the assessment revealed"
+  }
+}
+
+Rules:
+- assessmentScoreAdjustment: integer between -20 and +20 (how much to adjust the resume score based on assessment quality)
+  - Strong answers that confirm or exceed resume claims: +10 to +20
+  - Average answers that match resume: -5 to +5
+  - Weak, vague, or suspiciously fast answers: -10 to -20
+- hiringDecision must be one of: "strong_yes" (total score ≥75%), "maybe" (50-74%), "no" (<50%)
+- strengths: 2-4 specific observations from the assessment answers
+- weaknesses: 0-3 genuine concerns identified
+- reasoning: explain what the assessment revealed beyond the resume`;
+
+  const raw = await callNvidiaChatCompletions({
+    apiKey: NVIDIA_API_KEY,
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.3,
+    max_tokens: 800,
+  });
+
+  const parsed = safeJson(raw);
+  const adjustment = parsed?.assessmentScoreAdjustment ?? 0;
+  const rawNewScore = args.resumeScore + Math.round((adjustment / 100) * args.maxScore);
+  const newTotalScore = Math.max(0, Math.min(args.maxScore, rawNewScore));
+  const newPct = args.maxScore > 0 ? (newTotalScore / args.maxScore) * 100 : 0;
+
+  const hiringDecision: "strong_yes" | "maybe" | "no" =
+    parsed?.hiringDecision === "strong_yes" || parsed?.hiringDecision === "maybe" || parsed?.hiringDecision === "no"
+      ? parsed.hiringDecision
+      : newPct >= 75 ? "strong_yes" : newPct >= 50 ? "maybe" : "no";
+
+  return {
+    newTotalScore,
+    hiringDecision,
+    impact: {
+      strengths: Array.isArray(parsed?.impact?.strengths) ? parsed.impact.strengths : [],
+      weaknesses: Array.isArray(parsed?.impact?.weaknesses) ? parsed.impact.weaknesses : [],
+      reasoning: parsed?.impact?.reasoning ?? "Assessment completed and score updated.",
+    },
+  };
+}
+
+async function generateRejectionEmail(args: {
+  candidateName: string;
+  jobTitle: string;
+  companyName?: string;
+  stage: string;
+}): Promise<string> {
+  const prompt = `You are an HR professional. Write a personalized, warm, and respectful rejection email for a job candidate.
+
+Candidate Name: ${args.candidateName}
+Role Applied For: ${args.jobTitle}
+Company: ${args.companyName || "our company"}
+Stage Rejected At: ${args.stage}
+
+Requirements:
+- Personalize it with their name and the role
+- Be genuinely warm and encouraging — not corporate/cold
+- Acknowledge their effort
+- Leave the door open for future opportunities
+- Keep it concise (3-4 short paragraphs)
+- End with a professional closing
+
+Write only the email body (no subject line), plain text.`;
+
+  const email = await callNvidiaChatCompletions({
+    apiKey: NVIDIA_API_KEY,
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.65,
+    max_tokens: 400,
+  });
+
+  return email;
+}
+
 recruitRouter.post("/jobs", async (req, res) => {
   try {
     await connectMongo();
@@ -354,6 +546,8 @@ recruitRouter.post("/jobs/:jobId/candidates", async (req, res) => {
       redFlags: scored.redFlags,
       strengths: scored.strengths,
       stage: "applied",
+      assessmentStatus: "not_sent",
+      previousResumeScore: scored.totalScore,
     });
 
     await RecruitJob.updateOne({ _id: job._id }, { $inc: { candidateCount: 1 } });
@@ -440,6 +634,169 @@ recruitRouter.delete("/jobs/:jobId/candidates/:candidateId", async (req, res) =>
     await RecruitJob.updateOne({ _id: req.params.jobId, uid }, { $inc: { candidateCount: -1 } });
     return res.json({ ok: true });
   } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitRouter.post("/jobs/:jobId/candidates/:candidateId/assessment/send", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    const job = await RecruitJob.findOne({ _id: req.params.jobId, uid }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+
+    const candidate = await RecruitCandidate.findOne({ _id: req.params.candidateId, jobId: req.params.jobId, uid });
+    if (!candidate) return res.status(404).json({ error: "Candidate not found." });
+
+    if (candidate.assessmentStatus === "completed") {
+      return res.status(400).json({ error: "Assessment already completed by candidate." });
+    }
+
+    const questions = await generateAssessmentQuestions({
+      jobTitle: job.title,
+      rubric: job.rubric,
+      jd: job.generatedJD,
+    });
+
+    const token = generateToken();
+    candidate.assessmentToken = token;
+    candidate.assessmentQuestions = questions;
+    candidate.assessmentStatus = "sent";
+    candidate.assessmentSentAt = new Date();
+    candidate.previousResumeScore = candidate.totalScore;
+    await candidate.save();
+
+    const assessmentUrl = `${FRONTEND_URL}/recruit/assessment/${token}`;
+
+    return res.json({
+      ok: true,
+      assessmentUrl,
+      questions,
+      candidateName: candidate.name,
+      candidateEmail: candidate.email,
+    });
+  } catch (err: any) {
+    console.error("[recruit] POST /assessment/send", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitRouter.post("/jobs/:jobId/candidates/:candidateId/reject-email", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    const job = await RecruitJob.findOne({ _id: req.params.jobId, uid }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+
+    const candidate = await RecruitCandidate.findOne({ _id: req.params.candidateId, jobId: req.params.jobId, uid }).lean();
+    if (!candidate) return res.status(404).json({ error: "Candidate not found." });
+
+    const email = await generateRejectionEmail({
+      candidateName: candidate.name,
+      jobTitle: job.title,
+      stage: candidate.stage,
+    });
+
+    return res.json({ email, candidateName: candidate.name, candidateEmail: candidate.email });
+  } catch (err: any) {
+    console.error("[recruit] POST /reject-email", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitRouter.post("/jobs/:jobId/candidates/:candidateId/reminder", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    const candidate = await RecruitCandidate.findOne({ _id: req.params.candidateId, jobId: req.params.jobId, uid });
+    if (!candidate) return res.status(404).json({ error: "Candidate not found." });
+
+    if (candidate.assessmentStatus !== "sent") {
+      return res.status(400).json({ error: "Assessment not in pending state." });
+    }
+
+    candidate.assessmentReminderSentAt = new Date();
+    await candidate.save();
+
+    const assessmentUrl = `${FRONTEND_URL}/recruit/assessment/${candidate.assessmentToken}`;
+    return res.json({ ok: true, assessmentUrl, candidateEmail: candidate.email });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitPublicRouter.get("/assessment/:token", async (req, res) => {
+  try {
+    await connectMongo();
+    const candidate = await RecruitCandidate.findOne({ assessmentToken: req.params.token })
+      .select("name assessmentQuestions assessmentStatus assessmentCompletedAt jobId")
+      .lean();
+
+    if (!candidate) return res.status(404).json({ error: "Assessment not found." });
+    if (candidate.assessmentStatus === "completed") {
+      return res.json({ completed: true, candidateName: candidate.name });
+    }
+
+    const job = await RecruitJob.findById(candidate.jobId)
+      .select("title department location workMode")
+      .lean();
+
+    return res.json({
+      completed: false,
+      candidateName: candidate.name,
+      jobTitle: job?.title ?? "the role",
+      jobDepartment: job?.department ?? "",
+      jobLocation: job?.location ?? "",
+      questions: candidate.assessmentQuestions,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitPublicRouter.post("/assessment/:token/submit", async (req, res) => {
+  try {
+    await connectMongo();
+    const candidate = await RecruitCandidate.findOne({ assessmentToken: req.params.token });
+    if (!candidate) return res.status(404).json({ error: "Assessment not found." });
+    if (candidate.assessmentStatus === "completed") {
+      return res.status(400).json({ error: "Assessment already submitted." });
+    }
+
+    const { answers } = req.body as {
+      answers: { questionId: string; answer: string; timeTakenSeconds: number }[];
+    };
+
+    if (!Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({ error: "Answers are required." });
+    }
+
+    const job = await RecruitJob.findById(candidate.jobId).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+
+    const result = await analyzeAssessmentAnswers({
+      candidateName: candidate.name,
+      jobTitle: job.title,
+      rubric: job.rubric,
+      questions: candidate.assessmentQuestions,
+      answers,
+      resumeScore: candidate.previousResumeScore || candidate.totalScore,
+      maxScore: candidate.maxScore,
+      resumeSummary: candidate.aiSummary,
+    });
+
+    candidate.assessmentAnswers = answers;
+    candidate.assessmentStatus = "completed";
+    candidate.assessmentCompletedAt = new Date();
+    candidate.totalScore = result.newTotalScore;
+    candidate.hiringDecision = result.hiringDecision;
+    candidate.assessmentImpact = result.impact;
+    candidate.stage = "assessed";
+    await candidate.save();
+
+    return res.json({ ok: true, message: "Assessment submitted successfully." });
+  } catch (err: any) {
+    console.error("[recruit] POST /assessment/submit", err);
     return res.status(500).json({ error: err.message });
   }
 });

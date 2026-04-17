@@ -9,10 +9,30 @@ export type CandidateStage =
   | "hired"
   | "rejected";
 
+export type AssessmentStatus = "not_sent" | "sent" | "completed";
+export type HiringDecision = "strong_yes" | "maybe" | "no" | null;
+
 export interface IScoreBreakdown {
   criterion: string;
   score: number;
   maxScore: number;
+  reasoning: string;
+}
+
+export interface IAssessmentQuestion {
+  id: string;
+  text: string;
+}
+
+export interface IAssessmentAnswer {
+  questionId: string;
+  answer: string;
+  timeTakenSeconds: number;
+}
+
+export interface IAssessmentImpact {
+  strengths: string[];
+  weaknesses: string[];
   reasoning: string;
 }
 
@@ -32,6 +52,16 @@ export interface IRecruitCandidate extends Document {
   stage: CandidateStage;
   notes: string;
   interviewBrief: string;
+  assessmentStatus: AssessmentStatus;
+  assessmentToken: string;
+  assessmentSentAt?: Date;
+  assessmentCompletedAt?: Date;
+  assessmentReminderSentAt?: Date;
+  assessmentQuestions: IAssessmentQuestion[];
+  assessmentAnswers: IAssessmentAnswer[];
+  previousResumeScore: number;
+  hiringDecision: HiringDecision;
+  assessmentImpact?: IAssessmentImpact;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +72,32 @@ const ScoreBreakdownSchema = new Schema<IScoreBreakdown>(
     score: { type: Number, required: true },
     maxScore: { type: Number, required: true },
     reasoning: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+const AssessmentQuestionSchema = new Schema<IAssessmentQuestion>(
+  {
+    id: { type: String, required: true },
+    text: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+const AssessmentAnswerSchema = new Schema<IAssessmentAnswer>(
+  {
+    questionId: { type: String, required: true },
+    answer: { type: String, required: true },
+    timeTakenSeconds: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
+const AssessmentImpactSchema = new Schema<IAssessmentImpact>(
+  {
+    strengths: { type: [String], default: [] },
+    weaknesses: { type: [String], default: [] },
+    reasoning: { type: String, default: "" },
   },
   { _id: false }
 );
@@ -67,6 +123,24 @@ const RecruitCandidateSchema = new Schema<IRecruitCandidate>(
     },
     notes: { type: String, default: "" },
     interviewBrief: { type: String, default: "" },
+    assessmentStatus: {
+      type: String,
+      enum: ["not_sent", "sent", "completed"],
+      default: "not_sent",
+    },
+    assessmentToken: { type: String, default: "", index: true, sparse: true },
+    assessmentSentAt: { type: Date },
+    assessmentCompletedAt: { type: Date },
+    assessmentReminderSentAt: { type: Date },
+    assessmentQuestions: { type: [AssessmentQuestionSchema], default: [] },
+    assessmentAnswers: { type: [AssessmentAnswerSchema], default: [] },
+    previousResumeScore: { type: Number, default: 0 },
+    hiringDecision: {
+      type: String,
+      enum: ["strong_yes", "maybe", "no", null],
+      default: null,
+    },
+    assessmentImpact: { type: AssessmentImpactSchema },
   },
   { timestamps: true }
 );

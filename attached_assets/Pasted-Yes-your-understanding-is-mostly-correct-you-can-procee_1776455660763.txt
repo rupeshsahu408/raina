@@ -1,0 +1,99 @@
+Yes, your understanding is mostly correct — you can proceed with Phase 2.
+
+But before you start building, I want to upgrade it slightly so that it becomes a proper AI hiring engine, not just a basic feature.
+
+Here are the exact requirements:
+
+---
+
+### 1. Async Text Assessment (Core Flow)
+
+* Send 5 AI-generated, role-specific questions based on the rubric
+* Candidate answers via a **no-login, link-based branded page**
+* After submission → AI analyzes answers and updates candidate score
+
+✅ This part stays as planned
+
+---
+
+### 2. VERY IMPORTANT — Add “Assessment Impact” (Explainability)
+
+When score updates, show:
+
+* Previous Score → New Score
+* AI explanation:
+
+  * Strengths (e.g. strong communication, clarity)
+  * Weaknesses (e.g. weak problem-solving)
+
+👉 Recruiter must clearly understand **why** the score changed
+
+---
+
+### 3. Candidate Experience (Make it premium)
+
+Assessment page should include:
+
+* Company logo + intro message
+* Progress indicator (Question 1/5)
+* Estimated time (e.g. “Takes ~10 minutes”)
+* Clean, distraction-free UI
+
+👉 It should feel like a real hiring product, not a form
+
+---
+
+### 4. Basic Anti-Cheat Signals
+
+Add simple checks:
+
+* Track time taken to answer
+* Flag very fast responses
+* Add instruction: “Answer in your own words”
+
+(No need for heavy system, just basic signals)
+
+---
+
+### 5. Smart Follow-ups (Automation)
+
+* If candidate doesn’t complete assessment → send reminder after 24h
+* Show status: Sent / Completed / Pending
+
+---
+
+### 6. Hiring Decision Signal (Important)
+
+After combining resume + assessment:
+
+Add final AI verdict:
+
+* Strong Yes ✅
+* Maybe 🤔
+* No ❌
+
+👉 This should be clearly visible on candidate card
+
+---
+
+### 7. Candidate Communication
+
+* One-click send:
+
+  * Assessment invite
+  * Rejection email (AI generated)
+
+Keep this simple and fast
+
+---
+
+### Goal:
+
+We are not just building a feature —
+we are building a **decision engine for hiring**
+
+Resume + Assessment → Final decision clarity
+
+---
+
+You can now start building with this updated scope.
