@@ -1555,6 +1555,12 @@ export default function InboxDashboard() {
               <span className="font-bold">Analyze</span>
               <span className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-md" style={{ background: "rgba(139,92,246,0.25)", color: "#c4b5fd" }}>NEW</span>
             </Link>
+            <Link href="/inbox/smart-digest" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
+              <span className="text-zinc-600">
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44l-1.74-9.7A2.5 2.5 0 0 1 7.76 6.7L9.5 6"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44l1.74-9.7a2.5 2.5 0 0 0-1.96-2.86L14.5 6"/></svg>
+              </span>
+              Smart Digest
+            </Link>
             <Link href="/inbox/leads" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
               <span className="text-zinc-600"><SparkleIcon /></span>
               Lead Intelligence
