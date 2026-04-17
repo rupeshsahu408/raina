@@ -2008,9 +2008,18 @@ inboxRouter.get("/explore/overview", async (req, res) => {
       } catch { return { total: 0, unread: 0 }; }
     }
 
+    // Helper: count messages matching a Gmail query (uses resultSizeEstimate)
+    async function queryCount(q: string, labelIds?: string[]): Promise<number> {
+      try {
+        const params: any = { userId: "me", maxResults: 1, q };
+        if (labelIds) params.labelIds = labelIds;
+        const r = await gmail.users.messages.list(params);
+        return r.data.resultSizeEstimate ?? 0;
+      } catch { return 0; }
+    }
+
     // Fetch exact counts for all built-in labels in parallel
     const [
-      inboxLabel,
       sentLabel,
       draftLabel,
       spamLabel,
@@ -2020,7 +2029,6 @@ inboxRouter.get("/explore/overview", async (req, res) => {
       promotionsLabel,
       socialLabel,
     ] = await Promise.all([
-      getLabelCounts("INBOX"),
       getLabelCounts("SENT"),
       getLabelCounts("DRAFT"),
       getLabelCounts("SPAM"),
@@ -2031,32 +2039,23 @@ inboxRouter.get("/explore/overview", async (req, res) => {
       getLabelCounts("CATEGORY_SOCIAL"),
     ]);
 
-    // Primary = inbox minus the category sub-labels (approximation, but far better than estimate)
-    // We subtract only what's confirmed in inbox (the category label totals include archived mail too,
-    // so we clamp primary to at least 0 and at most inbox total)
-    const categoryInboxSum = updatesLabel.total + promotionsLabel.total + socialLabel.total;
-    const primaryCount = Math.max(0, inboxLabel.total - categoryInboxSum);
-    const categoryUnreadSum = updatesLabel.unread + promotionsLabel.unread + socialLabel.unread;
-    const primaryUnread = Math.max(0, inboxLabel.unread - categoryUnreadSum);
+    // Primary inbox = emails in INBOX that are NOT in Updates/Promotions/Social categories.
+    // We must query this directly — category label totals include archived mail so simple
+    // subtraction from inboxLabel.total gives wrong results.
+    const [primaryCount, primaryUnread, archiveCount, totalCount] = await Promise.all([
+      queryCount("-category:updates -category:promotions -category:social", ["INBOX"]),
+      queryCount("-category:updates -category:promotions -category:social", ["INBOX", "UNREAD"]),
+      // Archive = everything not in inbox/spam/trash/sent/draft
+      queryCount("-in:inbox -in:spam -in:trash -in:sent -in:draft"),
+      // Total = all mail excluding spam & trash (most accurate overall figure)
+      queryCount("-in:spam -in:trash"),
+    ]);
 
-    // Archive: no built-in label — use resultSizeEstimate as best available approximation
-    let archiveCount = 0;
-    try {
-      const archiveRes = await gmail.users.messages.list({
-        userId: "me", maxResults: 1,
-        q: "-in:inbox -in:spam -in:trash -in:sent -in:draft",
-      });
-      archiveCount = archiveRes.data.resultSizeEstimate ?? 0;
-    } catch {}
-
-    // Total emails (all mail excluding spam & trash)
-    const totalCount = inboxLabel.total + sentLabel.total + archiveCount;
-
-    // Waiting for reply — exact count from FollowUp database
+    // Waiting for reply — exact count from WaitingReply database (matches the dashboard)
     let waitingCount = 0;
     try {
       await connectMongo();
-      waitingCount = await FollowUp.countDocuments({ uid, status: "pending" });
+      waitingCount = await WaitingReply.countDocuments({ uid, status: "active" });
     } catch {}
 
     // Hot / Warm / Cold leads — classify a sample of primary inbox emails
@@ -2122,81 +2121,105 @@ inboxRouter.get("/explore/overview", async (req, res) => {
   }
 });
 
-// GET /inbox/explore/waiting — returns actual follow-up tracked messages with Gmail data
+// GET /inbox/explore/waiting — returns emails you sent and are waiting for a reply on (WaitingReply model)
 inboxRouter.get("/explore/waiting", async (req, res) => {
   const uid = (req as any).user?.uid;
   if (!uid) return res.status(401).json({ error: "Unauthorized" });
   try {
     await connectMongo();
-    const followUps = await FollowUp.find({ uid, status: "pending" })
-      .sort({ scheduledAt: 1 })
+    const waitingItems = await WaitingReply.find({ uid, status: "active" })
+      .sort({ sentAt: -1 })
       .limit(50)
       .lean();
 
-    if (!followUps.length) return res.json({ messages: [] });
+    if (!waitingItems.length) return res.json({ messages: [] });
 
     const auth = await getAuthenticatedClient(uid);
     const gmail = google.gmail({ version: "v1", auth });
 
     const messages = (await Promise.all(
-      followUps.map(async (fu) => {
+      waitingItems.map(async (item) => {
+        const fromDisplay = item.toName ? `${item.toName} <${item.to}>` : item.to;
+        const sentDate = new Date(item.sentAt).toISOString();
+        const daysWaitingVal = Math.floor((Date.now() - item.sentAt) / 86_400_000);
+        const summary = `Awaiting reply from ${item.toName || item.to} · ${daysWaitingVal}d waiting`;
+
+        // Skip compose-only entries that have no real Gmail thread
+        if (!item.threadId || item.threadId.startsWith("compose-")) {
+          return {
+            id: String(item._id),
+            threadId: item.threadId || String(item._id),
+            subject: item.subject,
+            from: fromDisplay,
+            date: sentDate,
+            snippet: summary,
+            summary,
+            intent: "Needs Reply",
+            priorityCategory: "Needs Reply",
+            priorityScore: 70,
+            priorityReason: `No reply received after ${daysWaitingVal} day(s).`,
+            suggestedAction: "Send a follow-up message.",
+            riskLevel: "Low",
+            bestTone: "Professional + brief",
+            isUnread: false,
+            isStarred: false,
+            daysWaiting: daysWaitingVal,
+          };
+        }
+
         try {
-          const msg = await gmail.users.messages.get({
-            userId: "me", id: fu.messageId, format: "metadata",
+          const thread = await gmail.users.threads.get({
+            userId: "me", id: item.threadId, format: "metadata",
             metadataHeaders: ["From", "To", "Subject", "Date"],
           });
-          const headers = msg.data.payload?.headers ?? [];
-          const labelIds = msg.data.labelIds ?? [];
-          const subject = extractHeader(headers, "Subject") || fu.subject || "(no subject)";
-          const from    = extractHeader(headers, "From") || fu.from;
-          const date    = extractHeader(headers, "Date") || new Date(fu.scheduledAt).toISOString();
-          const snippet = msg.data.snippet ?? "";
-          const isUnread = labelIds.includes("UNREAD");
+          const msgs = thread.data.messages ?? [];
+          const lastMsg = msgs[msgs.length - 1];
+          const msgId = lastMsg?.id ?? item.threadId;
+          const headers = lastMsg?.payload?.headers ?? [];
+          const labelIds = lastMsg?.labelIds ?? [];
+          const subject = extractHeader(headers, "Subject") || item.subject || "(no subject)";
+          const snippet = lastMsg?.snippet ?? summary;
           const isStarred = labelIds.includes("STARRED");
-          const threadId = msg.data.threadId ?? fu.threadId;
-          const intent = detectIntent(subject, snippet);
-          const priority = inferPriority(subject, snippet, intent, isUnread);
+          const intent = "Needs Reply";
+          const priority = inferPriority(subject, snippet, "Meeting", false);
           return {
-            id: fu.messageId,
-            threadId,
+            id: msgId,
+            threadId: item.threadId,
             subject,
-            from,
-            date,
+            from: fromDisplay,
+            date: sentDate,
             snippet,
-            summary: fu.reason || snippet,
-            intent: fu.intent || intent,
-            priorityCategory: priority.priorityCategory,
-            priorityScore: priority.priorityScore,
-            priorityReason: priority.priorityReason,
+            summary,
+            intent,
+            priorityCategory: "Needs Reply" as const,
+            priorityScore: 70 + Math.min(daysWaitingVal * 2, 20),
+            priorityReason: `No reply received after ${daysWaitingVal} day(s).`,
             suggestedAction: priority.suggestedAction,
             riskLevel: priority.riskLevel,
             bestTone: priority.bestTone,
-            isUnread,
+            isUnread: false,
             isStarred,
-            waitingTag: fu.tag,
-            scheduledAt: fu.scheduledAt,
+            daysWaiting: daysWaitingVal,
           };
         } catch {
-          // Message may have been deleted — return from FollowUp data only
           return {
-            id: fu.messageId,
-            threadId: fu.threadId,
-            subject: fu.subject,
-            from: fu.from,
-            date: new Date(fu.scheduledAt).toISOString(),
-            snippet: fu.reason,
-            summary: fu.reason,
-            intent: fu.intent || "General",
-            priorityCategory: "Needs Reply",
+            id: String(item._id),
+            threadId: item.threadId,
+            subject: item.subject,
+            from: fromDisplay,
+            date: sentDate,
+            snippet: summary,
+            summary,
+            intent: "Needs Reply",
+            priorityCategory: "Needs Reply" as const,
             priorityScore: 70,
-            priorityReason: fu.reason,
-            suggestedAction: "Follow up",
-            riskLevel: "Medium",
-            bestTone: "Formal",
+            priorityReason: `No reply received after ${daysWaitingVal} day(s).`,
+            suggestedAction: "Send a follow-up message.",
+            riskLevel: "Low" as const,
+            bestTone: "Professional + brief",
             isUnread: false,
             isStarred: false,
-            waitingTag: fu.tag,
-            scheduledAt: fu.scheduledAt,
+            daysWaiting: daysWaitingVal,
           };
         }
       })
