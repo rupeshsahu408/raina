@@ -1116,7 +1116,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   setLinkCopied(true);
                   setTimeout(() => setLinkCopied(false), 2000);
                 });
-                trackEvent("recruiter_profile_viewed", undefined, { jobId: id, action: "share_link_copied" });
+                trackEvent("recruiter_profile_viewed", { jobId: id, action: "share_link_copied" });
               }}
               className={`flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${
                 linkCopied
