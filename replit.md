@@ -31,7 +31,7 @@ A multi-platform AI suite with four AI systems:
 - `NEXT_PUBLIC_API_BASE_URL=""` — empty string; API calls go through Next.js rewrites proxy
 
 ## API Routing
-Frontend proxies `/v1/*` and health checks to the backend via Next.js rewrites in `next.config.ts`. Inbox API calls are bridged through Next.js route handlers under `frontend/src/app/inbox/[...path]/route.ts`, with a dedicated lead-intelligence bridge at `frontend/src/app/inbox/lead-intelligence/route.ts`, so `/inbox/leads` can remain a frontend page while `/inbox/lead-intelligence` returns backend JSON.
+Frontend proxies `/v1/*`, `/backend/recruit/*`, `/recruit-public/*`, and health checks to the backend via Next.js rewrites in `next.config.ts`. Production defaults to `https://raina-1.onrender.com` when `BACKEND_URL` is not set, while local development uses `http://localhost:8080`. Inbox API calls are bridged through Next.js route handlers under `frontend/src/app/inbox/[...path]/route.ts`, with a dedicated lead-intelligence bridge at `frontend/src/app/inbox/lead-intelligence/route.ts`, so `/inbox/leads` can remain a frontend page while `/inbox/lead-intelligence` returns backend JSON.
 
 ## Key Features
 - Firebase Auth (email/password + Google)

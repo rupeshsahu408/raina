@@ -52,6 +52,20 @@ const WORK_MODES = [
 ];
 const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD"];
 
+async function readApiResponse(res: Response) {
+  const text = await res.text();
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    const message = text.includes("The page could not be found")
+      ? "Recruit API is not reachable right now. Please try again in a moment."
+      : text.slice(0, 220);
+    throw new Error(message || `Recruit API returned an invalid response (${res.status}).`);
+  }
+}
+
 type FormData = {
   title: string;
   niche: string;
@@ -161,7 +175,7 @@ export default function NewJobPage() {
           salaryMax: form.salaryMax ? Number(form.salaryMax) : undefined,
         }),
       });
-      const data = await res.json();
+      const data = await readApiResponse(res);
       if (!res.ok) throw new Error(data.error || "Failed to create job.");
       setCreatedJob({ id: data.job._id, title: form.title });
     } catch (e: any) {

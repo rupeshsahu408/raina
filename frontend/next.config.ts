@@ -3,7 +3,10 @@ import withPWA from "next-pwa";
 
 const isCapacitorExport = process.env.CAPACITOR_EXPORT === "true";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = (
+  process.env.BACKEND_URL ||
+  (process.env.NODE_ENV === "production" ? "https://raina-1.onrender.com" : "http://localhost:8080")
+).replace(/\/$/, "");
 
 // Allow Replit dev proxy origins
 const allowedDevOrigins: string[] = [
@@ -15,6 +18,7 @@ const allowedDevOrigins: string[] = [
 ];
 if (process.env.REPLIT_DEV_DOMAIN) {
   allowedDevOrigins.push(process.env.REPLIT_DEV_DOMAIN);
+  allowedDevOrigins.push(`https://${process.env.REPLIT_DEV_DOMAIN}`);
 }
 
 const nextConfig: NextConfig = {
@@ -107,4 +111,9 @@ const withPwaConfig = withPWA({
   disable: process.env.NODE_ENV === "development" || isCapacitorExport,
 });
 
-export default withPwaConfig(nextConfig);
+const configWithPWA = withPwaConfig(nextConfig);
+
+export default {
+  ...configWithPWA,
+  allowedDevOrigins,
+};
