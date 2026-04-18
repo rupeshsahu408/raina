@@ -1,6 +1,9 @@
 import Link from "next/link";
 import ApplyForm from "./ApplyForm";
 import RecruitHeader from "@/components/RecruitHeader";
+import ClientSaveButton from "../SaveButton";
+import ShareJobButton from "./ShareJobButton";
+import RecentlyViewedTracker from "./RecentlyViewedTracker";
 
 const API = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
 
@@ -55,7 +58,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-[#f3f6f8]">
+      <div className="min-h-screen bg-white">
         <RecruitHeader />
         <div className="flex flex-col items-center justify-center py-32 text-center px-4">
           <div className="text-4xl mb-4">🔍</div>
@@ -83,8 +86,19 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   ];
 
   return (
-    <div className="min-h-screen bg-[#f3f6f8] text-slate-900">
+    <div className="min-h-screen bg-white text-slate-900">
       <RecruitHeader />
+      <RecentlyViewedTracker
+        job={{
+          jobId: id,
+          title: job.title,
+          companyName: job.companyName,
+          location: job.location,
+          workMode: job.workMode,
+          jobType: job.jobType,
+          niche: job.niche,
+        }}
+      />
 
       <div className="mx-auto max-w-6xl px-4 py-2 sm:px-6 lg:px-8">
         <Link href="/recruit/opportunities" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-[#0a66c2] transition py-2">
@@ -95,12 +109,16 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
 
       <main className="mx-auto max-w-6xl px-4 pb-10 sm:px-6 lg:px-8 lg:grid lg:grid-cols-[1fr_360px] lg:gap-6 lg:items-start">
         <section className="space-y-4 mt-0">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
+          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-blue-50/40 p-5 shadow-sm sm:p-6">
             <div className="flex items-start gap-4">
               <div className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 text-xl font-black text-[#0a66c2]">
                 {(job.companyName || job.title).slice(0, 1).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  {job.verifiedCompany && <span className="rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-bold text-green-700">✓ Verified company</span>}
+                  {job.freshersAllowed && <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">Freshers welcome</span>}
+                </div>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight">{job.title}</h1>
                 <p className="mt-1 text-sm text-slate-500">
                   <span className="font-medium text-slate-700">{job.companyName || "Company"}</span>
@@ -108,6 +126,18 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                   {` · ${job.location || "India"}`}
                 </p>
                 <p className="mt-0.5 text-xs text-slate-400">{job.niche || job.department}</p>
+              </div>
+              <div className="relative z-10 flex shrink-0 items-center gap-2">
+                <ClientSaveButton
+                  jobId={id}
+                  title={job.title}
+                  companyName={job.companyName}
+                  location={job.location}
+                  workMode={job.workMode}
+                  jobType={job.jobType}
+                  niche={job.niche}
+                />
+                <ShareJobButton title={job.title} companyName={job.companyName} />
               </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -172,6 +202,16 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-5 shadow-sm">
+            <h2 className="text-sm font-bold text-slate-900">Apply faster with your saved profile</h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              Save your profile once and Plyndrox can reuse your name, contact details, and resume text when you apply to similar jobs.
+            </p>
+            <Link href="/recruit/profile" className="mt-3 inline-flex rounded-full bg-white px-4 py-2 text-xs font-bold text-[#0a66c2] shadow-sm ring-1 ring-blue-100 transition hover:bg-blue-50">
+              Update seeker profile
+            </Link>
           </div>
         </section>
 

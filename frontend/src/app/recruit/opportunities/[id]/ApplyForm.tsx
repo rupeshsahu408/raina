@@ -8,16 +8,20 @@ export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: str
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [savedProfileDetected, setSavedProfileDetected] = useState(false);
 
   useEffect(() => {
     try {
       const email = localStorage.getItem("recruit_applicant_email");
       const name = localStorage.getItem("recruit_applicant_name");
+      const phone = localStorage.getItem("recruit_applicant_phone");
       const resume = localStorage.getItem("recruit_resume_text");
+      setSavedProfileDetected(Boolean(email || name || phone || resume));
       setForm(prev => ({
         ...prev,
         email: email || prev.email,
         name: name || prev.name,
+        phone: phone || prev.phone,
         resumeText: resume || prev.resumeText,
       }));
     } catch { /* ignore */ }
@@ -29,6 +33,7 @@ export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: str
 
   async function apply() {
     if (!form.name.trim()) { setError("Please enter your full name."); return; }
+    if (!form.email.trim()) { setError("Please enter your email so recruiters can contact you."); return; }
     if (!form.resumeText.trim()) { setError("Please paste your resume or work history."); return; }
     setSubmitting(true);
     setError("");
@@ -43,6 +48,7 @@ export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: str
       try {
         if (form.email) localStorage.setItem("recruit_applicant_email", form.email);
         if (form.name) localStorage.setItem("recruit_applicant_name", form.name);
+        if (form.phone) localStorage.setItem("recruit_applicant_phone", form.phone);
         if (form.resumeText) localStorage.setItem("recruit_resume_text", form.resumeText);
       } catch { /* ignore */ }
       setSubmitted(true);
@@ -106,6 +112,12 @@ export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: str
       </div>
 
       <div className="p-4 sm:p-5 space-y-3.5">
+        {savedProfileDetected && (
+          <div className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2.5 text-xs font-semibold text-[#0a66c2]">
+            Saved profile details were filled automatically. Review once and submit.
+          </div>
+        )}
+
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Full name *</label>
           <input

@@ -2,6 +2,7 @@ import Link from "next/link";
 import RecruitHeader from "@/components/RecruitHeader";
 import ClientSaveButton from "./SaveButton";
 import FilterToggle from "./FilterToggle";
+import RecentlyViewedJobs from "./RecentlyViewedJobs";
 
 const NICHES = [
   "AI, Data, Software & Product Tech",
@@ -97,6 +98,16 @@ function checkedLink(params: PageSearchParams, key: "freshersAllowed" | "verifie
   return `/recruit/opportunities${qs ? `?${qs}` : ""}`;
 }
 
+function quickFilterLink(params: PageSearchParams, updates: Record<string, string>) {
+  const query = buildQuery(params);
+  Object.entries(updates).forEach(([key, value]) => {
+    if (value) query.set(key, value);
+    else query.delete(key);
+  });
+  const qs = query.toString();
+  return `/recruit/opportunities${qs ? `?${qs}` : ""}`;
+}
+
 function timeAgo(dateStr?: string) {
   if (!dateStr) return "";
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -130,6 +141,21 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
     seniority !== "all" || companyType !== "all" || minSalary ||
     noticePeriod !== "all" || educationRequirement !== "all" || postedAfterDays ||
     freshersAllowed || verifiedCompany;
+
+  const activeChips = [
+    q ? `Search: ${q}` : "",
+    niche !== "all" ? niche : "",
+    workMode !== "all" ? `${workMode.charAt(0).toUpperCase()}${workMode.slice(1)} jobs` : "",
+    jobType !== "all" ? jobType : "",
+    seniority !== "all" ? seniority : "",
+    companyType !== "all" ? companyType : "",
+    minSalary ? `₹${Number(minSalary).toLocaleString("en-IN")}+` : "",
+    noticePeriod !== "all" ? `${noticePeriod} notice` : "",
+    educationRequirement !== "all" ? educationRequirement : "",
+    postedAfterDays ? `Last ${postedAfterDays} day${postedAfterDays === "1" ? "" : "s"}` : "",
+    freshersAllowed ? "Freshers ok" : "",
+    verifiedCompany ? "Verified companies" : "",
+  ].filter(Boolean);
 
   const filterPanel = (
     <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
@@ -233,16 +259,54 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
   );
 
   return (
-    <div className="min-h-screen bg-[#f3f6f8] text-slate-900">
+    <div className="min-h-screen bg-white text-slate-900">
       <RecruitHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">Open opportunities</h1>
-            <p className="text-sm text-slate-500">{jobs.length} role{jobs.length === 1 ? "" : "s"} found across India</p>
+        <div className="mb-5 rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-blue-50/40 p-4 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0a66c2]">Free India-first job search</p>
+              <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950 sm:text-3xl">Find roles that fit your skills faster</h1>
+              <p className="mt-2 max-w-2xl text-sm text-slate-600">
+                Browse fresh jobs, save interesting roles, and apply with your saved profile in a few steps.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href="/recruit/profile" className="hidden rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 sm:inline-flex">
+                Complete profile
+              </Link>
+              <FilterToggle hasFilters={!!hasFilters} />
+            </div>
           </div>
-          <FilterToggle hasFilters={!!hasFilters} />
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <Link href={quickFilterLink(params, { postedAfterDays: "7" })} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-[#0a66c2]/40 hover:text-[#0a66c2]">
+              Fresh jobs this week
+            </Link>
+            <Link href={quickFilterLink(params, { freshersAllowed: "true" })} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-[#0a66c2]/40 hover:text-[#0a66c2]">
+              Freshers-friendly roles
+            </Link>
+            <Link href={quickFilterLink(params, { workMode: "remote" })} className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-[#0a66c2]/40 hover:text-[#0a66c2]">
+              Remote opportunities
+            </Link>
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
+              {jobs.length} role{jobs.length === 1 ? "" : "s"} found
+            </span>
+            {activeChips.map(chip => (
+              <span key={chip} className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-[#0a66c2]">
+                {chip}
+              </span>
+            ))}
+            {hasFilters && (
+              <Link href="/recruit/opportunities" className="rounded-full px-3 py-1 text-xs font-bold text-slate-500 underline-offset-2 hover:text-[#0a66c2] hover:underline">
+                Clear filters
+              </Link>
+            )}
+          </div>
         </div>
 
         <div className="lg:grid lg:grid-cols-[300px_1fr] lg:gap-6">
@@ -255,14 +319,22 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
           </div>
 
           <section className="space-y-3">
+            <RecentlyViewedJobs />
             {jobs.length === 0 ? (
-              <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl">🔍</div>
-                <h3 className="font-semibold text-slate-800">No jobs match your filters</h3>
-                <p className="mt-1 text-sm text-slate-500">Try adjusting your search — change the niche, work mode, or salary range.</p>
-                <Link href="/recruit/opportunities" className="mt-4 inline-block rounded-full bg-[#0a66c2] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#004182] transition">
-                  Clear all filters
-                </Link>
+              <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-10">
+                <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-2xl">🔍</div>
+                <h3 className="text-lg font-bold text-slate-900">No jobs match this search yet</h3>
+                <p className="mx-auto mt-2 max-w-md text-sm text-slate-500">
+                  Try fewer filters, search a nearby city, or save your profile so you can apply quickly when new roles appear.
+                </p>
+                <div className="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+                  <Link href="/recruit/opportunities" className="rounded-full bg-[#0a66c2] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[#004182]">
+                    Clear all filters
+                  </Link>
+                  <Link href="/recruit/profile" className="rounded-full border border-slate-300 px-6 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50">
+                    Complete profile
+                  </Link>
+                </div>
               </div>
             ) : (
               jobs.map(job => (

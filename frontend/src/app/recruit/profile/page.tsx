@@ -161,9 +161,12 @@ export default function RecruitProfilePage() {
         }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Save failed"); }
-      if (profile.resumeText) {
-        try { localStorage.setItem("recruit_resume_text", profile.resumeText); } catch { /* ignore */ }
-      }
+      try {
+        localStorage.setItem("recruit_applicant_name", profile.name);
+        localStorage.setItem("recruit_applicant_email", profile.email);
+        localStorage.setItem("recruit_applicant_phone", profile.phone);
+        if (profile.resumeText) localStorage.setItem("recruit_resume_text", profile.resumeText);
+      } catch { /* ignore */ }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e: any) {
