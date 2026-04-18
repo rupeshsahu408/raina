@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import ApplyForm from "./ApplyForm";
 import RecruitHeader from "@/components/RecruitHeader";
 import ClientSaveButton from "../SaveButton";
@@ -55,6 +56,33 @@ async function loadJob(id: string) {
   } catch {
     return null;
   }
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const job = await loadJob(id);
+  if (!job) return { title: "Job not found | Recruit AI" };
+  const title = `${job.title}${job.companyName ? ` at ${job.companyName}` : ""} | Recruit AI`;
+  const location = job.location || "India";
+  const mode = job.workMode ? ` · ${job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}` : "";
+  const description = `${job.title} role${job.companyName ? ` at ${job.companyName}` : ""} in ${location}${mode}. ${job.mustHaveSkills ? `Skills: ${job.mustHaveSkills.split(",").slice(0, 4).join(", ")}.` : ""} Apply free on Recruit AI — India's niche job platform.`;
+  const url = `https://www.plyndrox.app/recruit/opportunities/${id}`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "Recruit AI by Plyndrox",
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+  };
 }
 
 export default async function OpportunityDetailPage({ params }: { params: Promise<{ id: string }> }) {

@@ -10,6 +10,7 @@ const SEEKER_NAV: NavLink[] = [
   { href: "/recruit/opportunities", label: "Jobs" },
   { href: "/recruit/niches", label: "Niches" },
   { href: "/recruit/saved-jobs", label: "Saved" },
+  { href: "/recruit/job-alerts", label: "Alerts" },
   { href: "/recruit/my-applications", label: "My Applications" },
   { href: "/recruit/profile", label: "My Profile" },
 ];

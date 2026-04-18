@@ -93,12 +93,23 @@ function timeAgo(dateStr: string) {
   return `${months}mo ago`;
 }
 
+const SEEN_COUNTS_KEY = "recruit_dashboard_seen_counts";
+
+function loadSeenCounts(): Record<string, number> {
+  try { return JSON.parse(localStorage.getItem(SEEN_COUNTS_KEY) || "{}"); } catch { return {}; }
+}
+
+function saveSeenCounts(counts: Record<string, number>) {
+  try { localStorage.setItem(SEEN_COUNTS_KEY, JSON.stringify(counts)); } catch {}
+}
+
 export default function RecruitDashboardPage() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "active" | "paused" | "closed">("all");
+  const [seenCounts, setSeenCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -108,6 +119,10 @@ export default function RecruitDashboardPage() {
     });
     return () => unsub();
   }, [router]);
+
+  useEffect(() => {
+    setSeenCounts(loadSeenCounts());
+  }, []);
 
   const fetchJobs = useCallback(async () => {
     if (!token) return;
@@ -121,6 +136,12 @@ export default function RecruitDashboardPage() {
     } catch { /* silent */ }
     finally { setLoading(false); }
   }, [token]);
+
+  function markJobSeen(jobId: string, count: number) {
+    const updated = { ...seenCounts, [jobId]: count };
+    setSeenCounts(updated);
+    saveSeenCounts(updated);
+  }
 
   useEffect(() => { fetchJobs(); }, [fetchJobs]);
 
@@ -243,19 +264,31 @@ export default function RecruitDashboardPage() {
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {filtered.map(job => (
+            {filtered.map(job => {
+              const lastSeen = seenCounts[job._id] ?? 0;
+              const newCount = Math.max(0, (job.candidateCount || 0) - lastSeen);
+              const hasNew = newCount > 0 && lastSeen > 0;
+              return (
               <Link
                 key={job._id}
                 href={`/recruit/jobs/${job._id}`}
+                onClick={() => markJobSeen(job._id, job.candidateCount || 0)}
                 className="group rounded-3xl border border-white/[0.07] bg-white/[0.03] p-5 transition hover:border-indigo-500/25 hover:bg-white/[0.05]"
               >
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
                     <BriefcaseIcon />
                   </div>
-                  <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${STATUS_COLORS[job.status]}`}>
-                    {job.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {hasNew && (
+                      <span className="rounded-full bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                        +{newCount} new
+                      </span>
+                    )}
+                    <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${STATUS_COLORS[job.status]}`}>
+                      {job.status}
+                    </span>
+                  </div>
                 </div>
 
                 <h3 className="text-sm font-semibold text-white group-hover:text-indigo-200 transition line-clamp-1">{job.title}</h3>
@@ -267,7 +300,7 @@ export default function RecruitDashboardPage() {
                 </div>
 
                 <div className="mt-4 flex items-center justify-between border-t border-white/[0.05] pt-4">
-                  <span className="flex items-center gap-1.5 text-[11px] text-zinc-500">
+                  <span className={`flex items-center gap-1.5 text-[11px] ${hasNew ? "text-indigo-400 font-semibold" : "text-zinc-500"}`}>
                     <UsersIcon /> {job.candidateCount} candidate{job.candidateCount !== 1 ? "s" : ""}
                   </span>
                   <div className="flex items-center gap-2 text-[11px] text-zinc-600">
@@ -276,7 +309,8 @@ export default function RecruitDashboardPage() {
                   </div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
 
             <Link
               href="/recruit/jobs/new"

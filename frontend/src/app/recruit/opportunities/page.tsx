@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import RecruitHeader from "@/components/RecruitHeader";
 import ClientSaveButton from "./SaveButton";
 import FilterToggle from "./FilterToggle";
 import RecentlyViewedJobs from "./RecentlyViewedJobs";
 import ProfileNudge from "./ProfileNudge";
 import { computeJobQuality } from "@/lib/jobQuality";
+import RecommendedJobs from "./RecommendedJobs";
+import SavedSearches from "./SavedSearches";
 
 const NICHES = [
   "AI, Data, Software & Product Tech",
@@ -338,6 +341,10 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
 
           <section className="space-y-3">
             <ProfileNudge />
+            <Suspense fallback={null}>
+              <SavedSearches />
+            </Suspense>
+            <RecommendedJobs />
             <RecentlyViewedJobs />
             {jobs.length === 0 ? (
               <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-10">

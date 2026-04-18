@@ -6,6 +6,7 @@ import { RecruitCandidate } from "./models/RecruitCandidate";
 import { RecruitSeekerProfile } from "./models/RecruitSeekerProfile";
 import { RecruitCompanyProfile } from "./models/RecruitCompanyProfile";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
+import { RecruitJobAlert } from "./models/RecruitJobAlert";
 
 export const recruitRouter = express.Router();
 export const recruitPublicRouter = express.Router();
@@ -1888,6 +1889,164 @@ recruitPublicRouter.get("/my-applications", async (req, res) => {
     return res.json({ applications });
   } catch (err: any) {
     console.error("[recruit] GET /my-applications", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Job Alerts ──────────────────────────────────────────────────────────────
+
+recruitPublicRouter.post("/job-alerts", async (req, res) => {
+  try {
+    await connectMongo();
+    const { email, niche, workMode, keywords, location, freshersOnly, verifiedOnly } = req.body;
+    if (!email || typeof email !== "string") return res.status(400).json({ error: "email required" });
+    const normalizedEmail = email.trim().toLowerCase();
+    const existing = await RecruitJobAlert.findOne({ email: normalizedEmail, niche: niche || "", workMode: workMode || "" });
+    if (existing) {
+      existing.keywords = keywords || "";
+      existing.location = location || "";
+      existing.freshersOnly = !!freshersOnly;
+      existing.verifiedOnly = !!verifiedOnly;
+      await existing.save();
+      return res.json({ alert: existing, updated: true });
+    }
+    const alert = await RecruitJobAlert.create({
+      email: normalizedEmail,
+      niche: niche || "",
+      workMode: workMode || "",
+      keywords: keywords || "",
+      location: location || "",
+      freshersOnly: !!freshersOnly,
+      verifiedOnly: !!verifiedOnly,
+    });
+    return res.status(201).json({ alert });
+  } catch (err: any) {
+    console.error("[recruit] POST /job-alerts", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitPublicRouter.get("/job-alerts", async (req, res) => {
+  try {
+    await connectMongo();
+    const email = String(req.query.email ?? "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: "email required" });
+    const alerts = await RecruitJobAlert.find({ email }).sort({ createdAt: -1 }).lean();
+    const alertsWithCounts = await Promise.all(
+      alerts.map(async (a) => {
+        const filter: any = { status: "active", publicVisibility: { $ne: false }, createdAt: { $gt: a.lastCheckedAt } };
+        if (a.niche) filter.niche = a.niche;
+        if (a.workMode) filter.workMode = a.workMode;
+        if (a.freshersOnly) filter.freshersAllowed = true;
+        if (a.verifiedOnly) filter.verifiedCompany = true;
+        if (a.keywords) {
+          const rx = new RegExp(a.keywords.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+          filter.$or = [{ title: rx }, { mustHaveSkills: rx }, { companyName: rx }, { location: rx }];
+        }
+        if (a.location) filter.location = new RegExp(a.location.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+        const newCount = await RecruitJob.countDocuments(filter);
+        return { ...a, newJobCount: newCount };
+      })
+    );
+    return res.json({ alerts: alertsWithCounts });
+  } catch (err: any) {
+    console.error("[recruit] GET /job-alerts", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitPublicRouter.get("/job-alerts/:alertId/jobs", async (req, res) => {
+  try {
+    await connectMongo();
+    const email = String(req.query.email ?? "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: "email required" });
+    const alert = await RecruitJobAlert.findOne({ _id: req.params.alertId, email });
+    if (!alert) return res.status(404).json({ error: "Alert not found" });
+    const filter: any = { status: "active", publicVisibility: { $ne: false } };
+    if (alert.niche) filter.niche = alert.niche;
+    if (alert.workMode) filter.workMode = alert.workMode;
+    if (alert.freshersOnly) filter.freshersAllowed = true;
+    if (alert.verifiedOnly) filter.verifiedCompany = true;
+    if (alert.keywords) {
+      const rx = new RegExp(alert.keywords.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filter.$or = [{ title: rx }, { mustHaveSkills: rx }, { companyName: rx }, { location: rx }];
+    }
+    if (alert.location) filter.location = new RegExp(alert.location.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    const jobs = await RecruitJob.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .select("title companyName location workMode jobType salaryMin salaryMax salaryCurrency freshersAllowed verifiedCompany mustHaveSkills createdAt niche")
+      .lean();
+    alert.lastCheckedAt = new Date();
+    await alert.save();
+    return res.json({ jobs, alertId: alert._id });
+  } catch (err: any) {
+    console.error("[recruit] GET /job-alerts/:id/jobs", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitPublicRouter.delete("/job-alerts/:alertId", async (req, res) => {
+  try {
+    await connectMongo();
+    const email = String(req.query.email ?? "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: "email required" });
+    await RecruitJobAlert.deleteOne({ _id: req.params.alertId, email });
+    return res.json({ success: true });
+  } catch (err: any) {
+    console.error("[recruit] DELETE /job-alerts/:id", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Recommended Jobs (based on profile or manual prefs) ─────────────────────
+
+recruitPublicRouter.get("/recommended-jobs", async (req, res) => {
+  try {
+    await connectMongo();
+    const niche = String(req.query.niche ?? "").trim();
+    const workMode = String(req.query.workMode ?? "").trim();
+    const skills = String(req.query.skills ?? "").trim();
+    const location = String(req.query.location ?? "").trim();
+    const freshersAllowed = req.query.freshersAllowed === "true";
+
+    const filter: any = { status: "active", publicVisibility: { $ne: false } };
+    if (niche) filter.niche = niche;
+    if (workMode) filter.workMode = workMode;
+    if (freshersAllowed) filter.freshersAllowed = true;
+    if (location) filter.location = new RegExp(location.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    if (skills) {
+      const skillList = skills.split(",").map(s => s.trim()).filter(Boolean);
+      if (skillList.length > 0) {
+        const rx = skillList.map(s => new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"));
+        filter.$or = rx.map(r => ({ mustHaveSkills: r }));
+      }
+    }
+    const jobs = await RecruitJob.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(6)
+      .select("title companyName location workMode jobType salaryMin salaryMax salaryCurrency freshersAllowed verifiedCompany mustHaveSkills createdAt niche seniority")
+      .lean();
+    return res.json({ jobs });
+  } catch (err: any) {
+    console.error("[recruit] GET /recommended-jobs", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Recruiter: new applicants count since last check ────────────────────────
+
+recruitRouter.get("/jobs/:jobId/new-applicants-count", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    const job = await RecruitJob.findOne({ _id: req.params.jobId, uid }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found" });
+    const since = req.query.since ? new Date(String(req.query.since)) : new Date(0);
+    const count = await RecruitCandidate.countDocuments({ jobId: req.params.jobId, createdAt: { $gt: since } });
+    return res.json({ count });
+  } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
 });
