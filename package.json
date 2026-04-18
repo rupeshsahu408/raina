@@ -1,0 +1,17 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "A PWA-based emotional AI companion with: - Landing page + 3D animated feel - Firebase email/password auth - Protected chat dashboard - Memory (MongoDB short-term + long-term profile) - NVIDIA OpenAI-compatible `openai/gpt-oss-20b` integration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "next": "^14.2.35",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

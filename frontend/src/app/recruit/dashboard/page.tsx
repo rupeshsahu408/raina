@@ -22,7 +22,7 @@ type Job = {
 
 function PlusIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M5 12h14" /><path d="M12 5v14" />
     </svg>
   );
@@ -37,7 +37,7 @@ function BriefcaseIcon({ size = 18 }: { size?: number }) {
   );
 }
 
-function UsersIcon({ size = 15 }: { size?: number }) {
+function UsersIcon({ size = 14 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -50,7 +50,7 @@ function UsersIcon({ size = 15 }: { size?: number }) {
 
 function MapPinIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0" />
       <circle cx="12" cy="10" r="3" />
     </svg>
@@ -59,7 +59,7 @@ function MapPinIcon() {
 
 function ChevronRightIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="m9 18 6-6-6-6" />
     </svg>
   );
@@ -67,16 +67,26 @@ function ChevronRightIcon() {
 
 function SparkIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
     </svg>
   );
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  active: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
-  paused: "bg-amber-500/15 text-amber-400 border-amber-500/20",
-  closed: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20",
+function BarChartIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" x2="12" y1="20" y2="10" />
+      <line x1="18" x2="18" y1="20" y2="4" />
+      <line x1="6" x2="6" y1="20" y2="16" />
+    </svg>
+  );
+}
+
+const STATUS_MAP = {
+  active: { pill: "bg-emerald-50 text-emerald-700 border border-emerald-200", dot: "bg-emerald-500", label: "Active" },
+  paused: { pill: "bg-amber-50 text-amber-700 border border-amber-200", dot: "bg-amber-500", label: "Paused" },
+  closed: { pill: "bg-slate-100 text-slate-500 border border-slate-200", dot: "bg-slate-400", label: "Closed" },
 };
 
 const WORK_MODE_LABELS: Record<string, string> = {
@@ -94,11 +104,9 @@ function timeAgo(dateStr: string) {
 }
 
 const SEEN_COUNTS_KEY = "recruit_dashboard_seen_counts";
-
 function loadSeenCounts(): Record<string, number> {
   try { return JSON.parse(localStorage.getItem(SEEN_COUNTS_KEY) || "{}"); } catch { return {}; }
 }
-
 function saveSeenCounts(counts: Record<string, number>) {
   try { localStorage.setItem(SEEN_COUNTS_KEY, JSON.stringify(counts)); } catch {}
 }
@@ -120,17 +128,13 @@ export default function RecruitDashboardPage() {
     return () => unsub();
   }, [router]);
 
-  useEffect(() => {
-    setSeenCounts(loadSeenCounts());
-  }, []);
+  useEffect(() => { setSeenCounts(loadSeenCounts()); }, []);
 
   const fetchJobs = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/recruit/jobs`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(`${API}/recruit/jobs`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await res.json();
       setJobs(data.jobs ?? []);
     } catch { /* silent */ }
@@ -146,94 +150,90 @@ export default function RecruitDashboardPage() {
   useEffect(() => { fetchJobs(); }, [fetchJobs]);
 
   const filtered = jobs.filter(j => filter === "all" || j.status === filter);
-  const totalCandidates = jobs.reduce((s, j) => s + (j.candidateCount || 0), 0);
   const activeJobs = jobs.filter(j => j.status === "active").length;
+  const totalCandidates = jobs.reduce((s, j) => s + (j.candidateCount || 0), 0);
+  const hiredCount = 0;
+
+  const stats = [
+    { label: "Total Jobs", value: jobs.length, accent: "text-slate-900", sub: "all time" },
+    { label: "Active Roles", value: activeJobs, accent: "text-emerald-600", sub: "hiring now" },
+    { label: "Candidates", value: totalCandidates, accent: "text-blue-700", sub: "in pipeline" },
+    { label: "Closed Roles", value: jobs.filter(j => j.status === "closed").length, accent: "text-slate-400", sub: "completed" },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#050506] text-zinc-100">
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(99,102,241,0.15),transparent_36%),linear-gradient(180deg,#050506,#07070a)]" />
-
-      <header className="relative z-10 border-b border-white/[0.07] bg-black/30 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link href="/recruit" className="group flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/8 transition group-hover:border-indigo-400/40">
-              <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain" draggable={false} />
+    <div className="min-h-screen bg-slate-50">
+      <header className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
+          <Link href="/recruit" className="flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-700 shadow">
+              <img src="/evara-logo.png" alt="Plyndrox" className="h-4.5 w-4.5 object-contain brightness-0 invert" draggable={false} />
             </span>
             <span>
-              <span className="block text-xs font-bold tracking-[0.2em] text-white uppercase">Recruit AI</span>
-              <span className="block text-[10px] text-zinc-600">Dashboard</span>
+              <span className="block text-sm font-bold text-slate-900 leading-none">Recruit AI</span>
+              <span className="block text-[10px] text-slate-400 mt-0.5">Dashboard</span>
             </span>
           </Link>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/recruit/company-profile"
-              className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white hover:border-white/20"
-            >
+
+          <nav className="hidden md:flex items-center gap-1">
+            <Link href="/recruit/talent-pool"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+              <UsersIcon /> Talent Pool
+            </Link>
+            <Link href="/recruit/analytics"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+              <BarChartIcon /> Analytics
+            </Link>
+            <Link href="/recruit/company-profile"
+              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
               Company Profile
             </Link>
-            <Link
-              href="/recruit/talent-pool"
-              className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white hover:border-white/20"
-            >
-              <UsersIcon size={13} /> Talent Pool
-            </Link>
-            <Link
-              href="/recruit/analytics"
-              className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white hover:border-white/20"
-            >
-              <SparkIcon /> Analytics
-            </Link>
-            <Link
-              href="/recruit/jobs/new"
-              className="flex items-center gap-1.5 rounded-full bg-indigo-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400"
-            >
-              <PlusIcon /> New Job
-            </Link>
-          </div>
+          </nav>
+
+          <Link href="/recruit/jobs/new"
+            className="flex items-center gap-1.5 rounded-xl bg-[#0a66c2] px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700 transition">
+            <PlusIcon /> Post a Job
+          </Link>
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h1 className="text-xl font-semibold text-white">Your Recruitment Pipeline</h1>
-          <p className="mt-1 text-sm text-zinc-500">Manage all your open roles and candidate pipelines from one place.</p>
+          <h1 className="text-2xl font-bold text-slate-900">Recruitment Pipeline</h1>
+          <p className="mt-1 text-sm text-slate-500">Manage all your open roles and candidate pipelines from one place.</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-8">
-          {[
-            { label: "Total Jobs", value: jobs.length, accent: "text-white" },
-            { label: "Active Roles", value: activeJobs, accent: "text-emerald-400" },
-            { label: "Total Candidates", value: totalCandidates, accent: "text-indigo-400" },
-            { label: "Roles Closed", value: jobs.filter(j => j.status === "closed").length, accent: "text-zinc-400" },
-          ].map(s => (
-            <div key={s.label} className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">
+          {stats.map(s => (
+            <div key={s.label} className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm">
               <p className={`text-2xl font-bold ${s.accent}`}>{s.value}</p>
-              <p className="mt-0.5 text-[11px] text-zinc-600">{s.label}</p>
+              <p className="mt-0.5 text-xs font-semibold text-slate-700">{s.label}</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">{s.sub}</p>
             </div>
           ))}
         </div>
 
-        <div className="mb-6 flex items-center gap-2">
+        <div className="mb-5 flex flex-wrap items-center gap-2">
           {(["all", "active", "paused", "closed"] as const).map(f => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={`rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition ${
                 filter === f
-                  ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-blue-700 text-white shadow"
+                  : "bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:text-slate-900"
               }`}
             >
-              {f}
+              {f === "all" ? "All Jobs" : f}
             </button>
           ))}
-          <span className="ml-auto text-xs text-zinc-600">{filtered.length} role{filtered.length !== 1 ? "s" : ""}</span>
+          <span className="ml-auto text-xs text-slate-400">{filtered.length} role{filtered.length !== 1 ? "s" : ""}</span>
         </div>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="flex items-center gap-3 text-zinc-500 text-sm">
-              <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+          <div className="flex items-center justify-center py-24">
+            <div className="flex items-center gap-2 text-slate-400 text-sm">
+              <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
@@ -242,88 +242,108 @@ export default function RecruitDashboardPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/[0.08] bg-white/[0.03] text-zinc-600 mb-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 border border-slate-200 text-slate-400 mb-5">
               <BriefcaseIcon size={28} />
             </div>
-            <h2 className="text-base font-semibold text-zinc-300">
+            <h2 className="text-base font-semibold text-slate-800">
               {filter === "all" ? "No jobs yet" : `No ${filter} jobs`}
             </h2>
-            <p className="mt-2 text-sm text-zinc-600 max-w-xs">
+            <p className="mt-2 text-sm text-slate-500 max-w-xs">
               {filter === "all"
-                ? "Create your first job posting and let AI generate the JD and scoring rubric in seconds."
-                : `You don't have any ${filter} jobs at the moment.`}
+                ? "Post your first job and let AI generate the full job description and scoring rubric in 30 seconds."
+                : `You don't have any ${filter} jobs right now.`}
             </p>
             {filter === "all" && (
-              <Link
-                href="/recruit/jobs/new"
-                className="mt-6 flex items-center gap-2 rounded-2xl bg-indigo-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400"
-              >
-                <PlusIcon /> Create First Job
+              <Link href="/recruit/jobs/new"
+                className="mt-6 flex items-center gap-2 rounded-xl bg-[#0a66c2] px-6 py-2.5 text-sm font-semibold text-white shadow hover:bg-blue-700 transition">
+                <PlusIcon /> Post First Job
               </Link>
             )}
           </div>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map(job => {
+              const s = STATUS_MAP[job.status] ?? STATUS_MAP.closed;
               const lastSeen = seenCounts[job._id] ?? 0;
               const newCount = Math.max(0, (job.candidateCount || 0) - lastSeen);
               const hasNew = newCount > 0 && lastSeen > 0;
+
               return (
-              <Link
-                key={job._id}
-                href={`/recruit/jobs/${job._id}`}
-                onClick={() => markJobSeen(job._id, job.candidateCount || 0)}
-                className="group rounded-3xl border border-white/[0.07] bg-white/[0.03] p-5 transition hover:border-indigo-500/25 hover:bg-white/[0.05]"
-              >
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
-                    <BriefcaseIcon />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {hasNew && (
-                      <span className="rounded-full bg-indigo-500 px-2 py-0.5 text-[10px] font-bold text-white">
-                        +{newCount} new
+                <Link
+                  key={job._id}
+                  href={`/recruit/jobs/${job._id}`}
+                  onClick={() => markJobSeen(job._id, job.candidateCount || 0)}
+                  className="group relative flex flex-col rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-blue-300 transition-all"
+                >
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                      <BriefcaseIcon size={18} />
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap justify-end">
+                      {hasNew && (
+                        <span className="rounded-full bg-blue-700 px-2 py-0.5 text-[10px] font-bold text-white">
+                          +{newCount} new
+                        </span>
+                      )}
+                      <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${s.pill}`}>
+                        <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                        {s.label}
                       </span>
-                    )}
-                    <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${STATUS_COLORS[job.status]}`}>
-                      {job.status}
+                    </div>
+                  </div>
+
+                  <h3 className="text-sm font-semibold text-slate-900 group-hover:text-blue-700 transition line-clamp-1 mb-0.5">
+                    {job.title}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {job.seniority}{job.department ? ` · ${job.department}` : ""}
+                  </p>
+
+                  <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-400">
+                    <span className="flex items-center gap-1"><MapPinIcon /> {job.location}</span>
+                    <span>{WORK_MODE_LABELS[job.workMode] ?? job.workMode}</span>
+                  </div>
+
+                  <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <span className={`flex items-center gap-1.5 text-xs font-medium ${hasNew ? "text-blue-700" : "text-slate-500"}`}>
+                      <UsersIcon /> {job.candidateCount || 0} candidate{job.candidateCount !== 1 ? "s" : ""}
                     </span>
+                    <div className="flex items-center gap-1 text-xs text-slate-400">
+                      {timeAgo(job.createdAt)}
+                      <ChevronRightIcon />
+                    </div>
                   </div>
-                </div>
-
-                <h3 className="text-sm font-semibold text-white group-hover:text-indigo-200 transition line-clamp-1">{job.title}</h3>
-                <p className="mt-0.5 text-xs text-zinc-600">{job.seniority}{job.department ? ` · ${job.department}` : ""}</p>
-
-                <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-zinc-600">
-                  <span className="flex items-center gap-1"><MapPinIcon /> {job.location}</span>
-                  <span>{WORK_MODE_LABELS[job.workMode] ?? job.workMode}</span>
-                </div>
-
-                <div className="mt-4 flex items-center justify-between border-t border-white/[0.05] pt-4">
-                  <span className={`flex items-center gap-1.5 text-[11px] ${hasNew ? "text-indigo-400 font-semibold" : "text-zinc-500"}`}>
-                    <UsersIcon /> {job.candidateCount} candidate{job.candidateCount !== 1 ? "s" : ""}
-                  </span>
-                  <div className="flex items-center gap-2 text-[11px] text-zinc-600">
-                    {timeAgo(job.createdAt)}
-                    <ChevronRightIcon />
-                  </div>
-                </div>
-              </Link>
+                </Link>
               );
             })}
 
             <Link
               href="/recruit/jobs/new"
-              className="group flex flex-col items-center justify-center rounded-3xl border border-dashed border-white/[0.08] p-8 text-center transition hover:border-indigo-500/30 hover:bg-indigo-500/[0.03]"
+              className="group flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center hover:border-blue-300 hover:bg-blue-50/40 transition-all"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.03] text-zinc-600 group-hover:border-indigo-500/30 group-hover:text-indigo-400 transition mb-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-slate-400 group-hover:border-blue-400 group-hover:text-blue-600 transition mb-3">
                 <PlusIcon />
               </div>
-              <p className="text-xs font-semibold text-zinc-500 group-hover:text-indigo-400 transition">New Job Posting</p>
-              <p className="mt-1 text-[11px] text-zinc-700">AI generates the JD in 30 seconds</p>
+              <p className="text-sm font-semibold text-slate-500 group-hover:text-blue-700 transition">New Job Posting</p>
+              <p className="mt-1 text-xs text-slate-400">AI generates the JD in 30 seconds</p>
             </Link>
           </div>
         )}
+
+        <div className="mt-8 md:hidden flex flex-wrap gap-2">
+          <Link href="/recruit/talent-pool"
+            className="flex items-center gap-1.5 rounded-xl bg-white border border-slate-200 px-4 py-2.5 text-xs font-medium text-slate-700 shadow-sm">
+            <UsersIcon /> Talent Pool
+          </Link>
+          <Link href="/recruit/analytics"
+            className="flex items-center gap-1.5 rounded-xl bg-white border border-slate-200 px-4 py-2.5 text-xs font-medium text-slate-700 shadow-sm">
+            <BarChartIcon /> Analytics
+          </Link>
+          <Link href="/recruit/company-profile"
+            className="flex items-center gap-1.5 rounded-xl bg-white border border-slate-200 px-4 py-2.5 text-xs font-medium text-slate-700 shadow-sm">
+            Company Profile
+          </Link>
+        </div>
       </main>
     </div>
   );
