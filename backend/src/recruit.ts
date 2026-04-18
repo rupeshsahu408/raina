@@ -669,6 +669,9 @@ recruitRouter.post("/jobs", async (req, res) => {
       return res.status(400).json({ error: "This job listing appears to contain spam or misleading content. Please review and revise." });
     }
 
+    const companyProfileForVerif = await RecruitCompanyProfile.findOne({ uid }).lean();
+    const isVerifiedCompany = (companyProfileForVerif as any)?.verificationStatus === "verified";
+
     const { jd, rubric } = await generateJobDescription({
       title, department: department || "", seniority: seniority || "Mid-level",
       location: location || "Remote", workMode: workMode || "remote",
@@ -697,7 +700,7 @@ recruitRouter.post("/jobs", async (req, res) => {
       educationRequirement: educationRequirement || "",
       noticePeriod: noticePeriod || "",
       freshersAllowed: Boolean(freshersAllowed),
-      verifiedCompany: Boolean(verifiedCompany),
+      verifiedCompany: isVerifiedCompany,
       publicVisibility: publicVisibility !== false,
       generatedJD: jd, rubric, status: "active", candidateCount: 0,
     });
@@ -740,12 +743,14 @@ recruitRouter.patch("/jobs/:jobId", async (req, res) => {
       "status", "title", "niche", "companyName", "companyType", "jobType",
       "department", "location", "workMode", "salaryMin", "salaryMax",
       "experienceMin", "experienceMax", "educationRequirement", "noticePeriod",
-      "freshersAllowed", "verifiedCompany", "publicVisibility",
+      "freshersAllowed", "publicVisibility",
     ];
     const update: any = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) update[key] = req.body[key];
     }
+    const companyProfileForPatch = await RecruitCompanyProfile.findOne({ uid }).lean();
+    update.verifiedCompany = (companyProfileForPatch as any)?.verificationStatus === "verified";
     const job = await RecruitJob.findOneAndUpdate({ _id: req.params.jobId, uid }, update, { new: true }).lean();
     if (!job) return res.status(404).json({ error: "Job not found." });
     return res.json({ job });
@@ -1656,6 +1661,37 @@ recruitRouter.put("/company/profile", async (req, res) => {
     return res.json({ profile });
   } catch (err: any) {
     console.error("[recruit] PUT /company/profile", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitRouter.post("/company/request-verification", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
+    const profile = await RecruitCompanyProfile.findOne({ uid }).lean();
+    if (!profile) return res.status(404).json({ error: "Company profile not found. Please save your company profile first." });
+    if (!profile.companyName || !profile.description || !profile.website) {
+      return res.status(400).json({ error: "Please complete your company profile (name, description, and website) before requesting verification." });
+    }
+    if ((profile as any).verificationStatus === "verified") {
+      return res.json({ status: "verified", message: "Your company is already verified." });
+    }
+    if ((profile as any).verificationStatus === "requested") {
+      return res.json({ status: "requested", message: "Your verification request is already under review." });
+    }
+
+    const updated = await RecruitCompanyProfile.findOneAndUpdate(
+      { uid },
+      { $set: { verificationStatus: "requested", verificationRequestedAt: new Date() } },
+      { new: true }
+    ).lean();
+
+    return res.json({ status: "requested", message: "Verification request submitted. Our team will review within 2–3 business days.", profile: updated });
+  } catch (err: any) {
+    console.error("[recruit] POST /company/request-verification", err);
     return res.status(500).json({ error: err.message });
   }
 });

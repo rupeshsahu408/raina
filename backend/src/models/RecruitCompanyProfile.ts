@@ -13,6 +13,9 @@ export interface IRecruitCompanyProfile extends Document {
   benefits: string;
   linkedinUrl: string;
   logoUrl: string;
+  verificationStatus: "none" | "requested" | "verified" | "rejected";
+  verificationRequestedAt?: Date;
+  verificationNote?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +34,9 @@ const RecruitCompanyProfileSchema = new Schema<IRecruitCompanyProfile>(
     benefits: { type: String, default: "" },
     linkedinUrl: { type: String, default: "" },
     logoUrl: { type: String, default: "" },
+    verificationStatus: { type: String, enum: ["none", "requested", "verified", "rejected"], default: "none" },
+    verificationRequestedAt: { type: Date },
+    verificationNote: { type: String, default: "" },
   },
   { timestamps: true }
 );

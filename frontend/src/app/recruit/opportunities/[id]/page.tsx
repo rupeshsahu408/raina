@@ -7,6 +7,7 @@ import RecentlyViewedTracker from "./RecentlyViewedTracker";
 import ReportJobButton from "./ReportJobButton";
 import JobMatchPanel from "./JobMatchPanel";
 import CompanySection from "./CompanySection";
+import QualityBreakdown from "./QualityBreakdown";
 import { computeJobQuality } from "@/lib/jobQuality";
 
 const API = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
@@ -213,22 +214,58 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           </div>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-bold text-slate-900">Trust signals</h2>
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl bg-slate-50 p-3">
-                <p className="text-xs font-bold text-slate-900">Free application</p>
-                <p className="mt-1 text-xs text-slate-500">Candidates are not charged to apply.</p>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100">
+                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               </div>
-              <div className="rounded-2xl bg-slate-50 p-3">
-                <p className="text-xs font-bold text-slate-900">{job.salaryMin || job.salaryMax ? "Salary visible" : "Salary not disclosed"}</p>
-                <p className="mt-1 text-xs text-slate-500">Salary transparency is shown wherever recruiters provide it.</p>
+              <h2 className="text-sm font-bold text-slate-900">Trust &amp; safety</h2>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 border border-emerald-100 p-3">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">✓</div>
+                <div>
+                  <p className="text-xs font-bold text-slate-900">Free to apply</p>
+                  <p className="mt-0.5 text-[11px] text-slate-500">No fees charged to candidates. Ever.</p>
+                </div>
               </div>
-              <div className="rounded-2xl bg-slate-50 p-3">
-                <p className="text-xs font-bold text-slate-900">{job.verifiedCompany ? "Verified company" : "Company info shown"}</p>
-                <p className="mt-1 text-xs text-slate-500">Review company and role details before applying.</p>
-              </div>
+              {job.salaryMin || job.salaryMax ? (
+                <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 border border-emerald-100 p-3">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">₹</div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">Salary disclosed</p>
+                    <p className="mt-0.5 text-[11px] text-slate-500">Recruiter shared the salary range upfront.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3 rounded-2xl bg-slate-50 border border-slate-100 p-3">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 text-xs font-black">₹</div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500">Salary not disclosed</p>
+                    <p className="mt-0.5 text-[11px] text-slate-400">Ask during application process.</p>
+                  </div>
+                </div>
+              )}
+              {job.verifiedCompany ? (
+                <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 border border-emerald-100 p-3">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">✓</div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">Verified company</p>
+                    <p className="mt-0.5 text-[11px] text-slate-500">Company identity reviewed by Plyndrox team.</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3 rounded-2xl bg-slate-50 border border-slate-100 p-3">
+                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 text-[11px] font-black">?</div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-500">Not verified</p>
+                    <p className="mt-0.5 text-[11px] text-slate-400">Review company details before applying.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          <QualityBreakdown job={job} />
 
           <CompanySection
             jobId={id}

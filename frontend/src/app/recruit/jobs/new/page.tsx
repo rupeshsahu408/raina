@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
+import { computeJobQuality } from "@/lib/jobQuality";
 
 const API = "/backend";
 
@@ -349,7 +350,6 @@ export default function NewJobPage() {
               <div className="flex flex-wrap gap-3">
                 {[
                   ["freshersAllowed", "Freshers allowed"],
-                  ["verifiedCompany", "Verified company"],
                   ["publicVisibility", "Show on public job board"],
                 ].map(([key, label]) => (
                   <button
@@ -364,6 +364,10 @@ export default function NewJobPage() {
                   </button>
                 ))}
               </div>
+              <p className="text-[11px] text-zinc-600">
+                ✓ <span className="text-zinc-500">Verified company badge</span> — automatically added when your company is verified.{" "}
+                <a href="/recruit/company-profile" className="text-indigo-400 hover:underline">Request verification →</a>
+              </p>
             </div>
           )}
 
@@ -431,6 +435,63 @@ export default function NewJobPage() {
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-2">Must-Have Skills</p>
                 <p className="text-sm text-zinc-300 leading-6">{form.mustHaveSkills}</p>
               </div>
+
+              {(() => {
+                const q = computeJobQuality({
+                  salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
+                  salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
+                  verifiedCompany: form.verifiedCompany,
+                  mustHaveSkills: form.mustHaveSkills,
+                  workMode: form.workMode,
+                  freshersAllowed: form.freshersAllowed,
+                  experienceMin: form.experienceMin ? Number(form.experienceMin) : null,
+                  companyName: form.companyName,
+                });
+                const pct = q.score;
+                const ringColor = q.tier === "high" ? "#22c55e" : q.tier === "standard" ? "#818cf8" : "#6b7280";
+                return (
+                  <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 mb-3">Listing quality preview</p>
+                    <div className="flex items-center gap-4 mb-3">
+                      <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
+                        <svg width="56" height="56" viewBox="0 0 56 56" className="absolute inset-0">
+                          <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
+                          <circle cx="28" cy="28" r="22" fill="none" stroke={ringColor} strokeWidth="5"
+                            strokeDasharray={`${(pct / 100) * 138.2} 138.2`} strokeLinecap="round" transform="rotate(-90 28 28)" />
+                        </svg>
+                        <span className="text-sm font-black text-white">{pct}</span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{q.label}</p>
+                        <p className="text-[11px] text-zinc-500 mt-0.5">Based on what you've filled in so far</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {q.signals.filter(s => s.label !== "Full job description" && s.label !== "Verified company").map(s => (
+                        <div key={s.label} className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold ${s.present ? "text-green-400" : "text-zinc-600"}`}>{s.present ? "✓" : "–"}</span>
+                          <span className={`text-[11px] ${s.present ? "text-zinc-300" : "text-zinc-600"}`}>{s.label}</span>
+                        </div>
+                      ))}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-indigo-400">✦</span>
+                        <span className="text-[11px] text-indigo-400">Full JD — AI will generate</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-zinc-600">✦</span>
+                        <span className="text-[11px] text-zinc-600">Verified company — by Plyndrox</span>
+                      </div>
+                    </div>
+                    {q.tier !== "high" && (
+                      <p className="mt-3 text-[11px] text-zinc-500">
+                        {!form.salaryMin && !form.salaryMax && "Adding a salary range +20 pts · "}
+                        {!form.mustHaveSkills.trim() && "Skills listed +15 pts · "}
+                        {!form.companyName.trim() && "Company name +5 pts"}
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.06] p-4">
                 <div className="flex items-center gap-2 text-indigo-300 mb-2">

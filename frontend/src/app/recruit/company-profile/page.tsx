@@ -61,6 +61,10 @@ export default function CompanyProfilePage() {
     website: "", location: "", description: "", mission: "", benefits: "",
     linkedinUrl: "", logoUrl: "",
   });
+  const [verificationStatus, setVerificationStatus] = useState<"none" | "requested" | "verified" | "rejected">("none");
+  const [requestingVerification, setRequestingVerification] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState("");
+  const [authToken, setAuthToken] = useState<string>("");
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -68,18 +72,42 @@ export default function CompanyProfilePage() {
       if (!u) { router.push("/login"); return; }
       try {
         const token = await u.getIdToken();
+        setAuthToken(token);
         const res = await fetch(`${API}/recruit/company/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.profile) setProfile(data.profile);
+          if (data.profile) {
+            setProfile(data.profile);
+            setVerificationStatus(data.profile.verificationStatus || "none");
+          }
         }
       } catch { /* ignore, use defaults */ }
       setLoading(false);
     });
     return () => unsub();
   }, [router]);
+
+  async function requestVerification() {
+    if (!authToken) return;
+    setRequestingVerification(true);
+    setVerificationMessage("");
+    try {
+      const res = await fetch(`${API}/recruit/company/request-verification`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to request verification.");
+      setVerificationStatus(data.status);
+      setVerificationMessage(data.message);
+    } catch (e: any) {
+      setVerificationMessage(e.message);
+    } finally {
+      setRequestingVerification(false);
+    }
+  }
 
   function set<K extends keyof CompanyProfile>(key: K, value: CompanyProfile[K]) {
     setProfile(prev => ({ ...prev, [key]: value }));
@@ -187,6 +215,57 @@ export default function CompanyProfilePage() {
             <div className="mt-4 flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
               <img src={profile.logoUrl} alt="Logo preview" className="h-12 w-12 rounded-lg object-contain border border-slate-200 bg-white" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
               <p className="text-xs text-slate-500">Logo preview</p>
+            </div>
+          )}
+        </div>
+
+        <div className={`rounded-2xl border shadow-sm overflow-hidden ${verificationStatus === "verified" ? "border-green-200 bg-green-50" : verificationStatus === "requested" ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white"}`}>
+          {verificationStatus === "verified" ? (
+            <div className="p-5 flex items-center gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-green-700 text-lg font-black">✓</div>
+              <div>
+                <p className="text-sm font-bold text-green-800">Company Verified</p>
+                <p className="text-xs text-green-700 mt-0.5">Your company has been verified by the Plyndrox team. A "Verified" badge appears on all your job listings.</p>
+              </div>
+            </div>
+          ) : verificationStatus === "requested" ? (
+            <div className="p-5 flex items-center gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 text-lg">⏳</div>
+              <div>
+                <p className="text-sm font-bold text-amber-800">Verification Under Review</p>
+                <p className="text-xs text-amber-700 mt-0.5">Your verification request has been submitted. Our team will review within 2–3 business days.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-5 sm:p-6">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[#0a66c2]">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900">Get your company verified</h2>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    Verified companies get a ✓ badge on every job listing, appear higher in search results, and earn more trust from job seekers. To qualify, your company profile must include a name, description, and website.
+                  </p>
+                </div>
+              </div>
+              <ul className="mb-4 grid gap-2 sm:grid-cols-3">
+                {["Higher listing visibility", "✓ Verified badge on all jobs", "More candidate applications"].map(b => (
+                  <li key={b} className="flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-xs font-semibold text-[#0a66c2]">
+                    <span className="text-green-600">✓</span> {b}
+                  </li>
+                ))}
+              </ul>
+              {verificationMessage && (
+                <p className="mb-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">{verificationMessage}</p>
+              )}
+              <button
+                onClick={requestVerification}
+                disabled={requestingVerification}
+                className="rounded-full bg-[#0a66c2] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#004182] disabled:opacity-60 transition"
+              >
+                {requestingVerification ? "Submitting…" : "Request company verification"}
+              </button>
             </div>
           )}
         </div>
