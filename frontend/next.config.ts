@@ -9,16 +9,15 @@ const BACKEND_URL = (
 ).replace(/\/$/, "");
 
 // Allow Replit dev proxy origins
-const allowedDevOrigins: string[] = [
-  "*.replit.dev",
-  "*.kirk.replit.dev",
-  "*.repl.co",
-  "*.replit.app",
-  "*.worf.replit.dev",
-];
+const allowedDevOrigins = new Set<string>();
 if (process.env.REPLIT_DEV_DOMAIN) {
-  allowedDevOrigins.push(process.env.REPLIT_DEV_DOMAIN);
-  allowedDevOrigins.push(`https://${process.env.REPLIT_DEV_DOMAIN}`);
+  allowedDevOrigins.add(process.env.REPLIT_DEV_DOMAIN.replace(/^https?:\/\//, ""));
+}
+if (process.env.REPLIT_DOMAINS) {
+  for (const domain of process.env.REPLIT_DOMAINS.split(",")) {
+    const normalized = domain.trim().replace(/^https?:\/\//, "");
+    if (normalized) allowedDevOrigins.add(normalized);
+  }
 }
 
 const nextConfig: NextConfig = {
@@ -39,7 +38,7 @@ const nextConfig: NextConfig = {
     "@firebase/component",
     "@firebase/installations",
   ],
-  allowedDevOrigins: allowedDevOrigins.length > 0 ? allowedDevOrigins : undefined,
+  allowedDevOrigins: allowedDevOrigins.size > 0 ? Array.from(allowedDevOrigins) : undefined,
   ...(isCapacitorExport
     ? {
         output: "export",
@@ -85,6 +84,10 @@ const nextConfig: NextConfig = {
             {
               source: "/backend/recruit/:path*",
               destination: `${BACKEND_URL}/recruit/:path*`,
+            },
+            {
+              source: "/backend/:path*",
+              destination: `${BACKEND_URL}/:path*`,
             },
             // Public recruit API calls
             {

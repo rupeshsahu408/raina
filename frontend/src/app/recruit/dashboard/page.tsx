@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
-
-const API = "/backend";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 type Job = {
   _id: string;
@@ -144,13 +143,13 @@ export default function RecruitDashboardPage() {
     setLoading(true);
     try {
       const [jobsRes, pipelineRes] = await Promise.all([
-        fetch(`${API}/recruit/jobs`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API}/recruit/pipeline-summary`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(apiUrl("/recruit/jobs"), { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(apiUrl("/recruit/pipeline-summary"), { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      const jobsData = await jobsRes.json();
+      const jobsData = await readApiJson(jobsRes);
       setJobs(jobsData.jobs ?? []);
       if (pipelineRes.ok) {
-        const pd = await pipelineRes.json();
+        const pd = await readApiJson(pipelineRes);
         setPipeline(pd);
       }
     } catch { /* silent */ }

@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
-
-const API = "/backend";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 type FunnelStage = { stage: string; count: number; dropoffPct: number };
 type SourceEntry = { source: string; count: number; pct: number };
@@ -97,10 +96,10 @@ export default function RecruitAnalyticsPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/recruit/analytics`, {
+      const res = await fetch(apiUrl("/recruit/analytics"), {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const json = await res.json();
+      const json = await readApiJson(res);
       if (!res.ok) throw new Error(json.error || "Failed to load analytics.");
       setData(json);
     } catch (e: any) {

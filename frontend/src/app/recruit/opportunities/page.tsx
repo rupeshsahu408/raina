@@ -33,7 +33,11 @@ const POSTED_WITHIN = [
   { label: "Last 30 days", value: "30" },
 ];
 
-const API = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
+const API = (
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (process.env.NODE_ENV === "production" ? "https://raina-1.onrender.com" : "http://localhost:8080")
+).replace(/\/$/, "");
 
 type PageSearchParams = Record<string, string | string[] | undefined>;
 

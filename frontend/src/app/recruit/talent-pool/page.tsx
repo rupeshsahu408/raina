@@ -5,8 +5,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
-
-const API = "/backend";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 type PoolCandidate = {
   _id: string;
@@ -71,12 +70,12 @@ function CandidateRow({
   async function togglePool() {
     setTogglingPool(true);
     try {
-      const res = await fetch(`${API}/recruit/talent-pool/${c._id}`, {
+      const res = await fetch(apiUrl(`/recruit/talent-pool/${c._id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ inTalentPool: !c.inTalentPool }),
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (res.ok) onUpdate(c._id, { inTalentPool: data.candidate.inTalentPool });
     } finally {
       setTogglingPool(false);
@@ -86,12 +85,12 @@ function CandidateRow({
   async function saveNote() {
     setSavingNote(true);
     try {
-      const res = await fetch(`${API}/recruit/talent-pool/${c._id}`, {
+      const res = await fetch(apiUrl(`/recruit/talent-pool/${c._id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ talentPoolNote: note }),
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (res.ok) {
         onUpdate(c._id, { talentPoolNote: data.candidate.talentPoolNote });
         setEditingNote(false);
@@ -219,10 +218,10 @@ export default function TalentPoolPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/recruit/talent-pool`, {
+      const res = await fetch(apiUrl("/recruit/talent-pool"), {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       setCandidates(data.candidates ?? []);
     } catch { /* silent */ }
     finally { setLoading(false); }

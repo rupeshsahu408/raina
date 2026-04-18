@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 type MatchResult = {
   matchScore: number;
@@ -57,11 +58,11 @@ function ScoreRing({ score }: { score: number }) {
 
 async function loadProfileFromDB(token: string): Promise<SeekerProfile | null> {
   try {
-    const res = await fetch("/backend/recruit/seeker/profile", {
+    const res = await fetch(apiUrl("/recruit/seeker/profile"), {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
-    const data = await res.json();
+    const data = await readApiJson(res);
     const p = data.profile;
     if (!p) return null;
     return {
@@ -152,7 +153,7 @@ export default function JobMatchPanel({ jobId }: { jobId: string }) {
         return;
       }
 
-      const res = await fetch(`/recruit-public/jobs/${jobId}/match`, {
+      const res = await fetch(apiUrl(`/recruit-public/jobs/${jobId}/match`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -168,11 +169,11 @@ export default function JobMatchPanel({ jobId }: { jobId: string }) {
       });
 
       if (!res.ok) {
-        const d = await res.json();
+        const d = await readApiJson(res);
         throw new Error(d.error || "Analysis failed.");
       }
 
-      const data: MatchResult = await res.json();
+      const data: MatchResult = await readApiJson(res);
       setResult(data);
       setState("done");
     } catch (e: any) {

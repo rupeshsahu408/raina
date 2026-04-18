@@ -6,11 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 import { computeJobQuality } from "@/lib/jobQuality";
-
-const API = (
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  (process.env.NODE_ENV === "production" ? "https://raina-1.onrender.com" : "/backend")
-).replace(/\/$/, "");
+import { apiUrl, readApiJson } from "@/lib/api";
 
 function ChevronLeftIcon() {
   return (
@@ -54,20 +50,6 @@ const WORK_MODES = [
   { value: "hybrid", label: "Hybrid" },
 ];
 const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD"];
-
-async function readApiResponse(res: Response) {
-  const text = await res.text();
-  if (!text) return {};
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    const message = text.includes("The page could not be found")
-      ? "Recruit API is not reachable right now. Please try again in a moment."
-      : text.slice(0, 220);
-    throw new Error(message || `Recruit API returned an invalid response (${res.status}).`);
-  }
-}
 
 type FormData = {
   title: string;
@@ -169,7 +151,7 @@ export default function NewJobPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${API}/recruit/jobs`, {
+      const res = await fetch(apiUrl("/recruit/jobs"), {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -178,7 +160,7 @@ export default function NewJobPage() {
           salaryMax: form.salaryMax ? Number(form.salaryMax) : undefined,
         }),
       });
-      const data = await readApiResponse(res);
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error || "Failed to create job.");
       setCreatedJob({ id: data.job._id, title: form.title });
     } catch (e: any) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 type CompanyData = {
   companyName?: string;
@@ -28,8 +29,8 @@ export default function CompanySection({ jobId, companyName, companyType, locati
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/recruit-public/jobs/${jobId}/company`)
-      .then(r => r.json())
+    fetch(apiUrl(`/recruit-public/jobs/${jobId}/company`))
+      .then(r => readApiJson(r))
       .then(d => setData(d))
       .catch(() => setData(null))
       .finally(() => setLoading(false));

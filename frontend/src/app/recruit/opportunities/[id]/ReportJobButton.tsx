@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 const REPORT_REASONS = [
   "Fake or spam job",
@@ -25,13 +26,13 @@ export default function ReportJobButton({ jobId }: { jobId: string }) {
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(`/recruit-public/jobs/${jobId}/report`, {
+      const res = await fetch(apiUrl(`/recruit-public/jobs/${jobId}/report`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason, details }),
       });
       if (!res.ok) {
-        const d = await res.json();
+        const d = await readApiJson(res);
         throw new Error(d.error || "Failed to submit report.");
       }
       setSubmitted(true);

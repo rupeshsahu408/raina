@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 type Job = {
   _id: string;
@@ -72,8 +73,8 @@ export default function RecommendedJobs() {
     if (savedPrefs.location) params.set("location", savedPrefs.location);
     if (savedPrefs.freshersAllowed) params.set("freshersAllowed", "true");
     if (savedPrefs.skills) params.set("skills", savedPrefs.skills);
-    fetch(`/recruit-public/recommended-jobs?${params.toString()}`)
-      .then(r => r.json())
+    fetch(apiUrl(`/recruit-public/recommended-jobs?${params.toString()}`))
+      .then(r => readApiJson(r))
       .then(d => setJobs(d.jobs || []))
       .catch(() => {})
       .finally(() => setLoading(false));

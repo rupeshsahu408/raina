@@ -6,10 +6,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 import { trackEvent } from "@/lib/trackEvent";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 const FRONTEND_URL = "https://www.plyndrox.app";
-
-const API = "/backend";
 
 type Confidence = "high" | "medium" | "low";
 type ScoreBreakdown = { criterion: string; score: number; maxScore: number; reasoning: string; confidence?: Confidence; tier?: 1 | 2 | 3 };
@@ -297,12 +296,12 @@ function OfferLetterModal({ candidate, job, token, onClose }: {
     if (!startDate.trim() || !salary.trim()) { setError("Start date and salary are required."); return; }
     setLoading(true); setError("");
     try {
-      const res = await fetch(`${API}/recruit/jobs/${job._id}/candidates/${candidate._id}/offer-letter`, {
+      const res = await fetch(apiUrl(`/recruit/jobs/${job._id}/candidates/${candidate._id}/offer-letter`), {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ startDate, salary, salaryCurrency: currency, signingBonus, benefits, companyName, hiringManagerName, regenerate }),
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error || "Failed to generate offer letter.");
       setLetter(data.offerLetter);
     } catch (e: any) { setError(e.message); }
@@ -431,12 +430,12 @@ function AddCandidateModal({ jobId, token, onClose, onAdded }: {
     setError("");
     setPreviousApp(null);
     try {
-      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates`, {
+      const res = await fetch(apiUrl(`/recruit/jobs/${jobId}/candidates`), {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ resumeText, source }),
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error || "Failed to add candidate.");
       if (data.previousApplication) {
         setPreviousApp(data.previousApplication);
@@ -584,7 +583,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
 
   async function updateStage(stage: CandidateStage) {
     try {
-      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}`, {
+      const res = await fetch(apiUrl(`/recruit/jobs/${jobId}/candidates/${c._id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ stage }),
@@ -597,11 +596,11 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
     if (brief) { setExpanded(true); return; }
     setLoadingBrief(true);
     try {
-      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}/brief`, {
+      const res = await fetch(apiUrl(`/recruit/jobs/${jobId}/candidates/${c._id}/brief`), {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       setBrief(data.brief ?? "");
     } catch { /* silent */ }
     finally { setLoadingBrief(false); setExpanded(true); }
@@ -610,11 +609,11 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
   async function sendAssessment() {
     setLoadingAssessment(true);
     try {
-      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}/assessment/send`, {
+      const res = await fetch(apiUrl(`/recruit/jobs/${jobId}/candidates/${c._id}/assessment/send`), {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error);
       const link = data.assessmentUrl;
       setAssessmentLink(link);
@@ -630,11 +629,11 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
   async function sendReminder() {
     setLoadingReminder(true);
     try {
-      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}/reminder`, {
+      const res = await fetch(apiUrl(`/recruit/jobs/${jobId}/candidates/${c._id}/reminder`), {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error);
       setAssessmentLink(data.assessmentUrl);
       setShowAssessmentModal(true);
@@ -649,11 +648,11 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
   async function generateRejectionEmail() {
     setLoadingReject(true);
     try {
-      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}/reject-email`, {
+      const res = await fetch(apiUrl(`/recruit/jobs/${jobId}/candidates/${c._id}/reject-email`), {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error);
       setRejectionEmail(data.email);
       setShowRejectModal(true);
@@ -668,11 +667,11 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
     setLoadingRetry(true);
     setRetryError("");
     try {
-      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}/retry-score`, {
+      const res = await fetch(apiUrl(`/recruit/jobs/${jobId}/candidates/${c._id}/retry-score`), {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error || "Retry failed.");
       onUpdate(c._id, {
         name: data.candidate.name,
@@ -1034,11 +1033,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
     setLoading(true);
     try {
       const [jobRes, candRes] = await Promise.all([
-        fetch(`${API}/recruit/jobs/${id}`, { headers: { Authorization: `Bearer ${token}` } }),
-        fetch(`${API}/recruit/jobs/${id}/candidates`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(apiUrl(`/recruit/jobs/${id}`), { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(apiUrl(`/recruit/jobs/${id}/candidates`), { headers: { Authorization: `Bearer ${token}` } }),
       ]);
-      const jobData = await jobRes.json();
-      const candData = await candRes.json();
+      const jobData = await readApiJson(jobRes);
+      const candData = await readApiJson(candRes);
       setJob(jobData.job ?? null);
       setCandidates(candData.candidates ?? []);
     } catch { /* silent */ }

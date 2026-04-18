@@ -3,7 +3,11 @@ import { notFound } from "next/navigation";
 import RecruitHeader from "@/components/RecruitHeader";
 import PageTracker from "@/components/PageTracker";
 
-const API = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
+const API = (
+  process.env.BACKEND_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (process.env.NODE_ENV === "production" ? "https://raina-1.onrender.com" : "http://localhost:8080")
+).replace(/\/$/, "");
 
 type NicheConfig = {
   label: string;

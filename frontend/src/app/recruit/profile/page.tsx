@@ -6,8 +6,7 @@ import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import RecruitHeader from "@/components/RecruitHeader";
-
-const API = "/backend";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 const NICHES = [
   "AI, Data, Software & Product Tech",
@@ -131,8 +130,8 @@ export default function RecruitProfilePage() {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/recruit/seeker/profile`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
+      const res = await fetch(apiUrl("/recruit/seeker/profile"), { headers: { Authorization: `Bearer ${token}` } });
+      const data = await readApiJson(res);
       if (data.profile) {
         const p = data.profile;
         setProfile({
@@ -176,7 +175,7 @@ export default function RecruitProfilePage() {
     if (!token) return;
     setSaving(true); setError(""); setSaved(false);
     try {
-      const res = await fetch(`${API}/recruit/seeker/profile`, {
+      const res = await fetch(apiUrl("/recruit/seeker/profile"), {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({
@@ -185,7 +184,7 @@ export default function RecruitProfilePage() {
           preferredSalaryMax: profile.preferredSalaryMax !== "" ? Number(profile.preferredSalaryMax) : undefined,
         }),
       });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Save failed"); }
+      if (!res.ok) { const d = await readApiJson(res); throw new Error(d.error || "Save failed"); }
       try {
         localStorage.setItem("recruit_applicant_name", profile.name);
         localStorage.setItem("recruit_applicant_email", profile.email);

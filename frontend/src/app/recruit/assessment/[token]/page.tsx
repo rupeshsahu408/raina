@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, use, useRef } from "react";
-
-const API = "";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 type Question = { id: string; text: string };
 
@@ -41,8 +40,8 @@ export default function AssessmentPage({ params }: { params: Promise<{ token: st
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${API}/recruit-public/assessment/${token}`);
-        const json = await res.json();
+        const res = await fetch(apiUrl(`/recruit-public/assessment/${token}`));
+        const json = await readApiJson(res);
         if (!res.ok) throw new Error(json.error || "Assessment not found.");
         setData(json);
       } catch (e: any) {
@@ -104,12 +103,12 @@ export default function AssessmentPage({ params }: { params: Promise<{ token: st
     setSubmitError("");
 
     try {
-      const res = await fetch(`${API}/recruit-public/assessment/${token}/submit`, {
+      const res = await fetch(apiUrl(`/recruit-public/assessment/${token}/submit`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers: answerPayload }),
       });
-      const json = await res.json();
+      const json = await readApiJson(res);
       if (!res.ok) throw new Error(json.error || "Submission failed. Please try again.");
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });

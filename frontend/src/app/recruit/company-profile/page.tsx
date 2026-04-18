@@ -6,8 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 import RecruitHeader from "@/components/RecruitHeader";
-
-const API = "/backend";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 const COMPANY_TYPES = ["Startup", "MNC", "Agency", "Product Company", "Consultancy", "Hospital", "Fintech", "NGO", "Government", "Other"];
 const COMPANY_SIZES = ["1–10", "11–50", "51–200", "201–500", "500–1000", "1000+"];
@@ -73,11 +72,11 @@ export default function CompanyProfilePage() {
       try {
         const token = await u.getIdToken();
         setAuthToken(token);
-        const res = await fetch(`${API}/recruit/company/profile`, {
+        const res = await fetch(apiUrl("/recruit/company/profile"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
-          const data = await res.json();
+          const data = await readApiJson(res);
           if (data.profile) {
             setProfile(data.profile);
             setVerificationStatus(data.profile.verificationStatus || "none");
@@ -94,11 +93,11 @@ export default function CompanyProfilePage() {
     setRequestingVerification(true);
     setVerificationMessage("");
     try {
-      const res = await fetch(`${API}/recruit/company/request-verification`, {
+      const res = await fetch(apiUrl("/recruit/company/request-verification"), {
         method: "POST",
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error || "Failed to request verification.");
       setVerificationStatus(data.status);
       setVerificationMessage(data.message);
@@ -120,13 +119,13 @@ export default function CompanyProfilePage() {
       const user = auth.currentUser;
       if (!user) throw new Error("You must be signed in to save.");
       const token = await user.getIdToken();
-      const res = await fetch(`${API}/recruit/company/profile`, {
+      const res = await fetch(apiUrl("/recruit/company/profile"), {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(profile),
       });
       if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
+        const body = await readApiJson(res).catch(() => ({}));
         throw new Error(body.error || "Failed to save profile.");
       }
       setSaved(true);

@@ -4,6 +4,7 @@ import { trackEvent } from "@/lib/trackEvent";
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import RecruitHeader from "@/components/RecruitHeader";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 const NICHES = [
   "AI, Data, Software & Product Tech",
@@ -118,8 +119,8 @@ export default function JobAlertsPage() {
   const fetchAlerts = useCallback(async (emailStr: string) => {
     setLoadingAlerts(true);
     try {
-      const res = await fetch(`/recruit-public/job-alerts?email=${encodeURIComponent(emailStr)}`);
-      const data = await res.json();
+      const res = await fetch(apiUrl(`/recruit-public/job-alerts?email=${encodeURIComponent(emailStr)}`));
+      const data = await readApiJson(res);
       setAlerts(data.alerts || []);
     } catch {}
     finally { setLoadingAlerts(false); }
@@ -144,12 +145,12 @@ export default function JobAlertsPage() {
     setFormError("");
     setSuccess("");
     try {
-      const res = await fetch("/recruit-public/job-alerts", {
+      const res = await fetch(apiUrl("/recruit-public/job-alerts"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, ...form }),
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error || "Failed to create alert");
       setSuccess(data.updated ? "Alert updated successfully." : "Job alert created! You'll see new matches here.");
       if (!data.updated) trackEvent("job_alert_created", { niche: form.niche, workMode: form.workMode });
@@ -166,7 +167,7 @@ export default function JobAlertsPage() {
     if (!email) return;
     setDeleting(alertId);
     try {
-      await fetch(`/recruit-public/job-alerts/${alertId}?email=${encodeURIComponent(email)}`, { method: "DELETE" });
+      await fetch(apiUrl(`/recruit-public/job-alerts/${alertId}?email=${encodeURIComponent(email)}`), { method: "DELETE" });
       setAlerts(prev => prev.filter(a => a._id !== alertId));
     } catch {}
     finally { setDeleting(null); }
@@ -178,8 +179,8 @@ export default function JobAlertsPage() {
     if (!alertJobs[alertId]) {
       setLoadingJobs(prev => ({ ...prev, [alertId]: true }));
       try {
-        const res = await fetch(`/recruit-public/job-alerts/${alertId}/jobs?email=${encodeURIComponent(email)}`);
-        const data = await res.json();
+        const res = await fetch(apiUrl(`/recruit-public/job-alerts/${alertId}/jobs?email=${encodeURIComponent(email)}`));
+        const data = await readApiJson(res);
         setAlertJobs(prev => ({ ...prev, [alertId]: data.jobs || [] }));
         setAlerts(prev => prev.map(a => a._id === alertId ? { ...a, newJobCount: 0 } : a));
       } catch {}

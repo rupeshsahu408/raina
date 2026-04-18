@@ -1,4 +1,4 @@
-const API = "/backend";
+import { apiUrl } from "@/lib/api";
 
 type TrackEventData = Record<string, string | number | boolean | null | undefined>;
 
@@ -8,7 +8,7 @@ export function trackEvent(
   uid?: string
 ): void {
   const sessionId = getSessionId();
-  fetch(`${API}/track`, {
+  fetch(apiUrl("/track"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ event, uid, sessionId, data: data ?? {} }),

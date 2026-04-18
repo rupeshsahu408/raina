@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import RecruitHeader from "@/components/RecruitHeader";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 const STAGE_META: Record<string, { label: string; color: string; icon: string }> = {
   applied:   { label: "Applied",            color: "bg-blue-50 text-blue-700 border-blue-200",       icon: "📋" },
@@ -62,8 +63,8 @@ export default function MyApplicationsPage() {
     setError("");
     setSearched(false);
     try {
-      const res = await fetch(`/recruit-public/my-applications?email=${encodeURIComponent(emailToSearch)}`);
-      const data = await res.json();
+      const res = await fetch(apiUrl(`/recruit-public/my-applications?email=${encodeURIComponent(emailToSearch)}`));
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error || "Failed to fetch applications");
       setApplications(data.applications || []);
       setSearched(true);

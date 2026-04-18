@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { trackEvent } from "@/lib/trackEvent";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: string; jobTitle?: string; companyName?: string }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", resumeText: "" });
@@ -39,12 +40,12 @@ export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: str
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(`/recruit-public/jobs/${jobId}/apply`, {
+      const res = await fetch(apiUrl(`/recruit-public/jobs/${jobId}/apply`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, source: "Plyndrox Jobs" }),
       });
-      const data = await res.json();
+      const data = await readApiJson(res);
       if (!res.ok) throw new Error(data.error || "Application failed. Please try again.");
       try {
         if (form.email) localStorage.setItem("recruit_applicant_email", form.email);
