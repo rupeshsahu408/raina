@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, use, useRef } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const API = "";
 
 type Question = { id: string; text: string };
 

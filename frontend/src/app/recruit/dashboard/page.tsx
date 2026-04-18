@@ -6,7 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const API = "/backend";
 
 type Job = {
   _id: string;

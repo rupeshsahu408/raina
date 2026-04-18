@@ -44,6 +44,33 @@ function generateToken(): string {
   return crypto.randomBytes(24).toString("hex");
 }
 
+function buildPublicJobQuery(query: any) {
+  const filter: any = { status: "active", publicVisibility: { $ne: false } };
+  const text = String(query.q ?? "").trim();
+  if (text) {
+    const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const rx = new RegExp(escaped, "i");
+    filter.$or = [
+      { title: rx },
+      { companyName: rx },
+      { location: rx },
+      { mustHaveSkills: rx },
+      { department: rx },
+    ];
+  }
+  for (const key of ["niche", "workMode", "jobType", "seniority", "companyType", "location"]) {
+    const value = String(query[key] ?? "").trim();
+    if (value && value !== "all") filter[key] = value;
+  }
+  if (String(query.freshersAllowed ?? "") === "true") filter.freshersAllowed = true;
+  if (String(query.verifiedCompany ?? "") === "true") filter.verifiedCompany = true;
+  const minSalary = Number(query.minSalary);
+  if (!Number.isNaN(minSalary) && minSalary > 0) {
+    filter.$and = [...(filter.$and ?? []), { $or: [{ salaryMax: { $gte: minSalary } }, { salaryMax: { $exists: false } }] }];
+  }
+  return filter;
+}
+
 // Synonym table: maps common alternate forms → canonical lowercase term.
 // Both sides of every tier-match comparison are normalized through this,
 // so "React.js" in a rubric always matches "React" from AI output, etc.
@@ -605,9 +632,10 @@ recruitRouter.post("/jobs", async (req, res) => {
     await connectMongo();
     const uid = getUid(req);
     const {
-      title, department, seniority, location, workMode,
+      title, niche, companyName, companyType, jobType, department, seniority, location, workMode,
       responsibilities, mustHaveSkills, niceToHaveSkills,
-      salaryMin, salaryMax, salaryCurrency,
+      salaryMin, salaryMax, salaryCurrency, experienceMin, experienceMax,
+      educationRequirement, noticePeriod, freshersAllowed, verifiedCompany, publicVisibility,
     } = req.body;
 
     if (!title?.trim()) return res.status(400).json({ error: "Job title is required." });
@@ -623,13 +651,25 @@ recruitRouter.post("/jobs", async (req, res) => {
     });
 
     const job = await RecruitJob.create({
-      uid, title, department: department || "", seniority: seniority || "Mid-level",
+      uid, title,
+      niche: niche || "AI, Data, Software & Product Tech",
+      companyName: companyName || "",
+      companyType: companyType || "",
+      jobType: jobType || "Full-time",
+      department: department || "", seniority: seniority || "Mid-level",
       location: location || "Remote", workMode: workMode || "remote",
       responsibilities: responsibilities || "", mustHaveSkills: mustHaveSkills || "",
       niceToHaveSkills: niceToHaveSkills || "",
       salaryMin: salaryMin ? Number(salaryMin) : undefined,
       salaryMax: salaryMax ? Number(salaryMax) : undefined,
       salaryCurrency: salaryCurrency || "INR",
+      experienceMin: experienceMin !== undefined && experienceMin !== "" ? Number(experienceMin) : undefined,
+      experienceMax: experienceMax !== undefined && experienceMax !== "" ? Number(experienceMax) : undefined,
+      educationRequirement: educationRequirement || "",
+      noticePeriod: noticePeriod || "",
+      freshersAllowed: Boolean(freshersAllowed),
+      verifiedCompany: Boolean(verifiedCompany),
+      publicVisibility: publicVisibility !== false,
       generatedJD: jd, rubric, status: "active", candidateCount: 0,
     });
 
@@ -667,7 +707,12 @@ recruitRouter.patch("/jobs/:jobId", async (req, res) => {
   try {
     await connectMongo();
     const uid = getUid(req);
-    const allowed = ["status", "title", "department", "location", "workMode"];
+    const allowed = [
+      "status", "title", "niche", "companyName", "companyType", "jobType",
+      "department", "location", "workMode", "salaryMin", "salaryMax",
+      "experienceMin", "experienceMax", "educationRequirement", "noticePeriod",
+      "freshersAllowed", "verifiedCompany", "publicVisibility",
+    ];
     const update: any = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) update[key] = req.body[key];
@@ -677,6 +722,87 @@ recruitRouter.patch("/jobs/:jobId", async (req, res) => {
     return res.json({ job });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitPublicRouter.get("/jobs", async (req, res) => {
+  try {
+    await connectMongo();
+    const filter = buildPublicJobQuery(req.query);
+    const jobs = await RecruitJob.find(filter)
+      .select("title niche companyName companyType jobType department seniority location workMode salaryMin salaryMax salaryCurrency experienceMin experienceMax educationRequirement noticePeriod freshersAllowed verifiedCompany candidateCount createdAt mustHaveSkills")
+      .sort({ verifiedCompany: -1, createdAt: -1 })
+      .limit(80)
+      .lean();
+    return res.json({ jobs });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message || "Failed to load jobs." });
+  }
+});
+
+recruitPublicRouter.get("/jobs/:jobId", async (req, res) => {
+  try {
+    await connectMongo();
+    const job = await RecruitJob.findOne({
+      _id: req.params.jobId,
+      status: "active",
+      publicVisibility: { $ne: false },
+    }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+    return res.json({ job });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message || "Failed to load job." });
+  }
+});
+
+recruitPublicRouter.post("/jobs/:jobId/apply", async (req, res) => {
+  try {
+    await connectMongo();
+    const job = await RecruitJob.findOne({
+      _id: req.params.jobId,
+      status: "active",
+      publicVisibility: { $ne: false },
+    });
+    if (!job) return res.status(404).json({ error: "Job not found." });
+
+    const { name, email, phone, resumeText, source } = req.body;
+    if (!name?.trim()) return res.status(400).json({ error: "Name is required." });
+    if (!email?.trim()) return res.status(400).json({ error: "Email is required." });
+    if (!resumeText?.trim() || resumeText.trim().length < 40) {
+      return res.status(400).json({ error: "Resume or profile summary must be at least 40 characters." });
+    }
+
+    const scored = await scoreCandidate({
+      resumeText,
+      jobTitle: job.title,
+      rubric: job.rubric,
+    });
+
+    const candidate = await RecruitCandidate.create({
+      jobId: job._id,
+      uid: job.uid,
+      name: scored.name === "Candidate" ? name : scored.name,
+      email,
+      phone: phone || "",
+      resumeText,
+      totalScore: scored.totalScore,
+      maxScore: scored.maxScore,
+      scoreBreakdown: scored.scoreBreakdown,
+      aiSummary: scored.aiSummary,
+      redFlags: scored.redFlags,
+      strengths: scored.strengths,
+      stage: "applied",
+      assessmentStatus: "not_sent",
+      previousResumeScore: scored.totalScore,
+      scoringFailed: scored.scoringFailed,
+      source: source || "Plyndrox Jobs",
+    });
+
+    await RecruitJob.updateOne({ _id: job._id }, { $inc: { candidateCount: 1 } });
+    return res.json({ ok: true, candidateId: candidate._id });
+  } catch (err: any) {
+    console.error("[recruit-public] POST /jobs/:jobId/apply", err);
+    return res.status(500).json({ error: err.message || "Failed to submit application." });
   }
 });
 

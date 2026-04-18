@@ -6,7 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const API = "/backend";
 
 type Confidence = "high" | "medium" | "low";
 type ScoreBreakdown = { criterion: string; score: number; maxScore: number; reasoning: string; confidence?: Confidence; tier?: 1 | 2 | 3 };

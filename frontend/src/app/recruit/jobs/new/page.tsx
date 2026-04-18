@@ -6,7 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const API = "/backend";
 
 function ChevronLeftIcon() {
   return (
@@ -34,6 +34,16 @@ function CheckIcon() {
 
 const STEPS = ["Role Basics", "Skills & Scope", "Compensation", "Review & Generate"];
 const SENIORITY_OPTIONS = ["Intern", "Junior", "Mid-level", "Senior", "Lead", "Manager", "Director", "VP"];
+const NICHES = [
+  "AI, Data, Software & Product Tech",
+  "Sales, Business Development & Revenue Roles",
+  "Finance, Accounting, Banking & Fintech",
+  "Healthcare, Pharma & Allied Medical Workforce",
+  "Skilled Blue-Collar, Logistics & Industrial Workforce",
+  "Creative, Marketing, Media & Design",
+];
+const JOB_TYPES = ["Full-time", "Part-time", "Internship", "Contract", "Freelance"];
+const COMPANY_TYPES = ["Startup", "MNC", "Agency", "Hospital", "Fintech", "Manufacturing", "Recruitment Firm", "Other"];
 const WORK_MODES = [
   { value: "remote", label: "Remote" },
   { value: "onsite", label: "On-site" },
@@ -43,6 +53,10 @@ const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD"];
 
 type FormData = {
   title: string;
+  niche: string;
+  companyName: string;
+  companyType: string;
+  jobType: string;
   department: string;
   seniority: string;
   location: string;
@@ -53,12 +67,22 @@ type FormData = {
   salaryMin: string;
   salaryMax: string;
   salaryCurrency: string;
+  experienceMin: string;
+  experienceMax: string;
+  educationRequirement: string;
+  noticePeriod: string;
+  freshersAllowed: boolean;
+  verifiedCompany: boolean;
+  publicVisibility: boolean;
 };
 
 const DEFAULT: FormData = {
-  title: "", department: "", seniority: "Mid-level", location: "",
+  title: "", niche: NICHES[0], companyName: "", companyType: "Startup", jobType: "Full-time",
+  department: "", seniority: "Mid-level", location: "",
   workMode: "remote", responsibilities: "", mustHaveSkills: "",
   niceToHaveSkills: "", salaryMin: "", salaryMax: "", salaryCurrency: "INR",
+  experienceMin: "", experienceMax: "", educationRequirement: "", noticePeriod: "",
+  freshersAllowed: false, verifiedCompany: false, publicVisibility: true,
 };
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -194,6 +218,32 @@ export default function NewJobPage() {
                 <Input value={form.title} onChange={update("title")} placeholder="e.g. Senior Frontend Engineer" />
               </div>
               <div>
+                <FieldLabel>Niche *</FieldLabel>
+                <select
+                  value={form.niche}
+                  onChange={e => update("niche")(e.target.value)}
+                  className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+                >
+                  {NICHES.map(n => <option key={n} value={n} className="bg-zinc-900">{n}</option>)}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <FieldLabel>Company Name</FieldLabel>
+                  <Input value={form.companyName} onChange={update("companyName")} placeholder="e.g. Plyndrox" />
+                </div>
+                <div>
+                  <FieldLabel>Company Type</FieldLabel>
+                  <select
+                    value={form.companyType}
+                    onChange={e => update("companyType")(e.target.value)}
+                    className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+                  >
+                    {COMPANY_TYPES.map(t => <option key={t} value={t} className="bg-zinc-900">{t}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div>
                 <FieldLabel>Department</FieldLabel>
                 <Input value={form.department} onChange={update("department")} placeholder="e.g. Engineering, Marketing, Sales" />
               </div>
@@ -208,6 +258,18 @@ export default function NewJobPage() {
                     {SENIORITY_OPTIONS.map(s => <option key={s} value={s} className="bg-zinc-900">{s}</option>)}
                   </select>
                 </div>
+                <div>
+                  <FieldLabel>Job Type</FieldLabel>
+                  <select
+                    value={form.jobType}
+                    onChange={e => update("jobType")(e.target.value)}
+                    className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+                  >
+                    {JOB_TYPES.map(t => <option key={t} value={t} className="bg-zinc-900">{t}</option>)}
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <FieldLabel>Work Mode</FieldLabel>
                   <div className="flex gap-2">
@@ -230,6 +292,16 @@ export default function NewJobPage() {
               <div>
                 <FieldLabel>Location *</FieldLabel>
                 <Input value={form.location} onChange={update("location")} placeholder="e.g. Bangalore, India or Anywhere" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <FieldLabel>Min Experience</FieldLabel>
+                  <Input type="number" value={form.experienceMin} onChange={update("experienceMin")} placeholder="0" />
+                </div>
+                <div>
+                  <FieldLabel>Max Experience</FieldLabel>
+                  <Input type="number" value={form.experienceMax} onChange={update("experienceMax")} placeholder="5" />
+                </div>
               </div>
             </div>
           )}
@@ -263,6 +335,34 @@ export default function NewJobPage() {
                   onChange={update("niceToHaveSkills")}
                   placeholder="e.g. Next.js experience, prior startup experience, familiarity with Figma..."
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <FieldLabel>Education Requirement</FieldLabel>
+                  <Input value={form.educationRequirement} onChange={update("educationRequirement")} placeholder="e.g. Any graduate, B.Tech preferred" />
+                </div>
+                <div>
+                  <FieldLabel>Notice Period</FieldLabel>
+                  <Input value={form.noticePeriod} onChange={update("noticePeriod")} placeholder="e.g. Immediate to 30 days" />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {[
+                  ["freshersAllowed", "Freshers allowed"],
+                  ["verifiedCompany", "Verified company"],
+                  ["publicVisibility", "Show on public job board"],
+                ].map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setForm(prev => ({ ...prev, [key]: !prev[key as keyof FormData] }))}
+                    className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
+                      form[key as keyof FormData] ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-300" : "border-white/[0.08] text-zinc-500 hover:text-zinc-300"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
           )}
@@ -313,6 +413,9 @@ export default function NewJobPage() {
               <div className="grid gap-3 sm:grid-cols-2">
                 {[
                   ["Role", `${form.seniority} ${form.title}`],
+                  ["Niche", form.niche],
+                  ["Company", form.companyName || "—"],
+                  ["Job Type", form.jobType],
                   ["Department", form.department || "—"],
                   ["Work Mode", form.workMode],
                   ["Location", form.location],
