@@ -148,18 +148,26 @@ async function requireFirebaseAuth(
 const isProduction = process.env.NODE_ENV === "production";
 
 function buildCorsOrigin(): string | string[] | boolean {
+  const defaultOrigins = [
+    "https://www.plyndrox.app",
+    "https://plyndrox.app",
+    "http://localhost:3000",
+    "http://localhost:5000",
+  ];
   const raw = process.env.CORS_ORIGIN;
   if (!raw) {
     if (isProduction) {
       console.warn(
-        "[cors] CORS_ORIGIN not set in production — all origins allowed. Set CORS_ORIGIN to your Vercel URL."
+        "[cors] CORS_ORIGIN not set in production — using Plyndrox and local development origins."
       );
-      return true;
+      return defaultOrigins;
     }
-    return ["http://localhost:3000", "http://localhost:5000"];
+    return defaultOrigins;
   }
   if (raw === "*" || raw === "true") return true;
-  const origins = raw.split(",").map((s) => s.trim()).filter(Boolean);
+  const origins = Array.from(
+    new Set([...raw.split(",").map((s) => s.trim()).filter(Boolean), ...defaultOrigins])
+  );
   return origins.length === 1 ? origins[0] : origins;
 }
 

@@ -28,10 +28,10 @@ A multi-platform AI suite with four AI systems:
 
 ### Frontend (`frontend/.env.local`)
 - Firebase config (`NEXT_PUBLIC_FIREBASE_*`)
-- `NEXT_PUBLIC_API_BASE_URL=""` — empty string; API calls go through Next.js rewrites proxy
+- `NEXT_PUBLIC_API_BASE_URL` — public backend URL for browser-to-backend calls. Production should use `https://raina-1.onrender.com`; local development can leave this empty for proxied calls.
 
 ## API Routing
-Frontend proxies `/v1/*`, `/backend/recruit/*`, `/recruit-public/*`, and health checks to the backend via Next.js rewrites in `next.config.ts`. Production defaults to `https://raina-1.onrender.com` when `BACKEND_URL` is not set, while local development uses `http://localhost:8080`. Inbox API calls are bridged through Next.js route handlers under `frontend/src/app/inbox/[...path]/route.ts`, with a dedicated lead-intelligence bridge at `frontend/src/app/inbox/lead-intelligence/route.ts`, so `/inbox/leads` can remain a frontend page while `/inbox/lead-intelligence` returns backend JSON.
+Frontend proxies `/v1/*`, `/backend/recruit/*`, `/recruit-public/*`, and health checks to the backend via Next.js rewrites in `next.config.ts` for local/Replit development. Production defaults to `https://raina-1.onrender.com` when `BACKEND_URL` is not set. Recruit job creation uses a direct browser-to-Render backend call in production via `NEXT_PUBLIC_API_BASE_URL` or the built-in Render fallback, avoiding the Vercel rewrite layer for that authenticated request. The backend CORS allowlist includes `https://www.plyndrox.app` and `https://plyndrox.app`. Inbox API calls are bridged through Next.js route handlers under `frontend/src/app/inbox/[...path]/route.ts`, with a dedicated lead-intelligence bridge at `frontend/src/app/inbox/lead-intelligence/route.ts`, so `/inbox/leads` can remain a frontend page while `/inbox/lead-intelligence` returns backend JSON.
 
 ## Key Features
 - Firebase Auth (email/password + Google)

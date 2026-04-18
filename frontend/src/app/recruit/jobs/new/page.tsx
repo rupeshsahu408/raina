@@ -7,7 +7,10 @@ import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 import { computeJobQuality } from "@/lib/jobQuality";
 
-const API = "/backend";
+const API = (
+  process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (process.env.NODE_ENV === "production" ? "https://raina-1.onrender.com" : "/backend")
+).replace(/\/$/, "");
 
 function ChevronLeftIcon() {
   return (
