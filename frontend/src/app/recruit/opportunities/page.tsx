@@ -54,6 +54,7 @@ type Job = {
   verifiedCompany?: boolean;
   candidateCount?: number;
   mustHaveSkills?: string;
+  generatedJD?: string;
   createdAt?: string;
 };
 
