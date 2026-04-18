@@ -143,12 +143,26 @@ export default function RecruitDashboardPage() {
               <span className="block text-[10px] text-zinc-600">Dashboard</span>
             </span>
           </Link>
-          <Link
-            href="/recruit/jobs/new"
-            className="flex items-center gap-1.5 rounded-full bg-indigo-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400"
-          >
-            <PlusIcon /> New Job
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/recruit/talent-pool"
+              className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white hover:border-white/20"
+            >
+              <UsersIcon size={13} /> Talent Pool
+            </Link>
+            <Link
+              href="/recruit/analytics"
+              className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white hover:border-white/20"
+            >
+              <SparkIcon /> Analytics
+            </Link>
+            <Link
+              href="/recruit/jobs/new"
+              className="flex items-center gap-1.5 rounded-full bg-indigo-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400"
+            >
+              <PlusIcon /> New Job
+            </Link>
+          </div>
         </div>
       </header>
 

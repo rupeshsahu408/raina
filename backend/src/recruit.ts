@@ -708,6 +708,40 @@ recruitRouter.post("/jobs/:jobId/candidates", async (req, res) => {
       rubric: job.rubric,
     });
 
+    const { source } = req.body;
+
+    // AI Memory: check if this email has applied before under same recruiter
+    let previousApplication: {
+      jobTitle: string;
+      stage: string;
+      totalScore: number;
+      maxScore: number;
+      rejectedAt: Date;
+      aiSummary: string;
+    } | null = null;
+
+    if (scored.email) {
+      const prev = await RecruitCandidate.findOne({
+        uid,
+        email: scored.email,
+        stage: { $in: ["rejected", "hired"] },
+      })
+        .populate<{ jobId: { title: string } }>("jobId", "title")
+        .sort({ updatedAt: -1 })
+        .lean();
+
+      if (prev) {
+        previousApplication = {
+          jobTitle: (prev.jobId as any)?.title ?? "a previous role",
+          stage: prev.stage,
+          totalScore: prev.totalScore,
+          maxScore: prev.maxScore,
+          rejectedAt: prev.updatedAt,
+          aiSummary: prev.aiSummary,
+        };
+      }
+    }
+
     const candidate = await RecruitCandidate.create({
       jobId: job._id,
       uid,
@@ -724,11 +758,12 @@ recruitRouter.post("/jobs/:jobId/candidates", async (req, res) => {
       assessmentStatus: "not_sent",
       previousResumeScore: scored.totalScore,
       scoringFailed: scored.scoringFailed,
+      source: source || "",
     });
 
     await RecruitJob.updateOne({ _id: job._id }, { $inc: { candidateCount: 1 } });
 
-    return res.json({ candidate });
+    return res.json({ candidate, previousApplication });
   } catch (err: any) {
     console.error("[recruit] POST /candidates", err);
     return res.status(500).json({ error: err.message });
@@ -752,10 +787,13 @@ recruitRouter.patch("/jobs/:jobId/candidates/:candidateId", async (req, res) => 
   try {
     await connectMongo();
     const uid = getUid(req);
-    const allowed = ["stage", "notes"];
+    const allowed = ["stage", "notes", "source", "gender", "ageRange", "inTalentPool", "talentPoolNote"];
     const update: any = {};
     for (const key of allowed) {
       if (req.body[key] !== undefined) update[key] = req.body[key];
+    }
+    if (update.stage) {
+      update.stageMovedAt = new Date();
     }
     const candidate = await RecruitCandidate.findOneAndUpdate(
       { _id: req.params.candidateId, jobId: req.params.jobId, uid },
@@ -1010,6 +1048,183 @@ recruitPublicRouter.post("/assessment/:token/submit", async (req, res) => {
     return res.json({ ok: true, message: "Assessment submitted successfully." });
   } catch (err: any) {
     console.error("[recruit] POST /assessment/submit", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Analytics ──────────────────────────────────────────────────────────────
+
+recruitRouter.get("/analytics", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+
+    const [jobs, allCandidates] = await Promise.all([
+      RecruitJob.find({ uid }).lean(),
+      RecruitCandidate.find({ uid }).lean(),
+    ]);
+
+    const totalJobs = jobs.length;
+    const activeJobs = jobs.filter(j => j.status === "active").length;
+    const totalCandidates = allCandidates.length;
+
+    // Stage funnel (all candidates across all jobs)
+    const STAGES = ["applied", "screened", "assessed", "interview", "offer", "hired", "rejected"] as const;
+    const stageCounts: Record<string, number> = {};
+    for (const s of STAGES) stageCounts[s] = 0;
+    for (const c of allCandidates) {
+      if (stageCounts[c.stage] !== undefined) stageCounts[c.stage]++;
+    }
+
+    // Drop-off rates: % who made it through each stage (excluding rejected)
+    const activeStages = STAGES.filter(s => s !== "rejected");
+    const funnelDropoff = activeStages.map((stage, i) => {
+      const count = stageCounts[stage] || 0;
+      const dropoffPct = totalCandidates > 0 ? Math.round((count / totalCandidates) * 100) : 0;
+      return { stage, count, dropoffPct };
+    });
+
+    // Average time-to-hire (job createdAt → first hired candidate updatedAt)
+    const avgTimeToHireMs: number[] = [];
+    for (const job of jobs) {
+      const hired = allCandidates.filter(
+        c => c.jobId.toString() === job._id.toString() && c.stage === "hired"
+      );
+      if (hired.length > 0) {
+        const earliest = Math.min(...hired.map(c => new Date(c.updatedAt).getTime()));
+        avgTimeToHireMs.push(earliest - new Date(job.createdAt).getTime());
+      }
+    }
+    const avgTimeToHireDays = avgTimeToHireMs.length > 0
+      ? Math.round(avgTimeToHireMs.reduce((a, b) => a + b, 0) / avgTimeToHireMs.length / 86400000)
+      : null;
+
+    // Source breakdown
+    const sourceCounts: Record<string, number> = {};
+    for (const c of allCandidates) {
+      const src = c.source?.trim() || "Not specified";
+      sourceCounts[src] = (sourceCounts[src] || 0) + 1;
+    }
+    const sourceBreakdown = Object.entries(sourceCounts)
+      .map(([source, count]) => ({ source, count, pct: Math.round((count / totalCandidates) * 100) }))
+      .sort((a, b) => b.count - a.count);
+
+    // Bias detection: gender & age distribution (from voluntarily provided data only)
+    const genderCounts: Record<string, number> = {};
+    const ageCounts: Record<string, number> = {};
+    for (const c of allCandidates) {
+      if (c.gender?.trim()) {
+        const g = c.gender.trim().toLowerCase();
+        genderCounts[g] = (genderCounts[g] || 0) + 1;
+      }
+      if (c.ageRange?.trim()) {
+        const a = c.ageRange.trim();
+        ageCounts[a] = (ageCounts[a] || 0) + 1;
+      }
+    }
+    const totalWithGender = Object.values(genderCounts).reduce((a, b) => a + b, 0);
+    const totalWithAge = Object.values(ageCounts).reduce((a, b) => a + b, 0);
+    const genderBreakdown = Object.entries(genderCounts).map(([gender, count]) => ({
+      gender, count, pct: totalWithGender > 0 ? Math.round((count / totalWithGender) * 100) : 0,
+    }));
+    const ageBreakdown = Object.entries(ageCounts).map(([ageRange, count]) => ({
+      ageRange, count, pct: totalWithAge > 0 ? Math.round((count / totalWithAge) * 100) : 0,
+    }));
+
+    // Bias across stages: gender distribution per pipeline stage (for hired vs rejected comparison)
+    const biasStageData: Record<string, Record<string, number>> = {};
+    for (const c of allCandidates) {
+      if (!c.gender?.trim()) continue;
+      const g = c.gender.trim().toLowerCase();
+      if (!biasStageData[c.stage]) biasStageData[c.stage] = {};
+      biasStageData[c.stage][g] = (biasStageData[c.stage][g] || 0) + 1;
+    }
+
+    // Per-job stats
+    const jobStats = jobs.map(job => {
+      const jCandidates = allCandidates.filter(c => c.jobId.toString() === job._id.toString());
+      const avgScore = jCandidates.length > 0
+        ? Math.round(jCandidates.reduce((s, c) => s + (c.maxScore > 0 ? (c.totalScore / c.maxScore) * 100 : 0), 0) / jCandidates.length)
+        : 0;
+      const hired = jCandidates.filter(c => c.stage === "hired").length;
+      const rejected = jCandidates.filter(c => c.stage === "rejected").length;
+      return {
+        jobId: job._id,
+        title: job.title,
+        department: job.department,
+        status: job.status,
+        totalCandidates: jCandidates.length,
+        avgScorePct: avgScore,
+        hired,
+        rejected,
+        createdAt: job.createdAt,
+      };
+    });
+
+    return res.json({
+      totalJobs,
+      activeJobs,
+      totalCandidates,
+      stageCounts,
+      funnelDropoff,
+      avgTimeToHireDays,
+      sourceBreakdown,
+      genderBreakdown,
+      ageBreakdown,
+      biasStageData,
+      jobStats,
+    });
+  } catch (err: any) {
+    console.error("[recruit] GET /analytics", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Talent Pool ─────────────────────────────────────────────────────────────
+
+recruitRouter.get("/talent-pool", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+
+    // Silver-medal candidates: rejected or not hired, but scored >= 55% OR manually added to pool
+    const candidates = await RecruitCandidate.find({
+      uid,
+      $or: [
+        { inTalentPool: true },
+        {
+          stage: "rejected",
+          $expr: { $gte: [{ $divide: ["$totalScore", { $max: ["$maxScore", 1] }] }, 0.55] },
+        },
+      ],
+    })
+      .populate<{ jobId: { title: string; department: string; status: string } }>("jobId", "title department status")
+      .sort({ totalScore: -1 })
+      .lean();
+
+    return res.json({ candidates });
+  } catch (err: any) {
+    console.error("[recruit] GET /talent-pool", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitRouter.patch("/talent-pool/:candidateId", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    const { inTalentPool, talentPoolNote } = req.body;
+    const update: any = {};
+    if (inTalentPool !== undefined) update.inTalentPool = inTalentPool;
+    if (talentPoolNote !== undefined) update.talentPoolNote = talentPoolNote;
+    const candidate = await RecruitCandidate.findOneAndUpdate(
+      { _id: req.params.candidateId, uid },
+      update,
+      { new: true }
+    ).lean();
+    if (!candidate) return res.status(404).json({ error: "Candidate not found." });
+    return res.json({ candidate });
+  } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
 });

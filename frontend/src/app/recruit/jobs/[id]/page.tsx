@@ -270,32 +270,93 @@ function RejectionEmailModal({ email, candidateName, candidateEmail, onClose }: 
   );
 }
 
+const SOURCE_OPTIONS = ["LinkedIn", "Indeed", "Naukri", "Referral", "Company Website", "Angel List", "Walk-in", "Other"];
+
+type PreviousApplication = {
+  jobTitle: string;
+  stage: string;
+  totalScore: number;
+  maxScore: number;
+  rejectedAt: string;
+  aiSummary: string;
+};
+
 function AddCandidateModal({ jobId, token, onClose, onAdded }: {
   jobId: string; token: string; onClose: () => void; onAdded: () => void;
 }) {
   const [resumeText, setResumeText] = useState("");
+  const [source, setSource] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [previousApp, setPreviousApp] = useState<PreviousApplication | null>(null);
+  const [added, setAdded] = useState(false);
 
   async function handleSubmit() {
     if (!resumeText.trim()) return;
     setLoading(true);
     setError("");
+    setPreviousApp(null);
     try {
       const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ resumeText }),
+        body: JSON.stringify({ resumeText, source }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to add candidate.");
-      onAdded();
-      onClose();
+      if (data.previousApplication) {
+        setPreviousApp(data.previousApplication);
+        setAdded(true);
+        onAdded();
+      } else {
+        onAdded();
+        onClose();
+      }
     } catch (e: any) {
       setError(e.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  if (previousApp && added) {
+    const scorePct = previousApp.maxScore > 0 ? Math.round((previousApp.totalScore / previousApp.maxScore) * 100) : 0;
+    const rejectedDate = new Date(previousApp.rejectedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="w-full max-w-lg rounded-[2rem] border border-amber-500/20 bg-[#0a0a0f] shadow-2xl">
+          <div className="flex items-center gap-3 border-b border-white/[0.07] px-6 py-4">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-white">Returning Candidate Detected</h2>
+              <p className="text-xs text-zinc-500 mt-0.5">AI Memory found a previous application on record</p>
+            </div>
+          </div>
+          <div className="p-6 space-y-4">
+            <div className="rounded-2xl border border-amber-500/15 bg-amber-500/[0.06] p-4 space-y-2">
+              <p className="text-xs font-bold text-amber-400 uppercase tracking-wide">Previous Application</p>
+              <p className="text-sm text-white font-medium">{previousApp.jobTitle}</p>
+              <div className="flex items-center gap-3 text-xs text-zinc-500">
+                <span>Stage reached: <span className="text-zinc-300 capitalize">{previousApp.stage}</span></span>
+                <span>·</span>
+                <span>Score: <span className="text-zinc-300">{scorePct}%</span></span>
+                <span>·</span>
+                <span>{rejectedDate}</span>
+              </div>
+              {previousApp.aiSummary && (
+                <p className="text-xs text-zinc-400 pt-1 border-t border-white/[0.06]">{previousApp.aiSummary}</p>
+              )}
+            </div>
+            <p className="text-xs text-zinc-500">The candidate has been added to the pipeline. Keep this history in mind during evaluation.</p>
+          </div>
+          <div className="flex justify-end border-t border-white/[0.07] px-6 py-4">
+            <button onClick={onClose} className="rounded-xl bg-indigo-500 px-5 py-2 text-sm font-bold text-white hover:bg-indigo-400 transition">Got it</button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -308,19 +369,32 @@ function AddCandidateModal({ jobId, token, onClose, onAdded }: {
           </div>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition"><XIcon /></button>
         </div>
-        <div className="p-6">
-          <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-2">Resume Text *</label>
-          <textarea
-            value={resumeText}
-            onChange={e => setResumeText(e.target.value)}
-            rows={12}
-            placeholder="Paste the full resume text here — name, contact info, work experience, skills, education, projects, etc."
-            className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 resize-none"
-          />
-          {error && <p className="mt-3 text-xs text-rose-400">{error}</p>}
-          <div className="mt-4 rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.05] px-4 py-3">
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-2">Resume Text *</label>
+            <textarea
+              value={resumeText}
+              onChange={e => setResumeText(e.target.value)}
+              rows={10}
+              placeholder="Paste the full resume text here — name, contact info, work experience, skills, education, projects, etc."
+              className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-2">Source <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+            <select
+              value={source}
+              onChange={e => setSource(e.target.value)}
+              className="w-full rounded-2xl border border-white/[0.08] bg-[#0a0a0f] px-4 py-2.5 text-sm text-white outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+            >
+              <option value="">Select source...</option>
+              {SOURCE_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          {error && <p className="text-xs text-rose-400">{error}</p>}
+          <div className="rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.05] px-4 py-3">
             <p className="text-[11px] text-indigo-300/70 flex items-center gap-1">
-              <SparkIcon /> The AI will extract the candidate's name, score against the job rubric, identify strengths and red flags, and write a summary — automatically.
+              <SparkIcon /> AI will score the resume, detect strengths & red flags, and check if this candidate has applied before.
             </p>
           </div>
         </div>

@@ -65,6 +65,12 @@ export interface IRecruitCandidate extends Document {
   hiringDecision?: HiringDecision;
   assessmentImpact?: IAssessmentImpact;
   scoringFailed?: boolean;
+  source?: string;
+  gender?: string;
+  ageRange?: string;
+  inTalentPool?: boolean;
+  talentPoolNote?: string;
+  stageMovedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -146,6 +152,12 @@ const RecruitCandidateSchema = new Schema<IRecruitCandidate>(
     },
     assessmentImpact: { type: AssessmentImpactSchema },
     scoringFailed: { type: Boolean, default: false },
+    source: { type: String, default: "" },
+    gender: { type: String, default: "" },
+    ageRange: { type: String, default: "" },
+    inTalentPool: { type: Boolean, default: false },
+    talentPoolNote: { type: String, default: "" },
+    stageMovedAt: { type: Date },
   },
   { timestamps: true }
 );
