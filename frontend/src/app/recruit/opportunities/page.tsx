@@ -1,5 +1,7 @@
 import Link from "next/link";
+import RecruitHeader from "@/components/RecruitHeader";
 import ClientSaveButton from "./SaveButton";
+import FilterToggle from "./FilterToggle";
 
 const NICHES = [
   "AI, Data, Software & Product Tech",
@@ -62,7 +64,7 @@ function formatSalary(job: Job) {
   if (!job.salaryMin && !job.salaryMax) return "Salary not disclosed";
   const min = job.salaryMin ? job.salaryMin.toLocaleString("en-IN") : "0";
   const max = job.salaryMax ? job.salaryMax.toLocaleString("en-IN") : "";
-  return `${job.salaryCurrency || "INR"} ${min}${max ? ` - ${max}` : "+"}`;
+  return `${job.salaryCurrency || "INR"} ${min}${max ? `–${max}` : "+"}`;
 }
 
 function buildQuery(params: PageSearchParams) {
@@ -76,11 +78,15 @@ function buildQuery(params: PageSearchParams) {
 }
 
 async function loadJobs(params: PageSearchParams) {
-  const query = buildQuery(params);
-  const response = await fetch(`${API}/recruit-public/jobs?${query.toString()}`, { cache: "no-store" });
-  if (!response.ok) throw new Error("Failed to load opportunities");
-  const data = await response.json();
-  return (data.jobs ?? []) as Job[];
+  try {
+    const query = buildQuery(params);
+    const response = await fetch(`${API}/recruit-public/jobs?${query.toString()}`, { cache: "no-store" });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return (data.jobs ?? []) as Job[];
+  } catch {
+    return [];
+  }
 }
 
 function checkedLink(params: PageSearchParams, key: "freshersAllowed" | "verifiedCompany") {
@@ -94,8 +100,11 @@ function checkedLink(params: PageSearchParams, key: "freshersAllowed" | "verifie
 function timeAgo(dateStr?: string) {
   if (!dateStr) return "";
   const diff = Date.now() - new Date(dateStr).getTime();
-  const days = Math.floor(diff / 86400000);
-  if (days === 0) return "Today";
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return "Just now";
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
   if (days === 1) return "Yesterday";
   if (days < 30) return `${days}d ago`;
   return `${Math.floor(days / 30)}mo ago`;
@@ -117,187 +126,189 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
   const freshersAllowed = paramValue(params, "freshersAllowed") === "true";
   const verifiedCompany = paramValue(params, "verifiedCompany") === "true";
 
-  return (
-    <div className="min-h-screen bg-[#f3f6f8] text-slate-900">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/recruit" className="flex items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a66c2] text-sm font-black text-white">R</span>
-            <span>
-              <span className="block text-sm font-bold">Recruit AI</span>
-              <span className="block text-[11px] text-slate-500">India Jobs Network</span>
-            </span>
-          </Link>
-          <nav className="hidden items-center gap-1 sm:flex">
-            <Link href="/recruit/opportunities" className="rounded-full px-3 py-1.5 text-xs font-semibold text-[#0a66c2] bg-blue-50">Jobs</Link>
-            <Link href="/recruit/saved-jobs" className="rounded-full px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">Saved</Link>
-            <Link href="/recruit/my-applications" className="rounded-full px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">My Applications</Link>
-            <Link href="/recruit/profile" className="rounded-full px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">My Profile</Link>
-          </nav>
-          <div className="flex items-center gap-2">
-            <Link href="/recruit/dashboard" className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">For recruiters</Link>
-            <Link href="/recruit/jobs/new" className="rounded-full bg-[#0a66c2] px-4 py-2 text-xs font-bold text-white hover:bg-[#004182] transition">Post a job</Link>
+  const hasFilters = q || niche !== "all" || workMode !== "all" || jobType !== "all" ||
+    seniority !== "all" || companyType !== "all" || minSalary ||
+    noticePeriod !== "all" || educationRequirement !== "all" || postedAfterDays ||
+    freshersAllowed || verifiedCompany;
+
+  const filterPanel = (
+    <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 className="text-sm font-bold text-slate-900">Filters</h2>
+        {hasFilters && (
+          <Link href="/recruit/opportunities" className="text-xs font-semibold text-[#0a66c2] hover:underline">Clear all</Link>
+        )}
+      </div>
+      <form className="p-4 space-y-4" action="/recruit/opportunities">
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Search</label>
+          <input name="q" defaultValue={q} placeholder="Role, skill, company, city…" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/10 transition" />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Niche</label>
+          <select name="niche" defaultValue={niche} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition bg-white">
+            <option value="all">All niches</option>
+            {NICHES.map(item => <option key={item} value={item}>{item}</option>)}
+          </select>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Work mode</label>
+            <select name="workMode" defaultValue={workMode} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition bg-white">
+              <option value="all">All</option>
+              {WORK_MODES.map(item => <option key={item} value={item} className="capitalize">{item.charAt(0).toUpperCase() + item.slice(1)}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Job type</label>
+            <select name="jobType" defaultValue={jobType} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition bg-white">
+              <option value="all">All</option>
+              {JOB_TYPES.map(item => <option key={item} value={item}>{item}</option>)}
+            </select>
           </div>
         </div>
-      </header>
 
-      <main className="mx-auto grid max-w-7xl gap-6 px-4 py-6 sm:px-6 lg:grid-cols-[320px_1fr] lg:px-8">
-        <aside className="h-fit rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-20">
-          <h1 className="text-lg font-bold">Find your next role</h1>
-          <p className="mt-1 text-sm text-slate-500">Search across six high-value India-focused niches.</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Seniority</label>
+            <select name="seniority" defaultValue={seniority} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition bg-white">
+              <option value="all">Any</option>
+              {SENIORITY_LEVELS.map(item => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Company</label>
+            <select name="companyType" defaultValue={companyType} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition bg-white">
+              <option value="all">Any</option>
+              {COMPANY_TYPES.map(item => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </div>
+        </div>
 
-          <form className="mt-5 space-y-4" action="/recruit/opportunities">
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold text-slate-600">Search</label>
-              <input name="q" defaultValue={q} placeholder="Role, skill, company, city" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-            </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Min salary (₹/yr)</label>
+          <input type="number" name="minSalary" defaultValue={minSalary} placeholder="e.g. 600000" className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
+        </div>
 
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold text-slate-600">Niche</label>
-              <select name="niche" defaultValue={niche} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                <option value="all">All niches</option>
-                {NICHES.map(item => <option key={item} value={item}>{item}</option>)}
-              </select>
-            </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Notice period</label>
+            <select name="noticePeriod" defaultValue={noticePeriod} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition bg-white">
+              <option value="all">Any</option>
+              {NOTICE_PERIODS.map(item => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Education</label>
+            <select name="educationRequirement" defaultValue={educationRequirement} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition bg-white">
+              <option value="all">Any</option>
+              {EDUCATION_LEVELS.map(item => <option key={item} value={item}>{item}</option>)}
+            </select>
+          </div>
+        </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Work mode</label>
-                <select name="workMode" defaultValue={workMode} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                  <option value="all">All</option>
-                  {WORK_MODES.map(item => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Job type</label>
-                <select name="jobType" defaultValue={jobType} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                  <option value="all">All</option>
-                  {JOB_TYPES.map(item => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </div>
-            </div>
+        <div>
+          <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Posted within</label>
+          <select name="postedAfterDays" defaultValue={postedAfterDays} className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition bg-white">
+            {POSTED_WITHIN.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
+          </select>
+        </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Seniority</label>
-                <select name="seniority" defaultValue={seniority} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                  <option value="all">Any</option>
-                  {SENIORITY_LEVELS.map(item => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Company type</label>
-                <select name="companyType" defaultValue={companyType} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                  <option value="all">Any</option>
-                  {COMPANY_TYPES.map(item => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </div>
-            </div>
+        <button className="w-full rounded-lg bg-[#0a66c2] px-3 py-2.5 text-sm font-bold text-white hover:bg-[#004182] active:scale-95 transition">
+          Search jobs
+        </button>
 
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold text-slate-600">Min salary (₹/yr)</label>
-              <input type="number" name="minSalary" defaultValue={minSalary} placeholder="e.g. 600000" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-            </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Link href={checkedLink(params, "freshersAllowed")} className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition ${freshersAllowed ? "border-[#0a66c2] bg-blue-50 text-[#0a66c2]" : "border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"}`}>
+            {freshersAllowed ? "✓" : ""} Freshers ok
+          </Link>
+          <Link href={checkedLink(params, "verifiedCompany")} className={`flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition ${verifiedCompany ? "border-[#0a66c2] bg-blue-50 text-[#0a66c2]" : "border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"}`}>
+            {verifiedCompany ? "✓" : ""} Verified only
+          </Link>
+        </div>
+      </form>
+    </div>
+  );
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Notice period</label>
-                <select name="noticePeriod" defaultValue={noticePeriod} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                  <option value="all">Any</option>
-                  {NOTICE_PERIODS.map(item => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Education</label>
-                <select name="educationRequirement" defaultValue={educationRequirement} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                  <option value="all">Any</option>
-                  {EDUCATION_LEVELS.map(item => <option key={item} value={item}>{item}</option>)}
-                </select>
-              </div>
-            </div>
+  return (
+    <div className="min-h-screen bg-[#f3f6f8] text-slate-900">
+      <RecruitHeader />
 
-            <div>
-              <label className="mb-1.5 block text-xs font-semibold text-slate-600">Posted within</label>
-              <select name="postedAfterDays" defaultValue={postedAfterDays} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                {POSTED_WITHIN.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
-              </select>
-            </div>
+      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900">Open opportunities</h1>
+            <p className="text-sm text-slate-500">{jobs.length} role{jobs.length === 1 ? "" : "s"} found across India</p>
+          </div>
+          <FilterToggle hasFilters={!!hasFilters} />
+        </div>
 
-            <button className="w-full rounded-xl bg-[#0a66c2] px-3 py-2.5 text-sm font-bold text-white hover:bg-[#004182] transition">Apply filters</button>
+        <div className="lg:grid lg:grid-cols-[300px_1fr] lg:gap-6">
+          <aside className="hidden lg:block h-fit sticky top-20">
+            {filterPanel}
+          </aside>
 
-            <div className="space-y-2 border-t border-slate-100 pt-3">
-              <Link href={checkedLink(params, "freshersAllowed")} className={`block w-full rounded-xl border px-3 py-2 text-left text-xs font-semibold transition ${freshersAllowed ? "border-[#0a66c2] bg-blue-50 text-[#0a66c2]" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
-                ✓ Freshers allowed
-              </Link>
-              <Link href={checkedLink(params, "verifiedCompany")} className={`block w-full rounded-xl border px-3 py-2 text-left text-xs font-semibold transition ${verifiedCompany ? "border-[#0a66c2] bg-blue-50 text-[#0a66c2]" : "border-slate-200 text-slate-600 hover:bg-slate-50"}`}>
-                ✓ Verified company only
-              </Link>
-            </div>
-
-            <Link href="/recruit/opportunities" className="block text-center text-xs text-slate-400 hover:text-slate-700 transition">Clear all filters</Link>
-          </form>
-        </aside>
-
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold">Open opportunities</h2>
-              <p className="text-sm text-slate-500">{jobs.length} role{jobs.length === 1 ? "" : "s"} found</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link href="/recruit/saved-jobs" className="text-xs font-semibold text-slate-500 hover:text-[#0a66c2] transition">Saved jobs</Link>
-              <Link href="/recruit/my-applications" className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition">My Applications</Link>
-            </div>
+          <div id="filter-panel-mobile" className="lg:hidden mb-4 hidden">
+            {filterPanel}
           </div>
 
-          {jobs.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-              <h3 className="font-semibold">No jobs match these filters</h3>
-              <p className="mt-1 text-sm text-slate-500">Try changing niche, salary, work mode, or search terms.</p>
-              <Link href="/recruit/opportunities" className="mt-4 inline-block text-sm font-semibold text-[#0a66c2] hover:underline">Clear filters</Link>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {jobs.map(job => (
-                <div key={job._id} className="group relative rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-[#0a66c2]/40 hover:shadow-md">
-                  <Link href={`/recruit/opportunities/${job._id}`} className="absolute inset-0 rounded-2xl" />
-                  <div className="flex gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-base font-black text-[#0a66c2]">
+          <section className="space-y-3">
+            {jobs.length === 0 ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl">🔍</div>
+                <h3 className="font-semibold text-slate-800">No jobs match your filters</h3>
+                <p className="mt-1 text-sm text-slate-500">Try adjusting your search — change the niche, work mode, or salary range.</p>
+                <Link href="/recruit/opportunities" className="mt-4 inline-block rounded-full bg-[#0a66c2] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#004182] transition">
+                  Clear all filters
+                </Link>
+              </div>
+            ) : (
+              jobs.map(job => (
+                <div key={job._id} className="group relative rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm transition-all hover:border-[#0a66c2]/30 hover:shadow-md">
+                  <Link href={`/recruit/opportunities/${job._id}`} className="absolute inset-0 rounded-2xl z-0" aria-label={`View ${job.title}`} />
+                  <div className="flex gap-3 sm:gap-4">
+                    <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-base font-black text-[#0a66c2]">
                       {(job.companyName || job.title).slice(0, 1).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-bold text-slate-900 group-hover:text-[#0a66c2] transition">{job.title}</h3>
-                        {job.verifiedCompany && <span className="rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-700 border border-green-200">Verified</span>}
-                        {job.freshersAllowed && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-200">Freshers welcome</span>}
+                      <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
+                        <h2 className="font-bold text-slate-900 group-hover:text-[#0a66c2] transition leading-snug">{job.title}</h2>
+                        <div className="flex flex-wrap gap-1">
+                          {job.verifiedCompany && (
+                            <span className="inline-flex items-center gap-0.5 rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-[10px] font-bold text-green-700">✓ Verified</span>
+                          )}
+                          {job.freshersAllowed && (
+                            <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">Freshers ok</span>
+                          )}
+                        </div>
                       </div>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {job.companyName || "Company"}
+                      <p className="mt-0.5 text-sm text-slate-500 truncate">
+                        <span className="font-medium text-slate-700">{job.companyName || "Company"}</span>
                         {job.companyType ? ` · ${job.companyType}` : ""}
                         {" · "}{job.location || "India"}
-                        {" · "}{job.workMode || "flexible"}
-                        {" · "}{job.jobType || "Full-time"}
                       </p>
-                      <p className="mt-1 text-xs text-slate-400">{job.niche || job.department || "General hiring"}</p>
+                      <p className="mt-0.5 text-xs text-slate-400 capitalize">
+                        {job.workMode || "Flexible"} · {job.jobType || "Full-time"}
+                        {job.niche ? ` · ${job.niche.split(",")[0].trim()}` : ""}
+                      </p>
                       {job.mustHaveSkills && (
                         <div className="mt-2 flex flex-wrap gap-1">
-                          {job.mustHaveSkills.split(",").slice(0, 4).map(s => s.trim()).filter(Boolean).map(s => (
-                            <span key={s} className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-medium text-slate-600">{s}</span>
+                          {job.mustHaveSkills.split(",").slice(0, 5).map(s => s.trim()).filter(Boolean).map(s => (
+                            <span key={s} className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-600 border border-slate-200">{s}</span>
                           ))}
                         </div>
                       )}
-                      <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{formatSalary(job)}</span>
-                        <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-                          {job.experienceMin ?? 0}{job.experienceMax ? `-${job.experienceMax}` : "+"} yrs exp
-                        </span>
-                        {job.seniority && <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{job.seniority}</span>}
-                        {job.noticePeriod && <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{job.noticePeriod} notice</span>}
-                        {job.educationRequirement && <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">{job.educationRequirement}</span>}
-                        {job.createdAt && <span className="text-slate-400 flex items-center">{timeAgo(job.createdAt)}</span>}
+                      <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+                        <span className="font-semibold text-slate-700">{formatSalary(job)}</span>
+                        <span>{job.experienceMin ?? 0}{job.experienceMax ? `–${job.experienceMax}` : "+"} yrs</span>
+                        {job.seniority && <span>{job.seniority}</span>}
+                        {job.noticePeriod && <span>{job.noticePeriod} notice</span>}
+                        {job.createdAt && <span className="ml-auto text-slate-400">{timeAgo(job.createdAt)}</span>}
                       </div>
                     </div>
-                    <div className="relative z-10 shrink-0 self-start">
+                    <div className="relative z-10 shrink-0 self-start pt-0.5">
                       <ClientSaveButton
                         jobId={job._id}
                         title={job.title}
@@ -310,10 +321,10 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
+              ))
+            )}
+          </section>
+        </div>
       </main>
     </div>
   );

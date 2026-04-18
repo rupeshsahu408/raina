@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
-import Link from "next/link";
+import RecruitHeader from "@/components/RecruitHeader";
 
 const API = "/backend";
 
@@ -16,13 +16,11 @@ const NICHES = [
   "Skilled Blue-Collar, Logistics & Industrial Workforce",
   "Creative, Marketing, Media & Design",
 ];
-
 const JOB_TYPES = ["Full-time", "Part-time", "Internship", "Contract", "Freelance"];
 const WORK_MODES = ["Remote", "Hybrid", "Onsite"];
 
 type Experience = { title: string; company: string; location: string; startDate: string; endDate: string; current: boolean; description: string };
 type Education = { degree: string; institution: string; year: string; description: string };
-
 type Profile = {
   name: string; email: string; phone: string; headline: string; bio: string;
   skills: string[]; experience: Experience[]; education: Education[];
@@ -34,20 +32,41 @@ type Profile = {
 const EMPTY_EXP: Experience = { title: "", company: "", location: "", startDate: "", endDate: "", current: false, description: "" };
 const EMPTY_EDU: Education = { degree: "", institution: "", year: "", description: "" };
 
-function ArrowLeft() {
-  return <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M19 12H5" /><path d="m12 5-7 7 7 7" /></svg>;
+type Section = "basics" | "experience" | "education" | "preferences" | "resume";
+
+const SECTIONS: { id: Section; label: string; icon: string }[] = [
+  { id: "basics", label: "Basic Info", icon: "👤" },
+  { id: "experience", label: "Experience", icon: "💼" },
+  { id: "education", label: "Education", icon: "🎓" },
+  { id: "preferences", label: "Preferences", icon: "⚙️" },
+  { id: "resume", label: "Resume", icon: "📄" },
+];
+
+function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</label>
+      <input className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/10 transition" {...props} />
+    </div>
+  );
 }
 
-function CheckIcon() {
-  return <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></svg>;
+function Textarea({ label, ...props }: { label: string } & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</label>
+      <textarea className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/10 transition resize-none" {...props} />
+    </div>
+  );
 }
 
-function PlusIcon() {
-  return <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M5 12h14" /><path d="M12 5v14" /></svg>;
-}
-
-function TrashIcon() {
-  return <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M3 6h18" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>;
+function Select({ label, children, ...props }: { label: string } & React.SelectHTMLAttributes<HTMLSelectElement> & { children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">{label}</label>
+      <select className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition bg-white" {...props}>{children}</select>
+    </div>
+  );
 }
 
 export default function RecruitProfilePage() {
@@ -58,8 +77,7 @@ export default function RecruitProfilePage() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const [skillInput, setSkillInput] = useState("");
-  const [activeSection, setActiveSection] = useState<"basics" | "experience" | "education" | "preferences" | "resume">("basics");
-
+  const [activeSection, setActiveSection] = useState<Section>("basics");
   const [profile, setProfile] = useState<Profile>({
     name: "", email: "", phone: "", headline: "", bio: "",
     skills: [], experience: [], education: [],
@@ -74,9 +92,11 @@ export default function RecruitProfilePage() {
       if (u) {
         const t = await u.getIdToken();
         setToken(t);
-        if (!profile.email && u.email) {
-          setProfile(prev => ({ ...prev, email: u.email || "", name: prev.name || u.displayName || "" }));
-        }
+        setProfile(prev => ({
+          ...prev,
+          email: prev.email || u.email || "",
+          name: prev.name || u.displayName || "",
+        }));
       } else {
         router.push("/login");
       }
@@ -115,47 +135,21 @@ export default function RecruitProfilePage() {
 
   function addSkill() {
     const s = skillInput.trim();
-    if (s && !profile.skills.includes(s)) {
-      set("skills", [...profile.skills, s]);
-    }
+    if (s && !profile.skills.includes(s)) set("skills", [...profile.skills, s]);
     setSkillInput("");
   }
 
-  function removeSkill(skill: string) {
-    set("skills", profile.skills.filter(s => s !== skill));
-  }
-
-  function addExperience() {
-    set("experience", [...profile.experience, { ...EMPTY_EXP }]);
-  }
-
   function updateExp(idx: number, field: keyof Experience, value: any) {
-    const updated = profile.experience.map((e, i) => i === idx ? { ...e, [field]: value } : e);
-    set("experience", updated);
-  }
-
-  function removeExp(idx: number) {
-    set("experience", profile.experience.filter((_, i) => i !== idx));
-  }
-
-  function addEducation() {
-    set("education", [...profile.education, { ...EMPTY_EDU }]);
+    set("experience", profile.experience.map((e, i) => i === idx ? { ...e, [field]: value } : e));
   }
 
   function updateEdu(idx: number, field: keyof Education, value: any) {
-    const updated = profile.education.map((e, i) => i === idx ? { ...e, [field]: value } : e);
-    set("education", updated);
-  }
-
-  function removeEdu(idx: number) {
-    set("education", profile.education.filter((_, i) => i !== idx));
+    set("education", profile.education.map((e, i) => i === idx ? { ...e, [field]: value } : e));
   }
 
   async function save() {
     if (!token) return;
-    setSaving(true);
-    setError("");
-    setSaved(false);
+    setSaving(true); setError(""); setSaved(false);
     try {
       const res = await fetch(`${API}/recruit/seeker/profile`, {
         method: "PUT",
@@ -167,6 +161,9 @@ export default function RecruitProfilePage() {
         }),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Save failed"); }
+      if (profile.resumeText) {
+        try { localStorage.setItem("recruit_resume_text", profile.resumeText); } catch { /* ignore */ }
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e: any) {
@@ -178,111 +175,83 @@ export default function RecruitProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3f6f8] flex items-center justify-center">
-        <div className="flex items-center gap-3 text-slate-500 text-sm">
-          <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-          </svg>
-          Loading your profile...
+      <div className="min-h-screen bg-[#f3f6f8]">
+        <RecruitHeader />
+        <div className="flex items-center justify-center py-32">
+          <div className="flex items-center gap-3 text-slate-400 text-sm">
+            <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Loading your profile…
+          </div>
         </div>
       </div>
     );
   }
 
-  const sections = [
-    { id: "basics", label: "Basic Info" },
-    { id: "experience", label: "Experience" },
-    { id: "education", label: "Education" },
-    { id: "preferences", label: "Job Preferences" },
-    { id: "resume", label: "Resume" },
-  ] as const;
-
   return (
     <div className="min-h-screen bg-[#f3f6f8] text-slate-900">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Link href="/recruit/opportunities" className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 transition text-sm">
-              <ArrowLeft /> Opportunities
-            </Link>
-            <span className="text-slate-300">|</span>
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0a66c2] text-xs font-black text-white">R</span>
-            <span className="text-sm font-bold text-slate-900">My Profile</span>
-          </div>
+      <RecruitHeader />
+
+      <div className="sticky top-[57px] z-30 bg-white/95 backdrop-blur border-b border-slate-200">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 flex items-center justify-between py-2.5">
+          <h1 className="text-sm font-bold text-slate-900">My Profile</h1>
           <div className="flex items-center gap-2">
-            {error && <p className="text-xs text-red-600">{error}</p>}
-            {saved && (
-              <span className="flex items-center gap-1 rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-700">
-                <CheckIcon /> Saved
-              </span>
-            )}
-            <button
-              onClick={save}
-              disabled={saving}
-              className="rounded-full bg-[#0a66c2] px-5 py-2 text-sm font-bold text-white hover:bg-[#004182] disabled:opacity-60 transition"
-            >
-              {saving ? "Saving..." : "Save profile"}
+            {error && <p className="text-xs text-red-600 hidden sm:block">{error}</p>}
+            {saved && <span className="text-xs font-semibold text-green-600">✓ Saved</span>}
+            <button onClick={save} disabled={saving} className="rounded-full bg-[#0a66c2] px-5 py-2 text-xs font-bold text-white hover:bg-[#004182] disabled:opacity-60 transition active:scale-95">
+              {saving ? "Saving…" : "Save profile"}
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
-      <main className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:grid lg:grid-cols-[220px_1fr] lg:gap-6">
-        <nav className="mb-4 flex gap-2 overflow-x-auto lg:mb-0 lg:flex-col lg:h-fit lg:rounded-2xl lg:border lg:border-slate-200 lg:bg-white lg:p-3 lg:shadow-sm">
-          {sections.map(s => (
+      <main className="mx-auto max-w-5xl px-4 py-4 sm:px-6 sm:py-6">
+        {error && <p className="mb-3 text-sm text-red-600 sm:hidden">{error}</p>}
+
+        <div className="flex gap-1 overflow-x-auto pb-2 mb-5 scrollbar-hide">
+          {SECTIONS.map(s => (
             <button
               key={s.id}
               onClick={() => setActiveSection(s.id)}
-              className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition whitespace-nowrap text-left ${
+              className={`flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition ${
                 activeSection === s.id
-                  ? "bg-blue-50 text-[#0a66c2]"
-                  : "text-slate-600 hover:bg-slate-50"
+                  ? "bg-[#0a66c2] text-white"
+                  : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
-              {s.label}
+              <span>{s.icon}</span> {s.label}
             </button>
           ))}
-        </nav>
+        </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
           {activeSection === "basics" && (
             <div className="space-y-5">
-              <h2 className="text-lg font-bold text-slate-900">Basic Information</h2>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Basic Information</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Your professional identity on Recruit AI.</p>
+              </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Full Name</label>
-                  <input value={profile.name} onChange={e => set("name", e.target.value)} placeholder="Your full name" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Email</label>
-                  <input value={profile.email} onChange={e => set("email", e.target.value)} placeholder="you@email.com" type="email" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Phone</label>
-                  <input value={profile.phone} onChange={e => set("phone", e.target.value)} placeholder="+91 98765 43210" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Headline</label>
-                  <input value={profile.headline} onChange={e => set("headline", e.target.value)} placeholder="e.g. Software Engineer at Infosys" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                </div>
+                <Input label="Full Name" value={profile.name} onChange={e => set("name", e.target.value)} placeholder="Your full name" />
+                <Input label="Email" value={profile.email} onChange={e => set("email", e.target.value)} placeholder="you@email.com" type="email" />
+                <Input label="Phone" value={profile.phone} onChange={e => set("phone", e.target.value)} placeholder="+91 98765 43210" />
+                <Input label="Headline" value={profile.headline} onChange={e => set("headline", e.target.value)} placeholder="e.g. Software Engineer at Infosys" />
               </div>
+              <Textarea label="Bio / Summary" value={profile.bio} onChange={e => set("bio", e.target.value)} placeholder="A short summary about yourself, your goals, and what you bring to the table…" rows={4} />
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Bio / Summary</label>
-                <textarea value={profile.bio} onChange={e => set("bio", e.target.value)} placeholder="A short summary about yourself, your goals, and what you bring to the table..." rows={4} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition resize-none" />
-              </div>
-              <div>
-                <label className="mb-1.5 block text-xs font-semibold text-slate-600">Skills</label>
+                <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Skills</label>
                 <div className="flex gap-2">
                   <input
                     value={skillInput}
                     onChange={e => setSkillInput(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }}
-                    placeholder="Type a skill and press Enter"
-                    className="flex-1 rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition"
+                    placeholder="Type a skill and press Enter…"
+                    className="flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/10 transition"
                   />
-                  <button onClick={addSkill} className="flex items-center gap-1.5 rounded-xl bg-[#0a66c2] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#004182] transition">
-                    <PlusIcon /> Add
+                  <button onClick={addSkill} className="rounded-lg bg-[#0a66c2] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#004182] transition">
+                    Add
                   </button>
                 </div>
                 {profile.skills.length > 0 && (
@@ -290,7 +259,7 @@ export default function RecruitProfilePage() {
                     {profile.skills.map(skill => (
                       <span key={skill} className="flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-semibold text-[#0a66c2]">
                         {skill}
-                        <button onClick={() => removeSkill(skill)} className="hover:text-red-500 transition">×</button>
+                        <button onClick={() => set("skills", profile.skills.filter(s => s !== skill))} className="text-[#0a66c2]/50 hover:text-red-500 transition font-bold">×</button>
                       </span>
                     ))}
                   </div>
@@ -302,163 +271,141 @@ export default function RecruitProfilePage() {
           {activeSection === "experience" && (
             <div className="space-y-5">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-slate-900">Work Experience</h2>
-                <button onClick={addExperience} className="flex items-center gap-1.5 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                  <PlusIcon /> Add experience
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Work Experience</h2>
+                  <p className="text-sm text-slate-500 mt-0.5">{profile.experience.length} role{profile.experience.length !== 1 ? "s" : ""} added</p>
+                </div>
+                <button onClick={() => set("experience", [...profile.experience, { ...EMPTY_EXP }])} className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                  + Add role
                 </button>
               </div>
-              {profile.experience.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center">
-                  <p className="text-sm text-slate-500">No experience added yet.</p>
-                  <button onClick={addExperience} className="mt-3 text-sm font-semibold text-[#0a66c2] hover:underline">+ Add your first role</button>
+              {profile.experience.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center">
+                  <div className="text-3xl mb-2">💼</div>
+                  <p className="text-sm text-slate-500">No work experience added yet.</p>
+                  <button onClick={() => set("experience", [...profile.experience, { ...EMPTY_EXP }])} className="mt-3 text-sm font-semibold text-[#0a66c2] hover:underline">
+                    + Add your first role
+                  </button>
                 </div>
-              )}
-              {profile.experience.map((exp, idx) => (
-                <div key={idx} className="rounded-2xl border border-slate-200 p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Role {idx + 1}</span>
-                    <button onClick={() => removeExp(idx)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition">
-                      <TrashIcon /> Remove
-                    </button>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-slate-600">Job Title</label>
-                      <input value={exp.title} onChange={e => updateExp(idx, "title", e.target.value)} placeholder="e.g. Software Engineer" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
+              ) : (
+                profile.experience.map((exp, idx) => (
+                  <div key={idx} className="rounded-xl border border-slate-200 p-4 sm:p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Role {idx + 1}</span>
+                      <button onClick={() => set("experience", profile.experience.filter((_, i) => i !== idx))} className="text-xs text-red-400 hover:text-red-600 transition font-semibold">
+                        Remove
+                      </button>
                     </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-slate-600">Company</label>
-                      <input value={exp.company} onChange={e => updateExp(idx, "company", e.target.value)} placeholder="e.g. Infosys" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-slate-600">Location</label>
-                      <input value={exp.location} onChange={e => updateExp(idx, "location", e.target.value)} placeholder="e.g. Bengaluru, Remote" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-slate-600">Start Date</label>
-                      <input value={exp.startDate} onChange={e => updateExp(idx, "startDate", e.target.value)} placeholder="e.g. Jan 2022" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                    </div>
-                    {!exp.current && (
-                      <div>
-                        <label className="mb-1 block text-xs font-semibold text-slate-600">End Date</label>
-                        <input value={exp.endDate} onChange={e => updateExp(idx, "endDate", e.target.value)} placeholder="e.g. Mar 2024" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input label="Job Title" value={exp.title} onChange={e => updateExp(idx, "title", e.target.value)} placeholder="e.g. Software Engineer" />
+                      <Input label="Company" value={exp.company} onChange={e => updateExp(idx, "company", e.target.value)} placeholder="e.g. Infosys" />
+                      <Input label="Location" value={exp.location} onChange={e => updateExp(idx, "location", e.target.value)} placeholder="e.g. Bengaluru" />
+                      <Input label="Start Date" value={exp.startDate} onChange={e => updateExp(idx, "startDate", e.target.value)} placeholder="e.g. Jan 2022" />
+                      {!exp.current && (
+                        <Input label="End Date" value={exp.endDate} onChange={e => updateExp(idx, "endDate", e.target.value)} placeholder="e.g. Mar 2024" />
+                      )}
+                      <div className="flex items-center gap-2 sm:col-span-2">
+                        <input type="checkbox" id={`curr-${idx}`} checked={exp.current} onChange={e => updateExp(idx, "current", e.target.checked)} className="h-4 w-4 rounded border-slate-300 accent-[#0a66c2]" />
+                        <label htmlFor={`curr-${idx}`} className="text-sm text-slate-700">I currently work here</label>
                       </div>
-                    )}
-                    <div className="flex items-center gap-2 sm:col-span-2">
-                      <input type="checkbox" id={`current-${idx}`} checked={exp.current} onChange={e => updateExp(idx, "current", e.target.checked)} className="h-4 w-4 rounded border-slate-300 accent-[#0a66c2]" />
-                      <label htmlFor={`current-${idx}`} className="text-sm text-slate-700">I currently work here</label>
                     </div>
+                    <Textarea label="Description" value={exp.description} onChange={e => updateExp(idx, "description", e.target.value)} placeholder="Describe your responsibilities and achievements…" rows={3} />
                   </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-600">Description</label>
-                    <textarea value={exp.description} onChange={e => updateExp(idx, "description", e.target.value)} placeholder="Describe your responsibilities, achievements..." rows={3} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition resize-none" />
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           )}
 
           {activeSection === "education" && (
             <div className="space-y-5">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-slate-900">Education</h2>
-                <button onClick={addEducation} className="flex items-center gap-1.5 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                  <PlusIcon /> Add education
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Education</h2>
+                  <p className="text-sm text-slate-500 mt-0.5">{profile.education.length} entr{profile.education.length !== 1 ? "ies" : "y"} added</p>
+                </div>
+                <button onClick={() => set("education", [...profile.education, { ...EMPTY_EDU }])} className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                  + Add education
                 </button>
               </div>
-              {profile.education.length === 0 && (
-                <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-center">
+              {profile.education.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center">
+                  <div className="text-3xl mb-2">🎓</div>
                   <p className="text-sm text-slate-500">No education added yet.</p>
-                  <button onClick={addEducation} className="mt-3 text-sm font-semibold text-[#0a66c2] hover:underline">+ Add your education</button>
+                  <button onClick={() => set("education", [...profile.education, { ...EMPTY_EDU }])} className="mt-3 text-sm font-semibold text-[#0a66c2] hover:underline">
+                    + Add your education
+                  </button>
                 </div>
+              ) : (
+                profile.education.map((edu, idx) => (
+                  <div key={idx} className="rounded-xl border border-slate-200 p-4 sm:p-5 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wide">Entry {idx + 1}</span>
+                      <button onClick={() => set("education", profile.education.filter((_, i) => i !== idx))} className="text-xs text-red-400 hover:text-red-600 transition font-semibold">Remove</button>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Input label="Degree / Certification" value={edu.degree} onChange={e => updateEdu(idx, "degree", e.target.value)} placeholder="e.g. B.Tech Computer Science" />
+                      <Input label="Institution" value={edu.institution} onChange={e => updateEdu(idx, "institution", e.target.value)} placeholder="e.g. IIT Delhi" />
+                      <Input label="Graduation Year" value={edu.year} onChange={e => updateEdu(idx, "year", e.target.value)} placeholder="e.g. 2023" />
+                      <Input label="Notes (optional)" value={edu.description} onChange={e => updateEdu(idx, "description", e.target.value)} placeholder="e.g. Specialization, GPA…" />
+                    </div>
+                  </div>
+                ))
               )}
-              {profile.education.map((edu, idx) => (
-                <div key={idx} className="rounded-2xl border border-slate-200 p-5 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Entry {idx + 1}</span>
-                    <button onClick={() => removeEdu(idx)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition">
-                      <TrashIcon /> Remove
-                    </button>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-slate-600">Degree / Certification</label>
-                      <input value={edu.degree} onChange={e => updateEdu(idx, "degree", e.target.value)} placeholder="e.g. B.Tech Computer Science" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-slate-600">Institution</label>
-                      <input value={edu.institution} onChange={e => updateEdu(idx, "institution", e.target.value)} placeholder="e.g. IIT Delhi" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-slate-600">Graduation Year</label>
-                      <input value={edu.year} onChange={e => updateEdu(idx, "year", e.target.value)} placeholder="e.g. 2023" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-xs font-semibold text-slate-600">Notes (optional)</label>
-                      <input value={edu.description} onChange={e => updateEdu(idx, "description", e.target.value)} placeholder="e.g. Specialization, GPA..." className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           )}
 
           {activeSection === "preferences" && (
             <div className="space-y-5">
-              <h2 className="text-lg font-bold text-slate-900">Job Preferences</h2>
-              <p className="text-sm text-slate-500">Tell us what kind of roles you are looking for so we can surface the best matches.</p>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Job Preferences</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Tell us what kind of roles you're looking for.</p>
+              </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Preferred Niche</label>
-                  <select value={profile.preferredNiche} onChange={e => set("preferredNiche", e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                    <option value="">Select niche</option>
-                    {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Preferred Job Type</label>
-                  <select value={profile.preferredJobType} onChange={e => set("preferredJobType", e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                    <option value="">Any</option>
-                    {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Preferred Work Mode</label>
-                  <select value={profile.preferredWorkMode} onChange={e => set("preferredWorkMode", e.target.value)} className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition">
-                    <option value="">Any</option>
-                    {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Preferred Location</label>
-                  <input value={profile.preferredLocation} onChange={e => set("preferredLocation", e.target.value)} placeholder="e.g. Bengaluru, Mumbai, Remote" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Min Expected Salary (₹/yr)</label>
-                  <input type="number" value={profile.preferredSalaryMin} onChange={e => set("preferredSalaryMin", e.target.value ? Number(e.target.value) : "")} placeholder="e.g. 800000" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-xs font-semibold text-slate-600">Max Expected Salary (₹/yr)</label>
-                  <input type="number" value={profile.preferredSalaryMax} onChange={e => set("preferredSalaryMax", e.target.value ? Number(e.target.value) : "")} placeholder="e.g. 1500000" className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition" />
-                </div>
+                <Select label="Preferred Niche" value={profile.preferredNiche} onChange={e => set("preferredNiche", e.target.value)}>
+                  <option value="">Any niche</option>
+                  {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+                </Select>
+                <Select label="Preferred Job Type" value={profile.preferredJobType} onChange={e => set("preferredJobType", e.target.value)}>
+                  <option value="">Any</option>
+                  {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </Select>
+                <Select label="Preferred Work Mode" value={profile.preferredWorkMode} onChange={e => set("preferredWorkMode", e.target.value)}>
+                  <option value="">Any</option>
+                  {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
+                </Select>
+                <Input label="Preferred Location" value={profile.preferredLocation} onChange={e => set("preferredLocation", e.target.value)} placeholder="e.g. Bengaluru, Remote" />
+                <Input label="Min Expected Salary (₹/yr)" type="number" value={profile.preferredSalaryMin} onChange={e => set("preferredSalaryMin", e.target.value ? Number(e.target.value) : "")} placeholder="e.g. 800000" />
+                <Input label="Max Expected Salary (₹/yr)" type="number" value={profile.preferredSalaryMax} onChange={e => set("preferredSalaryMax", e.target.value ? Number(e.target.value) : "")} placeholder="e.g. 1500000" />
               </div>
             </div>
           )}
 
           {activeSection === "resume" && (
-            <div className="space-y-5">
-              <h2 className="text-lg font-bold text-slate-900">Resume / Work History</h2>
-              <p className="text-sm text-slate-500">Paste your resume text here. When you apply to a job, this will be pre-filled automatically, saving you time.</p>
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Resume / Work History</h2>
+                <p className="text-sm text-slate-500 mt-0.5">Paste your resume once. It auto-fills when you apply to jobs.</p>
+              </div>
               <textarea
                 value={profile.resumeText}
                 onChange={e => set("resumeText", e.target.value)}
-                placeholder="Paste your full resume text, LinkedIn summary, or work history here. Include skills, experience, education, and achievements..."
-                rows={18}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition resize-none font-mono"
+                placeholder="Paste your full resume text, LinkedIn summary, or work history here. Include skills, experience, education, certifications and key achievements…"
+                rows={20}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/10 transition resize-none font-mono"
               />
-              <p className="text-xs text-slate-400">Tip: The more detailed your resume text, the better AI can score your fit for each role.</p>
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <p>{profile.resumeText.length} characters</p>
+                <p>Tip: More detail = better AI matching score</p>
+              </div>
             </div>
           )}
+        </div>
+
+        <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:justify-end">
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <button onClick={save} disabled={saving} className="w-full sm:w-auto rounded-full bg-[#0a66c2] px-8 py-2.5 text-sm font-bold text-white hover:bg-[#004182] disabled:opacity-60 transition active:scale-95">
+            {saving ? "Saving…" : saved ? "✓ Saved!" : "Save profile"}
+          </button>
         </div>
       </main>
     </div>

@@ -2,20 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import RecruitHeader from "@/components/RecruitHeader";
 
-const STAGE_LABELS: Record<string, string> = {
-  applied: "Applied", screened: "Screened", assessed: "Assessment sent",
-  interview: "Interview", offer: "Offer", hired: "Hired", rejected: "Rejected",
-};
-
-const STAGE_COLORS: Record<string, string> = {
-  applied: "bg-blue-50 text-blue-700 border-blue-200",
-  screened: "bg-purple-50 text-purple-700 border-purple-200",
-  assessed: "bg-amber-50 text-amber-700 border-amber-200",
-  interview: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  offer: "bg-green-50 text-green-700 border-green-200",
-  hired: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  rejected: "bg-red-50 text-red-700 border-red-200",
+const STAGE_META: Record<string, { label: string; color: string; icon: string }> = {
+  applied:   { label: "Applied",            color: "bg-blue-50 text-blue-700 border-blue-200",       icon: "📋" },
+  screened:  { label: "Screened",           color: "bg-purple-50 text-purple-700 border-purple-200",  icon: "👁" },
+  assessed:  { label: "Assessment sent",    color: "bg-amber-50 text-amber-700 border-amber-200",     icon: "📝" },
+  interview: { label: "Interview",          color: "bg-indigo-50 text-indigo-700 border-indigo-200",  icon: "🤝" },
+  offer:     { label: "Offer received",     color: "bg-green-50 text-green-700 border-green-200",     icon: "🎉" },
+  hired:     { label: "Hired",              color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: "✅" },
+  rejected:  { label: "Not selected",       color: "bg-red-50 text-red-700 border-red-200",           icon: "❌" },
 };
 
 type Application = {
@@ -28,10 +24,6 @@ type Application = {
   assessmentStatus: string;
   appliedAt: string;
 };
-
-function ArrowLeft() {
-  return <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M19 12H5" /><path d="m12 5-7 7 7 7" /></svg>;
-}
 
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -93,57 +85,64 @@ export default function MyApplicationsPage() {
   const scorePercent = (app: Application) =>
     app.maxScore > 0 ? Math.round((app.totalScore / app.maxScore) * 100) : null;
 
+  const getScoreColor = (pct: number) => {
+    if (pct >= 70) return "bg-green-500";
+    if (pct >= 50) return "bg-amber-500";
+    return "bg-red-400";
+  };
+
   return (
     <div className="min-h-screen bg-[#f3f6f8] text-slate-900">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center gap-3 px-4 py-3 sm:px-6">
-          <Link href="/recruit/opportunities" className="flex items-center gap-1.5 text-slate-500 hover:text-slate-800 transition text-sm">
-            <ArrowLeft /> Opportunities
-          </Link>
-          <span className="text-slate-300">|</span>
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0a66c2] text-xs font-black text-white">R</span>
-          <span className="text-sm font-bold">My Applications</span>
-        </div>
-      </header>
+      <RecruitHeader />
 
-      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
-        <div className="mb-5">
-          <h1 className="text-xl font-bold">Track your applications</h1>
-          <p className="text-sm text-slate-500">Enter the email you used when applying to see your application status.</p>
+      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+        <div className="mb-6">
+          <h1 className="text-xl font-bold text-slate-900">My Applications</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Track every job you've applied to and see your current status.</p>
         </div>
 
-        <form onSubmit={handleSearch} className="mb-6 flex gap-3">
-          <input
-            type="email"
-            value={inputEmail}
-            onChange={e => setInputEmail(e.target.value)}
-            placeholder="Enter your application email"
-            className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm outline-none focus:border-[#0a66c2] transition"
-            required
-          />
-          <button type="submit" disabled={loading} className="rounded-xl bg-[#0a66c2] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#004182] disabled:opacity-60 transition">
-            {loading ? "Searching..." : "Search"}
-          </button>
-        </form>
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm mb-5">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Enter your application email</p>
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <input
+              type="email"
+              value={inputEmail}
+              onChange={e => setInputEmail(e.target.value)}
+              placeholder="you@email.com"
+              className="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/10 transition"
+              required
+            />
+            <button type="submit" disabled={loading} className="shrink-0 rounded-lg bg-[#0a66c2] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#004182] disabled:opacity-60 transition">
+              {loading ? "…" : "Search"}
+            </button>
+          </form>
+        </div>
 
-        {error && <div className="mb-4 rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">{error}</div>}
+        {error && (
+          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 p-4 text-sm text-red-700 flex items-center gap-2">
+            <span>⚠️</span> {error}
+          </div>
+        )}
 
         {loading && (
           <div className="flex items-center justify-center py-16">
-            <div className="flex items-center gap-3 text-slate-500 text-sm">
+            <div className="flex items-center gap-3 text-slate-400 text-sm">
               <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              Looking up your applications...
+              Looking up your applications…
             </div>
           </div>
         )}
 
         {!loading && searched && applications.length === 0 && (
           <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-            <h2 className="font-semibold text-slate-800">No applications found</h2>
-            <p className="mt-1 text-sm text-slate-500">We couldn't find any applications for this email address.</p>
+            <div className="text-4xl mb-3">📭</div>
+            <h2 className="font-bold text-slate-800">No applications found</h2>
+            <p className="mt-2 text-sm text-slate-500 max-w-xs mx-auto">
+              We couldn't find any applications for <strong>{email}</strong>. Make sure you used this email when applying.
+            </p>
             <Link href="/recruit/opportunities" className="mt-5 inline-block rounded-full bg-[#0a66c2] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#004182] transition">
               Browse & apply to jobs
             </Link>
@@ -152,50 +151,68 @@ export default function MyApplicationsPage() {
 
         {!loading && applications.length > 0 && (
           <div className="space-y-3">
-            <p className="text-sm font-semibold text-slate-700">{applications.length} application{applications.length !== 1 ? "s" : ""} found</p>
+            <p className="text-sm font-semibold text-slate-700">
+              {applications.length} application{applications.length !== 1 ? "s" : ""} found
+            </p>
             {applications.map(app => {
               const pct = scorePercent(app);
+              const meta = STAGE_META[app.stage] || { label: app.stage, color: "bg-slate-100 text-slate-600 border-slate-200", icon: "•" };
               return (
-                <div key={app._id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-base font-black text-[#0a66c2]">
-                      {(app.job?.companyName || app.job?.title || "?").slice(0, 1).toUpperCase()}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-bold text-slate-900">{app.job?.title || "Unknown job"}</h3>
-                        <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${STAGE_COLORS[app.stage] || "bg-slate-100 text-slate-600 border-slate-200"}`}>
-                          {STAGE_LABELS[app.stage] || app.stage}
-                        </span>
+                <div key={app._id} className="rounded-2xl border border-slate-200 bg-white shadow-sm hover:border-slate-300 transition">
+                  <div className="p-4 sm:p-5">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-base font-black text-[#0a66c2]">
+                        {(app.job?.companyName || app.job?.title || "?").slice(0, 1).toUpperCase()}
                       </div>
-                      <p className="mt-0.5 text-sm text-slate-600">
-                        {app.job?.companyName || "Company"}{app.job?.location ? ` · ${app.job.location}` : ""}{app.job?.workMode ? ` · ${app.job.workMode}` : ""}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-400">Applied {timeAgo(app.appliedAt)}</p>
-                      <div className="mt-3 flex flex-wrap gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-start gap-2">
+                          <h3 className="font-bold text-slate-900 leading-snug">{app.job?.title || "Unknown job"}</h3>
+                          <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${meta.color}`}>
+                            {meta.icon} {meta.label}
+                          </span>
+                        </div>
+                        <p className="mt-0.5 text-sm text-slate-500">
+                          {app.job?.companyName || "Company"}
+                          {app.job?.location ? ` · ${app.job.location}` : ""}
+                          {app.job?.workMode ? ` · ${app.job.workMode}` : ""}
+                        </p>
+                        <p className="mt-0.5 text-xs text-slate-400">Applied {timeAgo(app.appliedAt)}</p>
+                      </div>
+                      {app.job && (
+                        <Link href={`/recruit/opportunities/${app.jobId}`} className="shrink-0 hidden sm:inline-flex rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition whitespace-nowrap">
+                          View job
+                        </Link>
+                      )}
+                    </div>
+
+                    {(pct !== null || app.assessmentStatus !== "not_sent") && (
+                      <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-4">
                         {pct !== null && (
-                          <div className="flex items-center gap-2">
-                            <div className="h-1.5 w-24 rounded-full bg-slate-200 overflow-hidden">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden min-w-[80px]">
                               <div
-                                className={`h-full rounded-full ${pct >= 70 ? "bg-green-500" : pct >= 50 ? "bg-amber-500" : "bg-red-400"}`}
+                                className={`h-full rounded-full transition-all ${getScoreColor(pct)}`}
                                 style={{ width: `${pct}%` }}
                               />
                             </div>
-                            <span className="text-xs font-semibold text-slate-700">{pct}% match</span>
+                            <span className="text-xs font-bold text-slate-700 shrink-0">{pct}% match</span>
                           </div>
                         )}
                         {app.assessmentStatus === "sent" && (
-                          <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-[10px] font-bold text-amber-700">Assessment pending</span>
+                          <span className="rounded-full bg-amber-50 border border-amber-200 px-2.5 py-1 text-[11px] font-bold text-amber-700">⏳ Assessment pending</span>
                         )}
                         {app.assessmentStatus === "completed" && (
-                          <span className="rounded-full bg-green-50 border border-green-200 px-2.5 py-0.5 text-[10px] font-bold text-green-700">Assessment done</span>
+                          <span className="rounded-full bg-green-50 border border-green-200 px-2.5 py-1 text-[11px] font-bold text-green-700">✓ Assessment submitted</span>
                         )}
                       </div>
-                    </div>
+                    )}
+
                     {app.job && (
-                      <Link href={`/recruit/opportunities/${app.jobId}`} className="shrink-0 rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                        View job
-                      </Link>
+                      <div className="mt-3 sm:hidden">
+                        <Link href={`/recruit/opportunities/${app.jobId}`} className="inline-flex rounded-full border border-slate-200 px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition">
+                          View job →
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </div>
