@@ -166,6 +166,21 @@ Rules for the rubric:
   return { jd: parsed.jd, rubric: parsed.rubric };
 }
 
+function extractNameFromResume(text: string): string {
+  const lines = text.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+  for (const line of lines.slice(0, 6)) {
+    if (line.length < 60 && /^[A-Z][a-zA-Z]+([\s'-][A-Z][a-zA-Z]+)+$/.test(line)) {
+      return line;
+    }
+  }
+  for (const line of lines.slice(0, 6)) {
+    if (line.length < 60 && /^[A-Za-z]+([\s'-][A-Za-z]+)+$/.test(line) && !/[@:\/\d]/.test(line)) {
+      return line;
+    }
+  }
+  return "Candidate";
+}
+
 async function scoreCandidate(args: {
   resumeText: string;
   jobTitle: string;
@@ -179,6 +194,7 @@ async function scoreCandidate(args: {
   aiSummary: string;
   redFlags: string[];
   strengths: string[];
+  scoringFailed: boolean;
 }> {
   const rubricText = args.rubric
     .map((r) => `- ${r.name} (max ${r.weight} pts): ${r.description}`)
@@ -256,20 +272,24 @@ For "tier": classify each criterion as 1 (must-have skill), 2 (experience depth)
     apiKey: NVIDIA_API_KEY,
     messages: [{ role: "user", content: prompt }],
     temperature: 0.4,
-    max_tokens: 1600,
+    max_tokens: 2000,
   });
 
   const parsed = safeJson(raw);
   if (!parsed) {
+    const rubricMaxScore = args.rubric.reduce((sum, r) => sum + r.weight, 0) || 100;
+    const extractedName = extractNameFromResume(args.resumeText);
+    console.error("[recruit] scoreCandidate: AI returned unparseable response. Raw output (first 500 chars):", raw?.slice(0, 500));
     return {
-      name: "Unknown Candidate",
+      name: extractedName,
       email: "",
       totalScore: 0,
-      maxScore: 100,
+      maxScore: rubricMaxScore,
       scoreBreakdown: [],
-      aiSummary: "AI scoring failed. Please review the resume manually.",
+      aiSummary: "",
       redFlags: [],
       strengths: [],
+      scoringFailed: true,
     };
   }
 
@@ -333,7 +353,7 @@ For "tier": classify each criterion as 1 (must-have skill), 2 (experience depth)
     : [];
 
   return {
-    name: parsed.name ?? "Unknown Candidate",
+    name: (parsed.name?.trim() || extractNameFromResume(args.resumeText)),
     email: parsed.email ?? "",
     totalScore,
     maxScore,
@@ -341,6 +361,7 @@ For "tier": classify each criterion as 1 (must-have skill), 2 (experience depth)
     aiSummary: (parsed.aiSummary ?? "").trim(),
     redFlags,
     strengths,
+    scoringFailed: false,
   };
 }
 
@@ -702,6 +723,7 @@ recruitRouter.post("/jobs/:jobId/candidates", async (req, res) => {
       stage: "applied",
       assessmentStatus: "not_sent",
       previousResumeScore: scored.totalScore,
+      scoringFailed: scored.scoringFailed,
     });
 
     await RecruitJob.updateOne({ _id: job._id }, { $inc: { candidateCount: 1 } });
@@ -743,6 +765,43 @@ recruitRouter.patch("/jobs/:jobId/candidates/:candidateId", async (req, res) => 
     if (!candidate) return res.status(404).json({ error: "Candidate not found." });
     return res.json({ candidate });
   } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitRouter.post("/jobs/:jobId/candidates/:candidateId/retry-score", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    const job = await RecruitJob.findOne({ _id: req.params.jobId, uid }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+
+    const candidate = await RecruitCandidate.findOne({ _id: req.params.candidateId, jobId: req.params.jobId, uid });
+    if (!candidate) return res.status(404).json({ error: "Candidate not found." });
+
+    const scored = await scoreCandidate({
+      resumeText: candidate.resumeText,
+      jobTitle: job.title,
+      rubric: job.rubric,
+    });
+
+    candidate.name = scored.name;
+    candidate.email = scored.email || candidate.email;
+    candidate.totalScore = scored.totalScore;
+    candidate.maxScore = scored.maxScore;
+    candidate.scoreBreakdown = scored.scoreBreakdown as any;
+    candidate.aiSummary = scored.aiSummary;
+    candidate.redFlags = scored.redFlags;
+    candidate.strengths = scored.strengths;
+    candidate.scoringFailed = scored.scoringFailed;
+    if (!candidate.scoringFailed) {
+      candidate.previousResumeScore = scored.totalScore;
+    }
+    await candidate.save();
+
+    return res.json({ candidate });
+  } catch (err: any) {
+    console.error("[recruit] POST /retry-score", err);
     return res.status(500).json({ error: err.message });
   }
 });

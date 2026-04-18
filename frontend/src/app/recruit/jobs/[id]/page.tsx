@@ -42,6 +42,7 @@ type Candidate = {
   previousResumeScore: number;
   hiringDecision: HiringDecision;
   assessmentImpact?: AssessmentImpact;
+  scoringFailed?: boolean;
 };
 
 type RubricCriteria = { name: string; weight: number; description: string };
@@ -342,6 +343,10 @@ function AddCandidateModal({ jobId, token, onClose, onAdded }: {
   );
 }
 
+function RetryIcon() {
+  return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>;
+}
+
 function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
   c: Candidate; jobId: string; token: string;
   onUpdate: (id: string, update: Partial<Candidate>) => void;
@@ -357,8 +362,11 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
   const [rejectionEmail, setRejectionEmail] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [loadingReminder, setLoadingReminder] = useState(false);
+  const [loadingRetry, setLoadingRetry] = useState(false);
+  const [retryError, setRetryError] = useState("");
 
-  const pct = c.maxScore > 0 ? Math.round((c.totalScore / c.maxScore) * 100) : 0;
+  const scoringFailed = c.scoringFailed === true;
+  const pct = (!scoringFailed && c.maxScore > 0) ? Math.round((c.totalScore / c.maxScore) * 100) : 0;
   const prevPct = c.maxScore > 0 && c.previousResumeScore ? Math.round((c.previousResumeScore / c.maxScore) * 100) : null;
   const stageStyle = getStageStyle(c.stage);
   const decision = decisionBadge(c.hiringDecision);
@@ -447,6 +455,34 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
     }
   }
 
+  async function retryScoring() {
+    setLoadingRetry(true);
+    setRetryError("");
+    try {
+      const res = await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}/retry-score`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Retry failed.");
+      onUpdate(c._id, {
+        name: data.candidate.name,
+        email: data.candidate.email,
+        totalScore: data.candidate.totalScore,
+        maxScore: data.candidate.maxScore,
+        scoreBreakdown: data.candidate.scoreBreakdown,
+        aiSummary: data.candidate.aiSummary,
+        redFlags: data.candidate.redFlags,
+        strengths: data.candidate.strengths,
+        scoringFailed: data.candidate.scoringFailed,
+      });
+    } catch (e: any) {
+      setRetryError(e.message || "Retry failed. Please try again.");
+    } finally {
+      setLoadingRetry(false);
+    }
+  }
+
   async function handleDelete() {
     if (!confirm(`Remove ${c.name} from this pipeline?`)) return;
     try {
@@ -496,24 +532,32 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <div className="text-right">
-                <p className={`text-lg font-bold leading-none ${scoreColor(pct)}`}>{pct}%</p>
-                {scoreChanged && prevPct !== null && (
-                  <p className="text-[10px] text-zinc-600 mt-0.5">
-                    <span className="line-through text-zinc-700">{prevPct}%</span>
-                    <span className={pct > prevPct ? " text-emerald-500" : " text-rose-500"}>
-                      {" "}{pct > prevPct ? "▲" : "▼"}
-                    </span>
-                  </p>
+                {scoringFailed ? (
+                  <p className="text-sm font-semibold leading-none text-amber-400">Scoring<br/>unavailable</p>
+                ) : (
+                  <>
+                    <p className={`text-lg font-bold leading-none ${scoreColor(pct)}`}>{pct}%</p>
+                    {scoreChanged && prevPct !== null && (
+                      <p className="text-[10px] text-zinc-600 mt-0.5">
+                        <span className="line-through text-zinc-700">{prevPct}%</span>
+                        <span className={pct > prevPct ? " text-emerald-500" : " text-rose-500"}>
+                          {" "}{pct > prevPct ? "▲" : "▼"}
+                        </span>
+                      </p>
+                    )}
+                    <p className="text-[10px] text-zinc-600 mt-0.5">{c.totalScore}/{c.maxScore} pts</p>
+                  </>
                 )}
-                <p className="text-[10px] text-zinc-600 mt-0.5">{c.totalScore}/{c.maxScore} pts</p>
               </div>
             </div>
           </div>
 
           <div className="mb-2 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
-            <div className={`h-full rounded-full transition-all ${scoreBarColor(pct)}`} style={{ width: `${pct}%` }} />
+            {!scoringFailed && (
+              <div className={`h-full rounded-full transition-all ${scoreBarColor(pct)}`} style={{ width: `${pct}%` }} />
+            )}
           </div>
-          {c.scoreBreakdown.length > 0 && (() => {
+          {!scoringFailed && c.scoreBreakdown.length > 0 && (() => {
             const conf = overallConfidence(c.scoreBreakdown);
             const cs = confidenceStyle(conf);
             return (
@@ -524,7 +568,14 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
             );
           })()}
 
-          <p className="text-xs text-zinc-500 leading-5 line-clamp-2 mb-3">{c.aiSummary}</p>
+          {scoringFailed ? (
+            <div className="mb-3 rounded-2xl border border-amber-500/20 bg-amber-500/[0.06] px-3 py-2.5">
+              <p className="text-[11px] text-amber-300/80 leading-5">Scoring temporarily unavailable — the AI couldn&apos;t analyze this resume. Use &ldquo;Retry Scoring&rdquo; to try again.</p>
+              {retryError && <p className="mt-1 text-[11px] text-rose-400">{retryError}</p>}
+            </div>
+          ) : (
+            <p className="text-xs text-zinc-500 leading-5 line-clamp-2 mb-3">{c.aiSummary}</p>
+          )}
 
           <div className="flex items-center gap-2 mb-3 flex-wrap">
             <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-semibold ${assessBadge.cls}`}>
@@ -598,6 +649,17 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
               {loadingReject ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> : <XIcon />}
               Reject
             </button>
+
+            {scoringFailed && (
+              <button
+                onClick={retryScoring}
+                disabled={loadingRetry}
+                className="flex items-center gap-1 rounded-xl border border-amber-500/25 bg-amber-500/[0.07] px-3 py-1.5 text-[11px] text-amber-400 hover:bg-amber-500/15 transition disabled:opacity-50"
+              >
+                {loadingRetry ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> : <RetryIcon />}
+                {loadingRetry ? "Retrying…" : "Retry Scoring"}
+              </button>
+            )}
 
             <button onClick={handleDelete} className="ml-auto text-zinc-700 hover:text-rose-400 transition"><XIcon /></button>
           </div>

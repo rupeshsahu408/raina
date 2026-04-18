@@ -64,6 +64,7 @@ export interface IRecruitCandidate extends Document {
   previousResumeScore: number;
   hiringDecision?: HiringDecision;
   assessmentImpact?: IAssessmentImpact;
+  scoringFailed?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -144,6 +145,7 @@ const RecruitCandidateSchema = new Schema<IRecruitCandidate>(
       enum: ["strong_yes", "maybe", "no"],
     },
     assessmentImpact: { type: AssessmentImpactSchema },
+    scoringFailed: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
