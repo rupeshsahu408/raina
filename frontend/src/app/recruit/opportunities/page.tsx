@@ -292,6 +292,21 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
             </Link>
           </div>
 
+          <div className="mt-4 grid gap-2 border-t border-slate-100 pt-4 text-xs text-slate-600 sm:grid-cols-3">
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">
+              <span className="font-bold text-slate-900">Free to apply</span>
+              <p className="mt-0.5">No payment or subscription needed.</p>
+            </div>
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">
+              <span className="font-bold text-slate-900">Saved profile support</span>
+              <p className="mt-0.5">Reuse your details across jobs.</p>
+            </div>
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">
+              <span className="font-bold text-slate-900">Trust-first filters</span>
+              <p className="mt-0.5">Find freshers-friendly and verified roles.</p>
+            </div>
+          </div>
+
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-700 shadow-sm">
               {jobs.length} role{jobs.length === 1 ? "" : "s"} found
@@ -378,6 +393,11 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
                         {job.seniority && <span>{job.seniority}</span>}
                         {job.noticePeriod && <span>{job.noticePeriod} notice</span>}
                         {job.createdAt && <span className="ml-auto text-slate-400">{timeAgo(job.createdAt)}</span>}
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-[#0a66c2]">Apply free</span>
+                        <span className="rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">Save for later</span>
+                        <span className="rounded-full bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">Track after applying</span>
                       </div>
                     </div>
                     <div className="relative z-10 shrink-0 self-start pt-0.5">

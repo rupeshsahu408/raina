@@ -86,6 +86,15 @@ export default function RecruitProfilePage() {
     preferredNiche: "", resumeText: "",
   });
 
+  const completionItems = [
+    Boolean(profile.name && profile.email),
+    profile.skills.length > 0,
+    Boolean(profile.preferredNiche || profile.preferredJobType || profile.preferredWorkMode),
+    Boolean(profile.resumeText && profile.resumeText.length > 80),
+    profile.experience.length > 0 || profile.education.length > 0,
+  ];
+  const completion = Math.round((completionItems.filter(Boolean).length / completionItems.length) * 100);
+
   useEffect(() => {
     const auth = getFirebaseAuth();
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -178,7 +187,7 @@ export default function RecruitProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f3f6f8]">
+      <div className="min-h-screen bg-white">
         <RecruitHeader />
         <div className="flex items-center justify-center py-32">
           <div className="flex items-center gap-3 text-slate-400 text-sm">
@@ -194,7 +203,7 @@ export default function RecruitProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f3f6f8] text-slate-900">
+    <div className="min-h-screen bg-white text-slate-900">
       <RecruitHeader />
 
       <div className="sticky top-[57px] z-30 bg-white/95 backdrop-blur border-b border-slate-200">
@@ -212,6 +221,28 @@ export default function RecruitProfilePage() {
 
       <main className="mx-auto max-w-5xl px-4 py-4 sm:px-6 sm:py-6">
         {error && <p className="mb-3 text-sm text-red-600 sm:hidden">{error}</p>}
+
+        <div className="mb-5 rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-blue-50/40 p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0a66c2]">Seeker profile</p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-950">Apply faster with one saved profile</h2>
+              <p className="mt-2 max-w-2xl text-sm text-slate-600">Complete this once so job applications can prefill your name, contact details, and resume text.</p>
+            </div>
+            <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 sm:min-w-44">
+              <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Profile strength</p>
+              <p className="mt-1 text-2xl font-black text-slate-950">{completion}%</p>
+              <div className="mt-2 h-2 rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-[#0a66c2]" style={{ width: `${completion}%` }} />
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">Name, email and phone help recruiters contact you.</div>
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">Skills and preferences improve job relevance.</div>
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">Resume text improves AI scoring after applying.</div>
+          </div>
+        </div>
 
         <div className="flex gap-1 overflow-x-auto pb-2 mb-5 scrollbar-hide">
           {SECTIONS.map(s => (

@@ -204,6 +204,24 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             </div>
           </div>
 
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-bold text-slate-900">Trust signals</h2>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-xs font-bold text-slate-900">Free application</p>
+                <p className="mt-1 text-xs text-slate-500">Candidates are not charged to apply.</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-xs font-bold text-slate-900">{job.salaryMin || job.salaryMax ? "Salary visible" : "Salary not disclosed"}</p>
+                <p className="mt-1 text-xs text-slate-500">Salary transparency is shown wherever recruiters provide it.</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-xs font-bold text-slate-900">{job.verifiedCompany ? "Verified company" : "Company info shown"}</p>
+                <p className="mt-1 text-xs text-slate-500">Review company and role details before applying.</p>
+              </div>
+            </div>
+          </div>
+
           <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-5 shadow-sm">
             <h2 className="text-sm font-bold text-slate-900">Apply faster with your saved profile</h2>
             <p className="mt-2 text-sm leading-relaxed text-slate-600">

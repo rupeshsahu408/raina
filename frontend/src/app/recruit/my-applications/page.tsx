@@ -92,18 +92,24 @@ export default function MyApplicationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f3f6f8] text-slate-900">
+    <div className="min-h-screen bg-white text-slate-900">
       <RecruitHeader />
 
-      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
-        <div className="mb-6">
-          <h1 className="text-xl font-bold text-slate-900">My Applications</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Track every job you've applied to and see your current status.</p>
+      <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
+        <div className="mb-5 rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-blue-50/40 p-5 shadow-sm sm:p-6">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#0a66c2]">Application tracker</p>
+          <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950">My Applications</h1>
+          <p className="mt-2 max-w-2xl text-sm text-slate-600">Track every job you've applied to, check current status, and continue applying with the same saved email.</p>
+          <div className="mt-4 grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">Status updates in one place</div>
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">AI match score where available</div>
+            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">Assessment progress included</div>
+          </div>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm mb-5">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Enter your application email</p>
-          <form onSubmit={handleSearch} className="flex gap-2">
+          <form onSubmit={handleSearch} className="flex flex-col gap-2 sm:flex-row">
             <input
               type="email"
               value={inputEmail}
@@ -137,7 +143,7 @@ export default function MyApplicationsPage() {
         )}
 
         {!loading && searched && applications.length === 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-10">
             <div className="text-4xl mb-3">📭</div>
             <h2 className="font-bold text-slate-800">No applications found</h2>
             <p className="mt-2 text-sm text-slate-500 max-w-xs mx-auto">
@@ -158,7 +164,7 @@ export default function MyApplicationsPage() {
               const pct = scorePercent(app);
               const meta = STAGE_META[app.stage] || { label: app.stage, color: "bg-slate-100 text-slate-600 border-slate-200", icon: "•" };
               return (
-                <div key={app._id} className="rounded-2xl border border-slate-200 bg-white shadow-sm hover:border-slate-300 transition">
+                <div key={app._id} className="rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:border-[#0a66c2]/30">
                   <div className="p-4 sm:p-5">
                     <div className="flex items-start gap-3 sm:gap-4">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-base font-black text-[#0a66c2]">

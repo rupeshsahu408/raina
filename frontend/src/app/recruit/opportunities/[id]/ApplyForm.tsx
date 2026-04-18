@@ -117,6 +117,11 @@ export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: str
             Saved profile details were filled automatically. Review once and submit.
           </div>
         )}
+        {!savedProfileDetected && (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs text-slate-600">
+            Tip: create your seeker profile once to make future applications faster.
+          </div>
+        )}
 
         <div>
           <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Full name *</label>
@@ -188,6 +193,9 @@ export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: str
         <p className="text-center text-xs text-slate-400">
           Applied before?{" "}
           <Link href="/recruit/my-applications" className="text-[#0a66c2] hover:underline">Track your applications</Link>
+        </p>
+        <p className="text-center text-[11px] text-slate-400">
+          Free to apply. Your details are sent only to the recruiter for this role.
         </p>
       </div>
     </div>
