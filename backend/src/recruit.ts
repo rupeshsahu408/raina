@@ -1228,3 +1228,185 @@ recruitRouter.patch("/talent-pool/:candidateId", async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
+// ─── Offer Letter ─────────────────────────────────────────────────────────────
+
+async function generateOfferLetter(args: {
+  candidateName: string;
+  jobTitle: string;
+  department: string;
+  location: string;
+  workMode: string;
+  seniority: string;
+  startDate: string;
+  salary: string;
+  salaryCurrency: string;
+  signingBonus?: string;
+  benefits?: string;
+  companyName?: string;
+  hiringManagerName?: string;
+}): Promise<string> {
+  const prompt = `You are an expert HR professional. Write a professional, warm, and legally clear job offer letter.
+
+DETAILS:
+- Candidate Name: ${args.candidateName}
+- Role: ${args.jobTitle}
+- Department: ${args.department || "Not specified"}
+- Location: ${args.location}
+- Work Mode: ${args.workMode}
+- Seniority: ${args.seniority}
+- Start Date: ${args.startDate}
+- Salary: ${args.salaryCurrency} ${args.salary} per year
+${args.signingBonus ? `- Signing Bonus: ${args.signingBonus}` : ""}
+${args.benefits ? `- Benefits / Perks: ${args.benefits}` : ""}
+${args.companyName ? `- Company: ${args.companyName}` : ""}
+${args.hiringManagerName ? `- Hiring Manager: ${args.hiringManagerName}` : ""}
+
+Write a complete, ready-to-send offer letter that includes:
+1. A warm congratulatory opening with the candidate's name and role
+2. Job details: title, department, location, work mode, start date
+3. Compensation: base salary${args.signingBonus ? ", signing bonus" : ""}${args.benefits ? ", key benefits" : ""}
+4. At-will employment / standard employment terms statement (one paragraph)
+5. A clear acceptance instruction (e.g., "Please confirm your acceptance by replying to this email or signing and returning this letter by [date 5 days from start date]")
+6. A warm, encouraging close
+
+FORMAT RULES:
+- Write in plain text, no markdown headers or bullet points in the letter body
+- Use professional but human language — not robotic legalese
+- Keep it between 350–500 words
+- Use proper letter formatting with spacing between sections
+- If company name is not provided, use "the Company" as a placeholder
+- End with a signature block for the hiring manager`;
+
+  return await callNvidiaChatCompletions({
+    apiKey: NVIDIA_API_KEY,
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.5,
+    max_tokens: 900,
+  });
+}
+
+recruitRouter.post("/jobs/:jobId/candidates/:candidateId/offer-letter", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    const job = await RecruitJob.findOne({ _id: req.params.jobId, uid }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+
+    const candidate = await RecruitCandidate.findOne({ _id: req.params.candidateId, jobId: req.params.jobId, uid });
+    if (!candidate) return res.status(404).json({ error: "Candidate not found." });
+
+    const {
+      startDate, salary, salaryCurrency, signingBonus, benefits, companyName, hiringManagerName, regenerate,
+    } = req.body;
+
+    if (!startDate || !salary) {
+      return res.status(400).json({ error: "Start date and salary are required." });
+    }
+
+    // Use cached version unless regenerate is requested
+    if (candidate.offerLetter && !regenerate) {
+      return res.json({ offerLetter: candidate.offerLetter });
+    }
+
+    const letter = await generateOfferLetter({
+      candidateName: candidate.name,
+      jobTitle: job.title,
+      department: job.department,
+      location: job.location,
+      workMode: job.workMode,
+      seniority: job.seniority,
+      startDate,
+      salary,
+      salaryCurrency: salaryCurrency || job.salaryCurrency || "INR",
+      signingBonus,
+      benefits,
+      companyName,
+      hiringManagerName,
+    });
+
+    candidate.offerLetter = letter;
+    await candidate.save();
+
+    return res.json({ offerLetter: letter });
+  } catch (err: any) {
+    console.error("[recruit] POST /offer-letter", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Export ───────────────────────────────────────────────────────────────────
+
+recruitRouter.get("/jobs/:jobId/export", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    const job = await RecruitJob.findOne({ _id: req.params.jobId, uid }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+
+    const candidates = await RecruitCandidate.find({ jobId: req.params.jobId, uid })
+      .sort({ totalScore: -1 })
+      .lean();
+
+    const format = (req.query.format as string) || "csv";
+
+    if (format === "json") {
+      res.setHeader("Content-Type", "application/json");
+      res.setHeader("Content-Disposition", `attachment; filename="${job.title.replace(/[^a-z0-9]/gi, "_")}_candidates.json"`);
+      return res.json(candidates.map(c => ({
+        name: c.name,
+        email: c.email,
+        phone: c.phone || "",
+        stage: c.stage,
+        score: c.totalScore,
+        maxScore: c.maxScore,
+        scorePct: c.maxScore > 0 ? Math.round((c.totalScore / c.maxScore) * 100) : 0,
+        hiringDecision: c.hiringDecision || "",
+        assessmentStatus: c.assessmentStatus,
+        source: c.source || "",
+        redFlags: c.redFlags.join("; "),
+        strengths: c.strengths.join("; "),
+        aiSummary: c.aiSummary,
+        notes: c.notes || "",
+        addedAt: c.createdAt,
+      })));
+    }
+
+    // CSV export
+    const escape = (val: string | number | undefined) => {
+      const s = String(val ?? "");
+      if (s.includes(",") || s.includes('"') || s.includes("\n")) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    };
+
+    const headers = ["Name", "Email", "Phone", "Stage", "Score", "Max Score", "Score %", "Hiring Decision", "Assessment Status", "Source", "Red Flags", "Strengths", "AI Summary", "Notes", "Added At"];
+    const rows = candidates.map(c => [
+      c.name,
+      c.email,
+      c.phone || "",
+      c.stage,
+      c.totalScore,
+      c.maxScore,
+      c.maxScore > 0 ? Math.round((c.totalScore / c.maxScore) * 100) : 0,
+      c.hiringDecision || "",
+      c.assessmentStatus,
+      c.source || "",
+      c.redFlags.join("; "),
+      c.strengths.join("; "),
+      c.aiSummary,
+      c.notes || "",
+      new Date(c.createdAt).toISOString(),
+    ].map(escape).join(","));
+
+    const csv = [headers.join(","), ...rows].join("\n");
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${job.title.replace(/[^a-z0-9]/gi, "_")}_candidates.csv"`);
+    return res.send(csv);
+  } catch (err: any) {
+    console.error("[recruit] GET /export", err);
+    return res.status(500).json({ error: err.message });
+  }
+});

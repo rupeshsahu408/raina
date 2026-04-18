@@ -158,6 +158,7 @@ const RecruitCandidateSchema = new Schema<IRecruitCandidate>(
     inTalentPool: { type: Boolean, default: false },
     talentPoolNote: { type: String, default: "" },
     stageMovedAt: { type: Date },
+    offerLetter: { type: String, default: "" },
   },
   { timestamps: true }
 );

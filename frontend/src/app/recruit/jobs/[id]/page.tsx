@@ -272,6 +272,137 @@ function RejectionEmailModal({ email, candidateName, candidateEmail, onClose }: 
 
 const SOURCE_OPTIONS = ["LinkedIn", "Indeed", "Naukri", "Referral", "Company Website", "Angel List", "Walk-in", "Other"];
 
+function OfferLetterModal({ candidate, job, token, onClose }: {
+  candidate: Candidate & { name: string; email: string };
+  job: Job;
+  token: string;
+  onClose: () => void;
+}) {
+  const [startDate, setStartDate] = useState("");
+  const [salary, setSalary] = useState("");
+  const [currency, setCurrency] = useState("INR");
+  const [signingBonus, setSigningBonus] = useState("");
+  const [benefits, setBenefits] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [hiringManagerName, setHiringManagerName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [letter, setLetter] = useState("");
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  async function generate(regenerate = false) {
+    if (!startDate.trim() || !salary.trim()) { setError("Start date and salary are required."); return; }
+    setLoading(true); setError("");
+    try {
+      const res = await fetch(`${API}/recruit/jobs/${job._id}/candidates/${candidate._id}/offer-letter`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ startDate, salary, salaryCurrency: currency, signingBonus, benefits, companyName, hiringManagerName, regenerate }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate offer letter.");
+      setLetter(data.offerLetter);
+    } catch (e: any) { setError(e.message); }
+    finally { setLoading(false); }
+  }
+
+  function copyLetter() {
+    navigator.clipboard.writeText(letter);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="w-full max-w-2xl rounded-[2rem] border border-white/[0.09] bg-[#0a0a0f] shadow-2xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4 shrink-0">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Offer Letter — {candidate.name}</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">{job.title} · AI-generated, ready to send or copy</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-600 hover:text-white transition"><XIcon /></button>
+        </div>
+
+        {!letter ? (
+          <div className="p-6 overflow-y-auto flex-1 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Start Date *</label>
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none focus:border-indigo-500/50" />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Currency</label>
+                <select value={currency} onChange={e => setCurrency(e.target.value)}
+                  className="w-full rounded-xl border border-white/[0.08] bg-[#0a0a0f] px-3 py-2 text-sm text-white outline-none focus:border-indigo-500/50">
+                  {["INR", "USD", "GBP", "EUR", "AED", "SGD", "AUD"].map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Annual Salary *</label>
+              <input type="text" value={salary} onChange={e => setSalary(e.target.value)} placeholder="e.g. 12,00,000 or 1,200,000"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Signing Bonus <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+                <input type="text" value={signingBonus} onChange={e => setSigningBonus(e.target.value)} placeholder="e.g. 50,000"
+                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Company Name <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+                <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Your company name"
+                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Key Benefits <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+              <input type="text" value={benefits} onChange={e => setBenefits(e.target.value)} placeholder="e.g. Health insurance, 25 days PTO, flexible hours"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Hiring Manager Name <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+              <input type="text" value={hiringManagerName} onChange={e => setHiringManagerName(e.target.value)} placeholder="Name that will sign the letter"
+                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+            </div>
+            {error && <p className="text-xs text-rose-400">{error}</p>}
+          </div>
+        ) : (
+          <div className="p-6 overflow-y-auto flex-1">
+            <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+              <p className="text-sm text-zinc-300 leading-7 whitespace-pre-wrap font-mono text-[13px]">{letter}</p>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between gap-3 border-t border-white/[0.07] px-6 py-4 shrink-0">
+          {letter ? (
+            <>
+              <button onClick={() => setLetter("")} className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs text-zinc-500 hover:text-white transition">Edit Details</button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => generate(true)} disabled={loading} className="rounded-xl border border-indigo-500/20 bg-indigo-500/[0.07] px-4 py-2 text-xs text-indigo-400 hover:bg-indigo-500/15 transition disabled:opacity-50">
+                  Regenerate
+                </button>
+                <button onClick={copyLetter} className="flex items-center gap-1.5 rounded-xl bg-indigo-500 px-5 py-2 text-xs font-bold text-white hover:bg-indigo-400 transition">
+                  {copied ? "Copied!" : <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy Letter</>}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <button onClick={onClose} className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs text-zinc-500 hover:text-white transition">Cancel</button>
+              <button onClick={() => generate(false)} disabled={loading || !startDate || !salary} className="flex items-center gap-2 rounded-xl bg-indigo-500 px-5 py-2 text-xs font-bold text-white hover:bg-indigo-400 disabled:opacity-50 transition">
+                {loading ? <><svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Generating...</> : <><SparkIcon /> Generate Offer Letter</>}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type PreviousApplication = {
   jobTitle: string;
   stage: string;
@@ -421,8 +552,8 @@ function RetryIcon() {
   return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>;
 }
 
-function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
-  c: Candidate; jobId: string; token: string;
+function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
+  c: Candidate; jobId: string; job: Job; token: string;
   onUpdate: (id: string, update: Partial<Candidate>) => void;
   onDelete: (id: string) => void;
 }) {
@@ -438,6 +569,7 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
   const [loadingReminder, setLoadingReminder] = useState(false);
   const [loadingRetry, setLoadingRetry] = useState(false);
   const [retryError, setRetryError] = useState("");
+  const [showOfferLetterModal, setShowOfferLetterModal] = useState(false);
 
   const scoringFailed = c.scoringFailed === true;
   const pct = (!scoringFailed && c.maxScore > 0) ? Math.round((c.totalScore / c.maxScore) * 100) : 0;
@@ -586,6 +718,14 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
           onClose={() => setShowRejectModal(false)}
         />
       )}
+      {showOfferLetterModal && (
+        <OfferLetterModal
+          candidate={c}
+          job={job}
+          token={token}
+          onClose={() => setShowOfferLetterModal(false)}
+        />
+      )}
 
       <div className="rounded-3xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
         <div className="p-5">
@@ -723,6 +863,16 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
               {loadingReject ? <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg> : <XIcon />}
               Reject
             </button>
+
+            {(c.stage === "offer" || c.stage === "hired") && (
+              <button
+                onClick={() => setShowOfferLetterModal(true)}
+                className="flex items-center gap-1 rounded-xl border border-emerald-500/20 bg-emerald-500/[0.07] px-3 py-1.5 text-[11px] text-emerald-400 hover:bg-emerald-500/15 transition"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Offer Letter
+              </button>
+            )}
 
             {scoringFailed && (
               <button
@@ -864,7 +1014,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<"pipeline" | "jd" | "rubric">("pipeline");
+  const [activeTab, setActiveTab] = useState<"pipeline" | "jd" | "rubric" | "post">("pipeline");
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -954,12 +1104,35 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             <span className="text-zinc-700">·</span>
             <span className="text-xs text-zinc-400 font-medium truncate max-w-[180px] sm:max-w-xs">{job.title}</span>
           </div>
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1.5 rounded-full bg-indigo-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400"
-          >
-            <PlusIcon /> Add Candidate
-          </button>
+          <div className="flex items-center gap-2">
+            {candidates.length > 0 && (
+              <a
+                href={`${API}/recruit/jobs/${id}/export?format=csv`}
+                download
+                onClick={async (e) => {
+                  e.preventDefault();
+                  const res = await fetch(`${API}/recruit/jobs/${id}/export?format=csv`, {
+                    headers: { Authorization: `Bearer ${token!}` },
+                  });
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url; a.download = `${job.title.replace(/[^a-z0-9]/gi, "_")}_candidates.csv`;
+                  a.click(); URL.revokeObjectURL(url);
+                }}
+                className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white hover:border-white/20"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export CSV
+              </a>
+            )}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 rounded-full bg-indigo-500 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400"
+            >
+              <PlusIcon /> Add Candidate
+            </button>
+          </div>
         </div>
       </header>
 
@@ -1011,7 +1184,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
         </div>
 
         <div className="mb-6 flex gap-1 border-b border-white/[0.06]">
-          {(["pipeline", "jd", "rubric"] as const).map(tab => (
+          {(["pipeline", "jd", "rubric", "post"] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1021,7 +1194,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                   : "border-transparent text-zinc-500 hover:text-zinc-300"
               }`}
             >
-              {tab === "jd" ? "Job Description" : tab === "rubric" ? "Scoring Rubric" : "Pipeline"}
+              {tab === "jd" ? "Job Description" : tab === "rubric" ? "Scoring Rubric" : tab === "post" ? "Post to Boards" : "Pipeline"}
             </button>
           ))}
         </div>
@@ -1059,7 +1232,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                       ) : (
                         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                           {stageCandidates.map(c => (
-                            <CandidateCard key={c._id} c={c} jobId={id} token={token!} onUpdate={handleUpdate} onDelete={handleDelete} />
+                            <CandidateCard key={c._id} c={c} jobId={id} job={job} token={token!} onUpdate={handleUpdate} onDelete={handleDelete} />
                           ))}
                         </div>
                       )}
@@ -1076,7 +1249,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {byStage.rejected.map(c => (
-                        <CandidateCard key={c._id} c={c} jobId={id} token={token!} onUpdate={handleUpdate} onDelete={handleDelete} />
+                        <CandidateCard key={c._id} c={c} jobId={id} job={job} token={token!} onUpdate={handleUpdate} onDelete={handleDelete} />
                       ))}
                     </div>
                   </div>
@@ -1105,7 +1278,148 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             ))}
           </div>
         )}
+
+        {activeTab === "post" && (
+          <PostToBoardsTab job={job} />
+        )}
       </main>
+    </div>
+  );
+}
+
+function PostToBoardsTab({ job }: { job: Job }) {
+  const [copiedBoard, setCopiedBoard] = useState<string | null>(null);
+
+  const linkedinPost = `🚀 We're Hiring: ${job.title}
+
+${job.seniority ? `Seniority: ${job.seniority}` : ""}
+📍 Location: ${job.location} (${job.workMode})
+${job.department ? `🏢 Department: ${job.department}` : ""}
+
+${job.generatedJD}
+
+Interested? Apply by clicking the link in our bio or DM us directly.
+
+#Hiring #${job.title.replace(/\s+/g, "")} #Jobs #Careers #NowHiring`;
+
+  const indeedPost = `${job.title}
+
+${job.generatedJD}
+
+Job Type: Full-time
+Location: ${job.location}
+Work Mode: ${job.workMode}
+${job.department ? `Department: ${job.department}` : ""}
+Seniority: ${job.seniority || "Mid-level"}`;
+
+  const naukariPost = `Position: ${job.title}
+Location: ${job.location}
+Work Mode: ${job.workMode}
+Experience Level: ${job.seniority || "Mid-level"}
+${job.department ? `Department: ${job.department}` : ""}
+
+${job.generatedJD}`;
+
+  const boards = [
+    {
+      id: "linkedin",
+      name: "LinkedIn",
+      color: "border-blue-500/20 bg-blue-500/[0.04]",
+      badge: "text-blue-400 bg-blue-500/15 border-blue-500/20",
+      content: linkedinPost,
+      instructions: [
+        "Go to LinkedIn → Jobs → Post a free job",
+        "Paste the content below into the job description field",
+        "Set location, employment type, and seniority",
+        "Add your company page and publish",
+      ],
+      applyUrl: "https://www.linkedin.com/jobs/post/",
+    },
+    {
+      id: "indeed",
+      name: "Indeed",
+      color: "border-violet-500/20 bg-violet-500/[0.04]",
+      badge: "text-violet-400 bg-violet-500/15 border-violet-500/20",
+      content: indeedPost,
+      instructions: [
+        "Go to Indeed Employer → Post a Job",
+        "Enter the job title and location",
+        "Paste the content below into the job description",
+        "Choose sponsored or free posting and publish",
+      ],
+      applyUrl: "https://employers.indeed.com/",
+    },
+    {
+      id: "naukri",
+      name: "Naukri",
+      color: "border-amber-500/20 bg-amber-500/[0.04]",
+      badge: "text-amber-400 bg-amber-500/15 border-amber-500/20",
+      content: naukariPost,
+      instructions: [
+        "Log in to Naukri RMS → Post a Job",
+        "Fill in the role title, location, and experience level",
+        "Paste the content below into the job description box",
+        "Review and publish",
+      ],
+      applyUrl: "https://www.naukri.com/recruiter/",
+    },
+  ];
+
+  function copyContent(boardId: string, content: string) {
+    navigator.clipboard.writeText(content);
+    setCopiedBoard(boardId);
+    setTimeout(() => setCopiedBoard(null), 2000);
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 py-4">
+        <p className="text-sm text-zinc-400 leading-relaxed">
+          Your AI-generated job description is ready to post. Copy the formatted content for each platform below — each version is optimized for that board&apos;s format and character style.
+        </p>
+        <p className="text-xs text-zinc-600 mt-2">
+          Note: Direct API posting to LinkedIn, Indeed, and Naukri requires OAuth credentials from each platform&apos;s developer program. Until those are connected, use the copy buttons below to paste into each platform.
+        </p>
+      </div>
+
+      {boards.map(board => (
+        <div key={board.id} className={`rounded-3xl border p-5 ${board.color}`}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <span className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${board.badge}`}>{board.name}</span>
+              <a href={board.applyUrl} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-400 transition">
+                Open {board.name}
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            </div>
+            <button
+              onClick={() => copyContent(board.id, board.content)}
+              className={`flex items-center gap-1.5 rounded-xl border px-4 py-1.5 text-xs font-semibold transition ${board.badge} hover:opacity-80`}
+            >
+              {copiedBoard === board.id ? "Copied!" : (
+                <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg> Copy for {board.name}</>
+              )}
+            </button>
+          </div>
+
+          <div className="mb-4">
+            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wide mb-2">How to post on {board.name}:</p>
+            <ol className="space-y-1">
+              {board.instructions.map((step, i) => (
+                <li key={i} className="flex items-start gap-2 text-xs text-zinc-500">
+                  <span className="shrink-0 flex h-4 w-4 items-center justify-center rounded-full bg-white/[0.05] text-[10px] font-bold text-zinc-600 mt-0.5">{i + 1}</span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="rounded-2xl border border-white/[0.06] bg-black/20 p-4 max-h-52 overflow-y-auto">
+            <p className="text-xs text-zinc-400 leading-6 whitespace-pre-wrap font-mono">{board.content}</p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
