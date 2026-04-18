@@ -39,11 +39,16 @@ export default function JobMatchPanel({ jobId }: { jobId: string }) {
 
   useEffect(() => {
     try {
-      const hasProfile = Boolean(
-        localStorage.getItem("recruit_resume_text") ||
-        localStorage.getItem("recruit_applicant_email")
-      );
-      if (!hasProfile) setState("no-profile");
+      const hasResume = Boolean(localStorage.getItem("recruit_resume_text")?.trim());
+      const hasSkills = (() => {
+        try {
+          const raw = localStorage.getItem("recruit_seeker_profile");
+          if (!raw) return false;
+          const p = JSON.parse(raw);
+          return Array.isArray(p.skills) && p.skills.length > 0;
+        } catch { return false; }
+      })();
+      if (!hasResume && !hasSkills) setState("no-profile");
     } catch { /* ignore */ }
   }, []);
 
