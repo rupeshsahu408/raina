@@ -4,12 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 
 const NICHES = [
-  { label: "AI, Data, Software & Product Tech", emoji: "💻" },
-  { label: "Sales, Business Development & Revenue Roles", emoji: "📈" },
-  { label: "Finance, Accounting, Banking & Fintech", emoji: "💰" },
-  { label: "Healthcare, Pharma & Allied Medical Workforce", emoji: "🏥" },
-  { label: "Skilled Blue-Collar, Logistics & Industrial Workforce", emoji: "🔧" },
-  { label: "Creative, Marketing, Media & Design", emoji: "🎨" },
+  { label: "AI, Data, Software & Product Tech", emoji: "💻", slug: "ai-tech" },
+  { label: "Sales, Business Development & Revenue Roles", emoji: "📈", slug: "sales-bd" },
+  { label: "Finance, Accounting, Banking & Fintech", emoji: "💰", slug: "finance-fintech" },
+  { label: "Healthcare, Pharma & Allied Medical Workforce", emoji: "🏥", slug: "healthcare" },
+  { label: "Skilled Blue-Collar, Logistics & Industrial Workforce", emoji: "🔧", slug: "blue-collar-logistics" },
+  { label: "Creative, Marketing, Media & Design", emoji: "🎨", slug: "creative-marketing" },
 ];
 
 const SEEKER_FEATURES = [
@@ -266,15 +266,15 @@ export default function RecruitLandingPage() {
             </Link>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {NICHES.map(({ label, emoji }) => (
+            {NICHES.map(({ label, emoji, slug }) => (
               <Link
                 key={label}
-                href={`/recruit/opportunities?niche=${encodeURIComponent(label)}`}
+                href={`/recruit/niche/${slug}`}
                 className="group rounded-2xl border border-slate-200 bg-[#f8fafc] p-5 hover:border-[#0a66c2]/30 hover:bg-blue-50/30 transition"
               >
                 <span className="text-2xl">{emoji}</span>
                 <p className="mt-2 font-bold text-slate-900 group-hover:text-[#0a66c2] transition text-sm leading-snug">{label}</p>
-                <p className="mt-1 text-xs text-slate-500">Dedicated filters & job listings →</p>
+                <p className="mt-1 text-xs text-slate-500">Explore jobs, skills & roles →</p>
               </Link>
             ))}
           </div>

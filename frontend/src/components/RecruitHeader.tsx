@@ -8,6 +8,7 @@ type NavLink = { href: string; label: string };
 
 const SEEKER_NAV: NavLink[] = [
   { href: "/recruit/opportunities", label: "Jobs" },
+  { href: "/recruit/niches", label: "Niches" },
   { href: "/recruit/saved-jobs", label: "Saved" },
   { href: "/recruit/my-applications", label: "My Applications" },
   { href: "/recruit/profile", label: "My Profile" },
@@ -34,7 +35,10 @@ export default function RecruitHeader() {
   const pathname = usePathname();
 
   function isActive(href: string) {
-    return pathname === href || pathname.startsWith(href + "/") && href !== "/recruit";
+    if (href === "/recruit/niches") {
+      return pathname === href || pathname.startsWith("/recruit/niche/");
+    }
+    return pathname === href || (pathname.startsWith(href + "/") && href !== "/recruit");
   }
 
   return (
