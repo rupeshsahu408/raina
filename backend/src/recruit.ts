@@ -4,6 +4,7 @@ import { connectMongo } from "./db";
 import { RecruitJob } from "./models/RecruitJob";
 import { RecruitCandidate } from "./models/RecruitCandidate";
 import { RecruitSeekerProfile } from "./models/RecruitSeekerProfile";
+import { RecruitCompanyProfile } from "./models/RecruitCompanyProfile";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 
 export const recruitRouter = express.Router();
@@ -46,7 +47,11 @@ function generateToken(): string {
 }
 
 function buildPublicJobQuery(query: any) {
-  const filter: any = { status: "active", publicVisibility: { $ne: false } };
+  const filter: any = {
+    status: "active",
+    publicVisibility: { $ne: false },
+    $expr: { $lt: [{ $size: { $ifNull: ["$reports", []] } }, 3] },
+  };
   const text = String(query.q ?? "").trim();
   if (text) {
     const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -650,7 +655,19 @@ recruitRouter.post("/jobs", async (req, res) => {
       educationRequirement, noticePeriod, freshersAllowed, verifiedCompany, publicVisibility,
     } = req.body;
 
-    if (!title?.trim()) return res.status(400).json({ error: "Job title is required." });
+    if (!title?.trim() || title.trim().length < 3) return res.status(400).json({ error: "Job title must be at least 3 characters." });
+    if (!companyName?.trim()) return res.status(400).json({ error: "Company name is required." });
+    if (!location?.trim()) return res.status(400).json({ error: "Location is required." });
+    if (!responsibilities?.trim() && !mustHaveSkills?.trim()) {
+      return res.status(400).json({ error: "Please provide either key responsibilities or must-have skills." });
+    }
+
+    const SPAM_WORDS = ["work from home earn money", "earn daily", "earn per day", "no investment", "part time earn", "₹ daily", "earn ₹", "guaranteed income", "100% work from home easy money"];
+    const titleLower = (title || "").toLowerCase();
+    const respLower = (responsibilities || "").toLowerCase();
+    if (SPAM_WORDS.some(w => titleLower.includes(w) || respLower.includes(w))) {
+      return res.status(400).json({ error: "This job listing appears to contain spam or misleading content. Please review and revise." });
+    }
 
     const { jd, rubric } = await generateJobDescription({
       title, department: department || "", seniority: seniority || "Mid-level",
@@ -742,7 +759,7 @@ recruitPublicRouter.get("/jobs", async (req, res) => {
     await connectMongo();
     const filter = buildPublicJobQuery(req.query);
     const jobs = await RecruitJob.find(filter)
-      .select("title niche companyName companyType jobType department seniority location workMode salaryMin salaryMax salaryCurrency experienceMin experienceMax educationRequirement noticePeriod freshersAllowed verifiedCompany candidateCount createdAt mustHaveSkills")
+      .select("title niche companyName companyType jobType department seniority location workMode salaryMin salaryMax salaryCurrency experienceMin experienceMax educationRequirement noticePeriod freshersAllowed verifiedCompany candidateCount createdAt mustHaveSkills generatedJD")
       .sort({ verifiedCompany: -1, createdAt: -1 })
       .limit(80)
       .lean();
@@ -1598,6 +1615,69 @@ recruitRouter.put("/seeker/profile", async (req, res) => {
     return res.json({ profile });
   } catch (err: any) {
     console.error("[recruit] PUT /seeker/profile", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Company Profile ──────────────────────────────────────────────────────────
+
+recruitRouter.get("/company/profile", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    const profile = await RecruitCompanyProfile.findOne({ uid }).lean();
+    return res.json({ profile: profile ?? null });
+  } catch (err: any) {
+    console.error("[recruit] GET /company/profile", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitRouter.put("/company/profile", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
+    const fields = ["companyName", "companyType", "industry", "companySize", "website", "location", "description", "mission", "benefits", "linkedinUrl", "logoUrl"];
+    const update: Record<string, string> = {};
+    for (const f of fields) {
+      if (req.body[f] !== undefined) update[f] = String(req.body[f]).trim();
+    }
+
+    const profile = await RecruitCompanyProfile.findOneAndUpdate(
+      { uid },
+      { $set: update },
+      { new: true, upsert: true }
+    ).lean();
+
+    return res.json({ profile });
+  } catch (err: any) {
+    console.error("[recruit] PUT /company/profile", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitPublicRouter.get("/jobs/:jobId/company", async (req, res) => {
+  try {
+    await connectMongo();
+    const job = await RecruitJob.findOne({
+      _id: req.params.jobId,
+      status: "active",
+      publicVisibility: { $ne: false },
+    }).select("uid companyName companyType location").lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+
+    const profile = await RecruitCompanyProfile.findOne({ uid: job.uid }).lean();
+    return res.json({
+      companyName: job.companyName,
+      companyType: job.companyType,
+      location: job.location,
+      profile: profile ?? null,
+    });
+  } catch (err: any) {
+    console.error("[recruit] GET /jobs/company", err);
     return res.status(500).json({ error: err.message });
   }
 });

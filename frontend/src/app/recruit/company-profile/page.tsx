@@ -7,6 +7,8 @@ import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 import RecruitHeader from "@/components/RecruitHeader";
 
+const API = "/backend";
+
 const COMPANY_TYPES = ["Startup", "MNC", "Agency", "Product Company", "Consultancy", "Hospital", "Fintech", "NGO", "Government", "Other"];
 const COMPANY_SIZES = ["1–10", "11–50", "51–200", "201–500", "500–1000", "1000+"];
 const INDUSTRIES = [
@@ -20,8 +22,6 @@ type CompanyProfile = {
   website: string; location: string; description: string; mission: string;
   benefits: string; linkedinUrl: string; logoUrl: string;
 };
-
-const STORAGE_KEY = "recruit_company_profile";
 
 function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
@@ -64,15 +64,19 @@ export default function CompanyProfilePage() {
 
   useEffect(() => {
     const auth = getFirebaseAuth();
-    const unsub = onAuthStateChanged(auth, (u) => {
-      if (!u) router.push("/login");
-      else {
-        setLoading(false);
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) setProfile(JSON.parse(raw));
-        } catch { /* ignore */ }
-      }
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (!u) { router.push("/login"); return; }
+      try {
+        const token = await u.getIdToken();
+        const res = await fetch(`${API}/recruit/company/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.profile) setProfile(data.profile);
+        }
+      } catch { /* ignore, use defaults */ }
+      setLoading(false);
     });
     return () => unsub();
   }, [router]);
@@ -84,8 +88,19 @@ export default function CompanyProfilePage() {
   async function save() {
     setSaving(true); setError(""); setSaved(false);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-      await new Promise(r => setTimeout(r, 300));
+      const auth = getFirebaseAuth();
+      const user = auth.currentUser;
+      if (!user) throw new Error("You must be signed in to save.");
+      const token = await user.getIdToken();
+      const res = await fetch(`${API}/recruit/company/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(profile),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to save profile.");
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (e: any) {

@@ -3,6 +3,7 @@ import RecruitHeader from "@/components/RecruitHeader";
 import ClientSaveButton from "./SaveButton";
 import FilterToggle from "./FilterToggle";
 import RecentlyViewedJobs from "./RecentlyViewedJobs";
+import { computeJobQuality } from "@/lib/jobQuality";
 
 const NICHES = [
   "AI, Data, Software & Product Tech",
@@ -352,7 +353,9 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
                 </div>
               </div>
             ) : (
-              jobs.map(job => (
+              jobs.map(job => {
+                const quality = computeJobQuality(job);
+                return (
                 <div key={job._id} className="group relative rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm transition-all hover:border-[#0a66c2]/30 hover:shadow-md">
                   <Link href={`/recruit/opportunities/${job._id}`} className="absolute inset-0 rounded-2xl z-0" aria-label={`View ${job.title}`} />
                   <div className="flex gap-3 sm:gap-4">
@@ -368,6 +371,9 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
                           )}
                           {job.freshersAllowed && (
                             <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-[10px] font-bold text-amber-700">Freshers ok</span>
+                          )}
+                          {quality.tier === "high" && (
+                            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-bold ${quality.color} ${quality.bg} ${quality.border}`}>★ High quality</span>
                           )}
                         </div>
                       </div>
@@ -413,7 +419,7 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
                     </div>
                   </div>
                 </div>
-              ))
+              ); })
             )}
           </section>
         </div>

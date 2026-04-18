@@ -6,6 +6,8 @@ import ShareJobButton from "./ShareJobButton";
 import RecentlyViewedTracker from "./RecentlyViewedTracker";
 import ReportJobButton from "./ReportJobButton";
 import JobMatchPanel from "./JobMatchPanel";
+import CompanySection from "./CompanySection";
+import { computeJobQuality } from "@/lib/jobQuality";
 
 const API = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
 
@@ -76,6 +78,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
 
   const mustHave = splitLines(job.mustHaveSkills);
   const niceToHave = splitLines(job.niceToHaveSkills);
+  const quality = computeJobQuality(job);
 
   const tags = [
     { label: salary(job), color: "bg-slate-100 text-slate-700" },
@@ -120,6 +123,9 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                 <div className="mb-2 flex flex-wrap items-center gap-2">
                   {job.verifiedCompany && <span className="rounded-full border border-green-200 bg-green-50 px-2.5 py-1 text-[11px] font-bold text-green-700">✓ Verified company</span>}
                   {job.freshersAllowed && <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">Freshers welcome</span>}
+                  <span className={`rounded-full border px-2.5 py-1 text-[11px] font-bold ${quality.color} ${quality.bg} ${quality.border}`}>
+                    {quality.tier === "high" ? "★ " : quality.tier === "standard" ? "◆ " : "· "}{quality.label}
+                  </span>
                 </div>
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight leading-tight">{job.title}</h1>
                 <p className="mt-1 text-sm text-slate-500">
@@ -223,6 +229,13 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
               </div>
             </div>
           </div>
+
+          <CompanySection
+            jobId={id}
+            companyName={job.companyName}
+            companyType={job.companyType}
+            location={job.location}
+          />
 
           <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-5 shadow-sm">
             <h2 className="text-sm font-bold text-slate-900">Apply faster with your saved profile</h2>
