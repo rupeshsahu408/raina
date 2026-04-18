@@ -6,6 +6,12 @@ export interface IRubricCriteria {
   description: string;
 }
 
+export interface IJobReport {
+  reason: string;
+  details?: string;
+  reportedAt: Date;
+}
+
 export interface IRecruitJob extends Document {
   uid: string;
   title: string;
@@ -34,6 +40,7 @@ export interface IRecruitJob extends Document {
   rubric: IRubricCriteria[];
   status: "active" | "paused" | "closed";
   candidateCount: number;
+  reports: IJobReport[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,6 +50,15 @@ const RubricCriteriaSchema = new Schema<IRubricCriteria>(
     name: { type: String, required: true },
     weight: { type: Number, required: true },
     description: { type: String, required: true },
+  },
+  { _id: false }
+);
+
+const JobReportSchema = new Schema<IJobReport>(
+  {
+    reason: { type: String, required: true },
+    details: { type: String, default: "" },
+    reportedAt: { type: Date, default: Date.now },
   },
   { _id: false }
 );
@@ -76,6 +92,7 @@ const RecruitJobSchema = new Schema<IRecruitJob>(
     rubric: { type: [RubricCriteriaSchema], default: [] },
     status: { type: String, enum: ["active", "paused", "closed"], default: "active" },
     candidateCount: { type: Number, default: 0 },
+    reports: { type: [JobReportSchema], default: [] },
   },
   { timestamps: true }
 );

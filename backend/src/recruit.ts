@@ -1602,6 +1602,141 @@ recruitRouter.put("/seeker/profile", async (req, res) => {
   }
 });
 
+// ─── Job Match Analysis (Phase 3 – job seeker AI) ────────────────────────────
+
+async function generateJobMatch(args: {
+  job: any;
+  skills: string[];
+  preferredNiche?: string;
+  preferredWorkMode?: string;
+  preferredLocation?: string;
+  preferredSalaryMin?: number;
+  preferredSalaryMax?: number;
+  resumeText?: string;
+}): Promise<{
+  matchScore: number;
+  matchReasons: string[];
+  missingSkills: string[];
+  profileSuggestions: string[];
+}> {
+  const jobSalary =
+    args.job.salaryMin || args.job.salaryMax
+      ? `INR ${(args.job.salaryMin ?? 0).toLocaleString("en-IN")}–${(args.job.salaryMax ?? 0).toLocaleString("en-IN")} per year`
+      : "Not disclosed";
+  const seekerSalary =
+    args.preferredSalaryMin || args.preferredSalaryMax
+      ? `INR ${(args.preferredSalaryMin ?? 0).toLocaleString("en-IN")}–${(args.preferredSalaryMax ?? 0).toLocaleString("en-IN")}`
+      : "Not specified";
+
+  const prompt = `You are a career counselor analyzing how well a job matches a job seeker. Be specific and encouraging.
+
+JOB:
+- Title: ${args.job.title}
+- Niche: ${args.job.niche || args.job.department || "General"}
+- Location: ${args.job.location || "India"}
+- Work Mode: ${args.job.workMode || "Not specified"}
+- Salary: ${jobSalary}
+- Freshers Allowed: ${args.job.freshersAllowed ? "Yes" : "No"}
+- Must-have skills: ${args.job.mustHaveSkills || "Not specified"}
+- Nice-to-have skills: ${args.job.niceToHaveSkills || "Not specified"}
+
+SEEKER PROFILE:
+- Skills: ${args.skills.join(", ") || "Not listed"}
+- Preferred Niche: ${args.preferredNiche || "Any"}
+- Preferred Work Mode: ${args.preferredWorkMode || "Any"}
+- Preferred Location: ${args.preferredLocation || "Any"}
+- Expected Salary: ${seekerSalary}
+- Resume Text: ${args.resumeText ? args.resumeText.slice(0, 2000) : "Not provided"}
+
+Analyze the match. Return ONLY this JSON (no markdown):
+{
+  "matchScore": 72,
+  "matchReasons": ["specific reason referencing actual data", "another specific reason"],
+  "missingSkills": ["skill genuinely absent from profile"],
+  "profileSuggestions": ["specific actionable improvement for this role"]
+}
+
+Rules:
+- matchScore: 0–100, based on skills overlap, niche/work-mode/location/salary alignment, and experience fit
+- matchReasons: 3–5 items, specific to this job+seeker combination, not generic phrases
+- missingSkills: only skills listed in job requirements that are genuinely absent (max 5); empty array if none
+- profileSuggestions: 2–4 concrete, actionable suggestions to improve their profile or chances for this specific role
+- If no resume text, focus on preference and skills matching only`;
+
+  const raw = await callNvidiaChatCompletions({
+    apiKey: NVIDIA_API_KEY,
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.35,
+    max_tokens: 800,
+  });
+
+  const parsed = safeJson(raw);
+  if (!parsed) {
+    return { matchScore: 0, matchReasons: [], missingSkills: [], profileSuggestions: ["Complete your profile to get personalized match insights."] };
+  }
+
+  return {
+    matchScore: Math.max(0, Math.min(100, Number(parsed.matchScore) || 0)),
+    matchReasons: Array.isArray(parsed.matchReasons) ? parsed.matchReasons.filter((r: any) => typeof r === "string").slice(0, 5) : [],
+    missingSkills: Array.isArray(parsed.missingSkills) ? parsed.missingSkills.filter((s: any) => typeof s === "string").slice(0, 5) : [],
+    profileSuggestions: Array.isArray(parsed.profileSuggestions) ? parsed.profileSuggestions.filter((s: any) => typeof s === "string").slice(0, 4) : [],
+  };
+}
+
+recruitPublicRouter.post("/jobs/:jobId/match", async (req, res) => {
+  try {
+    await connectMongo();
+    const job = await RecruitJob.findOne({
+      _id: req.params.jobId,
+      status: "active",
+      publicVisibility: { $ne: false },
+    }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+
+    const { skills, preferredNiche, preferredWorkMode, preferredLocation, preferredSalaryMin, preferredSalaryMax, resumeText } = req.body;
+
+    if (!resumeText?.trim() && (!Array.isArray(skills) || skills.length === 0)) {
+      return res.status(400).json({ error: "Provide at least your skills or resume text for match analysis." });
+    }
+
+    const result = await generateJobMatch({
+      job,
+      skills: Array.isArray(skills) ? skills : [],
+      preferredNiche,
+      preferredWorkMode,
+      preferredLocation,
+      preferredSalaryMin: preferredSalaryMin ? Number(preferredSalaryMin) : undefined,
+      preferredSalaryMax: preferredSalaryMax ? Number(preferredSalaryMax) : undefined,
+      resumeText,
+    });
+
+    return res.json(result);
+  } catch (err: any) {
+    console.error("[recruit] POST /jobs/match", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Report Job ───────────────────────────────────────────────────────────────
+
+recruitPublicRouter.post("/jobs/:jobId/report", async (req, res) => {
+  try {
+    await connectMongo();
+    const { reason, details } = req.body;
+    if (!reason?.trim()) return res.status(400).json({ error: "Reason is required." });
+    const job = await RecruitJob.findOneAndUpdate(
+      { _id: req.params.jobId, status: "active" },
+      { $push: { reports: { reason: String(reason).trim(), details: String(details || "").trim(), reportedAt: new Date() } } },
+      { new: true }
+    ).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+    return res.json({ ok: true });
+  } catch (err: any) {
+    console.error("[recruit] POST /jobs/report", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Applications by email (for applied jobs history) ──────────────────────
 
 recruitPublicRouter.get("/my-applications", async (req, res) => {

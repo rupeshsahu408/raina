@@ -4,6 +4,8 @@ import RecruitHeader from "@/components/RecruitHeader";
 import ClientSaveButton from "../SaveButton";
 import ShareJobButton from "./ShareJobButton";
 import RecentlyViewedTracker from "./RecentlyViewedTracker";
+import ReportJobButton from "./ReportJobButton";
+import JobMatchPanel from "./JobMatchPanel";
 
 const API = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
 
@@ -230,6 +232,12 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             <Link href="/recruit/profile" className="mt-3 inline-flex rounded-full bg-white px-4 py-2 text-xs font-bold text-[#0a66c2] shadow-sm ring-1 ring-blue-100 transition hover:bg-blue-50">
               Update seeker profile
             </Link>
+          </div>
+
+          <JobMatchPanel jobId={id} />
+
+          <div className="flex justify-end pt-1">
+            <ReportJobButton jobId={id} />
           </div>
         </section>
 

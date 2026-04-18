@@ -94,6 +94,7 @@ export default function RecruitProfilePage() {
     Boolean(profile.preferredNiche || profile.preferredJobType || profile.preferredWorkMode),
     Boolean(profile.resumeText && profile.resumeText.length > 80),
     profile.experience.length > 0 || profile.education.length > 0,
+    Boolean(profile.preferredSalaryMin || profile.preferredSalaryMax),
   ];
   const completion = Math.round((completionItems.filter(Boolean).length / completionItems.length) * 100);
 
@@ -179,6 +180,14 @@ export default function RecruitProfilePage() {
         localStorage.setItem("recruit_applicant_email", profile.email);
         localStorage.setItem("recruit_applicant_phone", profile.phone);
         if (profile.resumeText) localStorage.setItem("recruit_resume_text", profile.resumeText);
+        localStorage.setItem("recruit_seeker_profile", JSON.stringify({
+          skills: profile.skills,
+          preferredNiche: profile.preferredNiche,
+          preferredWorkMode: profile.preferredWorkMode,
+          preferredLocation: profile.preferredLocation,
+          preferredSalaryMin: profile.preferredSalaryMin,
+          preferredSalaryMax: profile.preferredSalaryMax,
+        }));
       } catch { /* ignore */ }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -264,10 +273,25 @@ export default function RecruitProfilePage() {
               </div>
             </div>
           </div>
-          <div className="mt-4 grid gap-2 text-xs text-slate-600 sm:grid-cols-3">
-            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">Name, email and phone help recruiters contact you.</div>
-            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">Skills and preferences improve job relevance.</div>
-            <div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-100">Resume text improves AI scoring after applying.</div>
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { done: Boolean(profile.name && profile.email), label: "Basic info", detail: "Name and email added", missing: "Add your name and email" },
+              { done: profile.skills.length > 0, label: "Skills", detail: `${profile.skills.length} skill${profile.skills.length !== 1 ? "s" : ""} added`, missing: "Add at least one skill" },
+              { done: Boolean(profile.preferredNiche || profile.preferredWorkMode || profile.preferredJobType), label: "Job preferences", detail: "Preferences set", missing: "Set your niche or work mode" },
+              { done: Boolean(profile.resumeText && profile.resumeText.length > 80), label: "Resume text", detail: "Resume pasted", missing: "Paste your resume (80+ chars)" },
+              { done: profile.experience.length > 0 || profile.education.length > 0, label: "Experience or education", detail: "Background added", missing: "Add work or education history" },
+              { done: Boolean(profile.preferredSalaryMin || profile.preferredSalaryMax), label: "Salary expectation", detail: "Salary range set", missing: "Set your expected salary (optional)" },
+            ].map(item => (
+              <div key={item.label} className={`flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm ring-1 text-xs font-medium ${item.done ? "bg-green-50 ring-green-200 text-green-800" : "bg-white ring-slate-100 text-slate-500"}`}>
+                <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${item.done ? "bg-green-500 text-white" : "bg-slate-200 text-slate-400"}`}>
+                  {item.done ? "✓" : "○"}
+                </span>
+                <div>
+                  <p className={`font-semibold ${item.done ? "text-green-800" : "text-slate-700"}`}>{item.label}</p>
+                  <p className="mt-0.5">{item.done ? item.detail : item.missing}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
