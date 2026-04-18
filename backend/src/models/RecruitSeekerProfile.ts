@@ -33,6 +33,7 @@ export interface IRecruitSeekerProfile extends Document {
   preferredSalaryMin?: number;
   preferredSalaryMax?: number;
   preferredNiche: string;
+  experienceLevel: string;
   resumeText: string;
   createdAt: Date;
   updatedAt: Date;
@@ -78,6 +79,7 @@ const RecruitSeekerProfileSchema = new Schema<IRecruitSeekerProfile>(
     preferredSalaryMin: { type: Number },
     preferredSalaryMax: { type: Number },
     preferredNiche: { type: String, default: "" },
+    experienceLevel: { type: String, default: "" },
     resumeText: { type: String, default: "" },
   },
   { timestamps: true }

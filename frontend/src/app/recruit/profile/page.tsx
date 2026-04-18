@@ -19,6 +19,14 @@ const NICHES = [
 ];
 const JOB_TYPES = ["Full-time", "Part-time", "Internship", "Contract", "Freelance"];
 const WORK_MODES = ["Remote", "Hybrid", "Onsite"];
+const EXPERIENCE_LEVELS = [
+  "Fresher / 0–1 year",
+  "1–3 years",
+  "3–5 years",
+  "5–8 years",
+  "8–12 years",
+  "12+ years",
+];
 
 type Experience = { title: string; company: string; location: string; startDate: string; endDate: string; current: boolean; description: string };
 type Education = { degree: string; institution: string; year: string; description: string };
@@ -27,7 +35,7 @@ type Profile = {
   skills: string[]; experience: Experience[]; education: Education[];
   preferredJobType: string; preferredWorkMode: string; preferredLocation: string;
   preferredSalaryMin: number | ""; preferredSalaryMax: number | "";
-  preferredNiche: string; resumeText: string;
+  preferredNiche: string; experienceLevel: string; resumeText: string;
 };
 
 const EMPTY_EXP: Experience = { title: "", company: "", location: "", startDate: "", endDate: "", current: false, description: "" };
@@ -85,7 +93,7 @@ export default function RecruitProfilePage() {
     skills: [], experience: [], education: [],
     preferredJobType: "", preferredWorkMode: "", preferredLocation: "",
     preferredSalaryMin: "", preferredSalaryMax: "",
-    preferredNiche: "", resumeText: "",
+    preferredNiche: "", experienceLevel: "", resumeText: "",
   });
 
   const completionItems = [
@@ -95,6 +103,7 @@ export default function RecruitProfilePage() {
     Boolean(profile.resumeText && profile.resumeText.length > 80),
     profile.experience.length > 0 || profile.education.length > 0,
     Boolean(profile.preferredSalaryMin || profile.preferredSalaryMax),
+    Boolean(profile.experienceLevel),
   ];
   const completion = Math.round((completionItems.filter(Boolean).length / completionItems.length) * 100);
 
@@ -134,7 +143,9 @@ export default function RecruitProfilePage() {
           preferredLocation: p.preferredLocation || "",
           preferredSalaryMin: p.preferredSalaryMin || "",
           preferredSalaryMax: p.preferredSalaryMax || "",
-          preferredNiche: p.preferredNiche || "", resumeText: p.resumeText || "",
+          preferredNiche: p.preferredNiche || "",
+          experienceLevel: p.experienceLevel || "",
+          resumeText: p.resumeText || "",
         });
       }
     } catch { /* ignore */ }
@@ -187,6 +198,7 @@ export default function RecruitProfilePage() {
           preferredLocation: profile.preferredLocation,
           preferredSalaryMin: profile.preferredSalaryMin,
           preferredSalaryMax: profile.preferredSalaryMax,
+          experienceLevel: profile.experienceLevel,
         }));
       } catch { /* ignore */ }
       setSaved(true);
@@ -280,7 +292,8 @@ export default function RecruitProfilePage() {
               { done: Boolean(profile.preferredNiche || profile.preferredWorkMode || profile.preferredJobType), label: "Job preferences", detail: "Preferences set", missing: "Set your niche or work mode" },
               { done: Boolean(profile.resumeText && profile.resumeText.length > 80), label: "Resume text", detail: "Resume pasted", missing: "Paste your resume (80+ chars)" },
               { done: profile.experience.length > 0 || profile.education.length > 0, label: "Experience or education", detail: "Background added", missing: "Add work or education history" },
-              { done: Boolean(profile.preferredSalaryMin || profile.preferredSalaryMax), label: "Salary expectation", detail: "Salary range set", missing: "Set your expected salary (optional)" },
+              { done: Boolean(profile.preferredSalaryMin || profile.preferredSalaryMax), label: "Salary expectation", detail: "Salary range set", missing: "Set your expected salary" },
+              { done: Boolean(profile.experienceLevel), label: "Experience level", detail: profile.experienceLevel, missing: "Set your experience level for better AI matching" },
             ].map(item => (
               <div key={item.label} className={`flex items-center gap-3 rounded-2xl px-4 py-3 shadow-sm ring-1 text-xs font-medium ${item.done ? "bg-green-50 ring-green-200 text-green-800" : "bg-white ring-slate-100 text-slate-500"}`}>
                 <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${item.done ? "bg-green-500 text-white" : "bg-slate-200 text-slate-400"}`}>
@@ -443,9 +456,13 @@ export default function RecruitProfilePage() {
             <div className="space-y-5">
               <div>
                 <h2 className="text-base font-bold text-slate-900">Job Preferences</h2>
-                <p className="text-sm text-slate-500 mt-0.5">Tell us what kind of roles you're looking for.</p>
+                <p className="text-sm text-slate-500 mt-0.5">Tell us what kind of roles you're looking for. This improves your AI match score.</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
+                <Select label="Experience Level" value={profile.experienceLevel} onChange={e => set("experienceLevel", e.target.value)}>
+                  <option value="">Select your level</option>
+                  {EXPERIENCE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                </Select>
                 <Select label="Preferred Niche" value={profile.preferredNiche} onChange={e => set("preferredNiche", e.target.value)}>
                   <option value="">Any niche</option>
                   {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
@@ -461,6 +478,11 @@ export default function RecruitProfilePage() {
                 <Input label="Preferred Location" value={profile.preferredLocation} onChange={e => set("preferredLocation", e.target.value)} placeholder="e.g. Bengaluru, Remote" />
                 <Input label="Min Expected Salary (₹/yr)" type="number" value={profile.preferredSalaryMin} onChange={e => set("preferredSalaryMin", e.target.value ? Number(e.target.value) : "")} placeholder="e.g. 800000" />
                 <Input label="Max Expected Salary (₹/yr)" type="number" value={profile.preferredSalaryMax} onChange={e => set("preferredSalaryMax", e.target.value ? Number(e.target.value) : "")} placeholder="e.g. 1500000" />
+              </div>
+              <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-3.5">
+                <p className="text-xs text-blue-700 leading-relaxed">
+                  <span className="font-bold">Tip:</span> Setting your experience level and niche helps our AI give you more accurate match scores when you view a job.
+                </p>
               </div>
             </div>
           )}

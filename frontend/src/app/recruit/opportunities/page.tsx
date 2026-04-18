@@ -3,6 +3,7 @@ import RecruitHeader from "@/components/RecruitHeader";
 import ClientSaveButton from "./SaveButton";
 import FilterToggle from "./FilterToggle";
 import RecentlyViewedJobs from "./RecentlyViewedJobs";
+import ProfileNudge from "./ProfileNudge";
 import { computeJobQuality } from "@/lib/jobQuality";
 
 const NICHES = [
@@ -336,6 +337,7 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
           </div>
 
           <section className="space-y-3">
+            <ProfileNudge />
             <RecentlyViewedJobs />
             {jobs.length === 0 ? (
               <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-10">

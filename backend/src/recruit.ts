@@ -1589,7 +1589,7 @@ recruitRouter.put("/seeker/profile", async (req, res) => {
     const {
       name, email, phone, headline, bio, skills, experience, education,
       preferredJobType, preferredWorkMode, preferredLocation,
-      preferredSalaryMin, preferredSalaryMax, preferredNiche, resumeText,
+      preferredSalaryMin, preferredSalaryMax, preferredNiche, experienceLevel, resumeText,
     } = req.body;
     const update: any = {};
     if (name !== undefined) update.name = String(name).trim();
@@ -1606,6 +1606,7 @@ recruitRouter.put("/seeker/profile", async (req, res) => {
     if (preferredSalaryMin !== undefined) update.preferredSalaryMin = Number(preferredSalaryMin) || undefined;
     if (preferredSalaryMax !== undefined) update.preferredSalaryMax = Number(preferredSalaryMax) || undefined;
     if (preferredNiche !== undefined) update.preferredNiche = String(preferredNiche).trim();
+    if (experienceLevel !== undefined) update.experienceLevel = String(experienceLevel).trim();
     if (resumeText !== undefined) update.resumeText = String(resumeText).trim();
     const profile = await RecruitSeekerProfile.findOneAndUpdate(
       { uid },
@@ -1692,6 +1693,7 @@ async function generateJobMatch(args: {
   preferredLocation?: string;
   preferredSalaryMin?: number;
   preferredSalaryMax?: number;
+  experienceLevel?: string;
   resumeText?: string;
 }): Promise<{
   matchScore: number;
@@ -1716,12 +1718,14 @@ JOB:
 - Location: ${args.job.location || "India"}
 - Work Mode: ${args.job.workMode || "Not specified"}
 - Salary: ${jobSalary}
+- Seniority Level: ${(args.job as any).seniority || "Not specified"}
 - Freshers Allowed: ${args.job.freshersAllowed ? "Yes" : "No"}
 - Must-have skills: ${args.job.mustHaveSkills || "Not specified"}
 - Nice-to-have skills: ${args.job.niceToHaveSkills || "Not specified"}
 
 SEEKER PROFILE:
 - Skills: ${args.skills.join(", ") || "Not listed"}
+- Experience Level: ${args.experienceLevel || "Not specified"}
 - Preferred Niche: ${args.preferredNiche || "Any"}
 - Preferred Work Mode: ${args.preferredWorkMode || "Any"}
 - Preferred Location: ${args.preferredLocation || "Any"}
@@ -1773,7 +1777,7 @@ recruitPublicRouter.post("/jobs/:jobId/match", async (req, res) => {
     }).lean();
     if (!job) return res.status(404).json({ error: "Job not found." });
 
-    const { skills, preferredNiche, preferredWorkMode, preferredLocation, preferredSalaryMin, preferredSalaryMax, resumeText } = req.body;
+    const { skills, preferredNiche, preferredWorkMode, preferredLocation, preferredSalaryMin, preferredSalaryMax, experienceLevel, resumeText } = req.body;
 
     if (!resumeText?.trim() && (!Array.isArray(skills) || skills.length === 0)) {
       return res.status(400).json({ error: "Provide at least your skills or resume text for match analysis." });
@@ -1787,6 +1791,7 @@ recruitPublicRouter.post("/jobs/:jobId/match", async (req, res) => {
       preferredLocation,
       preferredSalaryMin: preferredSalaryMin ? Number(preferredSalaryMin) : undefined,
       preferredSalaryMax: preferredSalaryMax ? Number(preferredSalaryMax) : undefined,
+      experienceLevel,
       resumeText,
     });
 
