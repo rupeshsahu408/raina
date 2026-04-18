@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import RecruitHeader from "@/components/RecruitHeader";
@@ -76,6 +77,7 @@ export default function RecruitProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [needsLogin, setNeedsLogin] = useState(false);
   const [skillInput, setSkillInput] = useState("");
   const [activeSection, setActiveSection] = useState<Section>("basics");
   const [profile, setProfile] = useState<Profile>({
@@ -107,6 +109,8 @@ export default function RecruitProfilePage() {
           name: prev.name || u.displayName || "",
         }));
       } else {
+        setNeedsLogin(true);
+        setLoading(false);
         router.push("/login");
       }
     });
@@ -198,6 +202,29 @@ export default function RecruitProfilePage() {
             Loading your profile…
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (needsLogin) {
+    return (
+      <div className="min-h-screen bg-white text-slate-900">
+        <RecruitHeader />
+        <main className="mx-auto flex max-w-xl flex-col items-center px-4 py-20 text-center sm:px-6">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 text-2xl">👤</div>
+          <h1 className="mt-5 text-2xl font-black tracking-tight text-slate-950">Sign in to manage your seeker profile</h1>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            Your profile stores your contact details, skills, preferences, and resume text so you can apply faster.
+          </p>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row">
+            <Link href="/login?next=/recruit/profile" className="rounded-full bg-[#0a66c2] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#004182]">
+              Sign in
+            </Link>
+            <Link href="/recruit/opportunities" className="rounded-full border border-slate-300 px-6 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50">
+              Browse jobs
+            </Link>
+          </div>
+        </main>
       </div>
     );
   }
