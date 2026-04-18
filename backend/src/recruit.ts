@@ -232,8 +232,32 @@ For "tier": classify each criterion as 1 (must-have skill), 2 (experience depth)
   const validConfidence = (v: any): "high" | "medium" | "low" =>
     v === "high" || v === "low" ? v : "medium";
 
-  const validTier = (v: any): 1 | 2 | 3 =>
-    v === 1 || v === 2 || v === 3 ? v : 1;
+  // Build deterministic tier map from rubric weights (60 / 25 / 15 split).
+  // Criteria are sorted by weight descending; we accumulate until each
+  // threshold is reached. This enforces the highest-weight criteria are
+  // always Tier 1, regardless of what the AI classified them as.
+  const totalRubricWeight = args.rubric.reduce((sum, r) => sum + r.weight, 0);
+  const sortedRubric = [...args.rubric].sort((a, b) => b.weight - a.weight);
+  const rubricTierMap = new Map<string, 1 | 2 | 3>();
+  let accumulated = 0;
+  for (const r of sortedRubric) {
+    accumulated += r.weight;
+    const pct = totalRubricWeight > 0 ? accumulated / totalRubricWeight : 1;
+    const tier: 1 | 2 | 3 = pct <= 0.60 ? 1 : pct <= 0.85 ? 2 : 3;
+    rubricTierMap.set(r.name.toLowerCase().trim(), tier);
+  }
+
+  const resolveTier = (criterionName: string, aiTier: any): 1 | 2 | 3 => {
+    const key = (criterionName ?? "").toLowerCase().trim();
+    // Exact match first, then partial match as fallback
+    if (rubricTierMap.has(key)) return rubricTierMap.get(key)!;
+    for (const [rubricKey, tier] of rubricTierMap) {
+      if (key.includes(rubricKey) || rubricKey.includes(key)) return tier;
+    }
+    // If no rubric match, accept the AI's value (validated)
+    const n = Number(aiTier);
+    return n === 1 || n === 2 || n === 3 ? n : 1;
+  };
 
   const breakdown = (parsed.scoreBreakdown ?? []).map((b: any) => ({
     criterion: b.criterion ?? "",
@@ -241,7 +265,7 @@ For "tier": classify each criterion as 1 (must-have skill), 2 (experience depth)
     maxScore: Number(b.maxScore) || 10,
     reasoning: (b.reasoning ?? "").trim(),
     confidence: validConfidence(b.confidence),
-    tier: validTier(Number(b.tier)),
+    tier: resolveTier(b.criterion, b.tier),
   })).filter((b: any) => b.criterion.length > 0);
 
   const totalScore = breakdown.reduce((sum: number, b: any) => sum + b.score, 0);
