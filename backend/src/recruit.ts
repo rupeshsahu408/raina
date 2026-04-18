@@ -198,8 +198,13 @@ SUMMARY RULES:
 - End with one sentence on how they fit (or don't fit) this specific role
 - Write it as you'd say it to a hiring manager — direct, specific, no filler phrases like "strong candidate" or "well-rounded"
 
+CONFIDENCE DEFINITIONS — set one per criterion:
+- "high": Strong, explicit evidence in resume (named skill, titled role, direct achievement)
+- "medium": Partial or inferred evidence (related role, implied skill, adjacent experience)
+- "low": Weak or unclear signal (thin mention, assumed from context, no direct evidence)
+
 Respond with ONLY this JSON (no markdown, no extra text):
-{"name":"full name","email":"email or empty string","aiSummary":"specific 2-3 sentence summary","strengths":["concrete strength 1","concrete strength 2","concrete strength 3"],"redFlags":["only genuine red flags — omit this array or leave empty if none"],"scoreBreakdown":[{"criterion":"exact name from rubric","score":28,"maxScore":35,"reasoning":"one sentence citing specific resume evidence"}]}`;
+{"name":"full name","email":"email or empty string","aiSummary":"specific 2-3 sentence summary","strengths":["concrete strength 1","concrete strength 2","concrete strength 3"],"redFlags":["only genuine red flags — omit this array or leave empty if none"],"scoreBreakdown":[{"criterion":"exact name from rubric","score":28,"maxScore":35,"reasoning":"one sentence citing specific resume evidence","confidence":"medium"}]}`;
 
   const raw = await callNvidiaChatCompletions({
     apiKey: NVIDIA_API_KEY,
@@ -222,11 +227,15 @@ Respond with ONLY this JSON (no markdown, no extra text):
     };
   }
 
+  const validConfidence = (v: any): "high" | "medium" | "low" =>
+    v === "high" || v === "low" ? v : "medium";
+
   const breakdown = (parsed.scoreBreakdown ?? []).map((b: any) => ({
     criterion: b.criterion ?? "",
     score: Number(b.score) || 0,
     maxScore: Number(b.maxScore) || 10,
     reasoning: (b.reasoning ?? "").trim(),
+    confidence: validConfidence(b.confidence),
   })).filter((b: any) => b.criterion.length > 0);
 
   const totalScore = breakdown.reduce((sum: number, b: any) => sum + b.score, 0);

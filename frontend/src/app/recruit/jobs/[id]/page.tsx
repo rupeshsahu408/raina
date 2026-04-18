@@ -8,7 +8,8 @@ import Link from "next/link";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
-type ScoreBreakdown = { criterion: string; score: number; maxScore: number; reasoning: string };
+type Confidence = "high" | "medium" | "low";
+type ScoreBreakdown = { criterion: string; score: number; maxScore: number; reasoning: string; confidence?: Confidence };
 type CandidateStage = "applied" | "screened" | "assessed" | "interview" | "offer" | "hired" | "rejected";
 type AssessmentStatus = "not_sent" | "sent" | "completed";
 type HiringDecision = "strong_yes" | "maybe" | "no" | null;
@@ -83,6 +84,21 @@ function scoreBarColor(pct: number) {
   if (pct >= 75) return "bg-emerald-500";
   if (pct >= 50) return "bg-amber-500";
   return "bg-rose-500";
+}
+
+function confidenceStyle(c: Confidence) {
+  if (c === "high") return { dot: "bg-emerald-400", text: "text-emerald-400", label: "High confidence", pill: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" };
+  if (c === "low")  return { dot: "bg-rose-400",    text: "text-rose-400",    label: "Low confidence",  pill: "bg-rose-500/10 text-rose-400 border-rose-500/20" };
+  return               { dot: "bg-amber-400",   text: "text-amber-400",   label: "Med. confidence", pill: "bg-amber-500/10 text-amber-400 border-amber-500/20" };
+}
+
+function overallConfidence(breakdown: ScoreBreakdown[]): Confidence {
+  if (breakdown.length === 0) return "medium";
+  const counts = { high: 0, medium: 0, low: 0 };
+  for (const b of breakdown) counts[b.confidence ?? "medium"]++;
+  if (counts.high > breakdown.length / 2) return "high";
+  if (counts.low >= Math.ceil(breakdown.length / 2)) return "low";
+  return "medium";
 }
 
 function decisionBadge(decision: HiringDecision) {
@@ -478,9 +494,19 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
             </div>
           </div>
 
-          <div className="mb-3 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+          <div className="mb-2 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
             <div className={`h-full rounded-full transition-all ${scoreBarColor(pct)}`} style={{ width: `${pct}%` }} />
           </div>
+          {c.scoreBreakdown.length > 0 && (() => {
+            const conf = overallConfidence(c.scoreBreakdown);
+            const cs = confidenceStyle(conf);
+            return (
+              <div className="mb-3 flex items-center gap-1.5">
+                <span className={`inline-block h-1.5 w-1.5 rounded-full ${cs.dot}`} />
+                <span className={`text-[10px] font-medium ${cs.text}`}>{cs.label}</span>
+              </div>
+            );
+          })()}
 
           <p className="text-xs text-zinc-500 leading-5 line-clamp-2 mb-3">{c.aiSummary}</p>
 
@@ -624,20 +650,41 @@ function CandidateCard({ c, jobId, token, onUpdate, onDelete }: {
             )}
             {c.scoreBreakdown.length > 0 && (
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 mb-3">Score Breakdown</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Score Breakdown</p>
+                  {(() => {
+                    const conf = overallConfidence(c.scoreBreakdown);
+                    const cs = confidenceStyle(conf);
+                    const fullLabel = conf === "high" ? "High Confidence" : conf === "low" ? "Low Confidence" : "Medium Confidence";
+                    return (
+                      <span className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${cs.pill}`}>
+                        <span className={`inline-block h-1.5 w-1.5 rounded-full ${cs.dot}`} />
+                        {fullLabel}
+                      </span>
+                    );
+                  })()}
+                </div>
                 <div className="space-y-3">
                   {c.scoreBreakdown.map((b, i) => {
                     const bPct = b.maxScore > 0 ? Math.round((b.score / b.maxScore) * 100) : 0;
+                    const conf = b.confidence ?? "medium";
+                    const cs = confidenceStyle(conf);
                     return (
                       <div key={i}>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-zinc-400">{b.criterion}</span>
-                          <span className={`text-xs font-semibold ${scoreColor(bPct)}`}>{b.score}/{b.maxScore}</span>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${cs.dot}`} title={cs.label} />
+                            <span className="text-xs text-zinc-400 truncate">{b.criterion}</span>
+                          </div>
+                          <span className={`ml-2 shrink-0 text-xs font-semibold ${scoreColor(bPct)}`}>{b.score}/{b.maxScore}</span>
                         </div>
                         <div className="h-1 w-full rounded-full bg-white/[0.05]">
                           <div className={`h-full rounded-full ${scoreBarColor(bPct)}`} style={{ width: `${bPct}%` }} />
                         </div>
-                        <p className="mt-1 text-[10px] text-zinc-600">{b.reasoning}</p>
+                        <div className="mt-1 flex items-start justify-between gap-2">
+                          <p className="text-[10px] text-zinc-600 leading-4">{b.reasoning}</p>
+                          <span className={`shrink-0 text-[9px] font-semibold uppercase tracking-wide ${cs.text}`}>{conf}</span>
+                        </div>
                       </div>
                     );
                   })}
