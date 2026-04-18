@@ -140,43 +140,49 @@ async function scoreCandidate(args: {
     .map((r) => `- ${r.name} (max ${r.weight} pts): ${r.description}`)
     .join("\n");
 
-  const prompt = `You are a senior recruiter with 15 years of experience. Analyze the following resume for the role of "${args.jobTitle}" using the provided scoring rubric.
+  const prompt = `You are a seasoned technical recruiter screening a candidate for the role of "${args.jobTitle}". Evaluate the resume below using the rubric provided.
 
 SCORING RUBRIC:
 ${rubricText}
 
-RESUME TEXT:
+RESUME:
 ${args.resumeText.slice(0, 4000)}
 
-Respond with valid JSON only (no markdown):
-{
-  "name": "candidate's full name extracted from resume",
-  "email": "email address extracted from resume or empty string",
-  "aiSummary": "2-3 sentence professional summary of this candidate for this role",
-  "strengths": ["strength 1", "strength 2", "strength 3"],
-  "redFlags": ["red flag 1 if any", "red flag 2 if any"],
-  "scoreBreakdown": [
-    {
-      "criterion": "exact criterion name from rubric",
-      "score": 25,
-      "maxScore": 40,
-      "reasoning": "specific one-sentence reasoning for this score based on resume evidence"
-    }
-  ]
-}
+---
 
-Rules:
-- Score each rubric criterion fairly based only on evidence in the resume
-- Be specific in reasoning — reference actual resume content
-- Red flags should be genuine concerns, not minor issues
-- Strengths should be concrete evidence-based observations
-- If a criterion has no evidence, score it low but explain why`;
+SCORING PHILOSOPHY — read carefully before scoring:
+
+Think like a human recruiter presenting this candidate to a hiring manager. Your job is to give a fair, calibrated assessment — not to find reasons to reject.
+
+SCORE CALIBRATION:
+- A candidate with solid, relevant experience and most required skills: 70–85%
+- A decent mid-level candidate with relevant background but some gaps: 55–70%
+- A junior candidate or someone with partial fit: 40–55%
+- Clearly unqualified or completely irrelevant background: below 40%
+- Do NOT give below 50% of a criterion's points just because the resume doesn't explicitly mention it — infer from context and related experience
+- If someone has 3+ years in a closely related role, they likely have adjacent skills even if unstated
+
+RED FLAG RULES — only flag these specific situations:
+1. An unexplained employment gap of 2 or more years
+2. Zero relevant skills or experience for a role that requires specific technical expertise
+3. A clear mismatch between claimed seniority and actual experience (e.g., "10 years experience" with only 2 jobs totaling 3 years)
+4. Applying for a role that requires a specific license/certification they demonstrably don't have
+DO NOT flag: short tenures at startups, fewer years than ideal, missing one nice-to-have skill, career pivots, non-linear paths, or anything that requires assumption
+
+SUMMARY RULES:
+- Open with their current/most recent title and company (or field of work)
+- Name 2–3 specific, concrete skills or achievements from the resume
+- End with one sentence on how they fit (or don't fit) this specific role
+- Write it as you'd say it to a hiring manager — direct, specific, no filler phrases like "strong candidate" or "well-rounded"
+
+Respond with ONLY this JSON (no markdown, no extra text):
+{"name":"full name","email":"email or empty string","aiSummary":"specific 2-3 sentence summary","strengths":["concrete strength 1","concrete strength 2","concrete strength 3"],"redFlags":["only genuine red flags — omit this array or leave empty if none"],"scoreBreakdown":[{"criterion":"exact name from rubric","score":28,"maxScore":35,"reasoning":"one sentence citing specific resume evidence"}]}`;
 
   const raw = await callNvidiaChatCompletions({
     apiKey: NVIDIA_API_KEY,
     messages: [{ role: "user", content: prompt }],
-    temperature: 0.3,
-    max_tokens: 1500,
+    temperature: 0.4,
+    max_tokens: 1600,
   });
 
   const parsed = safeJson(raw);
@@ -197,11 +203,19 @@ Rules:
     criterion: b.criterion ?? "",
     score: Number(b.score) || 0,
     maxScore: Number(b.maxScore) || 10,
-    reasoning: b.reasoning ?? "",
-  }));
+    reasoning: (b.reasoning ?? "").trim(),
+  })).filter((b: any) => b.criterion.length > 0);
 
   const totalScore = breakdown.reduce((sum: number, b: any) => sum + b.score, 0);
   const maxScore = breakdown.reduce((sum: number, b: any) => sum + b.maxScore, 0) || 100;
+
+  const redFlags = Array.isArray(parsed.redFlags)
+    ? parsed.redFlags.filter((f: unknown) => typeof f === "string" && f.trim().length > 0)
+    : [];
+
+  const strengths = Array.isArray(parsed.strengths)
+    ? parsed.strengths.filter((s: unknown) => typeof s === "string" && s.trim().length > 0)
+    : [];
 
   return {
     name: parsed.name ?? "Unknown Candidate",
@@ -209,9 +223,9 @@ Rules:
     totalScore,
     maxScore,
     scoreBreakdown: breakdown,
-    aiSummary: parsed.aiSummary ?? "",
-    redFlags: Array.isArray(parsed.redFlags) ? parsed.redFlags : [],
-    strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+    aiSummary: (parsed.aiSummary ?? "").trim(),
+    redFlags,
+    strengths,
   };
 }
 
