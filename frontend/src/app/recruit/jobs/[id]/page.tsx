@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
+import { trackEvent } from "@/lib/trackEvent";
+
+const FRONTEND_URL = "https://www.plyndrox.app";
 
 const API = "/backend";
 
@@ -1015,6 +1018,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [activeTab, setActiveTab] = useState<"pipeline" | "jd" | "rubric" | "post">("pipeline");
+  const [linkCopied, setLinkCopied] = useState(false);
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -1104,7 +1108,27 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             <span className="text-zinc-700">·</span>
             <span className="text-xs text-zinc-400 font-medium truncate max-w-[180px] sm:max-w-xs">{job.title}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => {
+                const url = `${FRONTEND_URL}/recruit/opportunities/${id}`;
+                navigator.clipboard.writeText(url).then(() => {
+                  setLinkCopied(true);
+                  setTimeout(() => setLinkCopied(false), 2000);
+                });
+                trackEvent("recruiter_profile_viewed", undefined, { jobId: id, action: "share_link_copied" });
+              }}
+              className={`flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${
+                linkCopied
+                  ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                  : "border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/20"
+              }`}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+              {linkCopied ? "Link Copied!" : "Share Listing"}
+            </button>
             {candidates.length > 0 && (
               <a
                 href={`${API}/recruit/jobs/${id}/export?format=csv`}
@@ -1289,6 +1313,8 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
 function PostToBoardsTab({ job }: { job: Job }) {
   const [copiedBoard, setCopiedBoard] = useState<string | null>(null);
+  const [linkCopiedPost, setLinkCopiedPost] = useState(false);
+  const plyndroxUrl = `${FRONTEND_URL}/recruit/opportunities/${job._id}`;
 
   const linkedinPost = `🚀 We're Hiring: ${job.title}
 
@@ -1373,6 +1399,31 @@ ${job.generatedJD}`;
 
   return (
     <div className="space-y-6">
+      <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/[0.05] px-5 py-4">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-sm font-semibold text-indigo-300 mb-1">Share your Plyndrox listing</p>
+            <p className="text-xs text-zinc-500 leading-relaxed break-all">{plyndroxUrl}</p>
+          </div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(plyndroxUrl).then(() => {
+                setLinkCopiedPost(true);
+                setTimeout(() => setLinkCopiedPost(false), 2000);
+              });
+            }}
+            className={`shrink-0 flex items-center gap-1.5 rounded-xl border px-4 py-2 text-xs font-semibold transition ${
+              linkCopiedPost
+                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                : "border-indigo-500/25 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20"
+            }`}
+          >
+            <CopyIcon />
+            {linkCopiedPost ? "Copied!" : "Copy Link"}
+          </button>
+        </div>
+      </div>
+
       <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 py-4">
         <p className="text-sm text-zinc-400 leading-relaxed">
           Your AI-generated job description is ready to post. Copy the formatted content for each platform below — each version is optimized for that board&apos;s format and character style.

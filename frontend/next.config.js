@@ -13,6 +13,8 @@ const nextConfig = {
       { source: "/v1/:path*", destination: `${BACKEND_URL}/v1/:path*` },
       { source: "/inbox/:path*", destination: `${BACKEND_URL}/inbox/:path*` },
       { source: "/backend/recruit/:path*", destination: `${BACKEND_URL}/recruit/:path*` },
+      { source: "/backend/track", destination: `${BACKEND_URL}/track` },
+      { source: "/backend/admin/tracking/:path*", destination: `${BACKEND_URL}/admin/tracking/:path*` },
       { source: "/recruit-public/:path*", destination: `${BACKEND_URL}/recruit-public/:path*` },
       { source: "/health", destination: `${BACKEND_URL}/health` },
       { source: "/api/health", destination: `${BACKEND_URL}/api/health` },

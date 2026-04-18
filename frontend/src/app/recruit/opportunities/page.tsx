@@ -8,6 +8,7 @@ import ProfileNudge from "./ProfileNudge";
 import { computeJobQuality } from "@/lib/jobQuality";
 import RecommendedJobs from "./RecommendedJobs";
 import SavedSearches from "./SavedSearches";
+import PageTracker from "@/components/PageTracker";
 
 const NICHES = [
   "AI, Data, Software & Product Tech",
@@ -266,6 +267,7 @@ export default async function RecruitOpportunitiesPage({ searchParams }: { searc
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
+      <PageTracker event="opportunity_list_viewed" />
       <RecruitHeader />
 
       <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8">

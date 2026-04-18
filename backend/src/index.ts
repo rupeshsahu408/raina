@@ -9,6 +9,7 @@ import FormData from "form-data";
 import { ibaraRouter } from "./ibara";
 import { inboxRouter, inboxPublicRouter } from "./inbox";
 import { recruitRouter, recruitPublicRouter } from "./recruit";
+import { trackingPublicRouter, trackingAdminRouter } from "./tracking";
 import { connectMongo } from "./db";
 import {
   buildBiharSystemPrompt,
@@ -178,6 +179,8 @@ app.use("/inbox", inboxPublicRouter);
 app.use("/inbox", requireFirebaseAuth, inboxRouter);
 app.use("/recruit-public", recruitPublicRouter);
 app.use("/recruit", requireFirebaseAuth, recruitRouter);
+app.use("/track", trackingPublicRouter);
+app.use("/admin/tracking", requireFirebaseAuth, trackingAdminRouter);
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "evara-backend" });

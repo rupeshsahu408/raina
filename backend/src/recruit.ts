@@ -7,6 +7,11 @@ import { RecruitSeekerProfile } from "./models/RecruitSeekerProfile";
 import { RecruitCompanyProfile } from "./models/RecruitCompanyProfile";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 import { RecruitJobAlert } from "./models/RecruitJobAlert";
+import { UsageEvent } from "./models/UsageEvent";
+
+function trackEvent(event: string, uid?: string, data?: Record<string, unknown>) {
+  UsageEvent.create({ event, uid, data: data ?? {} }).catch(() => {});
+}
 
 export const recruitRouter = express.Router();
 export const recruitPublicRouter = express.Router();
@@ -706,6 +711,7 @@ recruitRouter.post("/jobs", async (req, res) => {
       generatedJD: jd, rubric, status: "active", candidateCount: 0,
     });
 
+    trackEvent("recruiter_job_posted", uid, { jobId: String(job._id), niche, title });
     return res.json({ job });
   } catch (err: any) {
     console.error("[recruit] POST /jobs", err);
@@ -924,6 +930,7 @@ recruitRouter.post("/jobs/:jobId/candidates", async (req, res) => {
 
     await RecruitJob.updateOne({ _id: job._id }, { $inc: { candidateCount: 1 } });
 
+    trackEvent("recruiter_candidate_added", uid, { jobId: req.params.jobId, source: source || "" });
     return res.json({ candidate, previousApplication });
   } catch (err: any) {
     console.error("[recruit] POST /candidates", err);
@@ -962,6 +969,9 @@ recruitRouter.patch("/jobs/:jobId/candidates/:candidateId", async (req, res) => 
       { new: true }
     ).lean();
     if (!candidate) return res.status(404).json({ error: "Candidate not found." });
+    if (update.stage) {
+      trackEvent("recruiter_stage_changed", uid, { jobId: req.params.jobId, stage: update.stage });
+    }
     return res.json({ candidate });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
@@ -1565,6 +1575,7 @@ recruitRouter.get("/jobs/:jobId/export", async (req, res) => {
 
     res.setHeader("Content-Type", "text/csv");
     res.setHeader("Content-Disposition", `attachment; filename="${job.title.replace(/[^a-z0-9]/gi, "_")}_candidates.csv"`);
+    trackEvent("recruiter_export_csv", uid, { jobId: req.params.jobId, candidateCount: candidates.length });
     return res.send(csv);
   } catch (err: any) {
     console.error("[recruit] GET /export", err);
@@ -2047,6 +2058,53 @@ recruitRouter.get("/jobs/:jobId/new-applicants-count", async (req, res) => {
     const count = await RecruitCandidate.countDocuments({ jobId: req.params.jobId, createdAt: { $gt: since } });
     return res.json({ count });
   } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Pipeline summary for dashboard ─────────────────────────────────────────
+
+recruitRouter.get("/pipeline-summary", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+
+    const [stageCounts, sourceBreakdown] = await Promise.all([
+      RecruitCandidate.aggregate([
+        { $match: { uid } },
+        { $group: { _id: "$stage", count: { $sum: 1 } } },
+      ]),
+      RecruitCandidate.aggregate([
+        { $match: { uid, source: { $exists: true, $ne: "" } } },
+        { $group: { _id: "$source", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 },
+      ]),
+    ]);
+
+    const stages: Record<string, number> = {};
+    for (const s of stageCounts as Array<{ _id: string; count: number }>) {
+      stages[s._id] = s.count;
+    }
+
+    const shortlisted = (stages["screened"] || 0) + (stages["assessed"] || 0);
+    const interview = stages["interview"] || 0;
+    const hired = stages["hired"] || 0;
+    const offer = stages["offer"] || 0;
+    const total = Object.values(stages).reduce((sum, v) => sum + v, 0);
+
+    return res.json({
+      total,
+      shortlisted,
+      interview,
+      hired,
+      offer,
+      stages,
+      sourceBreakdown: (sourceBreakdown as Array<{ _id: string; count: number }>).map(s => ({ source: s._id, count: s.count })),
+    });
+  } catch (err: any) {
+    console.error("[recruit] GET /pipeline-summary", err);
     return res.status(500).json({ error: err.message });
   }
 });

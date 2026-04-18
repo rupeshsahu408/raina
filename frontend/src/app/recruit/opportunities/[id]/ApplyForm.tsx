@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { trackEvent } from "@/lib/trackEvent";
 
 export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: string; jobTitle?: string; companyName?: string }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", resumeText: "" });
@@ -51,6 +52,7 @@ export default function ApplyForm({ jobId, jobTitle, companyName }: { jobId: str
         if (form.phone) localStorage.setItem("recruit_applicant_phone", form.phone);
         if (form.resumeText) localStorage.setItem("recruit_resume_text", form.resumeText);
       } catch { /* ignore */ }
+      trackEvent("application_submitted", { jobId });
       setSubmitted(true);
     } catch (e: any) {
       setError(e.message);

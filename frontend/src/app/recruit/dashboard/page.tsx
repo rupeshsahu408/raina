@@ -111,6 +111,14 @@ function saveSeenCounts(counts: Record<string, number>) {
   try { localStorage.setItem(SEEN_COUNTS_KEY, JSON.stringify(counts)); } catch {}
 }
 
+type PipelineSummary = {
+  total: number;
+  shortlisted: number;
+  interview: number;
+  hired: number;
+  offer: number;
+};
+
 export default function RecruitDashboardPage() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
@@ -118,6 +126,7 @@ export default function RecruitDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "active" | "paused" | "closed">("all");
   const [seenCounts, setSeenCounts] = useState<Record<string, number>>({});
+  const [pipeline, setPipeline] = useState<PipelineSummary | null>(null);
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -134,9 +143,16 @@ export default function RecruitDashboardPage() {
     if (!token) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API}/recruit/jobs`, { headers: { Authorization: `Bearer ${token}` } });
-      const data = await res.json();
-      setJobs(data.jobs ?? []);
+      const [jobsRes, pipelineRes] = await Promise.all([
+        fetch(`${API}/recruit/jobs`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API}/recruit/pipeline-summary`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      const jobsData = await jobsRes.json();
+      setJobs(jobsData.jobs ?? []);
+      if (pipelineRes.ok) {
+        const pd = await pipelineRes.json();
+        setPipeline(pd);
+      }
     } catch { /* silent */ }
     finally { setLoading(false); }
   }, [token]);
@@ -151,13 +167,13 @@ export default function RecruitDashboardPage() {
 
   const filtered = jobs.filter(j => filter === "all" || j.status === filter);
   const activeJobs = jobs.filter(j => j.status === "active").length;
-  const totalCandidates = jobs.reduce((s, j) => s + (j.candidateCount || 0), 0);
-  const hiredCount = 0;
 
   const stats = [
-    { label: "Total Jobs", value: jobs.length, accent: "text-slate-900", sub: "all time" },
     { label: "Active Roles", value: activeJobs, accent: "text-emerald-600", sub: "hiring now" },
-    { label: "Candidates", value: totalCandidates, accent: "text-blue-700", sub: "in pipeline" },
+    { label: "Total Candidates", value: pipeline?.total ?? jobs.reduce((s, j) => s + (j.candidateCount || 0), 0), accent: "text-blue-700", sub: "in pipeline" },
+    { label: "Shortlisted", value: pipeline?.shortlisted ?? 0, accent: "text-violet-600", sub: "screened + assessed" },
+    { label: "Interview", value: pipeline?.interview ?? 0, accent: "text-amber-600", sub: "at interview stage" },
+    { label: "Hired", value: pipeline?.hired ?? 0, accent: "text-emerald-700", sub: "all time" },
     { label: "Closed Roles", value: jobs.filter(j => j.status === "closed").length, accent: "text-slate-400", sub: "completed" },
   ];
 
@@ -203,9 +219,9 @@ export default function RecruitDashboardPage() {
           <p className="mt-1 text-sm text-slate-500">Manage all your open roles and candidate pipelines from one place.</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-8">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6 mb-8">
           {stats.map(s => (
-            <div key={s.label} className="rounded-2xl bg-white border border-slate-200 p-5 shadow-sm">
+            <div key={s.label} className="rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
               <p className={`text-2xl font-bold ${s.accent}`}>{s.value}</p>
               <p className="mt-0.5 text-xs font-semibold text-slate-700">{s.label}</p>
               <p className="text-[11px] text-slate-400 mt-0.5">{s.sub}</p>

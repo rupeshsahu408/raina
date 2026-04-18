@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import RecruitHeader from "@/components/RecruitHeader";
+import PageTracker from "@/components/PageTracker";
 
 const API = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
 
@@ -311,6 +312,7 @@ export default async function NicheLandingPage({ params }: { params: Promise<{ s
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
+      <PageTracker event="niche_viewed" data={{ niche: niche.slug }} />
       <RecruitHeader />
 
       {/* Hero */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { trackEvent } from "@/lib/trackEvent";
 
 type Props = {
   jobId: string; title: string; companyName?: string; location?: string;
@@ -37,9 +38,11 @@ export default function ClientSaveButton({ jobId, title, companyName, location, 
       if (saved) {
         jobs = jobs.filter((j: any) => j.jobId !== jobId);
         setSaved(false);
+        trackEvent("job_unsaved", { jobId, niche });
       } else {
         jobs = [{ jobId, title, companyName, location, workMode, jobType, niche, savedAt: new Date().toISOString() }, ...jobs];
         setSaved(true);
+        trackEvent("job_saved", { jobId, niche });
       }
       localStorage.setItem("recruit_saved_jobs", JSON.stringify(jobs));
     } catch { /* ignore */ }

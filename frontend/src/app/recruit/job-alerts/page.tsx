@@ -1,4 +1,5 @@
 "use client";
+import { trackEvent } from "@/lib/trackEvent";
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -151,6 +152,7 @@ export default function JobAlertsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create alert");
       setSuccess(data.updated ? "Alert updated successfully." : "Job alert created! You'll see new matches here.");
+      if (!data.updated) trackEvent("job_alert_created", { niche: form.niche, workMode: form.workMode });
       setForm({ niche: "", workMode: "", keywords: "", location: "", freshersOnly: false, verifiedOnly: false });
       await fetchAlerts(email);
     } catch (err: any) {

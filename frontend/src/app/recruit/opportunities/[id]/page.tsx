@@ -10,6 +10,7 @@ import JobMatchPanel from "./JobMatchPanel";
 import CompanySection from "./CompanySection";
 import QualityBreakdown from "./QualityBreakdown";
 import { computeJobQuality } from "@/lib/jobQuality";
+import PageTracker from "@/components/PageTracker";
 
 const API = (process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080").replace(/\/$/, "");
 
@@ -121,6 +122,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
+      <PageTracker event="opportunity_viewed" data={{ jobId: id }} />
       <RecruitHeader />
       <RecentlyViewedTracker
         job={{
