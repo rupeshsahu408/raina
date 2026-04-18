@@ -6,10 +6,15 @@ const isCapacitorExport = process.env.CAPACITOR_EXPORT === "true";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
 // Allow Replit dev proxy origins
-const allowedDevOrigins: string[] = [];
+const allowedDevOrigins: string[] = [
+  "*.replit.dev",
+  "*.kirk.replit.dev",
+  "*.repl.co",
+  "*.replit.app",
+  "*.worf.replit.dev",
+];
 if (process.env.REPLIT_DEV_DOMAIN) {
   allowedDevOrigins.push(process.env.REPLIT_DEV_DOMAIN);
-  allowedDevOrigins.push(process.env.REPLIT_DEV_DOMAIN.replace(".replit.dev", ".repl.co"));
 }
 
 const nextConfig: NextConfig = {
@@ -72,13 +77,15 @@ const nextConfig: NextConfig = {
               source: "/inbox/:path*",
               destination: `${BACKEND_URL}/inbox/:path*`,
             },
+            // Authenticated recruit API calls (prefixed with /backend to avoid conflict with frontend pages)
+            {
+              source: "/backend/recruit/:path*",
+              destination: `${BACKEND_URL}/recruit/:path*`,
+            },
+            // Public recruit API calls
             {
               source: "/recruit-public/:path*",
               destination: `${BACKEND_URL}/recruit-public/:path*`,
-            },
-            {
-              source: "/recruit/:path*",
-              destination: `${BACKEND_URL}/recruit/:path*`,
             },
             {
               source: "/health",

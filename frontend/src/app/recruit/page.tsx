@@ -1,149 +1,308 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 
 const NICHES = [
-  "AI, Data, Software & Product Tech",
-  "Sales, Business Development & Revenue Roles",
-  "Finance, Accounting, Banking & Fintech",
-  "Healthcare, Pharma & Allied Medical Workforce",
-  "Skilled Blue-Collar, Logistics & Industrial Workforce",
-  "Creative, Marketing, Media & Design",
+  { label: "AI, Data, Software & Product Tech", emoji: "💻" },
+  { label: "Sales, Business Development & Revenue Roles", emoji: "📈" },
+  { label: "Finance, Accounting, Banking & Fintech", emoji: "💰" },
+  { label: "Healthcare, Pharma & Allied Medical Workforce", emoji: "🏥" },
+  { label: "Skilled Blue-Collar, Logistics & Industrial Workforce", emoji: "🔧" },
+  { label: "Creative, Marketing, Media & Design", emoji: "🎨" },
 ];
 
-const SEEKER_FILTERS = [
-  "Niche", "Role", "Location", "Remote / Hybrid / On-site", "Salary range", "Experience", "Job type", "Company type", "Skills", "Education", "Notice period", "Freshers allowed", "Verified company", "Posted date",
+const SEEKER_FEATURES = [
+  "Deep niche filters", "AI match score", "Salary transparency",
+  "Remote / Hybrid / Onsite", "Skills match", "Notice period filter",
+  "Freshers allowed", "Verified companies", "Save & track jobs",
 ];
 
-const CREATOR_TOOLS = [
-  "Company profile", "AI job posting", "Applicant pipeline", "Candidate scoring", "Advanced candidate filters", "Talent pool", "Interview briefs", "Offer letters",
+const RECRUITER_FEATURES = [
+  "AI job description writer", "Applicant pipeline", "Candidate scoring",
+  "Async assessments", "Hiring decision engine", "Rejection email generator",
+  "Talent pool", "Company profile", "Interview briefs",
 ];
 
-function ArrowRightIcon() {
-  return <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>;
+function ArrowIcon() {
+  return (
+    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
+    </svg>
+  );
 }
 
-function SearchIcon() {
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>;
+function MenuIcon() {
+  return (
+    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
 }
 
-function UsersIcon() {
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
-}
-
-function SparkIcon() {
-  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>;
+function XIcon() {
+  return (
+    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
 }
 
 export default function RecruitLandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
-    <div className="min-h-screen bg-[#f3f6f8] text-slate-900">
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div className="min-h-screen bg-white text-slate-900">
+      {/* Header */}
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#0a66c2] text-sm font-black text-white">R</span>
+          <Link href="/recruit" className="flex items-center gap-2.5 shrink-0">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a66c2] text-sm font-black text-white">R</span>
             <span>
-              <span className="block text-sm font-bold tracking-tight">Recruit AI</span>
-              <span className="block text-[11px] text-slate-500">Plyndrox Jobs Network</span>
+              <span className="block text-sm font-bold leading-tight">Recruit AI</span>
+              <span className="block text-[11px] text-slate-500 leading-tight">Plyndrox Jobs Network</span>
             </span>
           </Link>
+          <nav className="hidden md:flex items-center gap-1">
+            <Link href="/recruit/opportunities" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">Find Jobs</Link>
+            <Link href="/recruit/saved-jobs" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">Saved Jobs</Link>
+            <Link href="/recruit/my-applications" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">My Applications</Link>
+            <Link href="/recruit/dashboard" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">For Recruiters</Link>
+          </nav>
           <div className="flex items-center gap-2">
-            <Link href="/recruit/opportunities" className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50">Find jobs</Link>
-            <Link href="/recruit/dashboard" className="hidden rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:inline-flex">Recruiter dashboard</Link>
-            <Link href="/recruit/jobs/new" className="rounded-full bg-[#0a66c2] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#004182]">Post a job</Link>
+            <Link href="/recruit/profile" className="hidden sm:inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+              My Profile
+            </Link>
+            <Link href="/recruit/jobs/new" className="rounded-full bg-[#0a66c2] px-4 py-2 text-xs font-bold text-white hover:bg-[#004182] transition">
+              Post a job
+            </Link>
+            <button
+              onClick={() => setMobileMenuOpen(o => !o)}
+              className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
+            >
+              {mobileMenuOpen ? <XIcon /> : <MenuIcon />}
+            </button>
           </div>
         </div>
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-slate-100 bg-white px-4 pb-4 pt-2">
+            <nav className="flex flex-col gap-1">
+              {[
+                { href: "/recruit/opportunities", label: "Find Jobs" },
+                { href: "/recruit/saved-jobs", label: "Saved Jobs" },
+                { href: "/recruit/my-applications", label: "My Applications" },
+                { href: "/recruit/profile", label: "My Profile" },
+                { href: "/recruit/dashboard", label: "Recruiter Dashboard" },
+              ].map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="mt-2 pt-2 border-t border-slate-100">
+                <Link
+                  href="/recruit/jobs/new"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block rounded-xl bg-[#0a66c2] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#004182] transition"
+                >
+                  Post a job →
+                </Link>
+              </div>
+            </nav>
+          </div>
+        )}
       </header>
 
-      <main>
-        <section className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-24">
+      {/* Hero */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:grid lg:grid-cols-2 lg:gap-12 lg:items-center lg:px-8 lg:py-24">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-1.5 text-xs font-bold text-[#0a66c2] shadow-sm">
-              <SparkIcon /> India-first hiring network across 6 niches
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#0a66c2]/20 bg-blue-50 px-4 py-1.5 text-xs font-bold text-[#0a66c2]">
+              <span>✦</span> India-first hiring across 6 niches
             </div>
-            <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight text-slate-950 sm:text-6xl">
-              LinkedIn-style networking meets serious job search for India.
+            <h1 className="mt-5 text-4xl font-extrabold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl leading-tight">
+              LinkedIn meets serious<br />job search for India.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-              Recruit AI is becoming a two-sided professional platform for job seekers, recruiters, and companies: deep job filtering, AI-powered matching, public opportunities, and SaaS-grade hiring workflows.
+            <p className="mt-5 text-base sm:text-lg leading-8 text-slate-600 max-w-xl">
+              Deep job filters, AI-powered candidate scoring, verified companies, and a complete hiring workflow — built for Indian job seekers and recruiters.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/recruit/opportunities" className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0a66c2] px-7 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#004182]">
-                Explore jobs <ArrowRightIcon />
+              <Link
+                href="/recruit/opportunities"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0a66c2] px-7 py-3.5 text-sm font-bold text-white hover:bg-[#004182] transition shadow-sm"
+              >
+                Explore open roles <ArrowIcon />
               </Link>
-              <Link href="/recruit/jobs/new" className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 py-3 text-sm font-bold text-slate-800 shadow-sm transition hover:bg-slate-50">
-                Create a job
+              <Link
+                href="/recruit/profile"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 py-3.5 text-sm font-bold text-slate-800 hover:bg-slate-50 transition shadow-sm"
+              >
+                Build my profile
               </Link>
+            </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              {[
+                { href: "/recruit/saved-jobs", label: "🔖 Saved Jobs" },
+                { href: "/recruit/my-applications", label: "📋 My Applications" },
+                { href: "/recruit/dashboard", label: "🏢 Recruiter tools" },
+              ].map(item => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-[#0a66c2]/30 hover:text-[#0a66c2] transition"
+                >
+                  {item.label}
+                </Link>
+              ))}
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="rounded-2xl border border-slate-200 bg-[#f8fafc] p-4">
-              <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-500">
-                <SearchIcon /> Search role, skill, city, company
+          {/* Preview card */}
+          <div className="mt-12 lg:mt-0">
+            <div className="rounded-2xl border border-slate-200 bg-[#f8fafc] p-4 shadow-sm">
+              <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 flex items-center gap-3 text-sm text-slate-400">
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Search role, skill, city, company…
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-3">
-                {["Niche", "Salary", "Experience", "Verified", "Remote", "Freshers"].map(item => (
-                  <div key={item} className="rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700">{item}</div>
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {["Niche", "Salary", "Remote", "Seniority", "Freshers", "Verified"].map(f => (
+                  <div key={f} className="rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold text-slate-600 text-center">{f}</div>
                 ))}
               </div>
-            </div>
-            <div className="mt-4 space-y-3">
-              {["Senior AI Engineer", "B2B Sales Manager", "Healthcare Operations Lead"].map((title, index) => (
-                <div key={title} className="rounded-2xl border border-slate-200 bg-white p-4">
-                  <div className="flex items-center justify-between gap-3">
+              <div className="mt-3 space-y-2.5">
+                {[
+                  { title: "Senior AI Engineer", sub: "AI & Tech · Bengaluru · Hybrid", badge: "✓ Verified" },
+                  { title: "B2B Sales Manager", sub: "Sales · Mumbai · Remote", badge: "✓ Verified" },
+                  { title: "Healthcare Lead", sub: "Healthcare · Delhi · Onsite", badge: "Freshers ok" },
+                ].map(job => (
+                  <div key={job.title} className="rounded-xl border border-slate-200 bg-white p-3.5 flex items-center justify-between gap-3">
                     <div>
-                      <p className="font-bold text-slate-900">{title}</p>
-                      <p className="mt-1 text-sm text-slate-500">{NICHES[index]} · Bengaluru · Hybrid</p>
+                      <p className="text-sm font-bold text-slate-900">{job.title}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">{job.sub}</p>
                     </div>
-                    <span className="rounded-full bg-green-50 px-3 py-1 text-[11px] font-bold text-green-700">Verified</span>
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${job.badge.includes("Verified") ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"}`}>{job.badge}</span>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="border-y border-slate-200 bg-white py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#0a66c2]">Six focused markets</p>
-                <h2 className="mt-2 text-2xl font-bold text-slate-950">Built niche-first, not generic-first</h2>
+                ))}
               </div>
-              <Link href="/recruit/opportunities" className="text-sm font-bold text-[#0a66c2]">Browse opportunities</Link>
+              <Link href="/recruit/opportunities" className="mt-3 flex items-center justify-center gap-1.5 rounded-xl bg-[#0a66c2] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#004182] transition">
+                Browse all open roles <ArrowIcon />
+              </Link>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {NICHES.map(niche => (
-                <div key={niche} className="rounded-2xl border border-slate-200 bg-[#f8fafc] p-5">
-                  <p className="font-bold text-slate-900">{niche}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">Dedicated jobs, filters, profiles, and hiring workflows for this market.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Seeker / Recruiter split */}
+      <section className="border-t border-slate-100 bg-[#f3f6f8] py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 text-center">
+            <p className="text-xs font-bold uppercase tracking-widest text-[#0a66c2] mb-2">Who it's for</p>
+            <h2 className="text-2xl font-bold sm:text-3xl">Built for both sides of hiring</h2>
+          </div>
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl">🎯</div>
+                <div>
+                  <h3 className="font-bold text-slate-900">For Job Seekers</h3>
+                  <p className="text-xs text-slate-500">Search, apply, track</p>
                 </div>
-              ))}
+              </div>
+              <div className="flex flex-wrap gap-2 mb-5">
+                {SEEKER_FEATURES.map(f => (
+                  <span key={f} className="rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700">{f}</span>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Link href="/recruit/opportunities" className="flex-1 rounded-full bg-[#0a66c2] px-5 py-2.5 text-center text-xs font-bold text-white hover:bg-[#004182] transition">
+                  Browse jobs
+                </Link>
+                <Link href="/recruit/profile" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                  Build profile
+                </Link>
+              </div>
             </div>
-          </div>
-        </section>
 
-        <section className="mx-auto grid max-w-7xl gap-6 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:px-8">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0a66c2]"><SearchIcon /></div>
-            <h2 className="mt-5 text-xl font-bold">For job seekers</h2>
-            <p className="mt-2 text-sm leading-7 text-slate-600">Find better opportunities with the deep filtering you specifically wanted: salary, work mode, niche, skills, experience, company type, freshness, verification, and fresher-friendly jobs.</p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {SEEKER_FILTERS.map(item => <span key={item} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{item}</span>)}
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-7 shadow-sm">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl">🏢</div>
+                <div>
+                  <h3 className="font-bold text-slate-900">For Recruiters</h3>
+                  <p className="text-xs text-slate-500">Post, evaluate, hire</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mb-5">
+                {RECRUITER_FEATURES.map(f => (
+                  <span key={f} className="rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-medium text-slate-700">{f}</span>
+                ))}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Link href="/recruit/jobs/new" className="flex-1 rounded-full bg-[#0a66c2] px-5 py-2.5 text-center text-xs font-bold text-white hover:bg-[#004182] transition">
+                  Post a job
+                </Link>
+                <Link href="/recruit/dashboard" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                  Dashboard
+                </Link>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0a66c2]"><UsersIcon /></div>
-            <h2 className="mt-5 text-xl font-bold">For job creators</h2>
-            <p className="mt-2 text-sm leading-7 text-slate-600">Companies and recruiters get a SaaS-style hiring command center: job creation, applicant management, candidate scoring, talent pool, and AI hiring tools.</p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {CREATOR_TOOLS.map(item => <span key={item} className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{item}</span>)}
+      {/* 6 Niches */}
+      <section className="border-t border-slate-100 bg-white py-14">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-8 flex items-end justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-[#0a66c2] mb-2">Six focused markets</p>
+              <h2 className="text-2xl font-bold">Niche-first, not generic-first</h2>
             </div>
+            <Link href="/recruit/opportunities" className="text-sm font-bold text-[#0a66c2] hover:underline hidden sm:block">
+              Browse all →
+            </Link>
           </div>
-        </section>
-      </main>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {NICHES.map(({ label, emoji }) => (
+              <Link
+                key={label}
+                href={`/recruit/opportunities?niche=${encodeURIComponent(label)}`}
+                className="group rounded-2xl border border-slate-200 bg-[#f8fafc] p-5 hover:border-[#0a66c2]/30 hover:bg-blue-50/30 transition"
+              >
+                <span className="text-2xl">{emoji}</span>
+                <p className="mt-2 font-bold text-slate-900 group-hover:text-[#0a66c2] transition text-sm leading-snug">{label}</p>
+                <p className="mt-1 text-xs text-slate-500">Dedicated filters & job listings →</p>
+              </Link>
+            ))}
+          </div>
+          <div className="mt-6 sm:hidden text-center">
+            <Link href="/recruit/opportunities" className="text-sm font-bold text-[#0a66c2] hover:underline">
+              Browse all opportunities →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer CTA */}
+      <section className="border-t border-slate-200 bg-[#0a66c2] py-14 text-white">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <h2 className="text-2xl font-bold sm:text-3xl">Ready to find your next role?</h2>
+          <p className="mt-3 text-blue-100 text-sm sm:text-base">
+            Join thousands of Indian professionals finding better jobs through Recruit AI.
+          </p>
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Link href="/recruit/opportunities" className="rounded-full bg-white px-8 py-3.5 text-sm font-bold text-[#0a66c2] hover:bg-blue-50 transition shadow">
+              Browse open roles
+            </Link>
+            <Link href="/recruit/profile" className="rounded-full border border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white hover:bg-white/20 transition">
+              Build my profile
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
