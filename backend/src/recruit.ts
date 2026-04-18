@@ -44,6 +44,50 @@ function generateToken(): string {
   return crypto.randomBytes(24).toString("hex");
 }
 
+// Synonym table: maps common alternate forms → canonical lowercase term.
+// Both sides of every tier-match comparison are normalized through this,
+// so "React.js" in a rubric always matches "React" from AI output, etc.
+const TERM_SYNONYMS: Record<string, string> = {
+  // JavaScript ecosystem
+  "js": "javascript", "ts": "typescript",
+  "react.js": "react", "reactjs": "react",
+  "vue.js": "vue", "vuejs": "vue",
+  "angular.js": "angular", "angularjs": "angular",
+  "next.js": "next", "nextjs": "next",
+  "nuxt.js": "nuxt", "nuxtjs": "nuxt",
+  "node.js": "node", "nodejs": "node",
+  "express.js": "express", "expressjs": "express",
+  // APIs
+  "rest api": "api", "restful api": "api", "rest apis": "api",
+  "api integration": "api", "api development": "api",
+  "graphql api": "graphql",
+  // Databases
+  "postgresql": "postgres", "mongo db": "mongodb", "mongo": "mongodb",
+  "ms sql": "sql", "mssql": "sql", "mysql": "sql",
+  // Cloud
+  "amazon web services": "aws", "amazon aws": "aws",
+  "google cloud platform": "gcp", "google cloud": "gcp",
+  "microsoft azure": "azure",
+  // AI / ML
+  "machine learning": "ml", "artificial intelligence": "ai",
+  "natural language processing": "nlp", "deep learning": "dl",
+  // Mobile
+  "react native": "react-native",
+  "ios development": "ios", "android development": "android",
+  // General skills
+  "communication skills": "communication",
+  "leadership skills": "leadership",
+  "problem solving": "problem-solving",
+  "problem-solving skills": "problem-solving",
+  "project management": "pm", "product management": "pm",
+  "ci/cd pipeline": "ci/cd", "continuous integration": "ci/cd",
+};
+
+function normalizeTerm(name: string): string {
+  const lower = name.toLowerCase().trim();
+  return TERM_SYNONYMS[lower] ?? lower;
+}
+
 async function generateJobDescription(args: {
   title: string;
   department: string;
@@ -238,23 +282,32 @@ For "tier": classify each criterion as 1 (must-have skill), 2 (experience depth)
   // always Tier 1, regardless of what the AI classified them as.
   const totalRubricWeight = args.rubric.reduce((sum, r) => sum + r.weight, 0);
   const sortedRubric = [...args.rubric].sort((a, b) => b.weight - a.weight);
+  // Store both raw and synonym-normalized keys so either form matches.
   const rubricTierMap = new Map<string, 1 | 2 | 3>();
   let accumulated = 0;
   for (const r of sortedRubric) {
     accumulated += r.weight;
     const pct = totalRubricWeight > 0 ? accumulated / totalRubricWeight : 1;
     const tier: 1 | 2 | 3 = pct <= 0.60 ? 1 : pct <= 0.85 ? 2 : 3;
-    rubricTierMap.set(r.name.toLowerCase().trim(), tier);
+    const raw = r.name.toLowerCase().trim();
+    rubricTierMap.set(raw, tier);
+    rubricTierMap.set(normalizeTerm(raw), tier); // also store canonical form
   }
 
   const resolveTier = (criterionName: string, aiTier: any): 1 | 2 | 3 => {
-    const key = (criterionName ?? "").toLowerCase().trim();
-    // Exact match first, then partial match as fallback
-    if (rubricTierMap.has(key)) return rubricTierMap.get(key)!;
+    const raw = (criterionName ?? "").toLowerCase().trim();
+    const normalized = normalizeTerm(raw);
+
+    // 1. Exact match on raw name
+    if (rubricTierMap.has(raw)) return rubricTierMap.get(raw)!;
+    // 2. Exact match on normalized name (catches React → react.js, JS → javascript, etc.)
+    if (rubricTierMap.has(normalized)) return rubricTierMap.get(normalized)!;
+    // 3. Partial match — normalized criterion substring of a normalized rubric key or vice versa
     for (const [rubricKey, tier] of rubricTierMap) {
-      if (key.includes(rubricKey) || rubricKey.includes(key)) return tier;
+      const normRubric = normalizeTerm(rubricKey);
+      if (normalized.includes(normRubric) || normRubric.includes(normalized)) return tier;
     }
-    // If no rubric match, accept the AI's value (validated)
+    // 4. AI fallback — validated integer only
     const n = Number(aiTier);
     return n === 1 || n === 2 || n === 3 ? n : 1;
   };
