@@ -9,7 +9,7 @@ import Link from "next/link";
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 type Confidence = "high" | "medium" | "low";
-type ScoreBreakdown = { criterion: string; score: number; maxScore: number; reasoning: string; confidence?: Confidence };
+type ScoreBreakdown = { criterion: string; score: number; maxScore: number; reasoning: string; confidence?: Confidence; tier?: 1 | 2 | 3 };
 type CandidateStage = "applied" | "screened" | "assessed" | "interview" | "offer" | "hired" | "rejected";
 type AssessmentStatus = "not_sent" | "sent" | "completed";
 type HiringDecision = "strong_yes" | "maybe" | "no" | null;
@@ -94,10 +94,26 @@ function confidenceStyle(c: Confidence) {
 
 function overallConfidence(breakdown: ScoreBreakdown[]): Confidence {
   if (breakdown.length === 0) return "medium";
-  const counts = { high: 0, medium: 0, low: 0 };
-  for (const b of breakdown) counts[b.confidence ?? "medium"]++;
-  if (counts.high > breakdown.length / 2) return "high";
-  if (counts.low >= Math.ceil(breakdown.length / 2)) return "low";
+
+  const tier1 = breakdown.filter(b => (b.tier ?? 1) === 1);
+
+  // If any Tier 1 criterion is low, the overall can never be High
+  const tier1HasLow = tier1.some(b => (b.confidence ?? "medium") === "low");
+
+  // Weighted score: high=2, medium=1, low=0
+  // Tier 1 carries 3× weight, Tier 2 carries 2×, Tier 3 carries 1×
+  let totalWeight = 0;
+  let weightedScore = 0;
+  for (const b of breakdown) {
+    const weight = b.tier === 3 ? 1 : b.tier === 2 ? 2 : 3;
+    const score  = b.confidence === "high" ? 2 : b.confidence === "low" ? 0 : 1;
+    totalWeight  += weight;
+    weightedScore += weight * score;
+  }
+
+  const avg = totalWeight > 0 ? weightedScore / totalWeight : 1;
+  if (avg >= 1.4 && !tier1HasLow) return "high";
+  if (avg <= 0.6) return "low";
   return "medium";
 }
 

@@ -18,6 +18,7 @@ export interface IScoreBreakdown {
   maxScore: number;
   reasoning: string;
   confidence: "high" | "medium" | "low";
+  tier: 1 | 2 | 3;
 }
 
 export interface IAssessmentQuestion {
@@ -74,6 +75,7 @@ const ScoreBreakdownSchema = new Schema<IScoreBreakdown>(
     maxScore: { type: Number, required: true },
     reasoning: { type: String, required: true },
     confidence: { type: String, enum: ["high", "medium", "low"], default: "medium" },
+    tier: { type: Number, enum: [1, 2, 3], default: 1 },
   },
   { _id: false }
 );

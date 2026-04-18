@@ -204,7 +204,9 @@ CONFIDENCE DEFINITIONS — set one per criterion:
 - "low": Weak or unclear signal (thin mention, assumed from context, no direct evidence)
 
 Respond with ONLY this JSON (no markdown, no extra text):
-{"name":"full name","email":"email or empty string","aiSummary":"specific 2-3 sentence summary","strengths":["concrete strength 1","concrete strength 2","concrete strength 3"],"redFlags":["only genuine red flags — omit this array or leave empty if none"],"scoreBreakdown":[{"criterion":"exact name from rubric","score":28,"maxScore":35,"reasoning":"one sentence citing specific resume evidence","confidence":"medium"}]}`;
+{"name":"full name","email":"email or empty string","aiSummary":"specific 2-3 sentence summary","strengths":["concrete strength 1","concrete strength 2","concrete strength 3"],"redFlags":["only genuine red flags — omit this array or leave empty if none"],"scoreBreakdown":[{"criterion":"exact name from rubric","score":28,"maxScore":35,"reasoning":"one sentence citing specific resume evidence","confidence":"medium","tier":1}]}
+
+For "tier": classify each criterion as 1 (must-have skill), 2 (experience depth), or 3 (nice-to-have), matching the THREE-TIER SCORING WEIGHTS defined above.`;
 
   const raw = await callNvidiaChatCompletions({
     apiKey: NVIDIA_API_KEY,
@@ -230,12 +232,16 @@ Respond with ONLY this JSON (no markdown, no extra text):
   const validConfidence = (v: any): "high" | "medium" | "low" =>
     v === "high" || v === "low" ? v : "medium";
 
+  const validTier = (v: any): 1 | 2 | 3 =>
+    v === 1 || v === 2 || v === 3 ? v : 1;
+
   const breakdown = (parsed.scoreBreakdown ?? []).map((b: any) => ({
     criterion: b.criterion ?? "",
     score: Number(b.score) || 0,
     maxScore: Number(b.maxScore) || 10,
     reasoning: (b.reasoning ?? "").trim(),
     confidence: validConfidence(b.confidence),
+    tier: validTier(Number(b.tier)),
   })).filter((b: any) => b.criterion.length > 0);
 
   const totalScore = breakdown.reduce((sum: number, b: any) => sum + b.score, 0);
