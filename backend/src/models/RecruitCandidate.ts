@@ -71,6 +71,7 @@ export interface IRecruitCandidate extends Document {
   inTalentPool?: boolean;
   talentPoolNote?: string;
   stageMovedAt?: Date;
+  offerLetter?: string;
   createdAt: Date;
   updatedAt: Date;
 }

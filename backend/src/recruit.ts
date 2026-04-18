@@ -728,7 +728,7 @@ recruitRouter.post("/jobs/:jobId/candidates", async (req, res) => {
       })
         .populate<{ jobId: { title: string } }>("jobId", "title")
         .sort({ updatedAt: -1 })
-        .lean();
+        .lean() as any;
 
       if (prev) {
         previousApplication = {

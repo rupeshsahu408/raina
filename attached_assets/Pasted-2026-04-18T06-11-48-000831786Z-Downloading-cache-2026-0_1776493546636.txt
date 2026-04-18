@@ -1,0 +1,41 @@
+2026-04-18T06:11:48.000831786Z ==> Downloading cache...
+2026-04-18T06:11:48.036696271Z ==> Cloning from https://github.com/rupeshsahu408/raina
+2026-04-18T06:11:49.005846987Z ==> Checking out commit c372178ce02a5839d3f32d56d6278f49004c8f0f in branch main
+2026-04-18T06:11:54.811508246Z ==> Downloaded 130MB in 3s. Extraction took 3s.
+2026-04-18T06:11:59.237556487Z ==> Requesting Node.js version >=20.0.0
+2026-04-18T06:11:59.482987846Z ==> Using Node.js version 25.9.0 via /opt/render/project/src/backend/package.json
+2026-04-18T06:11:59.508122179Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-04-18T06:11:59.623601022Z ==> Running build command 'npm install && npm run build'...
+2026-04-18T06:12:00.557653901Z 
+2026-04-18T06:12:00.557677661Z up to date, audited 284 packages in 863ms
+2026-04-18T06:12:00.557690792Z 
+2026-04-18T06:12:00.557787894Z 48 packages are looking for funding
+2026-04-18T06:12:00.557868756Z   run `npm fund` for details
+2026-04-18T06:12:00.564750044Z 
+2026-04-18T06:12:00.564766305Z 9 vulnerabilities (8 low, 1 critical)
+2026-04-18T06:12:00.564770835Z 
+2026-04-18T06:12:00.564775415Z To address issues that do not require attention, run:
+2026-04-18T06:12:00.564779425Z   npm audit fix
+2026-04-18T06:12:00.564783255Z 
+2026-04-18T06:12:00.564787385Z To address all issues (including breaking changes), run:
+2026-04-18T06:12:00.564792005Z   npm audit fix --force
+2026-04-18T06:12:00.564795775Z 
+2026-04-18T06:12:00.564800325Z Run `npm audit` for details.
+2026-04-18T06:12:00.730514584Z 
+2026-04-18T06:12:00.730530894Z > backend@1.0.0 build
+2026-04-18T06:12:00.730535144Z > tsc -p tsconfig.json
+2026-04-18T06:12:00.730538404Z 
+2026-04-18T06:12:10.140515202Z src/recruit.ts(735,27): error TS2339: Property 'jobId' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[] | ((Omit<...> & { ...; })[] & ... 1 more ... & { ...; }) | (Omit<...> & ... 2 more ... & { ...; })'.
+2026-04-18T06:12:10.140541003Z   Property 'jobId' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[]'.
+2026-04-18T06:12:10.140712357Z src/recruit.ts(736,23): error TS2339: Property 'stage' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[] | ((Omit<...> & { ...; })[] & ... 1 more ... & { ...; }) | (Omit<...> & ... 2 more ... & { ...; })'.
+2026-04-18T06:12:10.140724787Z   Property 'stage' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[]'.
+2026-04-18T06:12:10.140733367Z src/recruit.ts(737,28): error TS2339: Property 'totalScore' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[] | ((Omit<...> & { ...; })[] & ... 1 more ... & { ...; }) | (Omit<...> & ... 2 more ... & { ...; })'.
+2026-04-18T06:12:10.140738967Z   Property 'totalScore' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[]'.
+2026-04-18T06:12:10.140792528Z src/recruit.ts(738,26): error TS2339: Property 'maxScore' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[] | ((Omit<...> & { ...; })[] & ... 1 more ... & { ...; }) | (Omit<...> & ... 2 more ... & { ...; })'.
+2026-04-18T06:12:10.140795718Z   Property 'maxScore' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[]'.
+2026-04-18T06:12:10.140834279Z src/recruit.ts(739,28): error TS2339: Property 'updatedAt' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[] | ((Omit<...> & { ...; })[] & ... 1 more ... & { ...; }) | (Omit<...> & ... 2 more ... & { ...; })'.
+2026-04-18T06:12:10.140838649Z   Property 'updatedAt' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[]'.
+2026-04-18T06:12:10.140845929Z src/recruit.ts(740,27): error TS2339: Property 'aiSummary' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[] | ((Omit<...> & { ...; })[] & ... 1 more ... & { ...; }) | (Omit<...> & ... 2 more ... & { ...; })'.
+2026-04-18T06:12:10.140848129Z   Property 'aiSummary' does not exist on type '(((Omit<unknown, "jobId"> & { jobId: { title: string; }; })[] & { _id: ObjectId; } & { __v: number; }) | (Omit<any, "jobId"> & { jobId: { title: string; }; } & { _id: ObjectId; } & { ...; }))[]'.
+2026-04-18T06:12:10.340837188Z ==> Build failed 😞
+2026-04-18T06:12:10.340858258Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
