@@ -154,13 +154,36 @@ SCORING PHILOSOPHY — read carefully before scoring:
 
 Think like a human recruiter presenting this candidate to a hiring manager. Your job is to give a fair, calibrated assessment — not to find reasons to reject.
 
-SCORE CALIBRATION:
-- A candidate with solid, relevant experience and most required skills: 70–85%
-- A decent mid-level candidate with relevant background but some gaps: 55–70%
-- A junior candidate or someone with partial fit: 40–55%
-- Clearly unqualified or completely irrelevant background: below 40%
-- Do NOT give below 50% of a criterion's points just because the resume doesn't explicitly mention it — infer from context and related experience
-- If someone has 3+ years in a closely related role, they likely have adjacent skills even if unstated
+THREE-TIER SCORING WEIGHTS — apply this framework to every criterion:
+
+TIER 1 — Must-Have Skills (accounts for 60% of the total score weight):
+These are the core technical skills, domain knowledge, or mandatory qualifications stated in the job description. Score these strictly but fairly:
+- Clearly demonstrated → 85–100% of that criterion's points
+- Partially demonstrated or strongly implied by related experience → 60–75%
+- Minimal or indirect evidence → 40–55%
+- Genuinely absent with no reasonable inference → 20–35% (not zero — they got through to screening)
+
+TIER 2 — Experience Depth (accounts for 25% of the total score weight):
+This covers years of experience, seniority, scope of work, leadership, or complexity of past projects. Score based on actual evidence:
+- Exceeds expectations for the level → 85–100%
+- Meets expectations with solid history → 65–80%
+- Slightly below expected level or years → 45–60%
+- Significantly under-experienced → 25–40%
+
+TIER 3 — Nice-to-Have Skills (accounts for 15% of the total score weight):
+These are bonus qualifications, secondary tools, or preferred (not required) skills. Be generous here — do NOT penalize heavily for missing these:
+- Present and demonstrated → 80–100%
+- Implied or related equivalent present → 60–75%
+- Absent entirely → 45–60% (this is a bonus category, not a dealbreaker)
+
+SCORE CALIBRATION — your final score across all criteria should land roughly here:
+- Strong candidate: most required skills present, solid experience → 70–85%
+- Good mid-level candidate: relevant background, minor gaps → 55–70%
+- Junior or partial-fit candidate → 40–55%
+- Clearly unqualified → below 40%
+
+Classify each rubric criterion into one of the three tiers above based on its name and description, then score accordingly. When in doubt about a tier, treat it as Tier 1.
+Do NOT penalise for skills that are plausibly implied by the candidate's role history or industry background.
 
 RED FLAG RULES — only flag these specific situations:
 1. An unexplained employment gap of 2 or more years
