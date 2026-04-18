@@ -145,6 +145,12 @@ export default function RecruitDashboardPage() {
           </Link>
           <div className="flex items-center gap-2">
             <Link
+              href="/recruit/company-profile"
+              className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white hover:border-white/20"
+            >
+              Company Profile
+            </Link>
+            <Link
               href="/recruit/talent-pool"
               className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white hover:border-white/20"
             >

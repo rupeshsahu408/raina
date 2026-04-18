@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { connectMongo } from "./db";
 import { RecruitJob } from "./models/RecruitJob";
 import { RecruitCandidate } from "./models/RecruitCandidate";
+import { RecruitSeekerProfile } from "./models/RecruitSeekerProfile";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 
 export const recruitRouter = express.Router();
@@ -67,6 +68,17 @@ function buildPublicJobQuery(query: any) {
   const minSalary = Number(query.minSalary);
   if (!Number.isNaN(minSalary) && minSalary > 0) {
     filter.$and = [...(filter.$and ?? []), { $or: [{ salaryMax: { $gte: minSalary } }, { salaryMax: { $exists: false } }] }];
+  }
+  const noticePeriod = String(query.noticePeriod ?? "").trim();
+  if (noticePeriod && noticePeriod !== "all") filter.noticePeriod = noticePeriod;
+  const educationRequirement = String(query.educationRequirement ?? "").trim();
+  if (educationRequirement && educationRequirement !== "all") filter.educationRequirement = educationRequirement;
+  const seniority = String(query.seniority ?? "").trim();
+  if (seniority && seniority !== "all") filter.seniority = seniority;
+  const postedAfterDays = Number(query.postedAfterDays);
+  if (!Number.isNaN(postedAfterDays) && postedAfterDays > 0) {
+    const cutoff = new Date(Date.now() - postedAfterDays * 24 * 60 * 60 * 1000);
+    filter.createdAt = { $gte: cutoff };
   }
   return filter;
 }
@@ -1533,6 +1545,93 @@ recruitRouter.get("/jobs/:jobId/export", async (req, res) => {
     return res.send(csv);
   } catch (err: any) {
     console.error("[recruit] GET /export", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Seeker Profile ────────────────────────────────────────────────────────
+
+recruitRouter.get("/seeker/profile", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    const profile = await RecruitSeekerProfile.findOne({ uid }).lean();
+    return res.json({ profile: profile ?? null });
+  } catch (err: any) {
+    console.error("[recruit] GET /seeker/profile", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+recruitRouter.put("/seeker/profile", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    const {
+      name, email, phone, headline, bio, skills, experience, education,
+      preferredJobType, preferredWorkMode, preferredLocation,
+      preferredSalaryMin, preferredSalaryMax, preferredNiche, resumeText,
+    } = req.body;
+    const update: any = {};
+    if (name !== undefined) update.name = String(name).trim();
+    if (email !== undefined) update.email = String(email).trim();
+    if (phone !== undefined) update.phone = String(phone).trim();
+    if (headline !== undefined) update.headline = String(headline).trim();
+    if (bio !== undefined) update.bio = String(bio).trim();
+    if (Array.isArray(skills)) update.skills = skills.map((s: any) => String(s).trim()).filter(Boolean);
+    if (Array.isArray(experience)) update.experience = experience;
+    if (Array.isArray(education)) update.education = education;
+    if (preferredJobType !== undefined) update.preferredJobType = String(preferredJobType).trim();
+    if (preferredWorkMode !== undefined) update.preferredWorkMode = String(preferredWorkMode).trim();
+    if (preferredLocation !== undefined) update.preferredLocation = String(preferredLocation).trim();
+    if (preferredSalaryMin !== undefined) update.preferredSalaryMin = Number(preferredSalaryMin) || undefined;
+    if (preferredSalaryMax !== undefined) update.preferredSalaryMax = Number(preferredSalaryMax) || undefined;
+    if (preferredNiche !== undefined) update.preferredNiche = String(preferredNiche).trim();
+    if (resumeText !== undefined) update.resumeText = String(resumeText).trim();
+    const profile = await RecruitSeekerProfile.findOneAndUpdate(
+      { uid },
+      { $set: update },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+    return res.json({ profile });
+  } catch (err: any) {
+    console.error("[recruit] PUT /seeker/profile", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Applications by email (for applied jobs history) ──────────────────────
+
+recruitPublicRouter.get("/my-applications", async (req, res) => {
+  try {
+    await connectMongo();
+    const email = String(req.query.email ?? "").trim().toLowerCase();
+    if (!email) return res.status(400).json({ error: "email required" });
+    const candidates = await RecruitCandidate.find({ email: new RegExp(`^${email}$`, "i") })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .lean();
+    const jobIds = [...new Set(candidates.map(c => c.jobId.toString()))];
+    const jobs = await RecruitJob.find({ _id: { $in: jobIds } })
+      .select("title companyName location workMode jobType status niche createdAt")
+      .lean();
+    const jobMap: Record<string, any> = {};
+    for (const j of jobs) jobMap[j._id.toString()] = j;
+    const applications = candidates.map(c => ({
+      _id: c._id,
+      jobId: c.jobId,
+      job: jobMap[c.jobId.toString()] ?? null,
+      stage: c.stage,
+      totalScore: c.totalScore,
+      maxScore: c.maxScore,
+      assessmentStatus: c.assessmentStatus,
+      appliedAt: c.createdAt,
+    }));
+    return res.json({ applications });
+  } catch (err: any) {
+    console.error("[recruit] GET /my-applications", err);
     return res.status(500).json({ error: err.message });
   }
 });

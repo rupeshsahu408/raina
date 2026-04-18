@@ -120,7 +120,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           </div>
         </section>
 
-        <ApplyForm jobId={id} />
+        <ApplyForm jobId={id} jobTitle={job.title} companyName={job.companyName} />
       </main>
     </div>
   );
