@@ -1,0 +1,163 @@
+Phase 2: Job Seeker Experience Upgrade
+Goal: make job seekers love the product.
+
+This should be the first active build phase.
+
+Build/improve
+Clean white responsive job search UI
+Better mobile filter experience
+Better job cards
+Better job detail page
+Faster apply flow
+Use saved profile/resume while applying
+Share job link
+Recently viewed jobs
+Better empty states
+Clear badges:
+Freshers allowed
+Verified company
+Remote/hybrid/onsite
+Salary visible
+Urgent hiring later if needed
+Success
+A job seeker should be able to:
+
+Browse jobs easily
+Filter jobs quickly
+Understand a job clearly
+Apply fast
+Save/share jobs
+Phase 3: Free AI Value Layer
+Goal: give users a reason to choose this platform over a normal job board.
+
+For job seekers
+“Why this job matches you”
+Match reasons based on:
+Skills
+Preferred niche
+Location
+Work mode
+Salary expectations
+Experience level
+Missing skills summary
+Resume/profile improvement suggestions
+Profile completeness score
+For recruiters
+Candidate AI summary
+Candidate fit score
+Strengths
+Red flags
+Interview brief
+Rejection email helper
+Some recruiter AI already exists, so this phase should mainly improve job seeker AI value.
+
+Success
+A job seeker should feel:
+“This platform helps me understand which job is right for me.”
+
+Phase 4: Trust & Quality Layer
+Goal: make the platform feel safe and serious, especially for India.
+
+Build/improve
+Verified company badge flow
+Report job/company button
+Salary transparency label
+Job quality score
+Company profile visibility on job detail pages
+Clear recruiter/company information
+Better “fake job/spam” prevention rules
+Manual admin review later if needed
+Success
+Users should feel:
+“This platform is safer and cleaner than random job boards.”
+
+Phase 5: Niche Landing Pages
+Goal: attract users through targeted pages and make the platform feel India-first.
+
+Create dedicated pages for the 6 niches:
+
+AI, Data, Software & Product Tech
+Sales, Business Development & Revenue Roles
+Finance, Accounting, Banking & Fintech
+Healthcare, Pharma & Allied Medical Workforce
+Skilled Blue-Collar, Logistics & Industrial Workforce
+Creative, Marketing, Media & Design
+Each niche page should include:
+
+Niche intro
+Top jobs
+Popular skills
+Common job roles
+Salary guidance later
+Freshers-friendly jobs
+Remote/hybrid jobs where relevant
+CTA:
+Browse jobs
+Create profile
+Post job
+Success
+Each niche should feel like its own focused hiring section, not just a filter.
+
+Phase 6: Growth & Retention Features
+Goal: bring users back after first visit.
+
+Build
+Job alerts based on preferences
+Recommended jobs
+Saved searches
+Application status updates
+Recruiter new-applicant notifications
+Email reminders later
+Shareable job links
+Public job/company pages optimized for sharing
+Success
+Users should return because the product keeps helping them after signup.
+
+Phase 7: Recruiter Quality Upgrade
+Goal: help recruiters succeed without adding paid SaaS complexity.
+
+Build/improve
+Cleaner white responsive recruiter dashboard
+Better applicant pipeline
+Easy candidate notes
+Simple talent pool
+Share job after posting
+Applicant export
+Basic analytics only:
+Total applicants
+Shortlisted
+Interview
+Hired
+Source quality
+Avoid for now
+Team member access
+Enterprise dashboard
+Paid subscriptions
+Complex hiring campaigns
+Advanced CRM features
+Success
+A recruiter should be able to post, share, review, and shortlist candidates easily.
+
+Phase 8: Pre-Monetization Readiness
+Goal: prepare for monetization later without charging users now.
+
+Do not launch paid features yet.
+
+Only prepare structure for future:
+
+Track usage
+Track recruiter activity
+Track popular niches
+Track which jobs get applications
+Track which filters users use most
+Track saved jobs and applications
+Track recruiter conversion signals
+Future monetization options later
+Featured jobs
+Paid job posts
+Recruiter subscriptions
+AI screening credits
+Verified company badge
+Candidate database access
+But for now: everything stays free.
+
