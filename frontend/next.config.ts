@@ -111,9 +111,4 @@ const withPwaConfig = withPWA({
   disable: process.env.NODE_ENV === "development" || isCapacitorExport,
 });
 
-const configWithPWA = withPwaConfig(nextConfig);
-
-export default {
-  ...configWithPWA,
-  allowedDevOrigins,
-};
+export default withPwaConfig(nextConfig) as NextConfig;
