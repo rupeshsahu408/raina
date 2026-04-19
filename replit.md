@@ -11,6 +11,13 @@ A multi-platform AI suite with four AI systems:
 - **Frontend** (`frontend/`) — Next.js 16 PWA, port 5000
 - **Backend** (`backend/`) — Express API, port 8080
 
+## Smart Ledger (Separate SaaS Product)
+- Route: `/ledger`
+- AI-powered accounting system for grain traders (satti digitization)
+- Stack: Google Vision API (OCR) + Gemini 1.5 Flash (intelligence)
+- Phase 1 complete: Landing page with own brand identity (emerald green)
+- Phases 2–8 planned (auth, upload, OCR, analytics, history, export, SaaS)
+
 ## Workflows
 - `Start application` — Next.js frontend (port 5000, webview)
 - `Backend API` — Express backend (port 8080, console)
