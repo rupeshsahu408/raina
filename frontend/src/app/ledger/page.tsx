@@ -511,7 +511,7 @@ export default function LedgerLanding() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold mb-4">
-              <SparklesIcon className="h-3.5 w-3.5" /> Powered by Google Vision + Gemini AI
+              <SparklesIcon className="h-3.5 w-3.5" /> Powered by Gemini AI
             </div>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight mb-4">
               Everything a munim needs.

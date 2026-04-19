@@ -14,52 +14,28 @@ const upload = multer({
   },
 });
 
-const VISION_KEY = process.env.GOOGLE_VISION_API_KEY || "";
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 
 function getUid(req: express.Request): string {
   return (req as any).user?.uid ?? "";
 }
 
-async function runGoogleVisionOCR(imageBase64: string): Promise<string> {
-  const url = `https://vision.googleapis.com/v1/images:annotate?key=${VISION_KEY}`;
-  const body = {
-    requests: [
-      {
-        image: { content: imageBase64 },
-        features: [{ type: "DOCUMENT_TEXT_DETECTION" }],
-      },
-    ],
-  };
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Google Vision error: ${err}`);
-  }
-  const data: any = await res.json();
-  const text: string =
-    data?.responses?.[0]?.fullTextAnnotation?.text ||
-    data?.responses?.[0]?.textAnnotations?.[0]?.description ||
-    "";
-  return text.trim();
-}
-
-async function runGeminiStructure(rawText: string): Promise<any> {
+async function runGeminiOCRAndStructure(imageBase64: string, mimeType: string): Promise<{ rawText: string; structured: any }> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
 
   const prompt = `You are an expert accounting assistant specializing in Indian grain trader records (सट्टी / satti).
 
-A handwritten satti record has been scanned and OCR-extracted. The raw extracted text is below. It may contain:
+You are given an image of a handwritten satti record. Your task is TWO steps in ONE response:
+
+STEP 1 — OCR: Read all text visible in the image carefully. Extract every piece of text, including Hindi/Devanagari text, numbers (English or Hindi numerals like २४, २५), commodity names, rates, quantities, and totals.
+
+STEP 2 — STRUCTURE: Parse the extracted data into clean structured JSON. The image may contain:
 - Hindi commodity names (गेहू, चावल, सरसों, मक्का, दाल, etc.) or English (Gehu, Chawal, Sarson, Maize, Dal, etc.)
 - Numbers in English (24, 25) or Hindi numerals (२४, २५)
 - Rate per quintal, quantity in quintals or kg, and sometimes a calculated total
 - Multiple entries, possibly mixed formatting
 
-Your task is to parse this into clean structured JSON. Rules:
+Rules:
 1. Convert Hindi numerals to English (२४ → 24)
 2. Normalize commodity names to a clean display form (keep the original language but capitalize properly)
 3. For each entry extract: commodity, rate (per quintal, as number), quantity (as number, assume quintals unless kg explicitly mentioned), unit ("qtl" or "kg"), amount (rate × quantity, calculate if missing)
@@ -70,6 +46,7 @@ Your task is to parse this into clean structured JSON. Rules:
 
 Respond ONLY with valid JSON, no explanation, no markdown code blocks. Use this exact structure:
 {
+  "rawText": "all text extracted from the image, as-is",
   "entries": [
     {
       "id": 1,
@@ -105,15 +82,22 @@ Respond ONLY with valid JSON, no explanation, no markdown code blocks. Use this 
     "topCommodity": "string",
     "processingNote": "any important notes about parsing quality"
   }
-}
-
-Raw OCR text to parse:
----
-${rawText}
----`;
+}`;
 
   const body = {
-    contents: [{ parts: [{ text: prompt }] }],
+    contents: [
+      {
+        parts: [
+          { text: prompt },
+          {
+            inline_data: {
+              mime_type: mimeType,
+              data: imageBase64,
+            },
+          },
+        ],
+      },
+    ],
     generationConfig: {
       temperature: 0.1,
       maxOutputTokens: 4096,
@@ -142,20 +126,31 @@ ${rawText}
     .trim();
 
   try {
-    return JSON.parse(cleaned);
+    const parsed = JSON.parse(cleaned);
+    return {
+      rawText: parsed.rawText || "",
+      structured: {
+        entries: parsed.entries || [],
+        grouped: parsed.grouped || {},
+        summary: parsed.summary || {},
+      },
+    };
   } catch {
     return {
-      entries: [],
-      grouped: {},
-      summary: {
-        totalEntries: 0,
-        totalQuantity: 0,
-        totalAmount: 0,
-        commodityCount: 0,
-        topCommodity: "",
-        processingNote: "Could not parse satti data. Please try a clearer photo.",
+      rawText: "",
+      structured: {
+        entries: [],
+        grouped: {},
+        summary: {
+          totalEntries: 0,
+          totalQuantity: 0,
+          totalAmount: 0,
+          commodityCount: 0,
+          topCommodity: "",
+          processingNote: "Could not parse satti data. Please try a clearer photo.",
+        },
+        parseError: true,
       },
-      parseError: true,
     };
   }
 }
@@ -177,22 +172,22 @@ ledgerRouter.post(
         return;
       }
 
-      if (!VISION_KEY) {
-        res.status(500).json({ error: "Google Vision API key not configured." });
-        return;
-      }
       if (!GEMINI_KEY) {
         res.status(500).json({ error: "Gemini API key not configured." });
         return;
       }
 
       const imageBase64 = req.file.buffer.toString("base64");
+      const mimeType = req.file.mimetype;
 
       let rawText = "";
+      let structured: any = {};
       try {
-        rawText = await runGoogleVisionOCR(imageBase64);
+        const result = await runGeminiOCRAndStructure(imageBase64, mimeType);
+        rawText = result.rawText;
+        structured = result.structured;
       } catch (err: any) {
-        res.status(502).json({ error: `OCR failed: ${err.message}` });
+        res.status(502).json({ error: `AI processing failed: ${err.message}` });
         return;
       }
 
@@ -200,14 +195,6 @@ ledgerRouter.post(
         res.status(422).json({
           error: "No text could be extracted from the image. Please use a clearer photo with good lighting.",
         });
-        return;
-      }
-
-      let structured: any = {};
-      try {
-        structured = await runGeminiStructure(rawText);
-      } catch (err: any) {
-        res.status(502).json({ error: `AI analysis failed: ${err.message}` });
         return;
       }
 

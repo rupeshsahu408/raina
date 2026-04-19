@@ -60,7 +60,7 @@ type ProcessingStage = "idle" | "uploading" | "ocr" | "ai" | "done" | "error";
 
 const steps = [
   { icon: "📸", title: "Take a photo", desc: "Photograph your handwritten satti — any paper, any lighting." },
-  { icon: "🤖", title: "AI reads it", desc: "Google Vision extracts the text. Gemini structures it by commodity." },
+  { icon: "🤖", title: "AI reads it", desc: "Gemini AI reads the image and structures it by commodity." },
   { icon: "📊", title: "Get analytics", desc: "See raw entries, grouped totals, and price insights instantly." },
 ];
 
@@ -236,7 +236,7 @@ export default function LedgerDashboard() {
   const stageLabel: Record<ProcessingStage, string> = {
     idle: "",
     uploading: "Preparing image…",
-    ocr: "Reading your satti with Google Vision…",
+    ocr: "Reading your satti with Gemini AI…",
     ai: "Gemini is structuring the entries…",
     done: "Done! Opening results…",
     error: "",
