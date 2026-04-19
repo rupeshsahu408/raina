@@ -52,6 +52,9 @@ function HistoryIcon(p: React.SVGProps<SVGSVGElement>) {
 function CopyIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
 }
+function TrendingUpIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
+}
 
 type SessionSummary = {
   _id: string;
@@ -64,6 +67,30 @@ type SessionSummary = {
   };
   meta: { processedAt: string; fileSizeKb: number };
   createdAt: string;
+};
+
+type BusinessCommodity = {
+  key: string;
+  name: string;
+  totalQuantity: number;
+  totalAmount: number;
+  entryCount: number;
+};
+
+type BusinessPeriod = {
+  key: string;
+  label: string;
+  sessionCount: number;
+  totalEntries: number;
+  totalQuantity: number;
+  totalAmount: number;
+  commodities: BusinessCommodity[];
+};
+
+type BusinessSummary = {
+  daily: BusinessPeriod[];
+  monthly: BusinessPeriod[];
+  yearly: BusinessPeriod[];
 };
 
 type ProcessingStage = "idle" | "uploading" | "ocr" | "ai" | "done" | "error";
@@ -126,6 +153,9 @@ Please be accurate, conservative, and accounting-friendly. The final output shou
 function fmt(n: number) {
   return "₹" + Number(n).toLocaleString("en-IN");
 }
+function fmtQty(n: number) {
+  return `${Number(n).toLocaleString("en-IN")} qtl`;
+}
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -153,6 +183,8 @@ export default function LedgerDashboard() {
   /* Session history state */
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [businessSummary, setBusinessSummary] = useState<BusinessSummary>({ daily: [], monthly: [], yearly: [] });
+  const [businessSummaryLoading, setBusinessSummaryLoading] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo, setFilterTo] = useState("");
@@ -197,9 +229,35 @@ export default function LedgerDashboard() {
     }
   }, [user, searchQ, filterFrom, filterTo]);
 
+  const fetchBusinessSummary = useCallback(async () => {
+    if (!user) return;
+    setBusinessSummaryLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/backend/ledger/business-summary", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBusinessSummary({
+          daily: data.daily || [],
+          monthly: data.monthly || [],
+          yearly: data.yearly || [],
+        });
+      }
+    } catch {
+      setBusinessSummary({ daily: [], monthly: [], yearly: [] });
+    } finally {
+      setBusinessSummaryLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
-    if (user && !loading) fetchSessions();
-  }, [user, loading, fetchSessions]);
+    if (user && !loading) {
+      fetchSessions();
+      fetchBusinessSummary();
+    }
+  }, [user, loading, fetchSessions, fetchBusinessSummary]);
 
   if (loading) {
     return (
@@ -423,6 +481,7 @@ export default function LedgerDashboard() {
       });
       if (!res.ok) throw new Error("Delete failed.");
       setSessions((prev) => prev.filter((s) => s._id !== id));
+      fetchBusinessSummary();
     } catch (err: any) {
       setError(err.message || "Could not delete session.");
     } finally {
@@ -464,6 +523,8 @@ export default function LedgerDashboard() {
       (s.summary?.topCommodity || "").toLowerCase().includes(q)
     );
   });
+
+  const topDaily = businessSummary.daily.slice(0, 10);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -825,6 +886,140 @@ export default function LedgerDashboard() {
               {Math.max(10 - sessions.length, 0)} remaining
             </span>
           </div>
+        </div>
+
+        <div className="afu-3 mb-8 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-5 sm:px-6 py-5 border-b border-gray-100">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <TrendingUpIcon className="h-4 w-4 text-emerald-600" />
+                  <h2 className="text-base font-black text-[#1d2226]">Business Summary Timeline</h2>
+                </div>
+                <p className="text-sm text-gray-500">Daily data rolls into monthly totals, and monthly totals roll into yearly performance automatically.</p>
+              </div>
+              {businessSummaryLoading && (
+                <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600">
+                  <div className="w-3.5 h-3.5 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+                  Updating
+                </div>
+              )}
+            </div>
+          </div>
+
+          {businessSummary.daily.length === 0 && !businessSummaryLoading ? (
+            <div className="px-6 py-10 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center mx-auto mb-4">
+                <HistoryIcon className="h-6 w-6 text-emerald-500" />
+              </div>
+              <p className="text-sm font-bold text-gray-500 mb-1">No business summary yet</p>
+              <p className="text-xs text-gray-400">Upload sattis and Smart Ledger will build daily, monthly, and yearly summaries automatically.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              <div className="p-5 sm:p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Top</p>
+                    <h3 className="text-sm font-black text-[#1d2226]">Daily Entries</h3>
+                  </div>
+                  <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-3 py-1 rounded-full">{businessSummary.daily.length} days</span>
+                </div>
+                <div className="space-y-3">
+                  {topDaily.map((day) => (
+                    <div key={day.key} className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                        <div>
+                          <p className="text-sm font-black text-[#1d2226]">{day.label}</p>
+                          <p className="text-xs text-gray-400">{day.sessionCount} uploads · {day.totalEntries} entries</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="text-xs font-bold text-emerald-700 bg-white border border-emerald-100 px-2.5 py-1 rounded-lg">{fmtQty(day.totalQuantity)}</span>
+                          <span className="text-xs font-bold text-emerald-700 bg-white border border-emerald-100 px-2.5 py-1 rounded-lg">{fmt(day.totalAmount)}</span>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {day.commodities.slice(0, 6).map((commodity) => (
+                          <div key={commodity.key} className="bg-white rounded-xl border border-gray-100 px-3 py-2">
+                            <p className="text-xs font-bold text-[#1d2226] truncate">{commodity.name}</p>
+                            <p className="text-xs text-gray-400">{fmtQty(commodity.totalQuantity)}</p>
+                            <p className="text-xs font-bold text-emerald-600">{fmt(commodity.totalAmount)}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-5 sm:p-6">
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">Middle</p>
+                  <h3 className="text-sm font-black text-[#1d2226]">Monthly Summary</h3>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {businessSummary.monthly.map((month) => (
+                    <div key={month.key} className="rounded-2xl border border-blue-100 bg-blue-50/40 p-4">
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <p className="text-sm font-black text-[#1d2226]">{month.label}</p>
+                          <p className="text-xs text-gray-500">Grand total: {fmtQty(month.totalQuantity)} · {fmt(month.totalAmount)}</p>
+                        </div>
+                        <span className="text-xs bg-white text-blue-700 border border-blue-100 font-bold px-2.5 py-1 rounded-lg">{month.sessionCount} uploads</span>
+                      </div>
+                      <div className="space-y-2">
+                        {month.commodities.slice(0, 8).map((commodity) => (
+                          <div key={commodity.key} className="flex items-center justify-between gap-3 bg-white rounded-xl border border-blue-100 px-3 py-2">
+                            <span className="text-xs font-bold text-[#1d2226] truncate">{commodity.name}</span>
+                            <span className="text-xs text-gray-500 flex-shrink-0">{fmtQty(commodity.totalQuantity)}</span>
+                            <span className="text-xs font-bold text-blue-700 flex-shrink-0">{fmt(commodity.totalAmount)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-5 sm:p-6">
+                <div className="mb-4">
+                  <p className="text-xs font-bold text-purple-600 uppercase tracking-wider">Bottom</p>
+                  <h3 className="text-sm font-black text-[#1d2226]">Yearly Summary</h3>
+                </div>
+                <div className="space-y-4">
+                  {businessSummary.yearly.map((year) => (
+                    <div key={year.key} className="rounded-2xl border border-purple-100 bg-purple-50/50 p-4 sm:p-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                        <div>
+                          <p className="text-xs text-purple-600 font-bold uppercase tracking-wider">Year</p>
+                          <p className="text-2xl font-black text-[#1d2226]">{year.label}</p>
+                        </div>
+                        <div className="bg-white rounded-2xl border border-purple-100 px-4 py-3">
+                          <p className="text-xs text-gray-400 font-semibold">Grand Total Quantity</p>
+                          <p className="text-lg font-black text-purple-700">{fmtQty(year.totalQuantity)}</p>
+                        </div>
+                        <div className="bg-white rounded-2xl border border-purple-100 px-4 py-3">
+                          <p className="text-xs text-gray-400 font-semibold">Grand Total Payment</p>
+                          <p className="text-lg font-black text-purple-700">{fmt(year.totalAmount)}</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                        {year.commodities.map((commodity) => (
+                          <div key={commodity.key} className="bg-white rounded-xl border border-purple-100 px-3 py-2">
+                            <p className="text-xs font-bold text-[#1d2226] truncate">{commodity.name}</p>
+                            <div className="flex items-center justify-between gap-2 mt-1">
+                              <span className="text-xs text-gray-500">{fmtQty(commodity.totalQuantity)}</span>
+                              <span className="text-xs font-bold text-purple-700">{fmt(commodity.totalAmount)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Session History ── */}

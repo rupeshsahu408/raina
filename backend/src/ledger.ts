@@ -12,6 +12,85 @@ function getUid(req: express.Request): string {
   return (req as any).user?.uid ?? "";
 }
 
+type BusinessCommodityTotal = {
+  key: string;
+  name: string;
+  totalQuantity: number;
+  totalAmount: number;
+  entryCount: number;
+};
+
+type BusinessBucket = {
+  key: string;
+  label: string;
+  sessionCount: number;
+  totalEntries: number;
+  totalQuantity: number;
+  totalAmount: number;
+  commodities: Record<string, BusinessCommodityTotal>;
+};
+
+function normalizeCommodityKey(value: string) {
+  return (value || "unknown").toLowerCase().trim().replace(/\s+/g, "_");
+}
+
+function createBusinessBucket(key: string, label: string): BusinessBucket {
+  return {
+    key,
+    label,
+    sessionCount: 0,
+    totalEntries: 0,
+    totalQuantity: 0,
+    totalAmount: 0,
+    commodities: {},
+  };
+}
+
+function addCommodityToBucket(bucket: BusinessBucket, name: string, quantity: number, amount: number, entryCount = 0) {
+  const displayName = name || "Unknown";
+  const key = normalizeCommodityKey(displayName);
+  if (!bucket.commodities[key]) {
+    bucket.commodities[key] = {
+      key,
+      name: displayName,
+      totalQuantity: 0,
+      totalAmount: 0,
+      entryCount: 0,
+    };
+  }
+  bucket.commodities[key].totalQuantity += Number(quantity) || 0;
+  bucket.commodities[key].totalAmount += Number(amount) || 0;
+  bucket.commodities[key].entryCount += Number(entryCount) || 0;
+}
+
+function addBucketToBucket(target: BusinessBucket, source: BusinessBucket) {
+  target.sessionCount += source.sessionCount;
+  target.totalEntries += source.totalEntries;
+  target.totalQuantity += source.totalQuantity;
+  target.totalAmount += source.totalAmount;
+  for (const commodity of Object.values(source.commodities)) {
+    addCommodityToBucket(target, commodity.name, commodity.totalQuantity, commodity.totalAmount, commodity.entryCount);
+  }
+}
+
+function finalizeBusinessBucket(bucket: BusinessBucket) {
+  return {
+    key: bucket.key,
+    label: bucket.label,
+    sessionCount: bucket.sessionCount,
+    totalEntries: Math.round(bucket.totalEntries * 100) / 100,
+    totalQuantity: Math.round(bucket.totalQuantity * 100) / 100,
+    totalAmount: Math.round(bucket.totalAmount * 100) / 100,
+    commodities: Object.values(bucket.commodities)
+      .map((commodity) => ({
+        ...commodity,
+        totalQuantity: Math.round(commodity.totalQuantity * 100) / 100,
+        totalAmount: Math.round(commodity.totalAmount * 100) / 100,
+      }))
+      .sort((a, b) => b.totalAmount - a.totalAmount),
+  };
+}
+
 const SATTI_PROMPT = `You are an expert accounting assistant specializing in Indian grain trader records (सट्टी / satti).
 
 You are given an image of a handwritten satti record. Your task is TWO steps in ONE response:
@@ -437,6 +516,83 @@ ledgerRouter.get("/sessions", async (req: express.Request, res: express.Response
     res.json({ sessions });
   } catch (err: any) {
     console.error("[ledger/sessions GET]", err);
+    res.status(500).json({ error: err.message || "Unexpected error." });
+  }
+});
+
+ledgerRouter.get("/business-summary", async (req: express.Request, res: express.Response): Promise<void> => {
+  try {
+    const uid = getUid(req);
+    if (!uid) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+    await connectMongo();
+
+    const sessions = await LedgerSession.find({ uid })
+      .select("_id grouped summary createdAt")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const dailyMap: Record<string, BusinessBucket> = {};
+    const monthlyMap: Record<string, BusinessBucket> = {};
+    const yearlyMap: Record<string, BusinessBucket> = {};
+
+    for (const session of sessions) {
+      const createdAt = new Date(session.createdAt);
+      const dayKey = createdAt.toISOString().slice(0, 10);
+      const dayLabel = createdAt.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+      if (!dailyMap[dayKey]) dailyMap[dayKey] = createBusinessBucket(dayKey, dayLabel);
+
+      const dayBucket = dailyMap[dayKey];
+      dayBucket.sessionCount += 1;
+
+      const grouped = session.grouped && typeof session.grouped === "object" ? session.grouped : {};
+      const groupedValues = Object.entries(grouped);
+
+      if (groupedValues.length > 0) {
+        for (const [key, value] of groupedValues) {
+          const group: any = value || {};
+          const name = group.displayName || key;
+          const quantity = Number(group.totalQuantity ?? group.totalQty ?? 0) || 0;
+          const amount = Number(group.totalAmount ?? group.totalAmt ?? 0) || 0;
+          const entryCount = Array.isArray(group.entries) ? group.entries.length : 0;
+          addCommodityToBucket(dayBucket, name, quantity, amount, entryCount);
+        }
+      } else {
+        addCommodityToBucket(
+          dayBucket,
+          session.summary?.topCommodity || "Uncategorized",
+          Number(session.summary?.totalQuantity) || 0,
+          Number(session.summary?.totalAmount) || 0,
+          Number(session.summary?.totalEntries) || 0
+        );
+      }
+
+      dayBucket.totalEntries += Number(session.summary?.totalEntries) || 0;
+      dayBucket.totalQuantity += Number(session.summary?.totalQuantity) || 0;
+      dayBucket.totalAmount += Number(session.summary?.totalAmount) || 0;
+    }
+
+    for (const day of Object.values(dailyMap)) {
+      const monthKey = day.key.slice(0, 7);
+      const monthDate = new Date(`${monthKey}-01T00:00:00.000Z`);
+      const monthLabel = monthDate.toLocaleDateString("en-IN", { month: "long", year: "numeric" });
+      if (!monthlyMap[monthKey]) monthlyMap[monthKey] = createBusinessBucket(monthKey, monthLabel);
+      addBucketToBucket(monthlyMap[monthKey], day);
+    }
+
+    for (const month of Object.values(monthlyMap)) {
+      const yearKey = month.key.slice(0, 4);
+      if (!yearlyMap[yearKey]) yearlyMap[yearKey] = createBusinessBucket(yearKey, yearKey);
+      addBucketToBucket(yearlyMap[yearKey], month);
+    }
+
+    res.json({
+      daily: Object.values(dailyMap).sort((a, b) => b.key.localeCompare(a.key)).map(finalizeBusinessBucket),
+      monthly: Object.values(monthlyMap).sort((a, b) => b.key.localeCompare(a.key)).map(finalizeBusinessBucket),
+      yearly: Object.values(yearlyMap).sort((a, b) => b.key.localeCompare(a.key)).map(finalizeBusinessBucket),
+    });
+  } catch (err: any) {
+    console.error("[ledger/business-summary GET]", err);
     res.status(500).json({ error: err.message || "Unexpected error." });
   }
 });
