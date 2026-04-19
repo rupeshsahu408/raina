@@ -314,11 +314,19 @@ ledgerRouter.post(
         imageBase64 = processed.toString("base64");
         console.log(`[ledger/upload] sharp re-encoded: ${rawBuf.length}B → ${processed.length}B (base64 ${imageBase64.length} chars)`);
       } catch (sharpErr: any) {
-        console.error("[ledger/upload] sharp failed:", sharpErr.message);
-        res.status(400).json({
-          error: "Could not read the image file. Please upload a JPEG, PNG, or WebP photo.",
-        });
-        return;
+        console.error("[ledger/upload] sharp failed, falling back to raw buffer:", sharpErr.message);
+        // Fallback: use the original buffer directly if it's a supported mime type
+        const fileMime = req.file.mimetype || "";
+        const supportedMimes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+        if (!supportedMimes.includes(fileMime)) {
+          res.status(400).json({
+            error: "Could not read the image file. Please upload a JPEG, PNG, or WebP photo.",
+          });
+          return;
+        }
+        imageBase64 = rawBuf.toString("base64");
+        mimeType = fileMime;
+        console.log(`[ledger/upload] using raw buffer fallback: ${rawBuf.length}B, mime: ${mimeType}`);
       }
 
       let rawText = "";
