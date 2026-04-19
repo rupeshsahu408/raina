@@ -9,6 +9,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   BarChart3,
+  Calculator,
   CalendarDays,
   CheckCircle2,
   ChevronRight,
@@ -122,10 +123,148 @@ function EntryCard({ entry, onEdit }: { entry: LedgerEntry; onEdit: (entry: Ledg
   );
 }
 
+function CalculatorPanel({ compact = false }: { compact?: boolean }) {
+  const [display, setDisplay] = useState('0');
+  const [storedValue, setStoredValue] = useState<number | null>(null);
+  const [operator, setOperator] = useState<string | null>(null);
+  const [waitingForOperand, setWaitingForOperand] = useState(false);
+
+  const calculate = (first: number, second: number, selectedOperator: string) => {
+    if (selectedOperator === '+') return first + second;
+    if (selectedOperator === '-') return first - second;
+    if (selectedOperator === '×') return first * second;
+    if (selectedOperator === '÷') return second === 0 ? first : first / second;
+    return second;
+  };
+
+  const formatDisplay = (value: number) => {
+    if (!Number.isFinite(value)) return 'Error';
+    return Number(value.toFixed(8)).toLocaleString('en-IN');
+  };
+
+  const inputDigit = (digit: string) => {
+    if (waitingForOperand) {
+      setDisplay(digit);
+      setWaitingForOperand(false);
+      return;
+    }
+    setDisplay(display === '0' ? digit : `${display}${digit}`);
+  };
+
+  const inputDecimal = () => {
+    if (waitingForOperand) {
+      setDisplay('0.');
+      setWaitingForOperand(false);
+      return;
+    }
+    if (!display.includes('.')) setDisplay(`${display}.`);
+  };
+
+  const clear = () => {
+    setDisplay('0');
+    setStoredValue(null);
+    setOperator(null);
+    setWaitingForOperand(false);
+  };
+
+  const backspace = () => {
+    if (waitingForOperand) return;
+    setDisplay(display.length > 1 ? display.slice(0, -1) : '0');
+  };
+
+  const toggleSign = () => {
+    setDisplay(display.startsWith('-') ? display.slice(1) : `-${display}`);
+  };
+
+  const percentage = () => {
+    const value = Number(display.replace(/,/g, ''));
+    setDisplay(formatDisplay(value / 100));
+  };
+
+  const chooseOperator = (nextOperator: string) => {
+    const inputValue = Number(display.replace(/,/g, ''));
+
+    if (storedValue === null) {
+      setStoredValue(inputValue);
+    } else if (operator) {
+      const result = calculate(storedValue, inputValue, operator);
+      setStoredValue(result);
+      setDisplay(formatDisplay(result));
+    }
+
+    setOperator(nextOperator);
+    setWaitingForOperand(true);
+  };
+
+  const equals = () => {
+    if (storedValue === null || !operator) return;
+    const inputValue = Number(display.replace(/,/g, ''));
+    const result = calculate(storedValue, inputValue, operator);
+    setDisplay(formatDisplay(result));
+    setStoredValue(null);
+    setOperator(null);
+    setWaitingForOperand(true);
+  };
+
+  const keyClass = "h-12 rounded-2xl text-base font-bold";
+  const buttons = [
+    { label: 'C', action: clear, style: 'bg-slate-100 text-slate-700 hover:bg-slate-200' },
+    { label: '±', action: toggleSign, style: 'bg-slate-100 text-slate-700 hover:bg-slate-200' },
+    { label: '%', action: percentage, style: 'bg-slate-100 text-slate-700 hover:bg-slate-200' },
+    { label: '÷', action: () => chooseOperator('÷'), style: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' },
+    { label: '7', action: () => inputDigit('7') },
+    { label: '8', action: () => inputDigit('8') },
+    { label: '9', action: () => inputDigit('9') },
+    { label: '×', action: () => chooseOperator('×'), style: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' },
+    { label: '4', action: () => inputDigit('4') },
+    { label: '5', action: () => inputDigit('5') },
+    { label: '6', action: () => inputDigit('6') },
+    { label: '-', action: () => chooseOperator('-'), style: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' },
+    { label: '1', action: () => inputDigit('1') },
+    { label: '2', action: () => inputDigit('2') },
+    { label: '3', action: () => inputDigit('3') },
+    { label: '+', action: () => chooseOperator('+'), style: 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' },
+    { label: '0', action: () => inputDigit('0'), span: 'col-span-2' },
+    { label: '.', action: inputDecimal },
+    { label: '=', action: equals, style: 'bg-[#123f31] text-white hover:bg-[#0d3026]' },
+  ];
+
+  return (
+    <Card className="rounded-3xl border-0 bg-white shadow-sm ring-1 ring-slate-100">
+      <CardContent className={compact ? "p-4" : "p-5"}>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="font-bold text-slate-950">Quick Calculator</h3>
+            <p className="text-sm text-slate-500">For rate, quantity, commission, and cash checks</p>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
+            <Calculator className="h-5 w-5" />
+          </div>
+        </div>
+        <div className="mt-4 rounded-3xl bg-[#123f31] px-4 py-4 text-right text-white">
+          <p className="text-xs text-emerald-100">{storedValue !== null && operator ? `${formatDisplay(storedValue)} ${operator}` : 'Ready'}</p>
+          <p className="mt-1 min-h-10 break-all text-3xl font-bold tracking-tight">{display}</p>
+        </div>
+        <div className="mt-3 grid grid-cols-4 gap-2">
+          {buttons.map((button) => (
+            <Button key={button.label} className={`${keyClass} ${button.span || ''} ${button.style || 'bg-slate-50 text-slate-950 hover:bg-slate-100'}`} onClick={button.action}>
+              {button.label}
+            </Button>
+          ))}
+        </div>
+        <Button variant="ghost" className="mt-3 h-9 w-full rounded-full text-slate-500 hover:text-slate-900" onClick={backspace}>
+          Backspace
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function MobileEditWireframe() {
   const [entries, setEntries] = useState<LedgerEntry[]>(INITIAL_ENTRIES);
   const [editingEntry, setEditingEntry] = useState<LedgerEntry | null>(null);
   const [page, setPage] = useState<'dashboard' | 'timeline'>('dashboard');
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
 
   const totalAmount = entries.reduce((sum, entry) => sum + entry.rate * entry.quantity, 0);
   const reviewCount = entries.filter((entry) => entry.status === 'needs_review').length;
@@ -286,7 +425,7 @@ export function MobileEditWireframe() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
             <Button onClick={() => setPage('timeline')} className="h-auto justify-between rounded-3xl border border-emerald-100 bg-white p-5 text-left text-slate-950 shadow-sm hover:bg-white">
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
@@ -295,6 +434,19 @@ export function MobileEditWireframe() {
                 <div>
                   <p className="text-base font-bold">Performance Timeline</p>
                   <p className="mt-1 text-xs font-normal text-slate-500 sm:text-sm">Open the separate daily, monthly, yearly summary page</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-slate-400" />
+            </Button>
+
+            <Button onClick={() => setCalculatorOpen(true)} className="h-auto justify-between rounded-3xl border border-emerald-100 bg-white p-5 text-left text-slate-950 shadow-sm hover:bg-white lg:hidden">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
+                  <Calculator className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-base font-bold">Quick Calculator</p>
+                  <p className="mt-1 text-xs font-normal text-slate-500 sm:text-sm">Open calculator while reviewing entries</p>
                 </div>
               </div>
               <ChevronRight className="h-5 w-5 text-slate-400" />
@@ -348,6 +500,10 @@ export function MobileEditWireframe() {
                 </div>
               </CardContent>
             </Card>
+
+            <div className="hidden lg:block">
+              <CalculatorPanel compact />
+            </div>
 
             <Card className="rounded-3xl border-0 bg-white shadow-sm ring-1 ring-slate-100">
               <CardContent className="p-5">
@@ -433,6 +589,21 @@ export function MobileEditWireframe() {
               Save
             </Button>
           </div>
+        </SheetContent>
+      </Sheet>
+
+      <Sheet open={calculatorOpen} onOpenChange={setCalculatorOpen}>
+        <SheetContent side="bottom" className="mx-auto max-w-md rounded-t-[2rem] border-0 bg-[#f4f8f5] px-4 pb-8 pt-4 sm:max-w-md">
+          <div className="mb-3 flex items-center justify-between">
+            <div>
+              <SheetTitle className="text-xl font-bold">Quick Calculator</SheetTitle>
+              <SheetDescription>Use it without leaving the ledger review flow.</SheetDescription>
+            </div>
+            <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setCalculatorOpen(false)}>
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+          <CalculatorPanel compact />
         </SheetContent>
       </Sheet>
     </div>
