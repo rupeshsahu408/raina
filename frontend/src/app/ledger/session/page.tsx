@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { pdfToImageBlob } from "@/lib/pdfToImage";
 import { useLedgerAuth } from "@/contexts/LedgerAuthContext";
 import {
   PieChart,
@@ -42,6 +43,7 @@ type GroupEntry = {
 };
 
 type SessionData = {
+  sessionId?: string;
   rawText: string;
   entries: Entry[];
   grouped: Record<string, GroupEntry>;
@@ -134,6 +136,8 @@ const CustomTooltipBar = ({ active, payload, label }: any) => {
   return null;
 };
 
+type AppendStage = "idle" | "uploading" | "processing" | "done" | "error";
+
 export default function LedgerSession() {
   const { user, loading } = useLedgerAuth();
   const router = useRouter();
@@ -146,6 +150,15 @@ export default function LedgerSession() {
   /* Export state */
   const [exportMsg, setExportMsg] = useState<string | null>(null);
   const exportMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /* Append-more state */
+  const [appendOpen, setAppendOpen] = useState(false);
+  const [appendStage, setAppendStage] = useState<AppendStage>("idle");
+  const [appendError, setAppendError] = useState<string | null>(null);
+  const [appendIsPdf, setAppendIsPdf] = useState(false);
+  const [appendCount, setAppendCount] = useState(0);
+  const appendFileRef = useRef<HTMLInputElement>(null);
+  const appendCamRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!loading && !user) { router.replace("/ledger/login"); return; }
@@ -166,6 +179,84 @@ export default function LedgerSession() {
         <div className="w-6 h-6 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
       </div>
     );
+  }
+
+  /* ── Append: convert Blob → base64 data URL ── */
+  function blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        resolve(dataUrl.split(",")[1]);
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  /* ── Append: process a file selected by the user ── */
+  async function appendProcessFile(file: File) {
+    if (!data?.sessionId) {
+      setAppendError("This session cannot be updated (no session ID). Please start a new upload from the dashboard.");
+      return;
+    }
+
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf && !file.type.startsWith("image/")) {
+      setAppendError("Please upload an image (JPG, PNG, WebP) or a PDF file.");
+      return;
+    }
+
+    setAppendError(null);
+    setAppendIsPdf(isPdf);
+    setAppendStage("uploading");
+
+    try {
+      let imageBlob: Blob;
+      if (isPdf) {
+        imageBlob = await pdfToImageBlob(file);
+      } else {
+        imageBlob = file;
+      }
+
+      const imageBase64 = await blobToBase64(imageBlob);
+      setAppendStage("processing");
+
+      const token = await user!.getIdToken();
+      const res = await fetch(`/backend/ledger/sessions/${data.sessionId}/append`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ image: imageBase64, mimeType: "image/jpeg" }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || "Failed to process. Please try again.");
+
+      const updated: SessionData = {
+        ...data,
+        rawText: result.rawText,
+        entries: result.entries,
+        grouped: result.grouped,
+        summary: result.summary,
+      };
+      setData(updated);
+      setEntries(result.entries || []);
+      sessionStorage.setItem("ledger_session", JSON.stringify(updated));
+      setAppendCount((c) => c + 1);
+      setAppendStage("done");
+      setTimeout(() => {
+        setAppendStage("idle");
+        setAppendOpen(false);
+      }, 1800);
+    } catch (err: any) {
+      setAppendStage("error");
+      setAppendError(err.message || "Something went wrong. Please try again.");
+    }
+  }
+
+  function appendHandleFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    appendProcessFile(files[0]);
   }
 
   function startEdit(entry: Entry) {
@@ -555,6 +646,12 @@ export default function LedgerSession() {
           <button className={tabClass("summary")} onClick={() => setTab("summary")}>📊 Summary</button>
         </div>
 
+        {/* Hidden file inputs for append feature */}
+        <input ref={appendFileRef} type="file" accept="image/*,.pdf" className="hidden"
+          onChange={(e) => appendHandleFiles(e.target.files)} />
+        <input ref={appendCamRef} type="file" accept="image/*" capture="environment" className="hidden"
+          onChange={(e) => appendHandleFiles(e.target.files)} />
+
         {/* ── RAW VIEW ── */}
         {tab === "raw" && (
           <div className="afu space-y-3">
@@ -667,6 +764,97 @@ export default function LedgerSession() {
             </div>
           </div>
         )}
+
+        {/* ── ADD MORE DATA ── */}
+        <div className="afu mt-4">
+          {!appendOpen ? (
+            <button
+              onClick={() => { setAppendOpen(true); setAppendError(null); setAppendStage("idle"); }}
+              className="w-full flex items-center justify-center gap-2.5 px-5 py-4 rounded-2xl border-2 border-dashed border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50 text-emerald-600 font-semibold text-sm transition-all group"
+            >
+              <span className="w-7 h-7 rounded-xl bg-emerald-100 group-hover:bg-emerald-200 flex items-center justify-center transition-colors text-lg font-bold leading-none">+</span>
+              Add More Data
+              {appendCount > 0 && (
+                <span className="ml-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
+                  {appendCount} batch{appendCount > 1 ? "es" : ""} added
+                </span>
+              )}
+            </button>
+          ) : (
+            <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm overflow-hidden">
+              <div className="px-5 py-3.5 border-b border-gray-50 flex items-center justify-between bg-emerald-50">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-lg bg-emerald-600 flex items-center justify-center text-white font-bold text-sm">+</span>
+                  <p className="text-sm font-bold text-[#1d2226]">Add More Satti Data</p>
+                  <p className="text-xs text-gray-400">New entries will be merged with existing ones</p>
+                </div>
+                {appendStage === "idle" || appendStage === "error" ? (
+                  <button onClick={() => setAppendOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg leading-none px-1">✕</button>
+                ) : null}
+              </div>
+
+              <div className="p-5">
+                {appendStage === "idle" || appendStage === "error" ? (
+                  <div className="space-y-4">
+                    {appendError && (
+                      <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm text-red-600 flex items-start gap-2">
+                        <AlertIcon className="h-4 w-4 mt-0.5 shrink-0" />
+                        {appendError}
+                      </div>
+                    )}
+                    <p className="text-sm text-gray-500">
+                      Upload the next satti image or PDF. It will be processed by AI and automatically merged with the {entries.length} existing {entries.length === 1 ? "entry" : "entries"}.
+                    </p>
+                    <div className="flex gap-3 flex-wrap">
+                      <button
+                        onClick={() => appendFileRef.current?.click()}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-all hover:-translate-y-0.5 shadow-sm"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                        Upload Photo / PDF
+                      </button>
+                      <button
+                        onClick={() => appendCamRef.current?.click()}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-emerald-50 text-emerald-700 font-bold text-sm rounded-xl border border-emerald-200 transition-all hover:-translate-y-0.5"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        Take Photo
+                      </button>
+                    </div>
+                  </div>
+                ) : appendStage === "uploading" ? (
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="w-5 h-5 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-[#1d2226]">
+                        {appendIsPdf ? "Converting PDF to image…" : "Preparing image…"}
+                      </p>
+                      <p className="text-xs text-gray-400">This may take a moment</p>
+                    </div>
+                  </div>
+                ) : appendStage === "processing" ? (
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="w-5 h-5 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin shrink-0" />
+                    <div>
+                      <p className="text-sm font-semibold text-[#1d2226]">AI is reading your satti…</p>
+                      <p className="text-xs text-gray-400">Extracting and merging entries</p>
+                    </div>
+                  </div>
+                ) : appendStage === "done" ? (
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                      <CheckCircleIcon className="h-4 w-4 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-700">Data merged successfully!</p>
+                      <p className="text-xs text-gray-400">Table updated · {entries.length} total entries now</p>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* ── GROUPED VIEW ── */}
         {tab === "grouped" && (

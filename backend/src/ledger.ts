@@ -483,3 +483,162 @@ ledgerRouter.delete("/sessions/:id", async (req: express.Request, res: express.R
     res.status(500).json({ error: err.message || "Unexpected error." });
   }
 });
+
+/* ── Rebuild grouped & summary from a combined entries array ── */
+function rebuildGroupedAndSummary(allEntries: any[]): { grouped: Record<string, any>; summary: any } {
+  const grouped: Record<string, any> = {};
+
+  for (const entry of allEntries) {
+    const key = (entry.commodityKey || entry.commodity || "unknown").toLowerCase().replace(/\s+/g, "_");
+    if (!grouped[key]) {
+      grouped[key] = {
+        displayName: entry.commodity || key,
+        entries: [],
+        totalQuantity: 0,
+        totalAmount: 0,
+        _rateQtyPairs: [] as { rate: number; qty: number }[],
+      };
+    }
+    grouped[key].entries.push(entry.id);
+    grouped[key].totalQuantity += Number(entry.quantity) || 0;
+    grouped[key].totalAmount += Number(entry.amount) || 0;
+    grouped[key]._rateQtyPairs.push({ rate: Number(entry.rate) || 0, qty: Number(entry.quantity) || 0 });
+  }
+
+  for (const key of Object.keys(grouped)) {
+    const g = grouped[key];
+    const rates = g._rateQtyPairs.map((p: any) => p.rate).filter((r: number) => r > 0);
+    g.minRate = rates.length > 0 ? Math.min(...rates) : 0;
+    g.maxRate = rates.length > 0 ? Math.max(...rates) : 0;
+    g.avgRate = g.totalQuantity > 0 ? Math.round(g.totalAmount / g.totalQuantity) : 0;
+
+    const rateMap: Record<number, number> = {};
+    for (const p of g._rateQtyPairs) {
+      rateMap[p.rate] = (rateMap[p.rate] || 0) + p.qty;
+    }
+    g.priceDistribution = Object.entries(rateMap).map(([rate, qty]) => ({
+      rate: Number(rate),
+      quantity: qty,
+      percentage: g.totalQuantity > 0 ? Math.round(((qty as number) / g.totalQuantity) * 100) : 0,
+    }));
+
+    delete g._rateQtyPairs;
+  }
+
+  const totalQuantity = allEntries.reduce((s, e) => s + (Number(e.quantity) || 0), 0);
+  const totalAmount = allEntries.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  const topCommodityKey = Object.keys(grouped).sort(
+    (a, b) => grouped[b].totalAmount - grouped[a].totalAmount
+  )[0] || "";
+
+  const summary = {
+    totalEntries: allEntries.length,
+    totalQuantity,
+    totalAmount,
+    commodityCount: Object.keys(grouped).length,
+    topCommodity: grouped[topCommodityKey]?.displayName || "",
+    processingNote: `Merged data from multiple uploads.`,
+  };
+
+  return { grouped, summary };
+}
+
+/* ── Append more data to an existing session ── */
+ledgerRouter.post(
+  "/sessions/:id/append",
+  express.json({ limit: "10mb" }),
+  async (req: express.Request, res: express.Response): Promise<void> => {
+    try {
+      const uid = getUid(req);
+      if (!uid) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+      if (!NVIDIA_KEY) { res.status(500).json({ error: "NVIDIA API key not configured." }); return; }
+
+      await connectMongo();
+      const session = await LedgerSession.findOne({ _id: req.params.id, uid });
+      if (!session) { res.status(404).json({ error: "Session not found." }); return; }
+
+      const { image: imageBase64Input, mimeType: inputMime } = req.body || {};
+      if (!imageBase64Input || typeof imageBase64Input !== "string") {
+        res.status(400).json({ error: "No image provided." });
+        return;
+      }
+
+      const rawBuf = Buffer.from(imageBase64Input, "base64");
+      if (!rawBuf || rawBuf.length < 10) {
+        res.status(400).json({ error: "Uploaded image is empty or too small." });
+        return;
+      }
+
+      console.log(`[ledger/append] received base64 image: ${rawBuf.length}B (mime: ${inputMime})`);
+
+      let imageBase64: string;
+      try {
+        const pipeline = sharp(rawBuf).rotate().resize({ width: 1280, height: 1280, fit: "inside", withoutEnlargement: true });
+        let processed: Buffer | null = null;
+        for (const quality of [90, 82, 72, 60]) {
+          const candidate = await pipeline.clone().jpeg({ quality, progressive: false }).toBuffer();
+          processed = candidate;
+          if (candidate.length <= 130 * 1024) break;
+        }
+        imageBase64 = processed!.toString("base64");
+      } catch {
+        imageBase64 = imageBase64Input;
+      }
+
+      let newRawText = "";
+      let newStructured: any = {};
+      try {
+        const result = await runNvidiaOCRAndStructure(imageBase64, "image/jpeg");
+        newRawText = result.rawText;
+        newStructured = result.structured;
+      } catch (err: any) {
+        res.status(502).json({ error: `AI processing failed: ${err.message}` });
+        return;
+      }
+
+      const hasEntries = Array.isArray(newStructured.entries) && newStructured.entries.length > 0;
+      const hasText = newRawText && newRawText.trim().length >= 3;
+      if (!hasText && !hasEntries) {
+        res.status(422).json({
+          error: "The AI could not extract any data from this image. Please ensure the satti is clearly visible, well-lit, and not blurry.",
+        });
+        return;
+      }
+
+      const existingEntries: any[] = session.entries || [];
+      const maxId = existingEntries.reduce((m, e) => Math.max(m, Number(e.id) || 0), 0);
+      const newEntries: any[] = (newStructured.entries || []).map((e: any, i: number) => ({
+        ...e,
+        id: maxId + i + 1,
+      }));
+
+      const allEntries = [...existingEntries, ...newEntries];
+      const { grouped, summary } = rebuildGroupedAndSummary(allEntries);
+
+      const mergedRawText = [session.rawText, newRawText].filter(Boolean).join("\n\n---\n\n");
+
+      session.entries = allEntries;
+      session.grouped = grouped;
+      session.summary = summary;
+      session.rawText = mergedRawText;
+      await session.save();
+
+      console.log(`[ledger/append] session ${req.params.id}: ${existingEntries.length} + ${newEntries.length} = ${allEntries.length} entries`);
+
+      res.json({
+        success: true,
+        sessionId: String(session._id),
+        rawText: mergedRawText,
+        entries: allEntries,
+        grouped,
+        summary,
+        meta: session.meta,
+        appendedCount: newEntries.length,
+      });
+    } catch (err: any) {
+      console.error("[ledger/sessions/:id/append]", err);
+      res.status(500).json({ error: err.message || "Unexpected error." });
+    }
+  }
+);

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLedgerAuth } from "@/contexts/LedgerAuthContext";
+import { pdfToImageBlob } from "@/lib/pdfToImage";
 
 /* ── Icons ── */
 function CameraIcon(p: React.SVGProps<SVGSVGElement>) {
@@ -243,75 +244,6 @@ export default function LedgerDashboard() {
       reader.onerror = () => reject(reader.error);
       reader.readAsDataURL(blob);
     });
-
-  /* Render a PDF file to a single JPEG blob by stitching all pages vertically.
-     Uses PDF.js loaded dynamically to avoid SSR issues in Next.js.
-     Limits to 5 pages maximum and compresses to ≤ 130 KB for NVIDIA's API. */
-  const pdfToImageBlob = async (file: File): Promise<Blob> => {
-    const pdfjsLib = await import("pdfjs-dist");
-    pdfjsLib.GlobalWorkerOptions.workerSrc =
-      `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const totalPages = Math.min(pdf.numPages, 5); // cap at 5 pages
-
-    // Render each page to its own canvas at 1.5× scale for clear text
-    const pageCanvases: HTMLCanvasElement[] = [];
-    for (let i = 1; i <= totalPages; i++) {
-      const page = await pdf.getPage(i);
-      const viewport = page.getViewport({ scale: 1.5 });
-      const canvas = document.createElement("canvas");
-      canvas.width = Math.round(viewport.width);
-      canvas.height = Math.round(viewport.height);
-      const ctx = canvas.getContext("2d")!;
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      await page.render({ canvasContext: ctx as any, viewport }).promise;
-      pageCanvases.push(canvas);
-    }
-
-    // Stitch pages vertically (24 px gap between pages)
-    const GAP = 24;
-    const maxWidth = Math.max(...pageCanvases.map((c) => c.width));
-    const totalHeight = pageCanvases.reduce((h, c) => h + c.height, 0) + GAP * (pageCanvases.length - 1);
-    const stitched = document.createElement("canvas");
-    stitched.width = maxWidth;
-    stitched.height = totalHeight;
-    const sCtx = stitched.getContext("2d")!;
-    sCtx.fillStyle = "#f3f4f6";
-    sCtx.fillRect(0, 0, maxWidth, totalHeight);
-    let y = 0;
-    for (const c of pageCanvases) {
-      sCtx.drawImage(c, 0, y);
-      y += c.height + GAP;
-    }
-
-    // Adaptive JPEG compression — target ≤ 130 KB raw to stay within NVIDIA's limit
-    const compress = (canvas: HTMLCanvasElement, qualities: number[]): Promise<Blob> =>
-      new Promise((resolve, reject) => {
-        const [q, ...rest] = qualities;
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) return reject(new Error("PDF page rendering failed."));
-            if (blob.size <= 130 * 1024 || rest.length === 0) resolve(blob);
-            else {
-              // Scale down the stitched canvas if still too large
-              const scale = Math.sqrt((130 * 1024) / blob.size);
-              const scaled = document.createElement("canvas");
-              scaled.width = Math.round(canvas.width * scale);
-              scaled.height = Math.round(canvas.height * scale);
-              scaled.getContext("2d")!.drawImage(canvas, 0, 0, scaled.width, scaled.height);
-              compress(scaled, rest).then(resolve).catch(reject);
-            }
-          },
-          "image/jpeg",
-          q
-        );
-      });
-
-    return compress(stitched, [0.9, 0.8, 0.7, 0.6]);
-  };
 
   const processFile = async (file: File) => {
     const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
