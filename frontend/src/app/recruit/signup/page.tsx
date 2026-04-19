@@ -10,8 +10,7 @@ import {
   signInWithPopup,
 } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
-
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://raina-1.onrender.com";
+import { apiUrl } from "@/lib/api";
 
 type Role = "seeker" | "creator";
 
@@ -30,7 +29,7 @@ function RecruitSignupForm() {
     const user = auth.currentUser;
     if (!user) throw new Error("Not authenticated");
     const token = await user.getIdToken();
-    const res = await fetch(`${BACKEND}/recruit/auth/profile`, {
+    const res = await fetch(apiUrl("/recruit/auth/profile"), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

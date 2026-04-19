@@ -10,8 +10,7 @@ import {
 } from "react";
 import { onAuthStateChanged, type User } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
-
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://raina-1.onrender.com";
+import { apiUrl } from "@/lib/api";
 
 export type RecruitRole = "creator" | "seeker";
 
@@ -45,7 +44,7 @@ export function useRecruitAuth() {
 async function fetchRecruitProfile(user: User): Promise<RecruitProfile | null> {
   try {
     const token = await user.getIdToken();
-    const res = await fetch(`${BACKEND}/recruit/auth/profile`, {
+    const res = await fetch(apiUrl("/recruit/auth/profile"), {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!res.ok) return null;
