@@ -3,6 +3,7 @@ import multer from "multer";
 import sharp from "sharp";
 import { connectMongo } from "./db";
 import { LedgerSession } from "./models/LedgerSession";
+import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 
 export const ledgerRouter = express.Router();
 
@@ -155,6 +156,120 @@ async function runNvidiaOCRAndStructure(imageBase64: string, mimeType: string): 
   const rawJson: string = data?.choices?.[0]?.message?.content || "{}";
   return parseAIResponse(rawJson);
 }
+
+const SATTI_TEXT_PROMPT = `You are an expert accounting assistant for Indian grain traders.
+
+Parse the following handwritten satti record (typed out by the user) into clean structured JSON.
+
+The input may contain:
+- Hindi commodity names (गेहू, चावल, सरसों, मक्का, दाल, etc.) or English (Gehu, Chawal, Sarson, Maize, Dal, etc.)
+- Numbers in English (24) or Hindi numerals (२४)
+- Rate per quintal, quantity in quintals or kg, and sometimes a calculated total
+- Multiple entries, possibly freeform
+
+Rules:
+1. Convert Hindi numerals to English (२४ → 24)
+2. Normalize commodity names to a clean display form
+3. For each entry extract: commodity, rate (per quintal, as number), quantity (as number, assume quintals unless kg explicitly mentioned), unit ("qtl" or "kg"), amount (rate × quantity, calculate if missing)
+4. If a field is unclear, make your best guess and set "uncertain": true for that entry
+5. Group entries by commodity (case-insensitive; Hindi and English names for the same grain are the same group)
+6. Calculate per-group: totalQuantity, totalAmount, minRate, maxRate, avgRate, priceDistribution (% of qty at each price point)
+7. Calculate overall: totalQuantity, totalAmount, commodityCount
+
+Respond ONLY with valid JSON. No explanation. No markdown. Use this exact structure:
+{
+  "rawText": "<echo back the user's input verbatim>",
+  "entries": [
+    { "id": 1, "commodity": "string", "commodityKey": "lowercase_key", "rate": 0, "quantity": 0, "unit": "qtl", "amount": 0, "uncertain": false, "rawLine": "original line" }
+  ],
+  "grouped": {
+    "COMMODITY_KEY": {
+      "displayName": "string", "entries": [1], "totalQuantity": 0, "totalAmount": 0,
+      "minRate": 0, "maxRate": 0, "avgRate": 0,
+      "priceDistribution": [{ "rate": 0, "quantity": 0, "percentage": 0 }]
+    }
+  },
+  "summary": {
+    "totalEntries": 0, "totalQuantity": 0, "totalAmount": 0,
+    "commodityCount": 0, "topCommodity": "string", "processingNote": "string"
+  }
+}
+
+Input satti text:
+`;
+
+async function runNvidiaTextStructure(sattiText: string): Promise<{ rawText: string; structured: any }> {
+  const rawJson = await callNvidiaChatCompletions({
+    apiKey: NVIDIA_KEY,
+    model: "meta/llama-3.1-8b-instruct",
+    messages: [{ role: "user", content: SATTI_TEXT_PROMPT + sattiText }],
+    temperature: 0.1,
+    max_tokens: 4096,
+  });
+  return parseAIResponse(rawJson);
+}
+
+/* ── Text entry & Process ── */
+ledgerRouter.post(
+  "/text",
+  express.json(),
+  async (req: express.Request, res: express.Response): Promise<void> => {
+    try {
+      const uid = getUid(req);
+      if (!uid) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+      if (!NVIDIA_KEY) { res.status(500).json({ error: "NVIDIA API key not configured." }); return; }
+
+      const sattiText: string = (req.body?.text || "").trim();
+      if (!sattiText || sattiText.length < 5) {
+        res.status(400).json({ error: "Please enter at least one satti entry." });
+        return;
+      }
+      if (sattiText.length > 5000) {
+        res.status(400).json({ error: "Text too long. Keep it under 5000 characters." });
+        return;
+      }
+
+      let rawText = "";
+      let structured: any = {};
+      try {
+        const result = await runNvidiaTextStructure(sattiText);
+        rawText = result.rawText || sattiText;
+        structured = result.structured;
+      } catch (err: any) {
+        res.status(502).json({ error: `AI processing failed: ${err.message}` });
+        return;
+      }
+
+      const meta = {
+        processedAt: new Date().toISOString(),
+        fileSizeKb: 0,
+        mimeType: "text/plain",
+        source: "manual",
+      };
+
+      let sessionId: string | undefined;
+      try {
+        await connectMongo();
+        const saved = await LedgerSession.create({
+          uid, rawText,
+          entries: structured.entries || [],
+          grouped: structured.grouped || {},
+          summary: structured.summary || {},
+          meta,
+        });
+        sessionId = String(saved._id);
+      } catch (err) {
+        console.error("[ledger/text] MongoDB save failed:", err);
+      }
+
+      res.json({ success: true, sessionId, rawText, ...structured, meta });
+    } catch (err: any) {
+      console.error("[ledger/text]", err);
+      res.status(500).json({ error: err.message || "Unexpected error." });
+    }
+  }
+);
 
 /* ── Upload & Process ── */
 ledgerRouter.post(

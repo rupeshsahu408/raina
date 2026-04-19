@@ -33,6 +33,12 @@ function TrashIcon(p: React.SVGProps<SVGSVGElement>) {
 function ChevronRightIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m9 18 6-6-6-6"/></svg>;
 }
+function PenLineIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>;
+}
+function ChevronDownIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m6 9 6 6 6-6"/></svg>;
+}
 function CalendarIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
 }
@@ -60,7 +66,7 @@ type ProcessingStage = "idle" | "uploading" | "ocr" | "ai" | "done" | "error";
 
 const steps = [
   { icon: "📸", title: "Take a photo", desc: "Photograph your handwritten satti — any paper, any lighting." },
-  { icon: "🤖", title: "AI reads it", desc: "Gemini AI reads the image and structures it by commodity." },
+  { icon: "🤖", title: "AI reads it", desc: "AI reads the image and structures it by commodity." },
   { icon: "📊", title: "Get analytics", desc: "See raw entries, grouped totals, and price insights instantly." },
 ];
 
@@ -99,6 +105,12 @@ export default function LedgerDashboard() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+
+  /* Manual text entry state */
+  const [showTextEntry, setShowTextEntry] = useState(false);
+  const [sattiText, setSattiText] = useState("");
+  const [textStage, setTextStage] = useState<"idle" | "processing" | "done" | "error">("idle");
+  const [textError, setTextError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/ledger/login");
@@ -256,6 +268,28 @@ export default function LedgerDashboard() {
     }
   };
 
+  const processText = async () => {
+    if (!sattiText.trim()) return;
+    setTextError(null);
+    setTextStage("processing");
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/backend/ledger/text", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ text: sattiText }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Processing failed. Please try again.");
+      sessionStorage.setItem("ledger_session", JSON.stringify(data));
+      setTextStage("done");
+      setTimeout(() => router.push("/ledger/session"), 300);
+    } catch (err: any) {
+      setTextStage("error");
+      setTextError(err.message || "Something went wrong. Please try again.");
+    }
+  };
+
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
     processFile(files[0]);
@@ -310,8 +344,8 @@ export default function LedgerDashboard() {
   const stageLabel: Record<ProcessingStage, string> = {
     idle: "",
     uploading: "Preparing image…",
-    ocr: "Reading your satti with Gemini AI…",
-    ai: "Gemini is structuring the entries…",
+    ocr: "AI is reading your satti…",
+    ai: "Structuring the entries…",
     done: "Done! Opening results…",
     error: "",
   };
@@ -486,7 +520,86 @@ export default function LedgerDashboard() {
               </div>
             </div>
           )}
+
+          {/* Manual text entry toggle */}
+          {!isProcessing && stage !== "done" && (
+            <div className="mt-4">
+              <button
+                onClick={() => { setShowTextEntry(!showTextEntry); setTextError(null); setTextStage("idle"); }}
+                className="flex items-center gap-2 text-sm text-gray-400 hover:text-emerald-600 transition-colors mx-auto"
+              >
+                <PenLineIcon className="h-3.5 w-3.5" />
+                <span>or type your satti manually</span>
+                <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform duration-200 ${showTextEntry ? "rotate-180" : ""}`} />
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* Manual text entry panel */}
+        {showTextEntry && !isProcessing && stage !== "done" && (
+          <div className="afu-2 mb-8 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-6 pt-5 pb-2 border-b border-gray-50">
+              <div className="flex items-center gap-2 mb-0.5">
+                <PenLineIcon className="h-4 w-4 text-emerald-600" />
+                <h3 className="text-sm font-bold text-[#1d2226]">Type satti manually</h3>
+              </div>
+              <p className="text-xs text-gray-400">Type one entry per line. Include commodity name, rate, and quantity.</p>
+            </div>
+
+            <div className="px-6 py-4">
+              {/* Example hint */}
+              <div className="mb-3 bg-gray-50 rounded-xl px-4 py-3 font-mono text-xs text-gray-400 leading-relaxed select-none">
+                <span className="text-gray-300 block mb-1">Example format:</span>
+                गेहू 2450 20 qtl<br />
+                Chawal 3200 15 qtl<br />
+                Sarson 5800 8 qtl
+              </div>
+
+              <textarea
+                value={sattiText}
+                onChange={(e) => setSattiText(e.target.value)}
+                placeholder={"गेहू 2450 20 qtl\nChawal 3200 15 qtl\n..."}
+                rows={6}
+                disabled={textStage === "processing" || textStage === "done"}
+                className="w-full px-4 py-3 text-sm font-mono text-[#1d2226] bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-50 transition-all placeholder:text-gray-300 resize-none disabled:opacity-60"
+              />
+
+              {textError && (
+                <div className="mt-2 bg-red-50 border border-red-100 rounded-xl px-3 py-2 flex items-start gap-2">
+                  <span className="text-red-400 mt-0.5 text-xs">⚠</span>
+                  <div>
+                    <p className="text-xs text-red-600 font-medium">{textError}</p>
+                    <button onClick={() => { setTextError(null); setTextStage("idle"); }} className="text-xs text-red-400 hover:text-red-600 mt-0.5">Dismiss</button>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="text-xs text-gray-300">{sattiText.length} / 5000 chars</span>
+                <button
+                  onClick={processText}
+                  disabled={!sattiText.trim() || textStage === "processing" || textStage === "done"}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-200 disabled:cursor-not-allowed text-white disabled:text-gray-400 font-bold text-sm rounded-xl transition-all hover:-translate-y-0.5 disabled:translate-y-0 shadow-sm shadow-emerald-100 disabled:shadow-none"
+                >
+                  {textStage === "processing" ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Processing…
+                    </>
+                  ) : textStage === "done" ? (
+                    <>Opening results…</>
+                  ) : (
+                    <>
+                      <SparklesIcon className="h-3.5 w-3.5" />
+                      Process satti
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Usage counter */}
         <div className="afu-2 mb-8 bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between shadow-sm">
