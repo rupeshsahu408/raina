@@ -1,6 +1,7 @@
 import express from "express";
 import sharp from "sharp";
 import { connectMongo } from "./db";
+import { LedgerBusinessProfile } from "./models/LedgerBusinessProfile";
 import { LedgerSession } from "./models/LedgerSession";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 
@@ -10,6 +11,69 @@ const NVIDIA_KEY = process.env.NVIDIA_API_KEY || "";
 
 function getUid(req: express.Request): string {
   return (req as any).user?.uid ?? "";
+}
+
+const defaultLedgerProfile = {
+  businessName: "",
+  ownerName: "",
+  gstNumber: "",
+  location: "",
+  businessType: "grain_trader",
+  preferences: {
+    quantityUnit: "qtl",
+    numberFormat: "english",
+    language: "mixed",
+    inputMode: "mixed",
+  },
+};
+
+function sanitizeLedgerProfile(input: any) {
+  const preferences = input?.preferences || {};
+  const quantityUnit = ["qtl", "kg", "ton"].includes(preferences.quantityUnit) ? preferences.quantityUnit : "qtl";
+  const numberFormat = ["english", "hindi"].includes(preferences.numberFormat) ? preferences.numberFormat : "english";
+  const language = ["english", "hindi", "mixed"].includes(preferences.language) ? preferences.language : "mixed";
+  const inputMode = ["image", "manual", "mixed"].includes(preferences.inputMode) ? preferences.inputMode : "mixed";
+  return {
+    businessName: String(input?.businessName || "").trim().slice(0, 100),
+    ownerName: String(input?.ownerName || "").trim().slice(0, 100),
+    gstNumber: String(input?.gstNumber || "").trim().slice(0, 30),
+    location: String(input?.location || "").trim().slice(0, 100),
+    businessType: String(input?.businessType || "grain_trader").trim().slice(0, 60),
+    preferences: { quantityUnit, numberFormat, language, inputMode },
+  };
+}
+
+function serializeLedgerProfile(profile: any) {
+  const merged = {
+    ...defaultLedgerProfile,
+    ...(profile || {}),
+    preferences: {
+      ...defaultLedgerProfile.preferences,
+      ...(profile?.preferences || {}),
+    },
+  };
+  return {
+    businessName: merged.businessName || "",
+    ownerName: merged.ownerName || "",
+    gstNumber: merged.gstNumber || "",
+    location: merged.location || "",
+    businessType: merged.businessType || "grain_trader",
+    preferences: merged.preferences,
+    isComplete: Boolean(merged.businessName),
+  };
+}
+
+function profilePreferencePrompt(profile: any) {
+  const p = serializeLedgerProfile(profile);
+  return `\n\nUser personalization settings:
+- Business name: ${p.businessName || "not provided"}
+- Business type: ${p.businessType}
+- Preferred quantity display unit: ${p.preferences.quantityUnit}
+- Preferred language display: ${p.preferences.language}
+- Preferred number format: ${p.preferences.numberFormat}
+- Preferred input mode: ${p.preferences.inputMode}
+
+Adapt your understanding to these settings. Understand Hindi, English, and mixed Hinglish input. Normalize quantities internally to quintal/qtl for JSON totals, but be careful when the source explicitly uses kg or ton.`;
 }
 
 type BusinessCommodityTotal = {
@@ -207,7 +271,7 @@ function parseAIResponse(raw: string): { rawText: string; structured: any } {
   }
 }
 
-async function runNvidiaOCRAndStructure(imageBase64: string, mimeType: string): Promise<{ rawText: string; structured: any }> {
+async function runNvidiaOCRAndStructure(imageBase64: string, mimeType: string, profile?: any): Promise<{ rawText: string; structured: any }> {
   const body = {
     model: "meta/llama-3.2-11b-vision-instruct",
     messages: [
@@ -219,7 +283,7 @@ async function runNvidiaOCRAndStructure(imageBase64: string, mimeType: string): 
             type: "image_url",
             image_url: { url: `data:${mimeType};base64,${imageBase64}` },
           },
-          { type: "text", text: SATTI_PROMPT },
+          { type: "text", text: SATTI_PROMPT + profilePreferencePrompt(profile) },
         ],
       },
     ],
@@ -288,16 +352,51 @@ Respond ONLY with valid JSON. No explanation. No markdown. Use this exact struct
 Input satti text:
 `;
 
-async function runNvidiaTextStructure(sattiText: string): Promise<{ rawText: string; structured: any }> {
+async function runNvidiaTextStructure(sattiText: string, profile?: any): Promise<{ rawText: string; structured: any }> {
   const rawJson = await callNvidiaChatCompletions({
     apiKey: NVIDIA_KEY,
     model: "meta/llama-3.1-8b-instruct",
-    messages: [{ role: "user", content: SATTI_TEXT_PROMPT + sattiText }],
+    messages: [{ role: "user", content: SATTI_TEXT_PROMPT + profilePreferencePrompt(profile) + "\n\nInput satti text:\n" + sattiText }],
     temperature: 0.1,
     max_tokens: 4096,
   });
   return parseAIResponse(rawJson);
 }
+
+ledgerRouter.get("/profile", async (req: express.Request, res: express.Response): Promise<void> => {
+  try {
+    const uid = getUid(req);
+    if (!uid) { res.status(401).json({ error: "Unauthorized" }); return; }
+    await connectMongo();
+    const profile = await LedgerBusinessProfile.findOne({ uid }).lean();
+    res.json({ profile: serializeLedgerProfile(profile) });
+  } catch (err: any) {
+    console.error("[ledger/profile GET]", err);
+    res.status(500).json({ error: err.message || "Unexpected error." });
+  }
+});
+
+ledgerRouter.put("/profile", express.json(), async (req: express.Request, res: express.Response): Promise<void> => {
+  try {
+    const uid = getUid(req);
+    if (!uid) { res.status(401).json({ error: "Unauthorized" }); return; }
+    const profile = sanitizeLedgerProfile(req.body || {});
+    if (!profile.businessName) {
+      res.status(400).json({ error: "Business name is required." });
+      return;
+    }
+    await connectMongo();
+    const saved = await LedgerBusinessProfile.findOneAndUpdate(
+      { uid },
+      { $set: { uid, ...profile } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    ).lean();
+    res.json({ profile: serializeLedgerProfile(saved) });
+  } catch (err: any) {
+    console.error("[ledger/profile PUT]", err);
+    res.status(500).json({ error: err.message || "Unexpected error." });
+  }
+});
 
 /* ── Text entry & Process ── */
 ledgerRouter.post(
@@ -323,7 +422,9 @@ ledgerRouter.post(
       let rawText = "";
       let structured: any = {};
       try {
-        const result = await runNvidiaTextStructure(sattiText);
+        await connectMongo();
+        const profile = await LedgerBusinessProfile.findOne({ uid }).lean();
+        const result = await runNvidiaTextStructure(sattiText, profile);
         rawText = result.rawText || sattiText;
         structured = result.structured;
       } catch (err: any) {
@@ -340,7 +441,6 @@ ledgerRouter.post(
 
       let sessionId: string | undefined;
       try {
-        await connectMongo();
         const saved = await LedgerSession.create({
           uid, rawText,
           entries: structured.entries || [],
@@ -424,7 +524,9 @@ ledgerRouter.post(
       let rawText = "";
       let structured: any = {};
       try {
-        const result = await runNvidiaOCRAndStructure(imageBase64, mimeType);
+        await connectMongo();
+        const profile = await LedgerBusinessProfile.findOne({ uid }).lean();
+        const result = await runNvidiaOCRAndStructure(imageBase64, mimeType, profile);
         rawText = result.rawText;
         structured = result.structured;
       } catch (err: any) {
@@ -454,7 +556,6 @@ ledgerRouter.post(
       /* Save session to MongoDB */
       let sessionId: string | undefined;
       try {
-        await connectMongo();
         const saved = await LedgerSession.create({
           uid,
           rawText,

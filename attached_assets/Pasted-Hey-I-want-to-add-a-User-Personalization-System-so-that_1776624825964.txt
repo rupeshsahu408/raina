@@ -1,0 +1,102 @@
+Hey 👇
+
+I want to add a User Personalization System so that the app can understand each user’s business type and provide a better, more personalized experience.
+
+🧠 Core Idea:
+
+Each user will set up their business profile, which will help the system understand and display data more intelligently.
+
+👤 1. Business Profile Setup (Onboarding)
+
+During signup or first login, the user should enter:
+
+Business Name (required)
+Owner Name (optional)
+GST Number (optional)
+State / Location (optional)
+Business Type (e.g., grain trader, mandi, etc.)
+
+👉 This information should be displayed throughout the dashboard for branding and identity purposes.
+
+⚙️ 2. Measurement Preferences
+
+The user should be able to select a preferred unit for quantity:
+
+Quintal
+Kg
+Ton
+
+👉 The system should consistently display all data using the selected unit everywhere.
+
+🌐 3. Language & Format Preferences
+
+The user should be able to choose:
+
+📊 Number Format:
+English numbers (1234)
+Hindi numbers (१२३४)
+📝 Language Display:
+Pure Hindi
+English
+Mixed (Hindi + English)
+
+👉 Example:
+
+Wheat / गेहू
+Payment / भुगतान
+🔥 4. Business Style Personalization
+
+The user should select how they want to interact with the system:
+
+Manual text input
+Image upload
+Mixed mode
+
+👉 The system UI/UX should adapt based on this preference.
+
+🧠 5. Smart Understanding Layer
+
+The AI system should automatically adapt based on user preferences:
+
+Understand Hindi + English mixed input
+Perform automatic unit conversion if needed
+Display data formatting according to user settings
+🖥️ 6. Dashboard Branding
+
+Every page should display:
+
+Business Name (in the header)
+GST Number (if provided)
+Location (optional)
+
+👉 The dashboard should feel like a personal business control panel.
+
+💡 Extra Suggestions (Important Upgrades):
+✔️ 1. Default Preference Saving
+
+User settings should be auto-saved permanently.
+
+✔️ 2. Multi-Profile Support (Future)
+
+Allow one user to manage multiple businesses.
+
+✔️ 3. Smart Defaults
+
+If the user does not select anything, the system should automatically detect or apply default settings.
+
+🎯 Goal:
+
+The app should not just be a tool, but a:
+
+👉 “Personal Business Intelligence Dashboard”
+
+🧠 Simple Summary:
+
+Users should be able to customize:
+
+Business identity
+Language style
+Units
+Data format
+
+And the AI should adapt everything accordingly.

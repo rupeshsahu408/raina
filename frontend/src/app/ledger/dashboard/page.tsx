@@ -4,6 +4,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLedgerAuth } from "@/contexts/LedgerAuthContext";
+import {
+  defaultLedgerProfile,
+  formatCommodityName,
+  formatLedgerCurrency,
+  formatLedgerQuantity,
+  ledgerLabel,
+  type LedgerBusinessProfile,
+} from "@/lib/ledgerPersonalization";
 import { pdfToImageBlob } from "@/lib/pdfToImage";
 
 /* ── Icons ── */
@@ -185,6 +193,12 @@ export default function LedgerDashboard() {
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [businessSummary, setBusinessSummary] = useState<BusinessSummary>({ daily: [], monthly: [], yearly: [] });
   const [businessSummaryLoading, setBusinessSummaryLoading] = useState(false);
+  const [profile, setProfile] = useState<LedgerBusinessProfile>(defaultLedgerProfile);
+  const [profileDraft, setProfileDraft] = useState<LedgerBusinessProfile>(defaultLedgerProfile);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [showProfileSettings, setShowProfileSettings] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const [filterFrom, setFilterFrom] = useState("");
   const [filterTo, setFilterTo] = useState("");
@@ -252,12 +266,44 @@ export default function LedgerDashboard() {
     }
   }, [user]);
 
+  const fetchProfile = useCallback(async () => {
+    if (!user) return;
+    setProfileLoading(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/backend/ledger/profile", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const nextProfile = {
+          ...defaultLedgerProfile,
+          ...(data.profile || {}),
+          preferences: {
+            ...defaultLedgerProfile.preferences,
+            ...(data.profile?.preferences || {}),
+          },
+        };
+        setProfile(nextProfile);
+        setProfileDraft(nextProfile);
+        setShowProfileSettings(!nextProfile.isComplete);
+      }
+    } finally {
+      setProfileLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (user && !loading) {
+      fetchProfile();
       fetchSessions();
       fetchBusinessSummary();
     }
-  }, [user, loading, fetchSessions, fetchBusinessSummary]);
+  }, [user, loading, fetchProfile, fetchSessions, fetchBusinessSummary]);
+
+  useEffect(() => {
+    if (profile.preferences.inputMode === "manual") setShowTextEntry(true);
+  }, [profile.preferences.inputMode]);
 
   if (loading) {
     return (
@@ -275,6 +321,59 @@ export default function LedgerDashboard() {
   if (!user) return null;
 
   const firstName = user.displayName?.split(" ")[0] ?? user.email?.split("@")[0] ?? "there";
+  const businessTitle = profile.businessName || "Smart Ledger";
+  const displayMoney = (amount: number) => formatLedgerCurrency(amount, profile);
+  const displayQty = (quantity: number) => formatLedgerQuantity(quantity, profile);
+  const displayCommodity = (name: string) => formatCommodityName(name, profile);
+  const textFor = (key: Parameters<typeof ledgerLabel>[0]) => ledgerLabel(key, profile);
+  const uploadModeEnabled = profile.preferences.inputMode !== "manual";
+  const manualModeEnabled = profile.preferences.inputMode !== "image";
+
+  const updateProfileDraft = (patch: Partial<LedgerBusinessProfile>) => {
+    setProfileDraft((prev) => ({
+      ...prev,
+      ...patch,
+      preferences: {
+        ...prev.preferences,
+        ...(patch.preferences || {}),
+      },
+    }));
+  };
+
+  const saveProfile = async () => {
+    if (!profileDraft.businessName.trim()) {
+      setProfileError("Business name is required.");
+      return;
+    }
+    setProfileError(null);
+    setProfileSaving(true);
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch("/backend/ledger/profile", {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(profileDraft),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not save profile.");
+      const nextProfile = {
+        ...defaultLedgerProfile,
+        ...(data.profile || {}),
+        preferences: {
+          ...defaultLedgerProfile.preferences,
+          ...(data.profile?.preferences || {}),
+        },
+      };
+      setProfile(nextProfile);
+      setProfileDraft(nextProfile);
+      setShowProfileSettings(false);
+      fetchBusinessSummary();
+    } catch (err: any) {
+      setProfileError(err.message || "Could not save profile.");
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   /* Resize + convert any image to a high-quality JPEG for OCR.
      Target ≤ 130 KB raw (≈ 175 KB base64), which is safely under NVIDIA's 180 KB limit
@@ -547,10 +646,23 @@ export default function LedgerDashboard() {
             <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center flex-shrink-0">
               <span className="text-white font-black text-xs">SL</span>
             </div>
-            <span className="font-bold text-[#1d2226] text-sm">Smart Ledger</span>
+            <div className="min-w-0">
+              <span className="font-bold text-[#1d2226] text-sm truncate block">{businessTitle}</span>
+              {(profile.gstNumber || profile.location) && (
+                <span className="text-[10px] text-gray-400 truncate block">
+                  {[profile.gstNumber ? `GST: ${profile.gstNumber}` : "", profile.location].filter(Boolean).join(" · ")}
+                </span>
+              )}
+            </div>
           </Link>
 
           <div className="hidden sm:flex items-center gap-4">
+            <button
+              onClick={() => setShowProfileSettings(!showProfileSettings)}
+              className="text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 px-3 py-2 rounded-xl transition-colors"
+            >
+              {textFor("settings")}
+            </button>
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
                 <span className="text-emerald-700 font-bold text-xs uppercase">
@@ -586,6 +698,9 @@ export default function LedgerDashboard() {
             <button onClick={signOutFromLedger} className="flex items-center gap-1.5 text-sm text-red-500 font-medium">
               <LogOutIcon className="h-4 w-4" /> Sign out
             </button>
+            <button onClick={() => setShowProfileSettings(!showProfileSettings)} className="flex items-center gap-1.5 text-sm text-emerald-700 font-bold">
+              {textFor("settings")}
+            </button>
           </div>
         )}
       </nav>
@@ -595,12 +710,153 @@ export default function LedgerDashboard() {
         {/* Greeting */}
         <div className="afu mb-8">
           <h1 className="text-2xl sm:text-3xl font-black text-[#1d2226] mb-1">
-            Good to see you, {firstName} 👋
+            {profile.businessName ? businessTitle : `Good to see you, ${firstName} 👋`}
           </h1>
-          <p className="text-gray-500 text-sm">Upload your satti to get started. It takes less than 10 seconds.</p>
+          <p className="text-gray-500 text-sm">
+            {profile.businessName
+              ? `${profile.businessType.replace(/_/g, " ")} control panel${profile.ownerName ? ` for ${profile.ownerName}` : ""}`
+              : "Set up your business profile so Smart Ledger can adapt to your work style."}
+          </p>
         </div>
 
+        {showProfileSettings && (
+          <div className="afu-2 mb-8 bg-white rounded-3xl border border-emerald-100 shadow-sm overflow-hidden">
+            <div className="px-5 sm:px-6 py-5 border-b border-emerald-50 bg-gradient-to-br from-emerald-50 to-white">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1">
+                    {profile.isComplete ? "Personalization" : "First-time setup"}
+                  </p>
+                  <h2 className="text-xl font-black text-[#1d2226]">{textFor("settings")}</h2>
+                  <p className="text-sm text-gray-500 mt-1">
+                    Save your business identity, unit, language, number format, and preferred workflow. Smart Ledger will adapt the dashboard and AI prompts automatically.
+                  </p>
+                </div>
+                {profile.isComplete && (
+                  <button onClick={() => setShowProfileSettings(false)} className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-white">
+                    <XIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1">Business Name *</label>
+                <input
+                  value={profileDraft.businessName}
+                  onChange={(e) => updateProfileDraft({ businessName: e.target.value })}
+                  placeholder="e.g. Sharma Grain Traders"
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1">Owner Name</label>
+                <input
+                  value={profileDraft.ownerName}
+                  onChange={(e) => updateProfileDraft({ ownerName: e.target.value })}
+                  placeholder="Owner name"
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1">GST Number</label>
+                <input
+                  value={profileDraft.gstNumber}
+                  onChange={(e) => updateProfileDraft({ gstNumber: e.target.value.toUpperCase() })}
+                  placeholder="Optional"
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1">State / Location</label>
+                <input
+                  value={profileDraft.location}
+                  onChange={(e) => updateProfileDraft({ location: e.target.value })}
+                  placeholder="e.g. Bihar"
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-50"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1">Business Type</label>
+                <select
+                  value={profileDraft.businessType}
+                  onChange={(e) => updateProfileDraft({ businessType: e.target.value })}
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400"
+                >
+                  <option value="grain_trader">Grain Trader</option>
+                  <option value="mandi">Mandi Business</option>
+                  <option value="commission_agent">Commission Agent</option>
+                  <option value="warehouse">Warehouse</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1">Preferred Quantity Unit</label>
+                <select
+                  value={profileDraft.preferences.quantityUnit}
+                  onChange={(e) => updateProfileDraft({ preferences: { ...profileDraft.preferences, quantityUnit: e.target.value as any } })}
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400"
+                >
+                  <option value="qtl">Quintal</option>
+                  <option value="kg">Kg</option>
+                  <option value="ton">Ton</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1">Number Format</label>
+                <select
+                  value={profileDraft.preferences.numberFormat}
+                  onChange={(e) => updateProfileDraft({ preferences: { ...profileDraft.preferences, numberFormat: e.target.value as any } })}
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400"
+                >
+                  <option value="english">English numbers (1234)</option>
+                  <option value="hindi">Hindi numbers (१२३४)</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1">Language Display</label>
+                <select
+                  value={profileDraft.preferences.language}
+                  onChange={(e) => updateProfileDraft({ preferences: { ...profileDraft.preferences, language: e.target.value as any } })}
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400"
+                >
+                  <option value="mixed">Mixed (Hindi + English)</option>
+                  <option value="english">English</option>
+                  <option value="hindi">Pure Hindi</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 block mb-1">Preferred Workflow</label>
+                <select
+                  value={profileDraft.preferences.inputMode}
+                  onChange={(e) => updateProfileDraft({ preferences: { ...profileDraft.preferences, inputMode: e.target.value as any } })}
+                  className="w-full px-4 py-3 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-emerald-400"
+                >
+                  <option value="mixed">Mixed mode</option>
+                  <option value="image">Image upload</option>
+                  <option value="manual">Manual text input</option>
+                </select>
+              </div>
+              <div className="md:col-span-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+                <div>
+                  {profileError && <p className="text-xs text-red-500 font-semibold">{profileError}</p>}
+                  {profileLoading && <p className="text-xs text-gray-400">Loading saved preferences…</p>}
+                </div>
+                <button
+                  onClick={saveProfile}
+                  disabled={profileSaving}
+                  className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-200 text-white disabled:text-gray-400 font-bold text-sm rounded-xl transition-colors"
+                >
+                  {profileSaving ? "Saving…" : "Save personalization"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Upload zone */}
+        {uploadModeEnabled && (
         <div className="afu-2 mb-8">
           {/* Main file picker — images + PDFs, no camera capture so file picker shows */}
           <input
@@ -665,7 +921,7 @@ export default function LedgerDashboard() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-base font-bold text-[#1d2226] mb-1">Upload your satti</p>
+                  <p className="text-base font-bold text-[#1d2226] mb-1">{textFor("uploadSatti")}</p>
                   <p className="text-sm text-gray-400">
                     Photo from gallery, PDF document, or{" "}
                     <span className="text-emerald-600 font-semibold">camera</span>
@@ -737,6 +993,7 @@ export default function LedgerDashboard() {
             </div>
           )}
         </div>
+        )}
 
         {showGeminiManual && !isProcessing && stage !== "done" && (
           <div className="afu-2 mb-8 bg-white rounded-3xl border border-emerald-100 shadow-sm overflow-hidden">
@@ -894,7 +1151,7 @@ export default function LedgerDashboard() {
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <TrendingUpIcon className="h-4 w-4 text-emerald-600" />
-                  <h2 className="text-base font-black text-[#1d2226]">Business Summary Timeline</h2>
+                  <h2 className="text-base font-black text-[#1d2226]">{textFor("businessSummary")}</h2>
                 </div>
                 <p className="text-sm text-gray-500">Daily data rolls into monthly totals, and monthly totals roll into yearly performance automatically.</p>
               </div>
@@ -921,7 +1178,7 @@ export default function LedgerDashboard() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Top</p>
-                    <h3 className="text-sm font-black text-[#1d2226]">Daily Entries</h3>
+                    <h3 className="text-sm font-black text-[#1d2226]">{textFor("dailyEntries")}</h3>
                   </div>
                   <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-3 py-1 rounded-full">{businessSummary.daily.length} days</span>
                 </div>
@@ -934,16 +1191,16 @@ export default function LedgerDashboard() {
                           <p className="text-xs text-gray-400">{day.sessionCount} uploads · {day.totalEntries} entries</p>
                         </div>
                         <div className="flex flex-wrap gap-2">
-                          <span className="text-xs font-bold text-emerald-700 bg-white border border-emerald-100 px-2.5 py-1 rounded-lg">{fmtQty(day.totalQuantity)}</span>
-                          <span className="text-xs font-bold text-emerald-700 bg-white border border-emerald-100 px-2.5 py-1 rounded-lg">{fmt(day.totalAmount)}</span>
+                          <span className="text-xs font-bold text-emerald-700 bg-white border border-emerald-100 px-2.5 py-1 rounded-lg">{displayQty(day.totalQuantity)}</span>
+                          <span className="text-xs font-bold text-emerald-700 bg-white border border-emerald-100 px-2.5 py-1 rounded-lg">{displayMoney(day.totalAmount)}</span>
                         </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {day.commodities.slice(0, 6).map((commodity) => (
                           <div key={commodity.key} className="bg-white rounded-xl border border-gray-100 px-3 py-2">
-                            <p className="text-xs font-bold text-[#1d2226] truncate">{commodity.name}</p>
-                            <p className="text-xs text-gray-400">{fmtQty(commodity.totalQuantity)}</p>
-                            <p className="text-xs font-bold text-emerald-600">{fmt(commodity.totalAmount)}</p>
+                            <p className="text-xs font-bold text-[#1d2226] truncate">{displayCommodity(commodity.name)}</p>
+                            <p className="text-xs text-gray-400">{displayQty(commodity.totalQuantity)}</p>
+                            <p className="text-xs font-bold text-emerald-600">{displayMoney(commodity.totalAmount)}</p>
                           </div>
                         ))}
                       </div>
@@ -955,7 +1212,7 @@ export default function LedgerDashboard() {
               <div className="p-5 sm:p-6">
                 <div className="mb-4">
                   <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">Middle</p>
-                  <h3 className="text-sm font-black text-[#1d2226]">Monthly Summary</h3>
+                  <h3 className="text-sm font-black text-[#1d2226]">{textFor("monthlySummary")}</h3>
                 </div>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {businessSummary.monthly.map((month) => (
@@ -963,16 +1220,16 @@ export default function LedgerDashboard() {
                       <div className="flex items-start justify-between gap-3 mb-3">
                         <div>
                           <p className="text-sm font-black text-[#1d2226]">{month.label}</p>
-                          <p className="text-xs text-gray-500">Grand total: {fmtQty(month.totalQuantity)} · {fmt(month.totalAmount)}</p>
+                          <p className="text-xs text-gray-500">Grand total: {displayQty(month.totalQuantity)} · {displayMoney(month.totalAmount)}</p>
                         </div>
                         <span className="text-xs bg-white text-blue-700 border border-blue-100 font-bold px-2.5 py-1 rounded-lg">{month.sessionCount} uploads</span>
                       </div>
                       <div className="space-y-2">
                         {month.commodities.slice(0, 8).map((commodity) => (
                           <div key={commodity.key} className="flex items-center justify-between gap-3 bg-white rounded-xl border border-blue-100 px-3 py-2">
-                            <span className="text-xs font-bold text-[#1d2226] truncate">{commodity.name}</span>
-                            <span className="text-xs text-gray-500 flex-shrink-0">{fmtQty(commodity.totalQuantity)}</span>
-                            <span className="text-xs font-bold text-blue-700 flex-shrink-0">{fmt(commodity.totalAmount)}</span>
+                            <span className="text-xs font-bold text-[#1d2226] truncate">{displayCommodity(commodity.name)}</span>
+                            <span className="text-xs text-gray-500 flex-shrink-0">{displayQty(commodity.totalQuantity)}</span>
+                            <span className="text-xs font-bold text-blue-700 flex-shrink-0">{displayMoney(commodity.totalAmount)}</span>
                           </div>
                         ))}
                       </div>
@@ -984,7 +1241,7 @@ export default function LedgerDashboard() {
               <div className="p-5 sm:p-6">
                 <div className="mb-4">
                   <p className="text-xs font-bold text-purple-600 uppercase tracking-wider">Bottom</p>
-                  <h3 className="text-sm font-black text-[#1d2226]">Yearly Summary</h3>
+                  <h3 className="text-sm font-black text-[#1d2226]">{textFor("yearlySummary")}</h3>
                 </div>
                 <div className="space-y-4">
                   {businessSummary.yearly.map((year) => (
@@ -995,21 +1252,21 @@ export default function LedgerDashboard() {
                           <p className="text-2xl font-black text-[#1d2226]">{year.label}</p>
                         </div>
                         <div className="bg-white rounded-2xl border border-purple-100 px-4 py-3">
-                          <p className="text-xs text-gray-400 font-semibold">Grand Total Quantity</p>
-                          <p className="text-lg font-black text-purple-700">{fmtQty(year.totalQuantity)}</p>
+                          <p className="text-xs text-gray-400 font-semibold">{textFor("totalQuantity")}</p>
+                          <p className="text-lg font-black text-purple-700">{displayQty(year.totalQuantity)}</p>
                         </div>
                         <div className="bg-white rounded-2xl border border-purple-100 px-4 py-3">
-                          <p className="text-xs text-gray-400 font-semibold">Grand Total Payment</p>
-                          <p className="text-lg font-black text-purple-700">{fmt(year.totalAmount)}</p>
+                          <p className="text-xs text-gray-400 font-semibold">{textFor("totalPayment")}</p>
+                          <p className="text-lg font-black text-purple-700">{displayMoney(year.totalAmount)}</p>
                         </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                         {year.commodities.map((commodity) => (
                           <div key={commodity.key} className="bg-white rounded-xl border border-purple-100 px-3 py-2">
-                            <p className="text-xs font-bold text-[#1d2226] truncate">{commodity.name}</p>
+                            <p className="text-xs font-bold text-[#1d2226] truncate">{displayCommodity(commodity.name)}</p>
                             <div className="flex items-center justify-between gap-2 mt-1">
-                              <span className="text-xs text-gray-500">{fmtQty(commodity.totalQuantity)}</span>
-                              <span className="text-xs font-bold text-purple-700">{fmt(commodity.totalAmount)}</span>
+                              <span className="text-xs text-gray-500">{displayQty(commodity.totalQuantity)}</span>
+                              <span className="text-xs font-bold text-purple-700">{displayMoney(commodity.totalAmount)}</span>
                             </div>
                           </div>
                         ))}
@@ -1174,7 +1431,7 @@ export default function LedgerDashboard() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-bold text-[#1d2226] truncate">
                             {session.summary?.topCommodity
-                              ? `${session.summary.topCommodity}${session.summary.commodityCount > 1 ? ` +${session.summary.commodityCount - 1} more` : ""}`
+                              ? `${displayCommodity(session.summary.topCommodity)}${session.summary.commodityCount > 1 ? ` +${session.summary.commodityCount - 1} more` : ""}`
                               : `${session.summary?.commodityCount || 0} commodities`}
                           </span>
                           <span className="text-xs text-gray-400">{fmtTime(session.createdAt)}</span>
@@ -1186,12 +1443,12 @@ export default function LedgerDashboard() {
                           <span className="text-xs text-gray-300">·</span>
                           <span className="text-xs text-gray-400">
                             {session.summary?.totalQuantity
-                              ? `${Number(session.summary.totalQuantity).toLocaleString("en-IN")} qtl`
+                              ? displayQty(session.summary.totalQuantity)
                               : "—"}
                           </span>
                           <span className="text-xs text-gray-300">·</span>
                           <span className="text-xs font-bold text-emerald-600">
-                            {fmt(session.summary?.totalAmount || 0)}
+                            {displayMoney(session.summary?.totalAmount || 0)}
                           </span>
                         </div>
                       </div>

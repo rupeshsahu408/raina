@@ -6,6 +6,13 @@ import Link from "next/link";
 import { pdfToImageBlob } from "@/lib/pdfToImage";
 import { useLedgerAuth } from "@/contexts/LedgerAuthContext";
 import {
+  defaultLedgerProfile,
+  formatCommodityName,
+  formatLedgerCurrency,
+  formatLedgerQuantity,
+  type LedgerBusinessProfile,
+} from "@/lib/ledgerPersonalization";
+import {
   PieChart,
   Pie,
   Cell,
@@ -146,6 +153,7 @@ export default function LedgerSession() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editBuf, setEditBuf] = useState<Partial<Entry>>({});
+  const [profile, setProfile] = useState<LedgerBusinessProfile>(defaultLedgerProfile);
 
   /* Export state */
   const [exportMsg, setExportMsg] = useState<string | null>(null);
@@ -172,6 +180,37 @@ export default function LedgerSession() {
       router.replace("/ledger/dashboard");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    (async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch("/backend/ledger/profile", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return;
+        const result = await res.json();
+        if (!active) return;
+        setProfile({
+          ...defaultLedgerProfile,
+          ...(result.profile || {}),
+          preferences: {
+            ...defaultLedgerProfile.preferences,
+            ...(result.profile?.preferences || {}),
+          },
+        });
+      } catch {
+        if (active) setProfile(defaultLedgerProfile);
+      }
+    })();
+    return () => { active = false; };
+  }, [user]);
+
+  const displayMoney = (amount: number) => formatLedgerCurrency(amount, profile);
+  const displayQty = (quantity: number) => formatLedgerQuantity(quantity, profile);
+  const displayCommodity = (name: string) => formatCommodityName(name, profile);
 
   if (loading || !data) {
     return (
@@ -565,7 +604,7 @@ export default function LedgerSession() {
               <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center">
                 <span className="text-white font-black text-xs">SL</span>
               </div>
-              <span className="font-bold text-[#1d2226] text-sm hidden sm:block">Smart Ledger</span>
+              <span className="font-bold text-[#1d2226] text-sm hidden sm:block">{profile.businessName || "Smart Ledger"}</span>
             </Link>
           </div>
           <div className="text-xs text-gray-400">
@@ -580,8 +619,8 @@ export default function LedgerSession() {
         {/* Summary pills */}
         <div className="afu grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
-            { label: "Total Value", val: fmt(totalAmount) },
-            { label: "Total Qty", val: fmtQty(totalQty) },
+            { label: "Total Value", val: displayMoney(totalAmount) },
+            { label: "Total Qty", val: displayQty(totalQty) },
             { label: "Commodities", val: String(Object.keys(groupedLive).length) },
             { label: "Entries", val: String(entries.length) },
           ].map((s) => (
@@ -719,7 +758,7 @@ export default function LedgerSession() {
                             />
                           </div>
                           <div className="col-span-2 text-right text-sm font-semibold text-emerald-600">
-                            {fmt((editBuf.rate ?? entry.rate) * (editBuf.quantity ?? entry.quantity))}
+                            {displayMoney((editBuf.rate ?? entry.rate) * (editBuf.quantity ?? entry.quantity))}
                           </div>
                           <div className="col-span-2 flex items-center justify-end gap-1">
                             <button onClick={() => saveEdit(entry.id)} className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
@@ -733,10 +772,10 @@ export default function LedgerSession() {
                           <div className="col-span-1">
                             <span className={`w-1.5 h-1.5 rounded-full inline-block ${entry.uncertain ? "bg-amber-400" : "bg-emerald-500"}`} />
                           </div>
-                          <div className="col-span-3 text-sm font-semibold text-[#1d2226]">{entry.commodity}</div>
-                          <div className="col-span-2 text-sm text-gray-500 text-right">{fmt(entry.rate)}</div>
-                          <div className="col-span-2 text-sm text-gray-500 text-right">{fmtQty(entry.quantity, entry.unit)}</div>
-                          <div className="col-span-2 text-sm font-bold text-emerald-600 text-right">{fmt(entry.amount)}</div>
+                          <div className="col-span-3 text-sm font-semibold text-[#1d2226]">{displayCommodity(entry.commodity)}</div>
+                          <div className="col-span-2 text-sm text-gray-500 text-right">{displayMoney(entry.rate)}</div>
+                          <div className="col-span-2 text-sm text-gray-500 text-right">{displayQty(entry.quantity)}</div>
+                          <div className="col-span-2 text-sm font-bold text-emerald-600 text-right">{displayMoney(entry.amount)}</div>
                           <div className="col-span-2 flex justify-end">
                             <button onClick={() => startEdit(entry)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-300 hover:text-gray-500 transition-colors">
                               <EditIcon className="h-3.5 w-3.5" />
@@ -755,8 +794,8 @@ export default function LedgerSession() {
                   <div className="grid grid-cols-12 gap-2 px-5 py-3.5 bg-emerald-50 border-t border-emerald-100">
                     <div className="col-span-4 text-sm font-bold text-[#1d2226]">Total</div>
                     <div className="col-span-2 text-right text-sm font-semibold text-gray-600">—</div>
-                    <div className="col-span-2 text-right text-sm font-semibold text-gray-600">{fmtQty(totalQty)}</div>
-                    <div className="col-span-2 text-right text-sm font-black text-emerald-700">{fmt(totalAmount)}</div>
+                    <div className="col-span-2 text-right text-sm font-semibold text-gray-600">{displayQty(totalQty)}</div>
+                    <div className="col-span-2 text-right text-sm font-black text-emerald-700">{displayMoney(totalAmount)}</div>
                     <div className="col-span-2" />
                   </div>
                 </div>
@@ -879,17 +918,17 @@ export default function LedgerSession() {
                   <div key={key} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="px-5 py-4 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between flex-wrap gap-2">
                       <div>
-                        <h3 className="font-black text-[#1d2226] text-base">{group.displayName}</h3>
+                        <h3 className="font-black text-[#1d2226] text-base">{displayCommodity(group.displayName)}</h3>
                         <p className="text-xs text-emerald-600 font-medium mt-0.5">{group.entries.length} entries</p>
                       </div>
                       <div className="flex gap-4 text-right">
                         <div>
                           <p className="text-xs text-gray-400">Total Qty</p>
-                          <p className="font-bold text-[#1d2226]">{fmtQty(group.totalQty)}</p>
+                          <p className="font-bold text-[#1d2226]">{displayQty(group.totalQty)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-400">Total Value</p>
-                          <p className="font-black text-emerald-600">{fmt(group.totalAmt)}</p>
+                          <p className="font-black text-emerald-600">{displayMoney(group.totalAmt)}</p>
                         </div>
                       </div>
                     </div>
@@ -898,11 +937,11 @@ export default function LedgerSession() {
                       {group.entries.map((e, i) => (
                         <div key={i} className="px-5 py-3 flex items-center gap-3 text-sm flex-wrap">
                           <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${e.uncertain ? "bg-amber-400" : "bg-emerald-500"}`} />
-                          <span className="text-gray-500 font-mono text-xs bg-gray-50 px-2 py-0.5 rounded">{fmt(e.rate)}</span>
+                          <span className="text-gray-500 font-mono text-xs bg-gray-50 px-2 py-0.5 rounded">{displayMoney(e.rate)}</span>
                           <span className="text-gray-300">×</span>
-                          <span className="text-gray-500 font-mono text-xs bg-gray-50 px-2 py-0.5 rounded">{fmtQty(e.quantity, e.unit)}</span>
+                          <span className="text-gray-500 font-mono text-xs bg-gray-50 px-2 py-0.5 rounded">{displayQty(e.quantity)}</span>
                           <span className="text-gray-300">=</span>
-                          <span className="font-bold text-[#1d2226]">{fmt(e.amount)}</span>
+                          <span className="font-bold text-[#1d2226]">{displayMoney(e.amount)}</span>
                         </div>
                       ))}
                     </div>
@@ -950,12 +989,12 @@ export default function LedgerSession() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
                 <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Total Transaction Value</p>
-                <p className="text-2xl sm:text-3xl font-black text-emerald-600">{fmt(totalAmount)}</p>
+                <p className="text-2xl sm:text-3xl font-black text-emerald-600">{displayMoney(totalAmount)}</p>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
                 <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Total Quantity</p>
-                <p className="text-2xl sm:text-3xl font-black text-[#1d2226]">{totalQty.toLocaleString("en-IN")}</p>
-                <p className="text-xs text-gray-400 mt-1">quintals</p>
+                <p className="text-2xl sm:text-3xl font-black text-[#1d2226]">{displayQty(totalQty)}</p>
+                <p className="text-xs text-gray-400 mt-1">preferred unit</p>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
                 <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Commodities Traded</p>
@@ -987,20 +1026,20 @@ export default function LedgerSession() {
                       <div key={i} className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5 min-w-0">
                           <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.fill }} />
-                          <span className="text-sm font-semibold text-[#1d2226] truncate">{item.name}</span>
+                          <span className="text-sm font-semibold text-[#1d2226] truncate">{displayCommodity(item.name)}</span>
                         </div>
                         <div className="flex items-center gap-3 flex-shrink-0">
                           <div className="w-20 sm:w-28 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                             <div className="h-full rounded-full" style={{ width: `${item.pct}%`, backgroundColor: item.fill }} />
                           </div>
                           <span className="text-xs font-bold text-gray-500 w-8 text-right">{item.pct}%</span>
-                          <span className="text-xs font-bold text-emerald-600 w-20 text-right hidden sm:block">{fmt(item.value)}</span>
+                          <span className="text-xs font-bold text-emerald-600 w-20 text-right hidden sm:block">{displayMoney(item.value)}</span>
                         </div>
                       </div>
                     ))}
                     <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
                       <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total</span>
-                      <span className="text-sm font-black text-emerald-600">{fmt(totalAmount)}</span>
+                      <span className="text-sm font-black text-emerald-600">{displayMoney(totalAmount)}</span>
                     </div>
                   </div>
                 </div>
@@ -1047,16 +1086,16 @@ export default function LedgerSession() {
                       <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                          <h3 className="font-black text-[#1d2226]">{group.displayName}</h3>
+                          <h3 className="font-black text-[#1d2226]">{displayCommodity(group.displayName)}</h3>
                           <span className="text-xs text-gray-400">{group.entries.length} entries</span>
                         </div>
-                        <span className="text-sm font-bold text-emerald-600">{fmt(group.totalAmt)}</span>
+                        <span className="text-sm font-bold text-emerald-600">{displayMoney(group.totalAmt)}</span>
                       </div>
 
                       <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div>
                           <p className="text-xs text-gray-400 mb-1">Qty traded</p>
-                          <p className="font-bold text-[#1d2226]">{fmtQty(group.totalQty)}</p>
+                          <p className="font-bold text-[#1d2226]">{displayQty(group.totalQty)}</p>
                         </div>
                         <div>
                           <p className="text-xs text-gray-400 mb-1">Avg rate</p>
