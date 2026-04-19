@@ -763,7 +763,7 @@ export default function LedgerSession() {
                         </div>
                         <div className="col-span-3 text-sm font-semibold text-[#1d2226]">{displayCommodity(entry.commodity)}</div>
                         <div className="col-span-2 text-right text-sm text-gray-500">{displayMoney(entry.rate)}</div>
-                        <div className="col-span-2 text-right text-sm text-gray-500">{displayQty(entry.quantity, entry.unit)}</div>
+                        <div className="col-span-2 text-right text-sm text-gray-500">{displayQty(entry.quantity)}</div>
                         <div className="col-span-2 text-right text-sm font-bold text-emerald-600">{displayMoney(entry.amount)}</div>
                         <div className="col-span-2 flex justify-end">
                           <button onClick={() => startEdit(entry)} className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-black text-slate-500 transition-colors hover:bg-emerald-50 hover:text-emerald-700">
@@ -783,7 +783,7 @@ export default function LedgerSession() {
                               <span className={`h-2 w-2 rounded-full ${entry.uncertain ? "bg-amber-400" : "bg-emerald-500"}`} />
                               <p className="text-base font-black text-[#1d2226]">{displayCommodity(entry.commodity)}</p>
                             </div>
-                            <p className="text-xs font-semibold text-gray-400">Rate {displayMoney(entry.rate)} · Qty {displayQty(entry.quantity, entry.unit)}</p>
+                            <p className="text-xs font-semibold text-gray-400">Rate {displayMoney(entry.rate)} · Qty {displayQty(entry.quantity)}</p>
                           </div>
                           <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{displayMoney(entry.amount)}</span>
                         </div>
