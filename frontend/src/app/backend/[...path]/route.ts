@@ -1,0 +1,29 @@
+import { NextRequest } from "next/server";
+import { backendProxyMaxDuration, proxyBackendRequest } from "@/lib/backendProxy";
+
+export const maxDuration = backendProxyMaxDuration;
+
+async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
+  const { path } = await params;
+  return proxyBackendRequest(req, path);
+}
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  return proxy(req, params);
+}
+
+export async function POST(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  return proxy(req, params);
+}
+
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  return proxy(req, params);
+}
+
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  return proxy(req, params);
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  return proxy(req, params);
+}

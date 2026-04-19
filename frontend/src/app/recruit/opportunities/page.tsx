@@ -9,6 +9,7 @@ import { computeJobQuality } from "@/lib/jobQuality";
 import RecommendedJobs from "./RecommendedJobs";
 import SavedSearches from "./SavedSearches";
 import PageTracker from "@/components/PageTracker";
+import { apiUrl, readApiJson } from "@/lib/api";
 
 const NICHES = [
   "AI, Data, Software & Product Tech",
@@ -32,12 +33,6 @@ const POSTED_WITHIN = [
   { label: "Last 7 days", value: "7" },
   { label: "Last 30 days", value: "30" },
 ];
-
-const API = (
-  process.env.BACKEND_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  (process.env.NODE_ENV === "production" ? "https://raina-1.onrender.com" : "http://localhost:8080")
-).replace(/\/$/, "");
 
 type PageSearchParams = Record<string, string | string[] | undefined>;
 
@@ -92,9 +87,9 @@ function buildQuery(params: PageSearchParams) {
 async function loadJobs(params: PageSearchParams) {
   try {
     const query = buildQuery(params);
-    const response = await fetch(`${API}/recruit-public/jobs?${query.toString()}`, { cache: "no-store" });
+    const response = await fetch(apiUrl(`/recruit-public/jobs?${query.toString()}`), { cache: "no-store" });
     if (!response.ok) return [];
-    const data = await response.json();
+    const data = await readApiJson(response);
     return (data.jobs ?? []) as Job[];
   } catch {
     return [];

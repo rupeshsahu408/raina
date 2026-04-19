@@ -2,12 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import RecruitHeader from "@/components/RecruitHeader";
 import PageTracker from "@/components/PageTracker";
-
-const API = (
-  process.env.BACKEND_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  (process.env.NODE_ENV === "production" ? "https://raina-1.onrender.com" : "http://localhost:8080")
-).replace(/\/$/, "");
+import { apiUrl, readApiJson } from "@/lib/api";
 
 type NicheConfig = {
   label: string;
@@ -217,9 +212,9 @@ function timeAgo(dateStr?: string) {
 async function fetchNicheJobs(nicheLabel: string, extra?: Record<string, string>): Promise<Job[]> {
   try {
     const query = new URLSearchParams({ niche: nicheLabel, ...extra });
-    const res = await fetch(`${API}/recruit-public/jobs?${query}`, { cache: "no-store" });
+    const res = await fetch(apiUrl(`/recruit-public/jobs?${query}`), { cache: "no-store" });
     if (!res.ok) return [];
-    const data = await res.json();
+    const data = await readApiJson(res);
     return (data.jobs ?? []) as Job[];
   } catch {
     return [];

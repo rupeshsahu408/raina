@@ -11,12 +11,7 @@ import CompanySection from "./CompanySection";
 import QualityBreakdown from "./QualityBreakdown";
 import { computeJobQuality } from "@/lib/jobQuality";
 import PageTracker from "@/components/PageTracker";
-
-const API = (
-  process.env.BACKEND_URL ||
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  (process.env.NODE_ENV === "production" ? "https://raina-1.onrender.com" : "http://localhost:8080")
-).replace(/\/$/, "");
+import { apiUrl, readApiJson } from "@/lib/api";
 
 type Job = {
   _id: string;
@@ -54,9 +49,9 @@ function splitLines(value?: string) {
 
 async function loadJob(id: string) {
   try {
-    const res = await fetch(`${API}/recruit-public/jobs/${id}`, { cache: "no-store" });
+    const res = await fetch(apiUrl(`/recruit-public/jobs/${id}`), { cache: "no-store" });
     if (!res.ok) return null;
-    const data = await res.json();
+    const data = await readApiJson(res);
     return (data.job ?? null) as Job | null;
   } catch {
     return null;

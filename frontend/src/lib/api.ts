@@ -1,9 +1,28 @@
 const DEFAULT_BACKEND_URL = "https://raina-1.onrender.com";
+const FRONTEND_HOSTS = new Set(["plyndrox.app", "www.plyndrox.app"]);
 
-export const API_BASE_URL = (
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  (process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : "/backend")
-).replace(/\/$/, "");
+function normalizeApiBaseUrl(value?: string): string {
+  const raw = (value || "").trim().replace(/\/$/, "");
+  if (!raw) return process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : "/backend";
+
+  if (raw.startsWith("/")) return process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : raw;
+
+  try {
+    const url = new URL(raw);
+    if (FRONTEND_HOSTS.has(url.hostname)) return DEFAULT_BACKEND_URL;
+    if (typeof window !== "undefined" && url.origin === window.location.origin) {
+      return process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : "/backend";
+    }
+  } catch {
+    return process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : "/backend";
+  }
+
+  return raw;
+}
+
+export const API_BASE_URL = normalizeApiBaseUrl(
+  process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL
+);
 
 export function apiUrl(path: string): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
@@ -17,10 +36,11 @@ export async function readApiJson<T = any>(res: Response): Promise<T> {
   try {
     return JSON.parse(text) as T;
   } catch {
+    const contentType = res.headers.get("content-type") || "unknown";
     throw new Error(
       res.ok
         ? "Backend returned an invalid response. Please try again."
-        : `Backend request failed (${res.status}). Please try again.`
+        : `Backend request failed (${res.status}, ${contentType}). Please try again.`
     );
   }
 }

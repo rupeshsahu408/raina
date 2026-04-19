@@ -694,7 +694,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
   async function handleDelete() {
     if (!confirm(`Remove ${c.name} from this pipeline?`)) return;
     try {
-      await fetch(`${API}/recruit/jobs/${jobId}/candidates/${c._id}`, {
+      await fetch(apiUrl(`/recruit/jobs/${jobId}/candidates/${c._id}`), {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -1130,11 +1130,11 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
             </button>
             {candidates.length > 0 && (
               <a
-                href={`${API}/recruit/jobs/${id}/export?format=csv`}
+                href={apiUrl(`/recruit/jobs/${id}/export?format=csv`)}
                 download
                 onClick={async (e) => {
                   e.preventDefault();
-                  const res = await fetch(`${API}/recruit/jobs/${id}/export?format=csv`, {
+                  const res = await fetch(apiUrl(`/recruit/jobs/${id}/export?format=csv`), {
                     headers: { Authorization: `Bearer ${token!}` },
                   });
                   const blob = await res.blob();
