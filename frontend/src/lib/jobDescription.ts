@@ -1,4 +1,4 @@
-export function formatJobDescription(value?: string) {
+export function formatJobDescription(value?: string): string {
   const raw = String(value || "").trim();
   if (!raw) return "";
   const decoded = decodeText(raw);
