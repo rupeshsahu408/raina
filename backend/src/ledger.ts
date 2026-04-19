@@ -7,7 +7,7 @@ export const ledgerRouter = express.Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 15 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB — keeps base64 well under Gemini's 20 MB inline limit
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith("image/")) cb(null, true);
     else cb(new Error("Only image files are supported."));
@@ -177,8 +177,36 @@ ledgerRouter.post(
         return;
       }
 
-      const imageBase64 = req.file.buffer.toString("base64");
-      const mimeType = req.file.mimetype;
+      // Reject HEIC/HEIF — Gemini inline_data does not support these formats
+      const rawMime = req.file.mimetype.toLowerCase();
+      if (rawMime === "image/heic" || rawMime === "image/heif") {
+        res.status(415).json({
+          error: "HEIC/HEIF images are not supported. Please convert your photo to JPEG or PNG before uploading (most phones let you share as JPEG).",
+        });
+        return;
+      }
+
+      // Validate image buffer has valid magic bytes
+      const buf = req.file.buffer;
+      const isJpeg = buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+      const isPng  = buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
+      const isWebp = buf.slice(0, 4).toString("ascii") === "RIFF" && buf.slice(8, 12).toString("ascii") === "WEBP";
+      const isGif  = buf.slice(0, 6).toString("ascii").startsWith("GIF");
+
+      if (!isJpeg && !isPng && !isWebp && !isGif) {
+        res.status(400).json({
+          error: "Unrecognized image format. Please upload a JPEG, PNG, or WebP photo of your satti.",
+        });
+        return;
+      }
+
+      // Determine correct MIME type from actual magic bytes (overrides browser-reported type)
+      let mimeType = "image/jpeg";
+      if (isPng)  mimeType = "image/png";
+      if (isWebp) mimeType = "image/webp";
+      if (isGif)  mimeType = "image/gif";
+
+      const imageBase64 = buf.toString("base64");
 
       let rawText = "";
       let structured: any = {};
@@ -187,7 +215,14 @@ ledgerRouter.post(
         rawText = result.rawText;
         structured = result.structured;
       } catch (err: any) {
-        res.status(502).json({ error: `AI processing failed: ${err.message}` });
+        const msg: string = err.message || "";
+        if (msg.includes("Unable to process input image")) {
+          res.status(422).json({
+            error: "The image could not be read. Please take a clearer photo with good lighting, or try a JPEG/PNG format.",
+          });
+        } else {
+          res.status(502).json({ error: `AI processing failed: ${msg}` });
+        }
         return;
       }
 
