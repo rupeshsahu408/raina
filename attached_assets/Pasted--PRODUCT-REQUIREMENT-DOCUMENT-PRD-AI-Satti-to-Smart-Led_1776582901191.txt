@@ -1,0 +1,132 @@
+🚀 📄 PRODUCT REQUIREMENT DOCUMENT (PRD)
+AI “Satti to Smart Ledger” System (Trader Accounting AI)
+🧠 1. PRODUCT IDEA SUMMARY
+
+We are building an AI-powered accounting + analytics system for small/medium grain traders (munim system users in India).
+
+Users currently maintain handwritten “satti/copy” records of daily transactions. The goal is to digitize and intelligently analyze these handwritten records without changing user behavior.
+
+👉 Users will ONLY:
+
+Write satti as usual (Hindi/English mixed)
+Upload photo or PDF
+
+👉 System will:
+
+Extract data using AI OCR
+Structure it
+Group it
+Calculate totals
+Provide full transparent analytics
+📥 2. INPUT SYSTEM
+Image upload (mobile photo of handwritten satti)
+PDF upload (optional later)
+Multi-language support:
+Hindi (Devanagari)
+English
+Mixed format
+Numbers may appear in:
+English digits (24, 25)
+Hindi digits (२४, २५)
+🧾 3. DATA STRUCTURE (EXPECTED FIELDS)
+
+Each entry contains:
+
+Commodity (e.g., Gehu, Chawal, Sarson)
+Rate (per quintal)
+Quantity (quintal/kg)
+Total amount
+🧠 4. CORE AI PIPELINE
+Step 1: OCR Processing
+Extract handwritten text from image/PDF
+Handle messy handwriting + mixed language
+Step 2: Normalization
+Convert all text into structured format:
+commodity
+rate
+quantity
+amount
+Step 3: Data Cleaning
+Standardize units and numbers
+Convert Hindi numbers to English
+Normalize commodity names (Gehu = Wheat, etc.)
+Step 4: Grouping Engine
+Group all entries by commodity type
+
+Example:
+
+Gehu group
+Chawal group
+Sarson group
+📊 5. OUTPUT SYSTEM (VERY IMPORTANT)
+
+System must show 3 layers of output:
+
+🔵 VIEW 1: RAW TRANSPARENCY VIEW
+Exact extracted entries from satti
+No modification
+Same order as written
+🟢 VIEW 2: GROUPED ANALYTICS VIEW
+
+For each commodity:
+
+Individual entries:
+rate × quantity = amount
+Total quantity
+Total value
+📊 VIEW 3: SUMMARY + INTELLIGENCE VIEW
+Total quantity (all commodities combined)
+Total amount
+Commodity-wise distribution
+Price range analysis:
+Min rate
+Max rate
+Average rate
+Probability insights:
+e.g. 70% purchases at ₹24, 30% at ₹25
+🔍 6. TRANSPARENCY REQUIREMENT (CRITICAL)
+
+System must ALWAYS:
+
+Show raw extracted data
+Show grouped calculation steps
+Never hide intermediate calculations
+Allow user verification/editing
+⚠️ 7. ERROR HANDLING
+Allow manual correction of OCR mistakes
+Recalculate instantly after correction
+Highlight uncertain predictions
+📱 8. UI REQUIREMENTS
+
+Dashboard should include:
+
+Upload section (image/PDF)
+Raw view tab
+Grouped view tab
+Summary analytics tab
+Editable entries system
+Live calculation animation (optional)
+🧠 9. KEY PRODUCT PRINCIPLE
+
+👉 “User behavior should NOT change”
+
+No typing required
+No new learning required
+Only photo upload system
+🚀 10. FUTURE EXPANSION (PHASE 2)
+Stock tracking (godown inventory)
+Purchase vs sell profit analysis
+Predictive pricing insights
+Market timing suggestions
+💰 11. TARGET USERS
+Grain traders
+Small shopkeepers
+Commission agents (munim system users)
+Rural + semi-urban India
+🎯 12. PRODUCT GOAL
+
+👉 Convert handwritten financial records into:
+
+Structured data
+Transparent accounting
+Smart business insights
