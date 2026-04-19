@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import RecruitHeader from "@/components/RecruitHeader";
+import { RecruitGuard } from "@/components/RecruitGuard";
 import { apiUrl, readApiJson } from "@/lib/api";
 
 const STAGE_META: Record<string, { label: string; color: string; icon: string }> = {
@@ -35,7 +36,7 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(days / 30)}mo ago`;
 }
 
-export default function MyApplicationsPage() {
+function MyApplicationsContent() {
   const [email, setEmail] = useState("");
   const [inputEmail, setInputEmail] = useState("");
   const [applications, setApplications] = useState<Application[]>([]);
@@ -230,4 +231,8 @@ export default function MyApplicationsPage() {
       </main>
     </div>
   );
+}
+
+export default function MyApplicationsPage() {
+  return <RecruitGuard requiredRole="seeker"><MyApplicationsContent /></RecruitGuard>;
 }

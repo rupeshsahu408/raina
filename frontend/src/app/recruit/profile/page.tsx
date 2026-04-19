@@ -6,6 +6,7 @@ import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import RecruitHeader from "@/components/RecruitHeader";
+import { RecruitGuard } from "@/components/RecruitGuard";
 import { apiUrl, readApiJson } from "@/lib/api";
 
 const NICHES = [
@@ -77,7 +78,7 @@ function Select({ label, children, ...props }: { label: string } & React.SelectH
   );
 }
 
-export default function RecruitProfilePage() {
+function RecruitProfileContent() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -516,4 +517,8 @@ export default function RecruitProfilePage() {
       </main>
     </div>
   );
+}
+
+export default function RecruitProfilePage() {
+  return <RecruitGuard requiredRole="seeker"><RecruitProfileContent /></RecruitGuard>;
 }

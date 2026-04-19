@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, use } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
+import { RecruitGuard } from "@/components/RecruitGuard";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 import { trackEvent } from "@/lib/trackEvent";
@@ -1009,7 +1010,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
   );
 }
 
-export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
@@ -1474,4 +1475,8 @@ ${jobDescription}`;
       ))}
     </div>
   );
+}
+
+export default function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  return <RecruitGuard requiredRole="creator"><JobDetailContent params={params} /></RecruitGuard>;
 }

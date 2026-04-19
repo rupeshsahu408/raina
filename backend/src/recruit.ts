@@ -8,6 +8,7 @@ import { RecruitCompanyProfile } from "./models/RecruitCompanyProfile";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 import { RecruitJobAlert } from "./models/RecruitJobAlert";
 import { UsageEvent } from "./models/UsageEvent";
+import { RecruitProfile } from "./models/RecruitProfile";
 
 function trackEvent(event: string, uid?: string, data?: Record<string, unknown>) {
   UsageEvent.create({ event, uid, data: data ?? {} }).catch(() => {});
@@ -22,6 +23,42 @@ const FRONTEND_URL = process.env.FRONTEND_URL ?? "https://www.plyndrox.app";
 function getUid(req: express.Request): string {
   return (req as any).user?.uid ?? "";
 }
+
+recruitRouter.post("/auth/profile", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    const { role, name, email } = req.body as { role?: string; name?: string; email?: string };
+    if (!role || !["creator", "seeker"].includes(role)) {
+      return res.status(400).json({ error: "Invalid role. Must be 'creator' or 'seeker'." });
+    }
+    const existing = await RecruitProfile.findOne({ uid });
+    if (existing) {
+      return res.json({ uid: existing.uid, role: existing.role, name: existing.name, email: existing.email });
+    }
+    const profile = await RecruitProfile.create({ uid, role, name: name ?? "", email: email ?? "" });
+    trackEvent("recruit_profile_created", uid, { role });
+    return res.json({ uid: profile.uid, role: profile.role, name: profile.name, email: profile.email });
+  } catch (err) {
+    console.error("recruit profile create error", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+recruitRouter.get("/auth/profile", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    const profile = await RecruitProfile.findOne({ uid });
+    if (!profile) return res.status(404).json({ error: "No recruit profile found" });
+    return res.json({ uid: profile.uid, role: profile.role, name: profile.name, email: profile.email });
+  } catch (err) {
+    console.error("recruit profile get error", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 function safeJson(text: string): any {
   const normalized = String(text || "").trim();

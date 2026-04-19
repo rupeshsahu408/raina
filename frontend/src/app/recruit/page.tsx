@@ -65,16 +65,15 @@ export default function RecruitLandingPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             <Link href="/recruit/opportunities" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">Find Jobs</Link>
-            <Link href="/recruit/saved-jobs" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">Saved Jobs</Link>
-            <Link href="/recruit/my-applications" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">My Applications</Link>
-            <Link href="/recruit/dashboard" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">For Recruiters</Link>
+            <Link href="/recruit/signup" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">For Job Seekers</Link>
+            <Link href="/recruit/signup" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">For Recruiters</Link>
           </nav>
           <div className="flex items-center gap-2">
-            <Link href="/recruit/profile" className="hidden sm:inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-              My Profile
+            <Link href="/recruit/login" className="hidden sm:inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+              Sign in
             </Link>
-            <Link href="/recruit/jobs/new" className="rounded-full bg-[#0a66c2] px-4 py-2 text-xs font-bold text-white hover:bg-[#004182] transition">
-              Post a job
+            <Link href="/recruit/signup" className="rounded-full bg-[#0a66c2] px-4 py-2 text-xs font-bold text-white hover:bg-[#004182] transition">
+              Get started
             </Link>
             <button
               onClick={() => setMobileMenuOpen(o => !o)}
@@ -89,10 +88,8 @@ export default function RecruitLandingPage() {
             <nav className="flex flex-col gap-1">
               {[
                 { href: "/recruit/opportunities", label: "Find Jobs" },
-                { href: "/recruit/saved-jobs", label: "Saved Jobs" },
-                { href: "/recruit/my-applications", label: "My Applications" },
-                { href: "/recruit/profile", label: "My Profile" },
-                { href: "/recruit/dashboard", label: "Recruiter Dashboard" },
+                { href: "/recruit/login", label: "Sign in" },
+                { href: "/recruit/signup", label: "Create account" },
               ].map(link => (
                 <Link
                   key={link.href}
@@ -105,11 +102,11 @@ export default function RecruitLandingPage() {
               ))}
               <div className="mt-2 pt-2 border-t border-slate-100">
                 <Link
-                  href="/recruit/jobs/new"
+                  href="/recruit/signup"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block rounded-xl bg-[#0a66c2] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#004182] transition"
                 >
-                  Post a job →
+                  Get started →
                 </Link>
               </div>
             </nav>
@@ -221,8 +218,8 @@ export default function RecruitLandingPage() {
                 <Link href="/recruit/opportunities" className="flex-1 rounded-full bg-[#0a66c2] px-5 py-2.5 text-center text-xs font-bold text-white hover:bg-[#004182] transition">
                   Browse jobs
                 </Link>
-                <Link href="/recruit/profile" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                  Build profile
+                <Link href="/recruit/signup" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                  Sign up as Seeker
                 </Link>
               </div>
             </div>
@@ -241,11 +238,11 @@ export default function RecruitLandingPage() {
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <Link href="/recruit/jobs/new" className="flex-1 rounded-full bg-[#0a66c2] px-5 py-2.5 text-center text-xs font-bold text-white hover:bg-[#004182] transition">
-                  Post a job
+                <Link href="/recruit/signup" className="flex-1 rounded-full bg-[#0a66c2] px-5 py-2.5 text-center text-xs font-bold text-white hover:bg-[#004182] transition">
+                  Sign up as Creator
                 </Link>
-                <Link href="/recruit/dashboard" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                  Dashboard
+                <Link href="/recruit/login" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                  Sign in
                 </Link>
               </div>
             </div>

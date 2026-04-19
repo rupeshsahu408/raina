@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { RecruitGuard } from "@/components/RecruitGuard";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
@@ -49,7 +50,7 @@ function Select({ label, children, ...props }: { label: string } & React.SelectH
   );
 }
 
-export default function CompanyProfilePage() {
+function CompanyProfileContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -277,4 +278,8 @@ export default function CompanyProfilePage() {
       </main>
     </div>
   );
+}
+
+export default function CompanyProfilePage() {
+  return <RecruitGuard requiredRole="creator"><CompanyProfileContent /></RecruitGuard>;
 }

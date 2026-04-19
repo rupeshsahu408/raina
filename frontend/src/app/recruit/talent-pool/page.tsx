@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { RecruitGuard } from "@/components/RecruitGuard";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
@@ -198,7 +199,7 @@ function CandidateRow({
   );
 }
 
-export default function TalentPoolPage() {
+function TalentPoolContent() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<PoolCandidate[]>([]);
@@ -313,4 +314,8 @@ export default function TalentPoolPage() {
       </main>
     </div>
   );
+}
+
+export default function TalentPoolPage() {
+  return <RecruitGuard requiredRole="creator"><TalentPoolContent /></RecruitGuard>;
 }

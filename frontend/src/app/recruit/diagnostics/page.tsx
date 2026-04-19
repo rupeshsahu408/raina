@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { RecruitGuard } from "@/components/RecruitGuard";
 import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import RecruitHeader from "@/components/RecruitHeader";
@@ -156,7 +157,7 @@ function CheckCard({ check }: { check: CheckResult }) {
   );
 }
 
-export default function RecruitDiagnosticsPage() {
+function RecruitDiagnosticsContent() {
   const [auth, setAuth] = useState<AuthState>({ loading: true, signedIn: false });
   const [checks, setChecks] = useState<CheckResult[]>([]);
   const [running, setRunning] = useState(false);
@@ -337,4 +338,7 @@ export default function RecruitDiagnosticsPage() {
       </main>
     </div>
   );
+}
+export default function RecruitDiagnosticsPage() {
+  return <RecruitGuard requiredRole="creator"><RecruitDiagnosticsContent /></RecruitGuard>;
 }

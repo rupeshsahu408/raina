@@ -6,6 +6,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 import { apiUrl, readApiJson } from "@/lib/api";
+import { RecruitGuard } from "@/components/RecruitGuard";
 
 type Job = {
   _id: string;
@@ -118,7 +119,7 @@ type PipelineSummary = {
   offer: number;
 };
 
-export default function RecruitDashboardPage() {
+function RecruitDashboardContent() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -362,4 +363,8 @@ export default function RecruitDashboardPage() {
       </main>
     </div>
   );
+}
+
+export default function RecruitDashboardPage() {
+  return <RecruitGuard requiredRole="creator"><RecruitDashboardContent /></RecruitGuard>;
 }

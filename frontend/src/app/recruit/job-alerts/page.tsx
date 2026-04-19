@@ -2,6 +2,7 @@
 import { trackEvent } from "@/lib/trackEvent";
 
 import { useState, useEffect, useCallback } from "react";
+import { RecruitGuard } from "@/components/RecruitGuard";
 import Link from "next/link";
 import RecruitHeader from "@/components/RecruitHeader";
 import { apiUrl, readApiJson } from "@/lib/api";
@@ -87,7 +88,7 @@ function ChevronDown() {
   );
 }
 
-export default function JobAlertsPage() {
+function JobAlertsContent() {
   const [email, setEmail] = useState("");
   const [inputEmail, setInputEmail] = useState("");
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -409,4 +410,8 @@ export default function JobAlertsPage() {
       </main>
     </div>
   );
+}
+
+export default function JobAlertsPage() {
+  return <RecruitGuard requiredRole="seeker"><JobAlertsContent /></RecruitGuard>;
 }

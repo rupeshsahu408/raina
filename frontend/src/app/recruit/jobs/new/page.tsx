@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
+import { RecruitGuard } from "@/components/RecruitGuard";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 import { computeJobQuality } from "@/lib/jobQuality";
@@ -117,7 +118,7 @@ function Textarea({ value, onChange, placeholder, rows = 4 }: {
   );
 }
 
-export default function NewJobPage() {
+function NewJobContent() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormData>(DEFAULT);
@@ -627,4 +628,8 @@ export default function NewJobPage() {
       </main>
     </div>
   );
+}
+
+export default function NewJobPage() {
+  return <RecruitGuard requiredRole="creator"><NewJobContent /></RecruitGuard>;
 }

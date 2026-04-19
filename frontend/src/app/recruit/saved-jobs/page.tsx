@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import RecruitHeader from "@/components/RecruitHeader";
+import { RecruitGuard } from "@/components/RecruitGuard";
 
 type SavedJob = {
   jobId: string;
@@ -25,7 +26,7 @@ function timeAgo(dateStr: string) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-export default function SavedJobsPage() {
+function SavedJobsContent() {
   const [savedJobs, setSavedJobs] = useState<SavedJob[]>([]);
   const [mounted, setMounted] = useState(false);
 
@@ -140,4 +141,8 @@ export default function SavedJobsPage() {
       </main>
     </div>
   );
+}
+
+export default function SavedJobsPage() {
+  return <RecruitGuard requiredRole="seeker"><SavedJobsContent /></RecruitGuard>;
 }
