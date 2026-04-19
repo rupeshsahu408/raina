@@ -7,23 +7,20 @@ export const ledgerRouter = express.Router();
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB — keeps base64 well under Gemini's 20 MB inline limit
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max (frontend pre-resizes to ~500 KB anyway)
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith("image/")) cb(null, true);
     else cb(new Error("Only image files are supported."));
   },
 });
 
-const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
+const NVIDIA_KEY = process.env.NVIDIA_API_KEY || "";
 
 function getUid(req: express.Request): string {
   return (req as any).user?.uid ?? "";
 }
 
-async function runGeminiOCRAndStructure(imageBase64: string, mimeType: string): Promise<{ rawText: string; structured: any }> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`;
-
-  const prompt = `You are an expert accounting assistant specializing in Indian grain trader records (सट्टी / satti).
+const SATTI_PROMPT = `You are an expert accounting assistant specializing in Indian grain trader records (सट्टी / satti).
 
 You are given an image of a handwritten satti record. Your task is TWO steps in ONE response:
 
@@ -41,7 +38,7 @@ Rules:
 3. For each entry extract: commodity, rate (per quintal, as number), quantity (as number, assume quintals unless kg explicitly mentioned), unit ("qtl" or "kg"), amount (rate × quantity, calculate if missing)
 4. If a field is unclear, make your best guess and set "uncertain": true for that entry
 5. Group entries by commodity (case-insensitive, treat हिंदी and English names for same grain as same group)
-6. Calculate per-group: totalQuantity, totalAmount, rates array, minRate, maxRate, avgRate, priceDistribution (% of qty at each price point)
+6. Calculate per-group: totalQuantity, totalAmount, minRate, maxRate, avgRate, priceDistribution (% of qty at each price point)
 7. Calculate overall: totalQuantity, totalAmount, commodityCount
 
 Respond ONLY with valid JSON, no explanation, no markdown code blocks. Use this exact structure:
@@ -63,7 +60,7 @@ Respond ONLY with valid JSON, no explanation, no markdown code blocks. Use this 
   "grouped": {
     "COMMODITY_KEY": {
       "displayName": "string",
-      "entries": [array of entry ids],
+      "entries": [1],
       "totalQuantity": number,
       "totalAmount": number,
       "minRate": number,
@@ -84,47 +81,12 @@ Respond ONLY with valid JSON, no explanation, no markdown code blocks. Use this 
   }
 }`;
 
-  const body = {
-    contents: [
-      {
-        parts: [
-          { text: prompt },
-          {
-            inline_data: {
-              mime_type: mimeType,
-              data: imageBase64,
-            },
-          },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.1,
-      maxOutputTokens: 4096,
-    },
-  };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Gemini error: ${err}`);
-  }
-
-  const data: any = await res.json();
-  const rawJson: string =
-    data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-
-  const cleaned = rawJson
+function parseAIResponse(raw: string): { rawText: string; structured: any } {
+  const cleaned = raw
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
     .replace(/\s*```$/i, "")
     .trim();
-
   try {
     const parsed = JSON.parse(cleaned);
     return {
@@ -155,6 +117,44 @@ Respond ONLY with valid JSON, no explanation, no markdown code blocks. Use this 
   }
 }
 
+async function runNvidiaOCRAndStructure(imageBase64: string, mimeType: string): Promise<{ rawText: string; structured: any }> {
+  const body = {
+    model: "meta/llama-3.2-11b-vision-instruct",
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: SATTI_PROMPT },
+          {
+            type: "image_url",
+            image_url: { url: `data:${mimeType};base64,${imageBase64}` },
+          },
+        ],
+      },
+    ],
+    temperature: 0.1,
+    max_tokens: 4096,
+  };
+
+  const res = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${NVIDIA_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`NVIDIA API error: ${err}`);
+  }
+
+  const data: any = await res.json();
+  const rawJson: string = data?.choices?.[0]?.message?.content || "{}";
+  return parseAIResponse(rawJson);
+}
+
 /* ── Upload & Process ── */
 ledgerRouter.post(
   "/upload",
@@ -172,8 +172,8 @@ ledgerRouter.post(
         return;
       }
 
-      if (!GEMINI_KEY) {
-        res.status(500).json({ error: "Gemini API key not configured." });
+      if (!NVIDIA_KEY) {
+        res.status(500).json({ error: "NVIDIA API key not configured." });
         return;
       }
 
@@ -205,7 +205,7 @@ ledgerRouter.post(
       else if (isWebp) mimeType = "image/webp";
       else if (isGif)  mimeType = "image/gif";
       else {
-        // Magic bytes not recognized — trust browser MIME type and let Gemini decide
+        // Magic bytes not recognized — trust browser MIME type and let NVIDIA decide
         const fallback = rawMime === "image/jpg" ? "image/jpeg" : rawMime;
         mimeType = fallback || "image/jpeg";
         console.warn(`[ledger/upload] Unknown magic bytes for mime=${rawMime}, buf=${buf.slice(0,4).toString("hex")} — using ${mimeType}`);
@@ -216,18 +216,12 @@ ledgerRouter.post(
       let rawText = "";
       let structured: any = {};
       try {
-        const result = await runGeminiOCRAndStructure(imageBase64, mimeType);
+        const result = await runNvidiaOCRAndStructure(imageBase64, mimeType);
         rawText = result.rawText;
         structured = result.structured;
       } catch (err: any) {
         const msg: string = err.message || "";
-        if (msg.includes("Unable to process input image")) {
-          res.status(422).json({
-            error: "The image could not be read. Please take a clearer photo with good lighting, or try a JPEG/PNG format.",
-          });
-        } else {
-          res.status(502).json({ error: `AI processing failed: ${msg}` });
-        }
+        res.status(502).json({ error: `AI processing failed: ${msg}` });
         return;
       }
 
