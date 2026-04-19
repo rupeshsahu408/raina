@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import QuickCalculator from "@/components/ledger/QuickCalculator";
 import { useLedgerAuth } from "@/contexts/LedgerAuthContext";
 import {
   defaultLedgerProfile,
@@ -206,6 +207,7 @@ export default function LedgerDashboard() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
 
   /* Manual text entry state */
   const [showTextEntry, setShowTextEntry] = useState(false);
@@ -626,7 +628,7 @@ export default function LedgerDashboard() {
   const topDaily = businessSummary.daily.slice(0, 10);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f4f8f5]">
       <style>{`
         @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .afu { animation: fadeUp 0.5s ease-out forwards; }
@@ -640,10 +642,10 @@ export default function LedgerDashboard() {
       `}</style>
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 border-b border-emerald-100 bg-white/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
           <Link href="/ledger" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center flex-shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-[#123f31] flex items-center justify-center flex-shrink-0">
               <span className="text-white font-black text-xs">SL</span>
             </div>
             <div className="min-w-0">
@@ -705,18 +707,37 @@ export default function LedgerDashboard() {
         )}
       </nav>
 
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
 
         {/* Greeting */}
-        <div className="afu mb-8">
-          <h1 className="text-2xl sm:text-3xl font-black text-[#1d2226] mb-1">
+        <div className="afu mb-6 rounded-[2rem] bg-[#123f31] p-5 text-white shadow-sm sm:p-7">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+          <p className="mb-2 text-xs font-black uppercase tracking-[0.24em] text-emerald-100">Smart Ledger Control Panel</p>
+          <h1 className="text-2xl sm:text-4xl font-black mb-1">
             {profile.businessName ? businessTitle : `Good to see you, ${firstName} 👋`}
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="max-w-2xl text-sm font-medium text-emerald-50">
             {profile.businessName
               ? `${profile.businessType.replace(/_/g, " ")} control panel${profile.ownerName ? ` for ${profile.ownerName}` : ""}`
               : "Set up your business profile so Smart Ledger can adapt to your work style."}
           </p>
+            </div>
+            <div className="grid grid-cols-3 gap-2 sm:min-w-[420px]">
+              <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-100">Uploads</p>
+                <p className="mt-1 text-xl font-black">{sessions.length}</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-100">Month</p>
+                <p className="mt-1 text-xl font-black">{businessSummary.monthly[0] ? displayMoney(businessSummary.monthly[0].totalAmount) : "₹0"}</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/10">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-100">Year</p>
+                <p className="mt-1 text-xl font-black">{businessSummary.yearly[0] ? displayMoney(businessSummary.yearly[0].totalAmount) : "₹0"}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {showProfileSettings && (
@@ -854,6 +875,45 @@ export default function LedgerDashboard() {
             </div>
           </div>
         )}
+
+        <div className="afu-2 mb-8 grid gap-4 lg:grid-cols-[1fr_360px]">
+          <Link
+            href="/ledger/dashboard/timeline"
+            className="flex items-center justify-between rounded-[1.75rem] border border-emerald-100 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
+                <TrendingUpIcon className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-base font-black text-[#1d2226]">Business Summary Timeline</p>
+                <p className="mt-1 text-sm font-medium text-gray-500">Daily entries roll into monthly totals, then yearly performance.</p>
+              </div>
+            </div>
+            <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setCalculatorOpen(true)}
+            className="flex items-center justify-between rounded-[1.75rem] border border-emerald-100 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md lg:hidden"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
+                <span className="text-xl font-black">=</span>
+              </div>
+              <div>
+                <p className="text-base font-black text-[#1d2226]">Quick Calculator</p>
+                <p className="mt-1 text-sm font-medium text-gray-500">Open calculator without leaving this dashboard.</p>
+              </div>
+            </div>
+            <ChevronRightIcon className="h-5 w-5 text-gray-400" />
+          </button>
+
+          <div className="hidden lg:block lg:row-span-2">
+            <QuickCalculator compact />
+          </div>
+        </div>
 
         {/* Upload zone */}
         {uploadModeEnabled && (
@@ -1514,6 +1574,28 @@ export default function LedgerDashboard() {
           </div>
         </div>
       </main>
+
+      {calculatorOpen && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/35 p-0 sm:items-center sm:p-6" role="dialog" aria-modal="true">
+          <div className="w-full max-w-md rounded-t-[2rem] bg-[#f4f8f5] p-4 shadow-2xl sm:rounded-[2rem]">
+            <div className="mb-3 flex items-start justify-between gap-3 px-1">
+              <div>
+                <p className="text-xl font-black text-[#1d2226]">Quick Calculator</p>
+                <p className="text-sm font-medium text-gray-500">Use it without leaving the ledger dashboard.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCalculatorOpen(false)}
+                className="rounded-full p-2 text-gray-400 transition-colors hover:bg-white hover:text-gray-700"
+                aria-label="Close calculator"
+              >
+                <XIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <QuickCalculator compact />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

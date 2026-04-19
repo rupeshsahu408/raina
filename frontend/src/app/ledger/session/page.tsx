@@ -300,19 +300,44 @@ export default function LedgerSession() {
 
   function startEdit(entry: Entry) {
     setEditingId(entry.id);
-    setEditBuf({ rate: entry.rate, quantity: entry.quantity, commodity: entry.commodity });
+    setEditBuf({ rate: entry.rate, quantity: entry.quantity, commodity: entry.commodity, unit: entry.unit, rawLine: entry.rawLine });
   }
 
   function saveEdit(entryId: number) {
-    setEntries((prev) =>
-      prev.map((e) => {
+    setEntries((prev) => {
+      const nextEntries = prev.map((e) => {
         if (e.id !== entryId) return e;
         const rate = Number(editBuf.rate ?? e.rate);
         const quantity = Number(editBuf.quantity ?? e.quantity);
         const amount = rate * quantity;
-        return { ...e, rate, quantity, amount, commodity: editBuf.commodity ?? e.commodity, uncertain: false };
-      })
-    );
+        return {
+          ...e,
+          rate,
+          quantity,
+          amount,
+          commodity: editBuf.commodity ?? e.commodity,
+          unit: editBuf.unit ?? e.unit,
+          rawLine: editBuf.rawLine ?? e.rawLine,
+          uncertain: false,
+        };
+      });
+      setData((prevData) => {
+        if (!prevData) return prevData;
+        const nextData = {
+          ...prevData,
+          entries: nextEntries,
+          summary: {
+            ...prevData.summary,
+            totalEntries: nextEntries.length,
+            totalQuantity: nextEntries.reduce((sum, item) => sum + item.quantity, 0),
+            totalAmount: nextEntries.reduce((sum, item) => sum + item.amount, 0),
+          },
+        };
+        sessionStorage.setItem("ledger_session", JSON.stringify(nextData));
+        return nextData;
+      });
+      return nextEntries;
+    });
     setEditingId(null);
     setEditBuf({});
   }
@@ -321,6 +346,7 @@ export default function LedgerSession() {
 
   const totalAmount = entries.reduce((s, e) => s + e.amount, 0);
   const totalQty = entries.reduce((s, e) => s + e.quantity, 0);
+  const editingEntry = entries.find((entry) => entry.id === editingId) || null;
 
   const groupedLive: Record<string, {
     displayName: string;
@@ -730,59 +756,43 @@ export default function LedgerSession() {
                   </div>
 
                   {entries.map((entry) => (
-                    <div key={entry.id} className="entry-row px-5 py-3">
-                      {editingId === entry.id ? (
-                        <div className="grid grid-cols-12 gap-2 items-center">
-                          <div className="col-span-1 text-xs text-gray-300">{entry.id}</div>
-                          <div className="col-span-3">
-                            <input
-                              className="w-full text-sm border border-emerald-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-100"
-                              value={editBuf.commodity ?? entry.commodity}
-                              onChange={(e) => setEditBuf((b) => ({ ...b, commodity: e.target.value }))}
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <input
-                              type="number"
-                              className="w-full text-sm border border-emerald-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-100 text-right"
-                              value={editBuf.rate ?? entry.rate}
-                              onChange={(e) => setEditBuf((b) => ({ ...b, rate: Number(e.target.value) }))}
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <input
-                              type="number"
-                              className="w-full text-sm border border-emerald-300 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-100 text-right"
-                              value={editBuf.quantity ?? entry.quantity}
-                              onChange={(e) => setEditBuf((b) => ({ ...b, quantity: Number(e.target.value) }))}
-                            />
-                          </div>
-                          <div className="col-span-2 text-right text-sm font-semibold text-emerald-600">
-                            {displayMoney((editBuf.rate ?? entry.rate) * (editBuf.quantity ?? entry.quantity))}
-                          </div>
-                          <div className="col-span-2 flex items-center justify-end gap-1">
-                            <button onClick={() => saveEdit(entry.id)} className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
-                              <CheckIcon className="h-3.5 w-3.5" />
-                            </button>
-                            <button onClick={cancelEdit} className="p-1.5 rounded-lg bg-gray-50 text-gray-400 hover:bg-gray-100 transition-colors text-xs font-bold">✕</button>
-                          </div>
+                    <div key={entry.id} className="entry-row px-4 py-3 sm:px-5">
+                      <div className="hidden grid-cols-12 items-center gap-2 sm:grid">
+                        <div className="col-span-1">
+                          <span className={`inline-block h-1.5 w-1.5 rounded-full ${entry.uncertain ? "bg-amber-400" : "bg-emerald-500"}`} />
                         </div>
-                      ) : (
-                        <div className="grid grid-cols-12 gap-2 items-center">
-                          <div className="col-span-1">
-                            <span className={`w-1.5 h-1.5 rounded-full inline-block ${entry.uncertain ? "bg-amber-400" : "bg-emerald-500"}`} />
-                          </div>
-                          <div className="col-span-3 text-sm font-semibold text-[#1d2226]">{displayCommodity(entry.commodity)}</div>
-                          <div className="col-span-2 text-sm text-gray-500 text-right">{displayMoney(entry.rate)}</div>
-                          <div className="col-span-2 text-sm text-gray-500 text-right">{displayQty(entry.quantity)}</div>
-                          <div className="col-span-2 text-sm font-bold text-emerald-600 text-right">{displayMoney(entry.amount)}</div>
-                          <div className="col-span-2 flex justify-end">
-                            <button onClick={() => startEdit(entry)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-300 hover:text-gray-500 transition-colors">
-                              <EditIcon className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
+                        <div className="col-span-3 text-sm font-semibold text-[#1d2226]">{displayCommodity(entry.commodity)}</div>
+                        <div className="col-span-2 text-right text-sm text-gray-500">{displayMoney(entry.rate)}</div>
+                        <div className="col-span-2 text-right text-sm text-gray-500">{displayQty(entry.quantity, entry.unit)}</div>
+                        <div className="col-span-2 text-right text-sm font-bold text-emerald-600">{displayMoney(entry.amount)}</div>
+                        <div className="col-span-2 flex justify-end">
+                          <button onClick={() => startEdit(entry)} className="rounded-xl bg-slate-50 px-3 py-2 text-xs font-black text-slate-500 transition-colors hover:bg-emerald-50 hover:text-emerald-700">
+                            Edit
+                          </button>
                         </div>
-                      )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => startEdit(entry)}
+                        className="w-full rounded-2xl border border-gray-100 bg-white p-4 text-left shadow-sm sm:hidden"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="mb-2 flex items-center gap-2">
+                              <span className={`h-2 w-2 rounded-full ${entry.uncertain ? "bg-amber-400" : "bg-emerald-500"}`} />
+                              <p className="text-base font-black text-[#1d2226]">{displayCommodity(entry.commodity)}</p>
+                            </div>
+                            <p className="text-xs font-semibold text-gray-400">Rate {displayMoney(entry.rate)} · Qty {displayQty(entry.quantity, entry.unit)}</p>
+                          </div>
+                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-black text-emerald-700">{displayMoney(entry.amount)}</span>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between border-t border-gray-50 pt-3">
+                          <span className="text-xs font-semibold text-gray-400">Tap to edit entry</span>
+                          <EditIcon className="h-4 w-4 text-gray-400" />
+                        </div>
+                      </button>
+
                       {entry.uncertain && editingId !== entry.id && (
                         <div className="mt-1 flex items-center gap-1.5 text-xs text-amber-500 ml-5">
                           <AlertIcon className="h-3 w-3" /> Review suggested · Original: <span className="font-mono">{entry.rawLine}</span>
@@ -1179,6 +1189,87 @@ export default function LedgerSession() {
           </div>
         )}
       </main>
+
+      {editingEntry && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/40 p-0 sm:items-center sm:p-6" role="dialog" aria-modal="true">
+          <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-t-[2rem] bg-[#f4f8f5] p-4 shadow-2xl sm:rounded-[2rem] sm:p-5">
+            <div className="mb-4 flex items-start justify-between gap-3 px-1">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-700">Edit ledger entry</p>
+                <h2 className="mt-1 text-2xl font-black text-[#1d2226]">{displayCommodity(editingEntry.commodity)}</h2>
+                <p className="mt-1 text-sm font-medium text-gray-500">Update the extracted values before saving this satti.</p>
+              </div>
+              <button onClick={cancelEdit} className="rounded-full bg-white p-2 text-gray-400 shadow-sm ring-1 ring-gray-100 hover:text-gray-700" aria-label="Close edit panel">
+                ✕
+              </button>
+            </div>
+
+            <div className="rounded-[1.75rem] bg-white p-4 shadow-sm ring-1 ring-emerald-100 sm:p-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wider text-gray-400">Commodity</label>
+                  <input
+                    value={editBuf.commodity ?? editingEntry.commodity}
+                    onChange={(e) => setEditBuf((b) => ({ ...b, commodity: e.target.value }))}
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-bold text-[#1d2226] outline-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wider text-gray-400">Rate</label>
+                  <input
+                    type="number"
+                    value={editBuf.rate ?? editingEntry.rate}
+                    onChange={(e) => setEditBuf((b) => ({ ...b, rate: Number(e.target.value) }))}
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-bold text-[#1d2226] outline-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wider text-gray-400">Quantity</label>
+                  <input
+                    type="number"
+                    value={editBuf.quantity ?? editingEntry.quantity}
+                    onChange={(e) => setEditBuf((b) => ({ ...b, quantity: Number(e.target.value) }))}
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-bold text-[#1d2226] outline-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wider text-gray-400">Unit</label>
+                  <input
+                    value={editBuf.unit ?? editingEntry.unit}
+                    onChange={(e) => setEditBuf((b) => ({ ...b, unit: e.target.value }))}
+                    className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-bold text-[#1d2226] outline-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wider text-gray-400">Calculated amount</label>
+                  <div className="rounded-2xl bg-[#123f31] px-4 py-3 text-lg font-black text-white">
+                    {displayMoney(Number(editBuf.rate ?? editingEntry.rate) * Number(editBuf.quantity ?? editingEntry.quantity))}
+                  </div>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wider text-gray-400">Notes / original line</label>
+                  <textarea
+                    rows={3}
+                    value={editBuf.rawLine ?? editingEntry.rawLine}
+                    onChange={(e) => setEditBuf((b) => ({ ...b, rawLine: e.target.value }))}
+                    className="w-full resize-none rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-[#1d2226] outline-none transition-all focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-50"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button onClick={cancelEdit} className="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-black text-gray-500 hover:bg-gray-50">
+                  Cancel
+                </button>
+                <button onClick={() => saveEdit(editingEntry.id)} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#123f31] px-5 py-3 text-sm font-black text-white hover:bg-[#0d3026]">
+                  <CheckIcon className="h-4 w-4" />
+                  Save entry
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
