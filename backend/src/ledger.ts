@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import sharp from "sharp";
 import { connectMongo } from "./db";
 import { LedgerSession } from "./models/LedgerSession";
 
@@ -177,41 +178,33 @@ ledgerRouter.post(
         return;
       }
 
-      const buf = req.file.buffer;
-      const rawMime = req.file.mimetype.toLowerCase().trim();
+      const rawBuf = req.file.buffer;
 
-      // Reject HEIC/HEIF — Gemini inline_data does not support these formats
-      if (rawMime === "image/heic" || rawMime === "image/heif") {
-        res.status(415).json({
-          error: "HEIC/HEIF images are not supported. Please convert your photo to JPEG or PNG before uploading (most phones let you share as JPEG).",
-        });
-        return;
-      }
-
-      if (!buf || buf.length < 4) {
+      if (!rawBuf || rawBuf.length < 10) {
         res.status(400).json({ error: "Uploaded file is empty or too small." });
         return;
       }
 
-      // Use magic bytes to detect real format; fall back to browser-reported MIME type
-      const isJpeg = buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
-      const isPng  = buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
-      const isWebp = buf.length >= 12 && buf.slice(0, 4).toString("ascii") === "RIFF" && buf.slice(8, 12).toString("ascii") === "WEBP";
-      const isGif  = buf.length >= 3 && buf.slice(0, 3).toString("ascii") === "GIF";
-
-      let mimeType: string;
-      if (isJpeg)      mimeType = "image/jpeg";
-      else if (isPng)  mimeType = "image/png";
-      else if (isWebp) mimeType = "image/webp";
-      else if (isGif)  mimeType = "image/gif";
-      else {
-        // Magic bytes not recognized — trust browser MIME type and let NVIDIA decide
-        const fallback = rawMime === "image/jpg" ? "image/jpeg" : rawMime;
-        mimeType = fallback || "image/jpeg";
-        console.warn(`[ledger/upload] Unknown magic bytes for mime=${rawMime}, buf=${buf.slice(0,4).toString("hex")} — using ${mimeType}`);
+      // Re-encode with sharp: always outputs a clean JPEG at ≤800px, ≤70 KB
+      // This normalises any input format (JPEG, PNG, WebP, HEIC, etc.) and
+      // guarantees NVIDIA can identify the image.
+      let imageBase64: string;
+      let mimeType = "image/jpeg";
+      try {
+        const processed = await sharp(rawBuf)
+          .rotate()                        // auto-rotate from EXIF
+          .resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true })
+          .jpeg({ quality: 75, progressive: false })
+          .toBuffer();
+        imageBase64 = processed.toString("base64");
+        console.log(`[ledger/upload] sharp re-encoded: ${rawBuf.length}B → ${processed.length}B (base64 ${imageBase64.length} chars)`);
+      } catch (sharpErr: any) {
+        console.error("[ledger/upload] sharp failed:", sharpErr.message);
+        res.status(400).json({
+          error: "Could not read the image file. Please upload a JPEG, PNG, or WebP photo.",
+        });
+        return;
       }
-
-      const imageBase64 = buf.toString("base64");
 
       let rawText = "";
       let structured: any = {};
