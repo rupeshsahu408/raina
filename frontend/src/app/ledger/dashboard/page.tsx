@@ -49,6 +49,9 @@ function FileImageIcon(p: React.SVGProps<SVGSVGElement>) {
 function HistoryIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>;
 }
+function CopyIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
+}
 
 type SessionSummary = {
   _id: string;
@@ -70,6 +73,55 @@ const steps = [
   { icon: "🤖", title: "AI reads it", desc: "AI reads the image and structures it by commodity." },
   { icon: "📊", title: "Get analytics", desc: "See raw entries, grouped totals, and price insights instantly." },
 ];
+
+const geminiManualPrompt = `You are Smart Ledger AI, an expert accounting assistant for Indian grain traders.
+
+I will upload an image or PDF of a handwritten or printed satti / grain trading slip. Your job is to carefully read it and convert it into clean, structured ledger data.
+
+Important rules:
+1. Read both Hindi and English text. Common commodities may include gehu/wheat/गेहूं, chawal/rice/चावल, makka/maize/मक्का, sarson/mustard/सरसों, chana/चना, dal, soybean, bajra, jowar, and similar mandi items.
+2. Extract every visible transaction line. Do not skip unclear rows.
+3. Do not invent missing values. If something is not readable, write "unclear" and mention it in Review Notes.
+4. Treat quantity as quintal/qtl when the unit is not clearly written, unless the document clearly shows another unit.
+5. Calculate Amount = Rate × Quantity for every row when both values are available.
+6. Group rows by commodity and rate, then calculate total quantity and total amount for each group.
+7. Keep numbers in Indian format where useful, but do not add currency symbols inside numeric calculation columns.
+8. If handwriting is ambiguous, give your best reading and mark confidence as High, Medium, or Low.
+
+Return the result in this exact structure:
+
+1) Raw Entries Table
+Columns:
+- Row No.
+- Commodity
+- Rate
+- Quantity
+- Unit
+- Amount
+- Confidence
+- Notes
+
+2) Grouped Summary Table
+Columns:
+- Commodity
+- Rate
+- Total Quantity
+- Unit
+- Total Amount
+- Number of Entries
+
+3) Overall Summary
+- Total Entries:
+- Total Quantity:
+- Total Amount:
+- Top Commodity by Amount:
+- Any missing or unclear data:
+
+4) Review Notes
+- List any rows that need manual checking.
+- Mention if the photo/PDF is blurry, cropped, tilted, or if any values are unreadable.
+
+Please be accurate, conservative, and accounting-friendly. The final output should be easy for a trader to verify and copy into Smart Ledger or Excel.`;
 
 function fmt(n: number) {
   return "₹" + Number(n).toLocaleString("en-IN");
@@ -114,6 +166,8 @@ export default function LedgerDashboard() {
   const [sattiText, setSattiText] = useState("");
   const [textStage, setTextStage] = useState<"idle" | "processing" | "done" | "error">("idle");
   const [textError, setTextError] = useState<string | null>(null);
+  const [showGeminiManual, setShowGeminiManual] = useState(false);
+  const [geminiCopied, setGeminiCopied] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) router.replace("/ledger/login");
@@ -377,6 +431,16 @@ export default function LedgerDashboard() {
     }
   };
 
+  const copyGeminiPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(geminiManualPrompt);
+      setGeminiCopied(true);
+      setTimeout(() => setGeminiCopied(false), 2200);
+    } catch {
+      setGeminiCopied(false);
+    }
+  };
+
   const isProcessing = stage === "uploading" || stage === "ocr" || stage === "ai";
 
   const stageLabel: Record<ProcessingStage, string> = {
@@ -587,20 +651,95 @@ export default function LedgerDashboard() {
             </div>
           )}
 
-          {/* Manual text entry toggle */}
+          {/* Manual fallback toggles */}
           {!isProcessing && stage !== "done" && (
-            <div className="mt-4">
+            <div className="mt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <button
                 onClick={() => { setShowTextEntry(!showTextEntry); setTextError(null); setTextStage("idle"); }}
-                className="flex items-center gap-2 text-sm text-gray-400 hover:text-emerald-600 transition-colors mx-auto"
+                className="flex items-center gap-2 text-sm text-gray-400 hover:text-emerald-600 transition-colors"
               >
                 <PenLineIcon className="h-3.5 w-3.5" />
                 <span>or type your satti manually</span>
                 <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform duration-200 ${showTextEntry ? "rotate-180" : ""}`} />
               </button>
+              <span className="hidden sm:block text-gray-200">|</span>
+              <button
+                onClick={() => setShowGeminiManual(!showGeminiManual)}
+                className={`flex items-center gap-2 text-sm font-semibold transition-colors ${
+                  showGeminiManual ? "text-emerald-700" : "text-gray-500 hover:text-emerald-600"
+                }`}
+              >
+                <SparklesIcon className="h-3.5 w-3.5" />
+                <span>Use Gemini AI</span>
+                <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform duration-200 ${showGeminiManual ? "rotate-180" : ""}`} />
+              </button>
             </div>
           )}
         </div>
+
+        {showGeminiManual && !isProcessing && stage !== "done" && (
+          <div className="afu-2 mb-8 bg-white rounded-3xl border border-emerald-100 shadow-sm overflow-hidden">
+            <div className="px-5 sm:px-6 py-5 border-b border-emerald-50 bg-gradient-to-br from-emerald-50 to-white">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <SparklesIcon className="h-4 w-4 text-emerald-600" />
+                    <h3 className="text-base font-black text-[#1d2226]">Use Gemini AI (Manual Mode)</h3>
+                  </div>
+                  <p className="text-sm text-gray-500 leading-relaxed max-w-2xl">
+                    If direct upload does not work, copy this prompt, open Gemini, upload your satti image or PDF there, and let Gemini structure the ledger for you.
+                  </p>
+                </div>
+                <button
+                  onClick={copyGeminiPrompt}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-all hover:-translate-y-0.5 shadow-sm shadow-emerald-100"
+                >
+                  <CopyIcon className="h-4 w-4" />
+                  {geminiCopied ? "Prompt copied" : "Copy Prompt"}
+                </button>
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr] gap-5">
+              <div className="space-y-3">
+                {[
+                  "Tap Copy Prompt.",
+                  "Open Gemini AI in your browser or app.",
+                  "Paste the prompt into Gemini.",
+                  "Upload your satti photo or PDF in Gemini.",
+                  "Ask Gemini to process it, then review the tables carefully."
+                ].map((item, index) => (
+                  <div key={item} className="flex gap-3 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3">
+                    <div className="w-7 h-7 rounded-full bg-emerald-600 text-white text-xs font-black flex items-center justify-center flex-shrink-0">
+                      {index + 1}
+                    </div>
+                    <p className="text-sm text-gray-600 font-medium leading-relaxed">{item}</p>
+                  </div>
+                ))}
+                <div className="rounded-2xl bg-amber-50 border border-amber-100 px-4 py-3">
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    Tip: Use a clear photo with all corners visible. After Gemini gives the result, check low-confidence rows before using the totals.
+                  </p>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-gray-100 bg-gray-950 overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+                  <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">Prompt preview</span>
+                  <button
+                    onClick={copyGeminiPrompt}
+                    className="text-xs font-bold text-white bg-white/10 hover:bg-white/15 rounded-lg px-3 py-1.5 transition-colors"
+                  >
+                    {geminiCopied ? "Copied" : "Copy"}
+                  </button>
+                </div>
+                <pre className="max-h-80 overflow-auto whitespace-pre-wrap p-4 text-xs leading-relaxed text-gray-200 font-mono">
+                  {geminiManualPrompt}
+                </pre>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Manual text entry panel */}
         {showTextEntry && !isProcessing && stage !== "done" && (
