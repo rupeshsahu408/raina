@@ -149,34 +149,70 @@ export default function LedgerDashboard() {
 
   const firstName = user.displayName?.split(" ")[0] ?? user.email?.split("@")[0] ?? "there";
 
-  /* Resize + convert any image to JPEG via canvas before uploading */
+  /* Resize + convert any image to a small JPEG before uploading.
+     NVIDIA vision API requires the base64 payload to be well under 180 KB,
+     so we adaptively compress until the blob is ≤ 70 KB. */
   const prepareImage = (file: File): Promise<Blob> =>
     new Promise((resolve, reject) => {
-      const MAX_DIM = 1920;
-      const QUALITY = 0.88;
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
+
       img.onload = () => {
         URL.revokeObjectURL(objectUrl);
-        const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement("canvas");
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return reject(new Error("Canvas not supported."));
-        ctx.drawImage(img, 0, 0, w, h);
-        canvas.toBlob(
-          (blob) => (blob ? resolve(blob) : reject(new Error("Image conversion failed."))),
-          "image/jpeg",
-          QUALITY
-        );
+
+        const drawCanvas = (maxDim: number): HTMLCanvasElement => {
+          const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) throw new Error("Canvas not supported.");
+          ctx.drawImage(img, 0, 0, w, h);
+          return canvas;
+        };
+
+        const tryCompress = (
+          canvas: HTMLCanvasElement,
+          qualities: number[],
+          onDone: (blob: Blob) => void
+        ) => {
+          const [quality, ...rest] = qualities;
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) return reject(new Error("Image conversion failed."));
+              // Target ≤ 70 KB so base64 stays under ~95 KB (NVIDIA's safe zone)
+              if (blob.size <= 70 * 1024 || rest.length === 0) {
+                onDone(blob);
+              } else {
+                tryCompress(canvas, rest, onDone);
+              }
+            },
+            "image/jpeg",
+            quality
+          );
+        };
+
+        try {
+          // First pass: 1024 px, descending quality
+          const canvas1024 = drawCanvas(1024);
+          tryCompress(canvas1024, [0.85, 0.7, 0.55, 0.4], (blob) => {
+            if (blob.size <= 70 * 1024) return resolve(blob);
+            // Second pass: drop to 800 px if still too large
+            const canvas800 = drawCanvas(800);
+            tryCompress(canvas800, [0.7, 0.5, 0.35], resolve);
+          });
+        } catch (e: any) {
+          reject(e);
+        }
       };
+
       img.onerror = () => {
         URL.revokeObjectURL(objectUrl);
         reject(new Error("Could not load image. Please try a different photo."));
       };
+
       img.src = objectUrl;
     });
 
