@@ -11,11 +11,13 @@ import {
 } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { apiUrl } from "@/lib/api";
+import { useRecruitAuth } from "@/contexts/RecruitAuthContext";
 
 type Role = "seeker" | "creator";
 
 function RecruitSignupForm() {
   const router = useRouter();
+  const { refreshProfile } = useRecruitAuth();
   const [role, setRole] = useState<Role>("seeker");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,7 +26,7 @@ function RecruitSignupForm() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function setupRecruitProfile(role: Role, displayName?: string) {
+  async function setupRecruitProfile(role: Role, displayName?: string): Promise<Role> {
     const auth = getFirebaseAuth();
     const user = auth.currentUser;
     if (!user) throw new Error("Not authenticated");
@@ -45,7 +47,9 @@ function RecruitSignupForm() {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error ?? "Failed to set up recruit profile");
     }
-    return await res.json();
+    const profile = await res.json();
+    await refreshProfile();
+    return profile.role as Role;
   }
 
   function redirectByRole(r: Role) {
@@ -66,8 +70,8 @@ function RecruitSignupForm() {
       if (name.trim()) {
         await updateProfile(cred.user, { displayName: name.trim() });
       }
-      const profile = await setupRecruitProfile(role, name.trim());
-      redirectByRole(profile.role);
+      const assignedRole = await setupRecruitProfile(role, name.trim());
+      redirectByRole(assignedRole);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create account. Please try again.");
     } finally {
@@ -81,8 +85,8 @@ function RecruitSignupForm() {
     try {
       const auth = getFirebaseAuth();
       await signInWithPopup(auth, new GoogleAuthProvider());
-      const profile = await setupRecruitProfile(role);
-      redirectByRole(profile.role);
+      const assignedRole = await setupRecruitProfile(role);
+      redirectByRole(assignedRole);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not sign up with Google.");
     } finally {
@@ -194,7 +198,7 @@ function RecruitSignupForm() {
               disabled={loading}
               className="h-11 w-full rounded-xl bg-[#0a66c2] text-sm font-bold text-white hover:bg-[#004182] transition disabled:opacity-60"
             >
-              {loading ? "Creating account..." : "Create account"}
+              {loading ? "Creating account…" : "Create account"}
             </button>
           </form>
 
@@ -213,7 +217,7 @@ function RecruitSignupForm() {
             <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
               <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.2-1.4 3.6-5.5 3.6-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3 14.7 2 12 2 6.5 2 2 6.5 2 12s4.5 10 10 10c5.8 0 9.6-4.1 9.6-9.8 0-.7-.1-1.2-.2-1.7H12z" />
             </svg>
-            {googleLoading ? "Please wait..." : "Sign up with Google"}
+            {googleLoading ? "Please wait…" : "Sign up with Google"}
           </button>
         </div>
 
@@ -224,9 +228,7 @@ function RecruitSignupForm() {
           </Link>
         </p>
         <p className="mt-2 text-center text-xs text-slate-400">
-          <Link href="/recruit" className="hover:underline">
-            ← Back to Recruit AI
-          </Link>
+          <Link href="/recruit" className="hover:underline">← Back to Recruit AI</Link>
         </p>
       </div>
     </div>

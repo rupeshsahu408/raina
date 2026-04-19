@@ -14,7 +14,7 @@ import { apiUrl } from "@/lib/api";
 
 export type RecruitRole = "creator" | "seeker";
 
-interface RecruitProfile {
+export interface RecruitProfile {
   uid: string;
   role: RecruitRole;
   name?: string;
@@ -41,7 +41,7 @@ export function useRecruitAuth() {
   return useContext(RecruitAuthContext);
 }
 
-async function fetchRecruitProfile(user: User): Promise<RecruitProfile | null> {
+async function fetchRecruitProfileOnce(user: User): Promise<RecruitProfile | null> {
   try {
     const token = await user.getIdToken();
     const res = await fetch(apiUrl("/recruit/auth/profile"), {
@@ -52,6 +52,13 @@ async function fetchRecruitProfile(user: User): Promise<RecruitProfile | null> {
   } catch {
     return null;
   }
+}
+
+async function fetchRecruitProfileWithRetry(user: User): Promise<RecruitProfile | null> {
+  const first = await fetchRecruitProfileOnce(user);
+  if (first) return first;
+  await new Promise(r => setTimeout(r, 2000));
+  return fetchRecruitProfileOnce(user);
 }
 
 export function RecruitAuthProvider({ children }: { children: ReactNode }) {
@@ -67,7 +74,7 @@ export function RecruitAuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     setFirebaseUser(user);
-    const profile = await fetchRecruitProfile(user);
+    const profile = await fetchRecruitProfileWithRetry(user);
     setRecruitProfile(profile);
     setLoading(false);
   }, []);
@@ -75,6 +82,7 @@ export function RecruitAuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const auth = getFirebaseAuth();
     const unsub = onAuthStateChanged(auth, (user) => {
+      setLoading(true);
       loadProfile(user);
     });
     return unsub;
@@ -85,10 +93,11 @@ export function RecruitAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshProfile = useCallback(async () => {
-    if (firebaseUser) {
-      const profile = await fetchRecruitProfile(firebaseUser);
-      setRecruitProfile(profile);
-    }
+    if (!firebaseUser) return;
+    setLoading(true);
+    const profile = await fetchRecruitProfileOnce(firebaseUser);
+    setRecruitProfile(profile);
+    setLoading(false);
   }, [firebaseUser]);
 
   return (

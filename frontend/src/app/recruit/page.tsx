@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRecruitAuth } from "@/contexts/RecruitAuthContext";
+import { signOut } from "firebase/auth";
+import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { useRouter } from "next/navigation";
 
 const NICHES = [
   { label: "AI, Data, Software & Product Tech", emoji: "💻", slug: "ai-tech" },
@@ -22,6 +26,20 @@ const RECRUITER_FEATURES = [
   "AI job description writer", "Applicant pipeline", "Candidate scoring",
   "Async assessments", "Hiring decision engine", "Rejection email generator",
   "Talent pool", "Company profile", "Interview briefs",
+];
+
+const SEEKER_SHORTCUTS = [
+  { href: "/recruit/opportunities", label: "🔍 Find Jobs" },
+  { href: "/recruit/saved-jobs", label: "🔖 Saved Jobs" },
+  { href: "/recruit/my-applications", label: "📋 My Applications" },
+  { href: "/recruit/profile", label: "👤 My Profile" },
+];
+
+const CREATOR_SHORTCUTS = [
+  { href: "/recruit/dashboard", label: "📊 Dashboard" },
+  { href: "/recruit/jobs/new", label: "➕ Post a Job" },
+  { href: "/recruit/analytics", label: "📈 Analytics" },
+  { href: "/recruit/talent-pool", label: "👥 Talent Pool" },
 ];
 
 function ArrowIcon() {
@@ -50,6 +68,19 @@ function XIcon() {
 
 export default function RecruitLandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  const { recruitProfile, firebaseUser, signOutFromRecruit } = useRecruitAuth();
+
+  const role = recruitProfile?.role ?? null;
+  const isLoggedIn = !!firebaseUser && !!recruitProfile;
+  const shortcuts = role === "seeker" ? SEEKER_SHORTCUTS : role === "creator" ? CREATOR_SHORTCUTS : null;
+
+  async function handleSignOut() {
+    const auth = getFirebaseAuth();
+    await signOutFromRecruit();
+    await signOut(auth);
+    router.replace("/recruit/login");
+  }
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
@@ -65,16 +96,39 @@ export default function RecruitLandingPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-1">
             <Link href="/recruit/opportunities" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">Find Jobs</Link>
-            <Link href="/recruit/signup" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">For Job Seekers</Link>
-            <Link href="/recruit/signup" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">For Recruiters</Link>
+            {!isLoggedIn && (
+              <>
+                <Link href="/recruit/signup" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">For Job Seekers</Link>
+                <Link href="/recruit/signup" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">For Recruiters</Link>
+              </>
+            )}
           </nav>
           <div className="flex items-center gap-2">
-            <Link href="/recruit/login" className="hidden sm:inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-              Sign in
-            </Link>
-            <Link href="/recruit/signup" className="rounded-full bg-[#0a66c2] px-4 py-2 text-xs font-bold text-white hover:bg-[#004182] transition">
-              Get started
-            </Link>
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href={role === "creator" ? "/recruit/dashboard" : "/recruit/opportunities"}
+                  className="hidden sm:inline-flex rounded-full border border-[#0a66c2] px-4 py-2 text-xs font-semibold text-[#0a66c2] hover:bg-blue-50 transition"
+                >
+                  {role === "creator" ? "Go to Dashboard" : "Browse Jobs"}
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link href="/recruit/login" className="hidden sm:inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                  Sign in
+                </Link>
+                <Link href="/recruit/signup" className="rounded-full bg-[#0a66c2] px-4 py-2 text-xs font-bold text-white hover:bg-[#004182] transition">
+                  Get started
+                </Link>
+              </>
+            )}
             <button
               onClick={() => setMobileMenuOpen(o => !o)}
               className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50"
@@ -88,8 +142,9 @@ export default function RecruitLandingPage() {
             <nav className="flex flex-col gap-1">
               {[
                 { href: "/recruit/opportunities", label: "Find Jobs" },
-                { href: "/recruit/login", label: "Sign in" },
-                { href: "/recruit/signup", label: "Create account" },
+                ...(!isLoggedIn ? [{ href: "/recruit/login", label: "Sign in" }, { href: "/recruit/signup", label: "Create account" }] : []),
+                ...(role === "creator" ? [{ href: "/recruit/dashboard", label: "Dashboard" }] : []),
+                ...(role === "seeker" ? [{ href: "/recruit/profile", label: "My Profile" }] : []),
               ].map(link => (
                 <Link
                   key={link.href}
@@ -100,15 +155,17 @@ export default function RecruitLandingPage() {
                   {link.label}
                 </Link>
               ))}
-              <div className="mt-2 pt-2 border-t border-slate-100">
-                <Link
-                  href="/recruit/signup"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="block rounded-xl bg-[#0a66c2] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#004182] transition"
-                >
-                  Get started →
-                </Link>
-              </div>
+              {!isLoggedIn && (
+                <div className="mt-2 pt-2 border-t border-slate-100">
+                  <Link
+                    href="/recruit/signup"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block rounded-xl bg-[#0a66c2] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#004182] transition"
+                  >
+                    Get started →
+                  </Link>
+                </div>
+              )}
             </nav>
           </div>
         )}
@@ -127,35 +184,56 @@ export default function RecruitLandingPage() {
             <p className="mt-5 text-base sm:text-lg leading-8 text-slate-600 max-w-xl">
               Deep job filters, AI-powered candidate scoring, verified companies, and a complete hiring workflow — built for Indian job seekers and recruiters.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/recruit/opportunities"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0a66c2] px-7 py-3.5 text-sm font-bold text-white hover:bg-[#004182] transition shadow-sm"
-              >
-                Explore open roles <ArrowIcon />
-              </Link>
-              <Link
-                href="/recruit/profile"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 py-3.5 text-sm font-bold text-slate-800 hover:bg-slate-50 transition shadow-sm"
-              >
-                Build my profile
-              </Link>
-            </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              {[
-                { href: "/recruit/saved-jobs", label: "🔖 Saved Jobs" },
-                { href: "/recruit/my-applications", label: "📋 My Applications" },
-                { href: "/recruit/dashboard", label: "🏢 Recruiter tools" },
-              ].map(item => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-[#0a66c2]/30 hover:text-[#0a66c2] transition"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+
+            {isLoggedIn ? (
+              <>
+                <div className="mt-6 rounded-xl border border-blue-200 bg-blue-50 px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#0a66c2] mb-3">
+                    Welcome back — {role === "creator" ? "Job Creator" : "Job Seeker"} dashboard
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {shortcuts?.map(item => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="rounded-full border border-[#0a66c2]/30 bg-white px-4 py-2 text-xs font-semibold text-[#0a66c2] hover:bg-[#0a66c2] hover:text-white transition"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <Link
+                    href="/recruit/opportunities"
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0a66c2] px-7 py-3.5 text-sm font-bold text-white hover:bg-[#004182] transition shadow-sm"
+                  >
+                    Explore open roles <ArrowIcon />
+                  </Link>
+                  <Link
+                    href="/recruit/signup"
+                    className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 bg-white px-7 py-3.5 text-sm font-bold text-slate-800 hover:bg-slate-50 transition shadow-sm"
+                  >
+                    Create free account
+                  </Link>
+                </div>
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <span className="text-xs font-semibold text-slate-500 self-center">Quick access:</span>
+                  <Link href="/recruit/opportunities" className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-[#0a66c2]/30 hover:text-[#0a66c2] transition">
+                    🔍 Browse jobs
+                  </Link>
+                  <Link href="/recruit/signup" className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-[#0a66c2]/30 hover:text-[#0a66c2] transition">
+                    🎯 Seeker signup
+                  </Link>
+                  <Link href="/recruit/signup" className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-semibold text-slate-600 hover:border-[#0a66c2]/30 hover:text-[#0a66c2] transition">
+                    🏢 Recruiter signup
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Preview card */}
@@ -218,9 +296,16 @@ export default function RecruitLandingPage() {
                 <Link href="/recruit/opportunities" className="flex-1 rounded-full bg-[#0a66c2] px-5 py-2.5 text-center text-xs font-bold text-white hover:bg-[#004182] transition">
                   Browse jobs
                 </Link>
-                <Link href="/recruit/signup" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                  Sign up as Seeker
-                </Link>
+                {!isLoggedIn && (
+                  <Link href="/recruit/signup" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Sign up as Seeker
+                  </Link>
+                )}
+                {role === "seeker" && (
+                  <Link href="/recruit/profile" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    My Profile
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -238,12 +323,31 @@ export default function RecruitLandingPage() {
                 ))}
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <Link href="/recruit/signup" className="flex-1 rounded-full bg-[#0a66c2] px-5 py-2.5 text-center text-xs font-bold text-white hover:bg-[#004182] transition">
-                  Sign up as Creator
-                </Link>
-                <Link href="/recruit/login" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
-                  Sign in
-                </Link>
+                {!isLoggedIn && (
+                  <>
+                    <Link href="/recruit/signup" className="flex-1 rounded-full bg-[#0a66c2] px-5 py-2.5 text-center text-xs font-bold text-white hover:bg-[#004182] transition">
+                      Sign up as Creator
+                    </Link>
+                    <Link href="/recruit/login" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                      Sign in
+                    </Link>
+                  </>
+                )}
+                {role === "creator" && (
+                  <>
+                    <Link href="/recruit/jobs/new" className="flex-1 rounded-full bg-[#0a66c2] px-5 py-2.5 text-center text-xs font-bold text-white hover:bg-[#004182] transition">
+                      Post a job
+                    </Link>
+                    <Link href="/recruit/dashboard" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                      Dashboard
+                    </Link>
+                  </>
+                )}
+                {role === "seeker" && (
+                  <Link href="/recruit/opportunities" className="flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Browse recruiter-posted jobs →
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -294,9 +398,18 @@ export default function RecruitLandingPage() {
             <Link href="/recruit/opportunities" className="rounded-full bg-white px-8 py-3.5 text-sm font-bold text-[#0a66c2] hover:bg-blue-50 transition shadow">
               Browse open roles
             </Link>
-            <Link href="/recruit/profile" className="rounded-full border border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white hover:bg-white/20 transition">
-              Build my profile
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                href={role === "seeker" ? "/recruit/profile" : "/recruit/dashboard"}
+                className="rounded-full border border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white hover:bg-white/20 transition"
+              >
+                {role === "seeker" ? "My Profile" : "Recruiter Dashboard"}
+              </Link>
+            ) : (
+              <Link href="/recruit/signup" className="rounded-full border border-white/30 bg-white/10 px-8 py-3.5 text-sm font-bold text-white hover:bg-white/20 transition">
+                Create free account
+              </Link>
+            )}
           </div>
         </div>
       </section>

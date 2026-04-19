@@ -2,18 +2,27 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useRecruitAuth } from "@/contexts/RecruitAuthContext";
+import { signOut } from "firebase/auth";
+import { getFirebaseAuth } from "@/lib/firebaseClient";
 
 type NavLink = { href: string; label: string };
 
 const SEEKER_NAV: NavLink[] = [
-  { href: "/recruit/opportunities", label: "Jobs" },
+  { href: "/recruit/opportunities", label: "Find Jobs" },
   { href: "/recruit/niches", label: "Niches" },
-  { href: "/recruit/saved-jobs", label: "Saved" },
-  { href: "/recruit/job-alerts", label: "Alerts" },
+  { href: "/recruit/saved-jobs", label: "Saved Jobs" },
+  { href: "/recruit/job-alerts", label: "Job Alerts" },
   { href: "/recruit/my-applications", label: "My Applications" },
   { href: "/recruit/profile", label: "My Profile" },
-  { href: "/recruit/diagnostics", label: "Diagnostics" },
+];
+
+const CREATOR_NAV: NavLink[] = [
+  { href: "/recruit/dashboard", label: "Dashboard" },
+  { href: "/recruit/analytics", label: "Analytics" },
+  { href: "/recruit/talent-pool", label: "Talent Pool" },
+  { href: "/recruit/company-profile", label: "Company Profile" },
 ];
 
 function MenuIcon() {
@@ -35,12 +44,25 @@ function XIcon() {
 export default function RecruitHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { recruitProfile, firebaseUser, signOutFromRecruit } = useRecruitAuth();
+
+  const role = recruitProfile?.role ?? null;
+  const isLoggedIn = !!firebaseUser && !!recruitProfile;
+  const navLinks = role === "creator" ? CREATOR_NAV : role === "seeker" ? SEEKER_NAV : [];
 
   function isActive(href: string) {
     if (href === "/recruit/niches") {
       return pathname === href || pathname.startsWith("/recruit/niche/");
     }
     return pathname === href || (pathname.startsWith(href + "/") && href !== "/recruit");
+  }
+
+  async function handleSignOut() {
+    const auth = getFirebaseAuth();
+    await signOutFromRecruit();
+    await signOut(auth);
+    router.replace("/recruit/login");
   }
 
   return (
@@ -55,35 +77,72 @@ export default function RecruitHeader() {
           <span className="block sm:hidden text-sm font-bold">Recruit AI</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-0.5">
-          {SEEKER_NAV.map(link => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-                isActive(link.href)
-                  ? "bg-blue-50 text-[#0a66c2]"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              }`}
-            >
-              {link.label}
+        {isLoggedIn && navLinks.length > 0 && (
+          <nav className="hidden md:flex items-center gap-0.5">
+            {navLinks.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                  isActive(link.href)
+                    ? "bg-blue-50 text-[#0a66c2]"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
+
+        {!isLoggedIn && (
+          <nav className="hidden md:flex items-center gap-0.5">
+            <Link href="/recruit/opportunities" className="rounded-full px-3.5 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition">
+              Find Jobs
             </Link>
-          ))}
-        </nav>
+          </nav>
+        )}
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/recruit/dashboard"
-            className="hidden sm:inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-          >
-            For recruiters
-          </Link>
-          <Link
-            href="/recruit/jobs/new"
-            className="rounded-full bg-[#0a66c2] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#004182] transition"
-          >
-            Post a job
-          </Link>
+          {isLoggedIn ? (
+            <>
+              {role === "creator" && (
+                <Link
+                  href="/recruit/jobs/new"
+                  className="hidden sm:inline-flex rounded-full bg-[#0a66c2] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#004182] transition"
+                >
+                  Post a job
+                </Link>
+              )}
+              {role === "seeker" && (
+                <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3 py-1.5 text-[11px] font-semibold text-[#0a66c2]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#0a66c2]" />
+                  Job Seeker
+                </span>
+              )}
+              <button
+                onClick={handleSignOut}
+                className="hidden sm:inline-flex rounded-full border border-slate-300 px-3.5 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/recruit/login"
+                className="hidden sm:inline-flex rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/recruit/signup"
+                className="rounded-full bg-[#0a66c2] px-3.5 py-2 text-xs font-bold text-white hover:bg-[#004182] transition"
+              >
+                Get started
+              </Link>
+            </>
+          )}
           <button
             onClick={() => setMobileOpen(o => !o)}
             className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
@@ -96,7 +155,7 @@ export default function RecruitHeader() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-100 bg-white px-4 pb-4 pt-2">
           <nav className="flex flex-col gap-1">
-            {SEEKER_NAV.map(link => (
+            {isLoggedIn && navLinks.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -110,14 +169,40 @@ export default function RecruitHeader() {
                 {link.label}
               </Link>
             ))}
-            <div className="mt-2 border-t border-slate-100 pt-2 flex flex-col gap-1">
-              <Link
-                href="/recruit/dashboard"
-                onClick={() => setMobileOpen(false)}
-                className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-50 transition"
-              >
-                For recruiters →
+            {!isLoggedIn && (
+              <Link href="/recruit/opportunities" onClick={() => setMobileOpen(false)} className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                Find Jobs
               </Link>
+            )}
+            <div className="mt-2 border-t border-slate-100 pt-2 flex flex-col gap-1">
+              {isLoggedIn ? (
+                <>
+                  {role === "creator" && (
+                    <Link
+                      href="/recruit/jobs/new"
+                      onClick={() => setMobileOpen(false)}
+                      className="rounded-xl bg-[#0a66c2] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#004182] transition"
+                    >
+                      Post a job →
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => { setMobileOpen(false); handleSignOut(); }}
+                    className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-500 hover:bg-slate-50 transition text-left"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link href="/recruit/login" onClick={() => setMobileOpen(false)} className="rounded-xl px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition">
+                    Sign in
+                  </Link>
+                  <Link href="/recruit/signup" onClick={() => setMobileOpen(false)} className="rounded-xl bg-[#0a66c2] px-4 py-3 text-center text-sm font-bold text-white hover:bg-[#004182] transition">
+                    Get started →
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>
