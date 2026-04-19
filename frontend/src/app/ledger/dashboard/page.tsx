@@ -88,12 +88,14 @@ export default function LedgerDashboard() {
   const { user, loading, signOutFromLedger } = useLedgerAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const [dragging, setDragging] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [stage, setStage] = useState<ProcessingStage>("idle");
   const [error, setError] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [isPdfUpload, setIsPdfUpload] = useState(false);
 
   /* Session history state */
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
@@ -242,23 +244,109 @@ export default function LedgerDashboard() {
       reader.readAsDataURL(blob);
     });
 
+  /* Render a PDF file to a single JPEG blob by stitching all pages vertically.
+     Uses PDF.js loaded dynamically to avoid SSR issues in Next.js.
+     Limits to 5 pages maximum and compresses to ≤ 130 KB for NVIDIA's API. */
+  const pdfToImageBlob = async (file: File): Promise<Blob> => {
+    const pdfjsLib = await import("pdfjs-dist");
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const totalPages = Math.min(pdf.numPages, 5); // cap at 5 pages
+
+    // Render each page to its own canvas at 1.5× scale for clear text
+    const pageCanvases: HTMLCanvasElement[] = [];
+    for (let i = 1; i <= totalPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(viewport.width);
+      canvas.height = Math.round(viewport.height);
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: ctx as any, viewport }).promise;
+      pageCanvases.push(canvas);
+    }
+
+    // Stitch pages vertically (24 px gap between pages)
+    const GAP = 24;
+    const maxWidth = Math.max(...pageCanvases.map((c) => c.width));
+    const totalHeight = pageCanvases.reduce((h, c) => h + c.height, 0) + GAP * (pageCanvases.length - 1);
+    const stitched = document.createElement("canvas");
+    stitched.width = maxWidth;
+    stitched.height = totalHeight;
+    const sCtx = stitched.getContext("2d")!;
+    sCtx.fillStyle = "#f3f4f6";
+    sCtx.fillRect(0, 0, maxWidth, totalHeight);
+    let y = 0;
+    for (const c of pageCanvases) {
+      sCtx.drawImage(c, 0, y);
+      y += c.height + GAP;
+    }
+
+    // Adaptive JPEG compression — target ≤ 130 KB raw to stay within NVIDIA's limit
+    const compress = (canvas: HTMLCanvasElement, qualities: number[]): Promise<Blob> =>
+      new Promise((resolve, reject) => {
+        const [q, ...rest] = qualities;
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error("PDF page rendering failed."));
+            if (blob.size <= 130 * 1024 || rest.length === 0) resolve(blob);
+            else {
+              // Scale down the stitched canvas if still too large
+              const scale = Math.sqrt((130 * 1024) / blob.size);
+              const scaled = document.createElement("canvas");
+              scaled.width = Math.round(canvas.width * scale);
+              scaled.height = Math.round(canvas.height * scale);
+              scaled.getContext("2d")!.drawImage(canvas, 0, 0, scaled.width, scaled.height);
+              compress(scaled, rest).then(resolve).catch(reject);
+            }
+          },
+          "image/jpeg",
+          q
+        );
+      });
+
+    return compress(stitched, [0.9, 0.8, 0.7, 0.6]);
+  };
+
   const processFile = async (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      setError("Please upload an image file (JPG, PNG, HEIC, WebP).");
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf && !file.type.startsWith("image/")) {
+      setError("Please upload an image (JPG, PNG, WebP) or a PDF file.");
       return;
     }
+
     setError(null);
+    setIsPdfUpload(isPdf);
     setStage("uploading");
-    const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
+
+    // For images: show a live preview. For PDFs: no inline preview (PDF.js renders async).
+    let objectUrl: string | null = null;
+    if (!isPdf) {
+      objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+    } else {
+      setPreview(null);
+    }
+
     try {
       setStage("ocr");
-      /* Convert & resize on the client — ensures a clean JPEG reaches the server */
       let uploadBlob: Blob;
-      try {
-        uploadBlob = await prepareImage(file);
-      } catch {
-        uploadBlob = file; // fallback: send original if canvas fails
+
+      if (isPdf) {
+        // Render PDF pages to a single JPEG via PDF.js
+        uploadBlob = await pdfToImageBlob(file);
+      } else {
+        // Compress / convert image on the client
+        try {
+          uploadBlob = await prepareImage(file);
+        } catch {
+          uploadBlob = file; // fallback: send original if canvas fails
+        }
       }
 
       /* Send as base64 JSON — avoids multipart binary corruption through proxies */
@@ -281,7 +369,7 @@ export default function LedgerDashboard() {
     } catch (err: any) {
       setStage("error");
       setError(err.message || "Something went wrong. Please try again.");
-      URL.revokeObjectURL(objectUrl);
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
       setPreview(null);
     }
   };
@@ -361,8 +449,8 @@ export default function LedgerDashboard() {
 
   const stageLabel: Record<ProcessingStage, string> = {
     idle: "",
-    uploading: "Preparing image…",
-    ocr: "AI is reading your satti…",
+    uploading: isPdfUpload ? "Converting PDF to image…" : "Preparing image…",
+    ocr: isPdfUpload ? "AI is reading your PDF satti…" : "AI is reading your satti…",
     ai: "Structuring the entries…",
     done: "Done! Opening results…",
     error: "",
@@ -457,8 +545,18 @@ export default function LedgerDashboard() {
 
         {/* Upload zone */}
         <div className="afu-2 mb-8">
+          {/* Main file picker — images + PDFs, no camera capture so file picker shows */}
           <input
             ref={fileInputRef}
+            type="file"
+            accept="image/*,.pdf"
+            className="hidden"
+            onChange={(e) => handleFileSelect(e.target.files)}
+            disabled={isProcessing}
+          />
+          {/* Camera-only input — opens native camera on mobile */}
+          <input
+            ref={cameraInputRef}
             type="file"
             accept="image/*"
             capture="environment"
@@ -476,11 +574,15 @@ export default function LedgerDashboard() {
           >
             {isProcessing || stage === "done" ? (
               <div className="flex flex-col items-center gap-5">
-                {preview && (
+                {preview ? (
                   <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-sm">
                     <img src={preview} alt="Uploading" className="w-full h-full object-cover" />
                   </div>
-                )}
+                ) : isPdfUpload ? (
+                  <div className="w-24 h-24 rounded-2xl bg-red-50 border-2 border-red-100 flex items-center justify-center shadow-sm">
+                    <FileImageIcon className="h-10 w-10 text-red-400" />
+                  </div>
+                ) : null}
                 <div className="w-full max-w-xs">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold text-[#1d2226]">{stageLabel[stage]}</span>
@@ -492,7 +594,7 @@ export default function LedgerDashboard() {
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-500">
                   <div className="w-4 h-4 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
-                  Processing your satti…
+                  {isPdfUpload ? "Processing your PDF satti…" : "Processing your satti…"}
                 </div>
               </div>
             ) : (
@@ -502,29 +604,43 @@ export default function LedgerDashboard() {
                     <UploadIcon className="h-7 w-7 text-emerald-600" />
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-xl bg-emerald-600 border-2 border-white flex items-center justify-center">
-                    <CameraIcon className="h-3.5 w-3.5 text-white" />
+                    <FileImageIcon className="h-3.5 w-3.5 text-white" />
                   </div>
                 </div>
                 <div>
-                  <p className="text-base font-bold text-[#1d2226] mb-1">Upload your satti photo</p>
+                  <p className="text-base font-bold text-[#1d2226] mb-1">Upload your satti</p>
                   <p className="text-sm text-gray-400">
-                    Tap to choose from gallery or{" "}
-                    <span className="text-emerald-600 font-semibold">take a photo</span>
+                    Photo from gallery, PDF document, or{" "}
+                    <span className="text-emerald-600 font-semibold">camera</span>
                   </p>
                   <p className="text-xs text-gray-300 mt-1">or drag and drop here</p>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap justify-center">
-                  {["JPG", "PNG", "HEIC", "WebP"].map((fmt) => (
-                    <span key={fmt} className="text-xs font-medium bg-gray-50 border border-gray-100 text-gray-400 px-2.5 py-1 rounded-lg">{fmt}</span>
+                  {["JPG", "PNG", "WebP", "PDF"].map((fmt) => (
+                    <span
+                      key={fmt}
+                      className={`text-xs font-medium border px-2.5 py-1 rounded-lg ${fmt === "PDF" ? "bg-red-50 border-red-100 text-red-400" : "bg-gray-50 border-gray-100 text-gray-400"}`}
+                    >
+                      {fmt}
+                    </span>
                   ))}
                 </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                  className="mt-2 flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-all hover:-translate-y-0.5 shadow-sm shadow-emerald-100"
-                >
-                  <CameraIcon className="h-4 w-4" />
-                  Upload Satti
-                </button>
+                <div className="flex items-center gap-3 mt-2 flex-wrap justify-center">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-all hover:-translate-y-0.5 shadow-sm shadow-emerald-100"
+                  >
+                    <UploadIcon className="h-4 w-4" />
+                    Upload Photo / PDF
+                  </button>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click(); }}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-emerald-50 text-emerald-700 font-bold text-sm rounded-xl border border-emerald-200 transition-all hover:-translate-y-0.5"
+                  >
+                    <CameraIcon className="h-4 w-4" />
+                    Take Photo
+                  </button>
+                </div>
               </div>
             )}
           </div>
