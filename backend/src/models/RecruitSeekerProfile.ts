@@ -17,6 +17,14 @@ export interface IEducationEntry {
   description?: string;
 }
 
+export interface ISocialLinks {
+  linkedin?: string;
+  instagram?: string;
+  twitter?: string;
+  github?: string;
+  portfolio?: string;
+}
+
 export interface IRecruitSeekerProfile extends Document {
   uid: string;
   name: string;
@@ -35,6 +43,7 @@ export interface IRecruitSeekerProfile extends Document {
   preferredNiche: string;
   experienceLevel: string;
   resumeText: string;
+  socialLinks?: ISocialLinks;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -62,6 +71,17 @@ const EducationSchema = new Schema<IEducationEntry>(
   { _id: false }
 );
 
+const SocialLinksSchema = new Schema<ISocialLinks>(
+  {
+    linkedin: { type: String, default: "" },
+    instagram: { type: String, default: "" },
+    twitter: { type: String, default: "" },
+    github: { type: String, default: "" },
+    portfolio: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
 const RecruitSeekerProfileSchema = new Schema<IRecruitSeekerProfile>(
   {
     uid: { type: String, required: true, unique: true, index: true },
@@ -81,6 +101,7 @@ const RecruitSeekerProfileSchema = new Schema<IRecruitSeekerProfile>(
     preferredNiche: { type: String, default: "" },
     experienceLevel: { type: String, default: "" },
     resumeText: { type: String, default: "" },
+    socialLinks: { type: SocialLinksSchema, default: () => ({}) },
   },
   { timestamps: true }
 );

@@ -30,12 +30,17 @@ const EXPERIENCE_LEVELS = [
 
 type Experience = { title: string; company: string; location: string; startDate: string; endDate: string; current: boolean; description: string };
 type Education = { degree: string; institution: string; year: string; description: string };
+type SocialLinks = {
+  linkedin: string; instagram: string; twitter: string; github: string; portfolio: string;
+};
+
 type Profile = {
   name: string; email: string; phone: string; headline: string; bio: string;
   skills: string[]; experience: Experience[]; education: Education[];
   preferredJobType: string; preferredWorkMode: string; preferredLocation: string;
   preferredSalaryMin: number | ""; preferredSalaryMax: number | "";
   preferredNiche: string; experienceLevel: string; resumeText: string;
+  socialLinks: SocialLinks;
 };
 
 const EMPTY_EXP: Experience = { title: "", company: "", location: "", startDate: "", endDate: "", current: false, description: "" };
@@ -94,6 +99,7 @@ function RecruitProfileContent() {
     preferredJobType: "", preferredWorkMode: "", preferredLocation: "",
     preferredSalaryMin: "", preferredSalaryMax: "",
     preferredNiche: "", experienceLevel: "", resumeText: "",
+    socialLinks: { linkedin: "", instagram: "", twitter: "", github: "", portfolio: "" },
   });
 
   const completionItems = [
@@ -146,6 +152,13 @@ function RecruitProfileContent() {
           preferredNiche: p.preferredNiche || "",
           experienceLevel: p.experienceLevel || "",
           resumeText: p.resumeText || "",
+          socialLinks: {
+            linkedin: p.socialLinks?.linkedin || "",
+            instagram: p.socialLinks?.instagram || "",
+            twitter: p.socialLinks?.twitter || "",
+            github: p.socialLinks?.github || "",
+            portfolio: p.socialLinks?.portfolio || "",
+          },
         });
       }
     } catch { /* ignore */ }
@@ -338,6 +351,51 @@ function RecruitProfileContent() {
                 <Input label="Headline" value={profile.headline} onChange={e => set("headline", e.target.value)} placeholder="e.g. Software Engineer at Infosys" />
               </div>
               <Textarea label="Bio / Summary" value={profile.bio} onChange={e => set("bio", e.target.value)} placeholder="A short summary about yourself, your goals, and what you bring to the table…" rows={4} />
+
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Social & Portfolio Links</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Add your professional profiles so recruiters can learn more about you.</p>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">LinkedIn</label>
+                    <div className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 focus-within:border-[#0a66c2] focus-within:ring-2 focus-within:ring-[#0a66c2]/10 transition">
+                      <svg width="14" height="14" fill="currentColor" className="text-[#0a66c2] shrink-0" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+                      <input value={profile.socialLinks.linkedin} onChange={e => set("socialLinks", { ...profile.socialLinks, linkedin: e.target.value })} placeholder="linkedin.com/in/yourname" className="flex-1 text-sm outline-none bg-transparent" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Instagram</label>
+                    <div className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 focus-within:border-[#0a66c2] focus-within:ring-2 focus-within:ring-[#0a66c2]/10 transition">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-pink-500 shrink-0" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                      <input value={profile.socialLinks.instagram} onChange={e => set("socialLinks", { ...profile.socialLinks, instagram: e.target.value })} placeholder="instagram.com/yourhandle" className="flex-1 text-sm outline-none bg-transparent" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">X / Twitter</label>
+                    <div className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 focus-within:border-[#0a66c2] focus-within:ring-2 focus-within:ring-[#0a66c2]/10 transition">
+                      <svg width="14" height="14" fill="currentColor" className="text-slate-700 shrink-0" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                      <input value={profile.socialLinks.twitter} onChange={e => set("socialLinks", { ...profile.socialLinks, twitter: e.target.value })} placeholder="x.com/yourhandle" className="flex-1 text-sm outline-none bg-transparent" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">GitHub</label>
+                    <div className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 focus-within:border-[#0a66c2] focus-within:ring-2 focus-within:ring-[#0a66c2]/10 transition">
+                      <svg width="14" height="14" fill="currentColor" className="text-slate-800 shrink-0" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                      <input value={profile.socialLinks.github} onChange={e => set("socialLinks", { ...profile.socialLinks, github: e.target.value })} placeholder="github.com/yourusername" className="flex-1 text-sm outline-none bg-transparent" />
+                    </div>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Portfolio / Website</label>
+                    <div className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 focus-within:border-[#0a66c2] focus-within:ring-2 focus-within:ring-[#0a66c2]/10 transition">
+                      <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-500 shrink-0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                      <input value={profile.socialLinks.portfolio} onChange={e => set("socialLinks", { ...profile.socialLinks, portfolio: e.target.value })} placeholder="yourwebsite.com" className="flex-1 text-sm outline-none bg-transparent" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-slate-500 uppercase tracking-wide">Skills</label>
                 <div className="flex gap-2">

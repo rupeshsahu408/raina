@@ -556,6 +556,216 @@ function RetryIcon() {
   return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>;
 }
 
+type SocialLinks = { linkedin?: string; instagram?: string; twitter?: string; github?: string; portfolio?: string };
+type SeekerProfileData = {
+  name: string; email: string; phone?: string; headline?: string; bio?: string;
+  skills?: string[]; experience?: { title: string; company: string; location?: string; startDate: string; endDate?: string; current: boolean; description: string }[];
+  education?: { degree: string; institution: string; year?: string; description?: string }[];
+  experienceLevel?: string; preferredNiche?: string; preferredWorkMode?: string; preferredLocation?: string;
+  socialLinks?: SocialLinks;
+};
+
+function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
+  candidateId: string; jobId: string; token: string; onClose: () => void;
+}) {
+  const [loading, setLoading] = useState(true);
+  const [seekerProfile, setSeekerProfile] = useState<SeekerProfileData | null>(null);
+  const [candidateName, setCandidateName] = useState("");
+  const [noProfile, setNoProfile] = useState(false);
+
+  useEffect(() => {
+    fetch(apiUrl(`/recruit/jobs/${jobId}/candidates/${candidateId}/seeker-profile`), {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => readApiJson(r))
+      .then(d => {
+        setCandidateName(d.candidate?.name || "");
+        if (d.seekerProfile) {
+          setSeekerProfile(d.seekerProfile);
+        } else {
+          setNoProfile(true);
+        }
+      })
+      .catch(() => setNoProfile(true))
+      .finally(() => setLoading(false));
+  }, [candidateId, jobId, token]);
+
+  const sl = seekerProfile?.socialLinks;
+  const hasSocialLinks = sl && (sl.linkedin || sl.instagram || sl.twitter || sl.github || sl.portfolio);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="w-full max-w-xl rounded-[2rem] border border-white/[0.09] bg-[#0a0a0f] shadow-2xl max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4 shrink-0">
+          <div>
+            <h2 className="text-sm font-semibold text-white">Candidate Profile</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">{candidateName}</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-600 hover:text-white transition">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-6 space-y-5">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <svg className="animate-spin h-5 w-5 text-sky-500" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            </div>
+          ) : noProfile || !seekerProfile ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-800 text-2xl mb-3">👤</div>
+              <p className="text-sm font-semibold text-zinc-300">No saved profile found</p>
+              <p className="text-xs text-zinc-600 mt-1 max-w-xs">
+                This candidate hasn't set up a Plyndrox profile yet. Their application details are in the resume section.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-900 to-sky-700 text-lg font-bold text-white">
+                  {seekerProfile.name?.slice(0, 1).toUpperCase() || "?"}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-base font-semibold text-white">{seekerProfile.name}</p>
+                  {seekerProfile.headline && <p className="text-xs text-zinc-400 mt-0.5">{seekerProfile.headline}</p>}
+                  {seekerProfile.email && <p className="text-xs text-zinc-600 mt-0.5">{seekerProfile.email}</p>}
+                </div>
+              </div>
+
+              {seekerProfile.bio && (
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Bio</p>
+                  <p className="text-xs text-zinc-300 leading-5">{seekerProfile.bio}</p>
+                </div>
+              )}
+
+              {seekerProfile.skills && seekerProfile.skills.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Skills</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {seekerProfile.skills.map(s => (
+                      <span key={s} className="rounded-full border border-sky-500/20 bg-sky-500/[0.08] px-2.5 py-1 text-[11px] font-semibold text-sky-400">{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {hasSocialLinks && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Social & Portfolio</p>
+                  <div className="flex flex-wrap gap-2">
+                    {sl?.linkedin && (
+                      <a href={sl.linkedin.startsWith("http") ? sl.linkedin : `https://${sl.linkedin}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/[0.08] px-3 py-1.5 text-[11px] font-semibold text-blue-400 hover:bg-blue-500/15 transition">
+                        <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+                        LinkedIn
+                      </a>
+                    )}
+                    {sl?.instagram && (
+                      <a href={sl.instagram.startsWith("http") ? sl.instagram : `https://${sl.instagram}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-pink-500/20 bg-pink-500/[0.08] px-3 py-1.5 text-[11px] font-semibold text-pink-400 hover:bg-pink-500/15 transition">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                        Instagram
+                      </a>
+                    )}
+                    {sl?.twitter && (
+                      <a href={sl.twitter.startsWith("http") ? sl.twitter : `https://${sl.twitter}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-500/20 bg-zinc-500/[0.08] px-3 py-1.5 text-[11px] font-semibold text-zinc-400 hover:bg-zinc-500/15 transition">
+                        <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        X / Twitter
+                      </a>
+                    )}
+                    {sl?.github && (
+                      <a href={sl.github.startsWith("http") ? sl.github : `https://${sl.github}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-500/20 bg-zinc-500/[0.08] px-3 py-1.5 text-[11px] font-semibold text-zinc-400 hover:bg-zinc-500/15 transition">
+                        <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+                        GitHub
+                      </a>
+                    )}
+                    {sl?.portfolio && (
+                      <a href={sl.portfolio.startsWith("http") ? sl.portfolio : `https://${sl.portfolio}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/[0.08] px-3 py-1.5 text-[11px] font-semibold text-emerald-400 hover:bg-emerald-500/15 transition">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        Portfolio
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {seekerProfile.experience && seekerProfile.experience.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Experience</p>
+                  <div className="space-y-2">
+                    {seekerProfile.experience.map((exp, i) => (
+                      <div key={i} className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                        <p className="text-xs font-semibold text-white">{exp.title}</p>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">{exp.company}{exp.location ? ` · ${exp.location}` : ""}</p>
+                        <p className="text-[10px] text-zinc-600 mt-0.5">{exp.startDate} — {exp.current ? "Present" : exp.endDate}</p>
+                        {exp.description && <p className="text-[11px] text-zinc-500 mt-1.5 leading-4">{exp.description}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {seekerProfile.education && seekerProfile.education.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Education</p>
+                  <div className="space-y-2">
+                    {seekerProfile.education.map((edu, i) => (
+                      <div key={i} className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                        <p className="text-xs font-semibold text-white">{edu.degree}</p>
+                        <p className="text-[11px] text-zinc-400 mt-0.5">{edu.institution}{edu.year ? ` · ${edu.year}` : ""}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                {seekerProfile.experienceLevel && (
+                  <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                    <p className="text-[10px] text-zinc-600 mb-0.5">Experience Level</p>
+                    <p className="text-xs font-semibold text-zinc-300">{seekerProfile.experienceLevel}</p>
+                  </div>
+                )}
+                {seekerProfile.preferredWorkMode && (
+                  <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                    <p className="text-[10px] text-zinc-600 mb-0.5">Preferred Mode</p>
+                    <p className="text-xs font-semibold text-zinc-300">{seekerProfile.preferredWorkMode}</p>
+                  </div>
+                )}
+                {seekerProfile.preferredLocation && (
+                  <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                    <p className="text-[10px] text-zinc-600 mb-0.5">Preferred Location</p>
+                    <p className="text-xs font-semibold text-zinc-300">{seekerProfile.preferredLocation}</p>
+                  </div>
+                )}
+                {seekerProfile.preferredNiche && (
+                  <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                    <p className="text-[10px] text-zinc-600 mb-0.5">Preferred Niche</p>
+                    <p className="text-xs font-semibold text-zinc-300">{seekerProfile.preferredNiche}</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex justify-end border-t border-white/[0.07] px-6 py-4 shrink-0">
+          <button onClick={onClose} className="rounded-xl bg-zinc-800 px-5 py-2 text-sm font-bold text-white hover:bg-zinc-700 transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
   c: Candidate; jobId: string; job: Job; token: string;
   onUpdate: (id: string, update: Partial<Candidate>) => void;
@@ -574,6 +784,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
   const [loadingRetry, setLoadingRetry] = useState(false);
   const [retryError, setRetryError] = useState("");
   const [showOfferLetterModal, setShowOfferLetterModal] = useState(false);
+  const [showSeekerProfile, setShowSeekerProfile] = useState(false);
 
   const scoringFailed = c.scoringFailed === true;
   const pct = (!scoringFailed && c.maxScore > 0) ? Math.round((c.totalScore / c.maxScore) * 100) : 0;
@@ -730,6 +941,14 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
           onClose={() => setShowOfferLetterModal(false)}
         />
       )}
+      {showSeekerProfile && (
+        <SeekerProfileModal
+          candidateId={c._id}
+          jobId={jobId}
+          token={token}
+          onClose={() => setShowSeekerProfile(false)}
+        />
+      )}
 
       <div className="rounded-3xl border border-white/[0.07] bg-white/[0.03] overflow-hidden">
         <div className="p-5">
@@ -821,6 +1040,14 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
                 <option key={s.id} value={s.id} className="bg-zinc-900 text-white">{s.label}</option>
               ))}
             </select>
+
+            <button
+              onClick={() => setShowSeekerProfile(true)}
+              className="flex items-center gap-1 rounded-xl border border-sky-500/20 bg-sky-500/[0.07] px-3 py-1.5 text-[11px] text-sky-400 hover:bg-sky-500/15 transition"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+              View Profile
+            </button>
 
             <button
               onClick={() => setExpanded(e => !e)}

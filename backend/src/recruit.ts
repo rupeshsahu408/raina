@@ -1655,6 +1655,63 @@ recruitRouter.post("/jobs/:jobId/candidates/:candidateId/offer-letter", async (r
   }
 });
 
+// ─── Recruiter views a candidate's seeker profile ─────────────────────────────
+
+recruitRouter.get("/jobs/:jobId/candidates/:candidateId/seeker-profile", async (req, res) => {
+  try {
+    await connectMongo();
+    const uid = getUid(req);
+    if (!uid) return res.status(401).json({ error: "Unauthorized" });
+    const job = await RecruitJob.findOne({ _id: req.params.jobId, uid }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+    const candidate = await RecruitCandidate.findOne({
+      _id: req.params.candidateId,
+      jobId: req.params.jobId,
+      uid,
+    }).lean();
+    if (!candidate) return res.status(404).json({ error: "Candidate not found." });
+    const seekerProfile = await RecruitSeekerProfile.findOne({ email: candidate.email }).lean();
+    return res.json({ candidate: { name: candidate.name, email: candidate.email }, seekerProfile: seekerProfile ?? null });
+  } catch (err: any) {
+    console.error("[recruit] GET /seeker-profile", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Public: job seeker views recruiter profile ────────────────────────────────
+
+recruitPublicRouter.get("/jobs/:jobId/recruiter", async (req, res) => {
+  try {
+    await connectMongo();
+    const job = await RecruitJob.findOne({
+      _id: req.params.jobId,
+      publicVisibility: { $ne: false },
+    }).lean();
+    if (!job) return res.status(404).json({ error: "Job not found." });
+    const companyProfile = await RecruitCompanyProfile.findOne({ uid: job.uid }).lean();
+    const otherJobs = await RecruitJob.find({
+      uid: job.uid,
+      status: "active",
+      publicVisibility: { $ne: false },
+      _id: { $ne: job._id },
+    })
+      .select("_id title niche location workMode jobType seniority freshersAllowed verifiedCompany salaryMin salaryMax salaryCurrency")
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .lean();
+    return res.json({
+      companyProfile: companyProfile ?? null,
+      companyName: job.companyName,
+      companyType: job.companyType,
+      location: job.location,
+      otherJobs,
+    });
+  } catch (err: any) {
+    console.error("[recruit-public] GET /jobs/:jobId/recruiter", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── Export ───────────────────────────────────────────────────────────────────
 
 recruitRouter.get("/jobs/:jobId/export", async (req, res) => {
@@ -1774,6 +1831,16 @@ recruitRouter.put("/seeker/profile", async (req, res) => {
     if (preferredNiche !== undefined) update.preferredNiche = String(preferredNiche).trim();
     if (experienceLevel !== undefined) update.experienceLevel = String(experienceLevel).trim();
     if (resumeText !== undefined) update.resumeText = String(resumeText).trim();
+    if (req.body.socialLinks && typeof req.body.socialLinks === "object") {
+      const sl = req.body.socialLinks;
+      update.socialLinks = {
+        linkedin: String(sl.linkedin || "").trim(),
+        instagram: String(sl.instagram || "").trim(),
+        twitter: String(sl.twitter || "").trim(),
+        github: String(sl.github || "").trim(),
+        portfolio: String(sl.portfolio || "").trim(),
+      };
+    }
     const profile = await RecruitSeekerProfile.findOneAndUpdate(
       { uid },
       { $set: update },

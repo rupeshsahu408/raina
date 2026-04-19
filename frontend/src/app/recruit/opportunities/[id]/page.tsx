@@ -305,6 +305,20 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             location={job.location}
           />
 
+          <div className="rounded-2xl border border-[#0a66c2]/20 bg-blue-50/50 p-4 flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-slate-800">Want to know more about who's hiring?</p>
+              <p className="text-xs text-slate-500 mt-0.5">View the recruiter's full company profile and their other open roles.</p>
+            </div>
+            <Link
+              href={`/recruit/recruiter/${id}`}
+              className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-[#0a66c2]/30 bg-white px-4 py-2 text-xs font-bold text-[#0a66c2] hover:bg-[#0a66c2] hover:text-white transition"
+            >
+              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 1 0-16 0"/></svg>
+              View Recruiter Profile
+            </Link>
+          </div>
+
           <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-5 shadow-sm">
             <h2 className="text-sm font-bold text-slate-900">Apply faster with your saved profile</h2>
             <p className="mt-2 text-sm leading-relaxed text-slate-600">
