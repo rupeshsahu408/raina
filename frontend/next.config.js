@@ -6,6 +6,7 @@ const nextConfig = {
     "*.replit.dev",
     "*.kirk.replit.dev",
     "*.picard.replit.dev",
+    "*.riker.replit.dev",
     "*.replit.app",
   ],
   async rewrites() {

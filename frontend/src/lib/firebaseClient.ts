@@ -2,6 +2,7 @@
 
 import { getApps, initializeApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
+import { getStorage, type FirebaseStorage } from "firebase/storage";
 
 type FirebaseConfig = {
   apiKey: string | undefined;
@@ -24,10 +25,11 @@ function getFirebaseConfig(): FirebaseConfig {
 }
 
 let authInstance: Auth | null = null;
+let storageInstance: FirebaseStorage | null = null;
 let initError: Error | null = null;
 
-export function getFirebaseAuth(): Auth {
-  if (authInstance) return authInstance;
+function initFirebase() {
+  if (authInstance) return;
   if (initError) throw initError;
 
   const firebaseConfig = getFirebaseConfig();
@@ -58,6 +60,15 @@ export function getFirebaseAuth(): Auth {
     getApps().length > 0 ? getApps()[0]! : initializeApp(safeConfig);
 
   authInstance = getAuth(app);
-  return authInstance;
+  storageInstance = getStorage(app);
 }
 
+export function getFirebaseAuth(): Auth {
+  initFirebase();
+  return authInstance!;
+}
+
+export function getFirebaseStorage(): FirebaseStorage {
+  initFirebase();
+  return storageInstance!;
+}

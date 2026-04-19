@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { RecruitGuard } from "@/components/RecruitGuard";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
-import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirebaseAuth, getFirebaseStorage } from "@/lib/firebaseClient";
 import Link from "next/link";
 import RecruitHeader from "@/components/RecruitHeader";
 import { apiUrl, readApiJson } from "@/lib/api";
@@ -21,6 +22,8 @@ type CompanyProfile = {
   companyName: string; companyType: string; industry: string; companySize: string;
   website: string; location: string; description: string; mission: string;
   benefits: string; linkedinUrl: string; logoUrl: string;
+  bio: string; photoUrl: string;
+  socialLinks: { instagram: string; twitter: string; github: string; portfolio: string };
 };
 
 function Input({ label, ...props }: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
@@ -56,15 +59,25 @@ function CompanyProfileContent() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [uid, setUid] = useState<string>("");
   const [profile, setProfile] = useState<CompanyProfile>({
     companyName: "", companyType: "", industry: "", companySize: "",
     website: "", location: "", description: "", mission: "", benefits: "",
-    linkedinUrl: "", logoUrl: "",
+    linkedinUrl: "", logoUrl: "", bio: "", photoUrl: "",
+    socialLinks: { instagram: "", twitter: "", github: "", portfolio: "" },
   });
   const [verificationStatus, setVerificationStatus] = useState<"none" | "requested" | "verified" | "rejected">("none");
   const [requestingVerification, setRequestingVerification] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState("");
   const [authToken, setAuthToken] = useState<string>("");
+
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState("");
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoUploadError, setPhotoUploadError] = useState("");
+  const photoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const auth = getFirebaseAuth();
@@ -73,13 +86,35 @@ function CompanyProfileContent() {
       try {
         const token = await u.getIdToken();
         setAuthToken(token);
+        setUid(u.uid);
         const res = await fetch(apiUrl("/recruit/company/profile"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
           const data = await readApiJson(res);
           if (data.profile) {
-            setProfile(data.profile);
+            const p = data.profile;
+            setProfile({
+              companyName: p.companyName || "",
+              companyType: p.companyType || "",
+              industry: p.industry || "",
+              companySize: p.companySize || "",
+              website: p.website || "",
+              location: p.location || "",
+              description: p.description || "",
+              mission: p.mission || "",
+              benefits: p.benefits || "",
+              linkedinUrl: p.linkedinUrl || "",
+              logoUrl: p.logoUrl || "",
+              bio: p.bio || "",
+              photoUrl: p.photoUrl || "",
+              socialLinks: {
+                instagram: p.socialLinks?.instagram || "",
+                twitter: p.socialLinks?.twitter || "",
+                github: p.socialLinks?.github || "",
+                portfolio: p.socialLinks?.portfolio || "",
+              },
+            });
             setVerificationStatus(data.profile.verificationStatus || "none");
           }
         }
@@ -88,6 +123,39 @@ function CompanyProfileContent() {
     });
     return () => unsub();
   }, [router]);
+
+  async function uploadImage(file: File, path: string): Promise<string> {
+    const storage = getFirebaseStorage();
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, file);
+    return getDownloadURL(storageRef);
+  }
+
+  async function handleLogoUpload(file: File) {
+    setUploadingLogo(true);
+    setLogoUploadError("");
+    try {
+      const url = await uploadImage(file, `recruit/companyLogos/${uid}`);
+      setProfile(prev => ({ ...prev, logoUrl: url }));
+    } catch {
+      setLogoUploadError("Logo upload failed. Please try again or paste a URL.");
+    } finally {
+      setUploadingLogo(false);
+    }
+  }
+
+  async function handlePhotoUpload(file: File) {
+    setUploadingPhoto(true);
+    setPhotoUploadError("");
+    try {
+      const url = await uploadImage(file, `recruit/recruiterPhotos/${uid}`);
+      setProfile(prev => ({ ...prev, photoUrl: url }));
+    } catch {
+      setPhotoUploadError("Photo upload failed. Please try again or paste a URL.");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  }
 
   async function requestVerification() {
     if (!authToken) return;
@@ -127,7 +195,7 @@ function CompanyProfileContent() {
       });
       if (!res.ok) {
         const body = await readApiJson(res).catch(() => ({}));
-        throw new Error(body.error || "Failed to save profile.");
+        throw new Error((body as any).error || "Failed to save profile.");
       }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
@@ -177,6 +245,7 @@ function CompanyProfileContent() {
       </div>
 
       <main className="mx-auto max-w-3xl px-4 py-5 sm:px-6 sm:py-6 space-y-4">
+
         <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
           <h2 className="text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100">Basic Details</h2>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -205,18 +274,135 @@ function CompanyProfileContent() {
           <Textarea label="Benefits & Perks" value={profile.benefits} onChange={e => set("benefits", e.target.value)} placeholder="e.g. Health insurance, flexible hours, remote work, learning budget, equity…" rows={3} />
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-          <h2 className="text-sm font-bold text-slate-900 mb-4 pb-3 border-b border-slate-100">Links & Logo</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="LinkedIn URL" value={profile.linkedinUrl} onChange={e => set("linkedinUrl", e.target.value)} placeholder="https://linkedin.com/company/…" />
-            <Input label="Logo URL" value={profile.logoUrl} onChange={e => set("logoUrl", e.target.value)} placeholder="https://… (image URL)" />
-          </div>
-          {profile.logoUrl && (
-            <div className="mt-4 flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200">
-              <img src={profile.logoUrl} alt="Logo preview" className="h-12 w-12 rounded-lg object-contain border border-slate-200 bg-white" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-              <p className="text-xs text-slate-500">Logo preview</p>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+          <h2 className="text-sm font-bold text-slate-900 pb-3 border-b border-slate-100">Logo & Company Links</h2>
+
+          <div className="flex items-start gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+            <div className="relative shrink-0">
+              {profile.logoUrl ? (
+                <img src={profile.logoUrl} alt="Logo" className="h-20 w-20 rounded-xl object-contain border border-slate-200 bg-white shadow-sm" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-slate-200 text-slate-400 text-xs font-semibold">Logo</div>
+              )}
+              {uploadingLogo && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/30">
+                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                </div>
+              )}
             </div>
-          )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-900">Company Logo</p>
+              <p className="text-xs text-slate-500 mt-0.5 mb-3">Upload an image or paste a URL. Square logos work best.</p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <button type="button" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}
+                  className="rounded-full border border-[#0a66c2] px-4 py-1.5 text-xs font-semibold text-[#0a66c2] hover:bg-blue-50 transition disabled:opacity-50">
+                  {uploadingLogo ? "Uploading…" : "Upload logo"}
+                </button>
+                {profile.logoUrl && (
+                  <button type="button" onClick={() => set("logoUrl", "")}
+                    className="rounded-full border border-red-200 px-4 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 transition">
+                    Remove
+                  </button>
+                )}
+              </div>
+              <div>
+                <label className="mb-1 block text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Or paste URL</label>
+                <input value={profile.logoUrl} onChange={e => set("logoUrl", e.target.value)} placeholder="https://… (image URL)"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-[#0a66c2] focus:ring-2 focus:ring-[#0a66c2]/10 transition bg-white" />
+              </div>
+              {logoUploadError && <p className="mt-1.5 text-xs text-red-600">{logoUploadError}</p>}
+            </div>
+            <input ref={logoInputRef} type="file" accept="image/*" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = ""; }} />
+          </div>
+
+          <Input label="LinkedIn Company URL" value={profile.linkedinUrl} onChange={e => set("linkedinUrl", e.target.value)} placeholder="https://linkedin.com/company/…" />
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+          <div className="pb-3 border-b border-slate-100">
+            <h2 className="text-sm font-bold text-slate-900">About You (Recruiter / Hiring Manager)</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Tell job seekers about yourself — who you are, your background, and what you look for in candidates.</p>
+          </div>
+
+          <div className="flex items-start gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+            <div className="relative shrink-0">
+              {profile.photoUrl ? (
+                <img src={profile.photoUrl} alt="Your photo" className="h-20 w-20 rounded-full object-cover border-2 border-white shadow-md" />
+              ) : (
+                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#0a66c2] to-[#004182] text-2xl font-black text-white border-2 border-white shadow-md">
+                  {profile.companyName?.slice(0, 1).toUpperCase() || "R"}
+                </div>
+              )}
+              {uploadingPhoto && (
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
+                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-slate-900">Your Profile Photo</p>
+              <p className="text-xs text-slate-500 mt-0.5 mb-3">Your personal photo shown to job seekers who view your recruiter profile.</p>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => photoInputRef.current?.click()} disabled={uploadingPhoto}
+                  className="rounded-full border border-[#0a66c2] px-4 py-1.5 text-xs font-semibold text-[#0a66c2] hover:bg-blue-50 transition disabled:opacity-50">
+                  {uploadingPhoto ? "Uploading…" : "Upload photo"}
+                </button>
+                {profile.photoUrl && (
+                  <button type="button" onClick={() => set("photoUrl", "")}
+                    className="rounded-full border border-red-200 px-4 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 transition">
+                    Remove
+                  </button>
+                )}
+              </div>
+              {photoUploadError && <p className="mt-1.5 text-xs text-red-600">{photoUploadError}</p>}
+            </div>
+            <input ref={photoInputRef} type="file" accept="image/*" className="hidden"
+              onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); e.target.value = ""; }} />
+          </div>
+
+          <Textarea label="Bio / About you" value={profile.bio} onChange={e => set("bio", e.target.value)}
+            placeholder="Hi, I'm [Name] — Head of Talent at [Company]. I look for candidates who are passionate, curious, and collaborative…" rows={4} />
+
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Your Social & Portfolio Links</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-[10px] font-semibold text-slate-400 uppercase tracking-wide">LinkedIn</label>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 focus-within:border-[#0a66c2] focus-within:ring-2 focus-within:ring-[#0a66c2]/10 transition">
+                  <svg width="13" height="13" fill="currentColor" className="text-[#0a66c2] shrink-0" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+                  <input value={profile.linkedinUrl} onChange={e => set("linkedinUrl", e.target.value)} placeholder="linkedin.com/in/yourname" className="flex-1 text-sm outline-none bg-transparent" />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Instagram</label>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 focus-within:border-[#0a66c2] focus-within:ring-2 focus-within:ring-[#0a66c2]/10 transition">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" className="text-pink-500 shrink-0" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                  <input value={profile.socialLinks.instagram} onChange={e => set("socialLinks", { ...profile.socialLinks, instagram: e.target.value })} placeholder="instagram.com/yourhandle" className="flex-1 text-sm outline-none bg-transparent" />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[10px] font-semibold text-slate-400 uppercase tracking-wide">X / Twitter</label>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 focus-within:border-[#0a66c2] focus-within:ring-2 focus-within:ring-[#0a66c2]/10 transition">
+                  <svg width="13" height="13" fill="currentColor" className="text-slate-700 shrink-0" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  <input value={profile.socialLinks.twitter} onChange={e => set("socialLinks", { ...profile.socialLinks, twitter: e.target.value })} placeholder="x.com/yourhandle" className="flex-1 text-sm outline-none bg-transparent" />
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Portfolio / Website</label>
+                <div className="flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2.5 focus-within:border-[#0a66c2] focus-within:ring-2 focus-within:ring-[#0a66c2]/10 transition">
+                  <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald-500 shrink-0" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <input value={profile.socialLinks.portfolio} onChange={e => set("socialLinks", { ...profile.socialLinks, portfolio: e.target.value })} placeholder="yourwebsite.com" className="flex-1 text-sm outline-none bg-transparent" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className={`rounded-2xl border shadow-sm overflow-hidden ${verificationStatus === "verified" ? "border-green-200 bg-green-50" : verificationStatus === "requested" ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white"}`}>
@@ -245,7 +431,7 @@ function CompanyProfileContent() {
                 <div>
                   <h2 className="text-sm font-bold text-slate-900">Get your company verified</h2>
                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    Verified companies get a ✓ badge on every job listing, appear higher in search results, and earn more trust from job seekers. To qualify, your company profile must include a name, description, and website.
+                    Verified companies get a ✓ badge on every job listing, appear higher in search results, and earn more trust from job seekers.
                   </p>
                 </div>
               </div>
@@ -259,11 +445,8 @@ function CompanyProfileContent() {
               {verificationMessage && (
                 <p className="mb-3 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-xs text-red-700">{verificationMessage}</p>
               )}
-              <button
-                onClick={requestVerification}
-                disabled={requestingVerification}
-                className="rounded-full bg-[#0a66c2] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#004182] disabled:opacity-60 transition"
-              >
+              <button onClick={requestVerification} disabled={requestingVerification}
+                className="rounded-full bg-[#0a66c2] px-6 py-2.5 text-sm font-bold text-white hover:bg-[#004182] disabled:opacity-60 transition">
                 {requestingVerification ? "Submitting…" : "Request company verification"}
               </button>
             </div>

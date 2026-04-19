@@ -44,6 +44,7 @@ export interface IRecruitSeekerProfile extends Document {
   experienceLevel: string;
   resumeText: string;
   socialLinks?: ISocialLinks;
+  photoUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -102,6 +103,7 @@ const RecruitSeekerProfileSchema = new Schema<IRecruitSeekerProfile>(
     experienceLevel: { type: String, default: "" },
     resumeText: { type: String, default: "" },
     socialLinks: { type: SocialLinksSchema, default: () => ({}) },
+    photoUrl: { type: String, default: "" },
   },
   { timestamps: true }
 );

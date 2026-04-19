@@ -562,7 +562,12 @@ type SeekerProfileData = {
   skills?: string[]; experience?: { title: string; company: string; location?: string; startDate: string; endDate?: string; current: boolean; description: string }[];
   education?: { degree: string; institution: string; year?: string; description?: string }[];
   experienceLevel?: string; preferredNiche?: string; preferredWorkMode?: string; preferredLocation?: string;
-  socialLinks?: SocialLinks;
+  socialLinks?: SocialLinks; photoUrl?: string;
+};
+type CandidateAppInfo = {
+  name: string; email: string; phone?: string;
+  location?: string; currentStatus?: string; educationLevel?: string;
+  currentClassYear?: string; availability?: string; coverLetter?: string; linkedinUrl?: string;
 };
 
 function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
@@ -570,7 +575,7 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
 }) {
   const [loading, setLoading] = useState(true);
   const [seekerProfile, setSeekerProfile] = useState<SeekerProfileData | null>(null);
-  const [candidateName, setCandidateName] = useState("");
+  const [candidateApp, setCandidateApp] = useState<CandidateAppInfo | null>(null);
   const [noProfile, setNoProfile] = useState(false);
 
   useEffect(() => {
@@ -579,7 +584,7 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
     })
       .then(r => readApiJson(r))
       .then(d => {
-        setCandidateName(d.candidate?.name || "");
+        if (d.candidate) setCandidateApp(d.candidate);
         if (d.seekerProfile) {
           setSeekerProfile(d.seekerProfile);
         } else {
@@ -599,7 +604,7 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
         <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4 shrink-0">
           <div>
             <h2 className="text-sm font-semibold text-white">Candidate Profile</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">{candidateName}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{candidateApp?.name || ""}</p>
           </div>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
@@ -614,27 +619,86 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
             </div>
-          ) : noProfile || !seekerProfile ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-zinc-800 text-2xl mb-3">👤</div>
-              <p className="text-sm font-semibold text-zinc-300">No saved profile found</p>
-              <p className="text-xs text-zinc-600 mt-1 max-w-xs">
-                This candidate hasn't set up a Plyndrox profile yet. Their application details are in the resume section.
-              </p>
-            </div>
           ) : (
             <>
               <div className="flex items-start gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-900 to-sky-700 text-lg font-bold text-white">
-                  {seekerProfile.name?.slice(0, 1).toUpperCase() || "?"}
+                <div className="shrink-0">
+                  {seekerProfile?.photoUrl ? (
+                    <img src={seekerProfile.photoUrl} alt="" className="h-14 w-14 rounded-full object-cover border-2 border-zinc-700" />
+                  ) : (
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sky-900 to-sky-700 text-xl font-bold text-white">
+                      {(seekerProfile?.name || candidateApp?.name || "?").slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
                 </div>
-                <div className="min-w-0">
-                  <p className="text-base font-semibold text-white">{seekerProfile.name}</p>
-                  {seekerProfile.headline && <p className="text-xs text-zinc-400 mt-0.5">{seekerProfile.headline}</p>}
-                  {seekerProfile.email && <p className="text-xs text-zinc-600 mt-0.5">{seekerProfile.email}</p>}
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-semibold text-white">{seekerProfile?.name || candidateApp?.name}</p>
+                  {seekerProfile?.headline && <p className="text-xs text-zinc-400 mt-0.5">{seekerProfile.headline}</p>}
+                  {candidateApp?.email && <p className="text-xs text-zinc-500 mt-0.5">{candidateApp.email}</p>}
                 </div>
               </div>
 
+              {candidateApp && (candidateApp.location || candidateApp.currentStatus || candidateApp.educationLevel || candidateApp.availability || candidateApp.linkedinUrl) && (
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Application Details</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {candidateApp.location && (
+                      <div className="col-span-2 flex items-center gap-2 text-xs text-zinc-400">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        {candidateApp.location}
+                      </div>
+                    )}
+                    {candidateApp.currentStatus && (
+                      <div className="rounded-lg border border-white/[0.05] bg-white/[0.03] p-2">
+                        <p className="text-[10px] text-zinc-600 mb-0.5">Current Status</p>
+                        <p className="text-[11px] font-semibold text-zinc-300">{candidateApp.currentStatus}</p>
+                      </div>
+                    )}
+                    {candidateApp.availability && (
+                      <div className="rounded-lg border border-white/[0.05] bg-white/[0.03] p-2">
+                        <p className="text-[10px] text-zinc-600 mb-0.5">Availability</p>
+                        <p className="text-[11px] font-semibold text-zinc-300">{candidateApp.availability}</p>
+                      </div>
+                    )}
+                    {candidateApp.educationLevel && (
+                      <div className="rounded-lg border border-white/[0.05] bg-white/[0.03] p-2">
+                        <p className="text-[10px] text-zinc-600 mb-0.5">Education</p>
+                        <p className="text-[11px] font-semibold text-zinc-300">{candidateApp.educationLevel}{candidateApp.currentClassYear ? ` · ${candidateApp.currentClassYear}` : ""}</p>
+                      </div>
+                    )}
+                    {candidateApp.phone && (
+                      <div className="rounded-lg border border-white/[0.05] bg-white/[0.03] p-2">
+                        <p className="text-[10px] text-zinc-600 mb-0.5">Phone</p>
+                        <p className="text-[11px] font-semibold text-zinc-300">{candidateApp.phone}</p>
+                      </div>
+                    )}
+                  </div>
+                  {candidateApp.linkedinUrl && (
+                    <a href={candidateApp.linkedinUrl.startsWith("http") ? candidateApp.linkedinUrl : `https://${candidateApp.linkedinUrl}`} target="_blank" rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 transition">
+                      <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+                      View LinkedIn Profile
+                    </a>
+                  )}
+                </div>
+              )}
+
+              {candidateApp?.coverLetter && (
+                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Cover Letter</p>
+                  <p className="text-xs text-zinc-300 leading-5 whitespace-pre-line">{candidateApp.coverLetter}</p>
+                </div>
+              )}
+
+              {noProfile || !seekerProfile ? (
+                <div className="flex flex-col items-center justify-center py-6 text-center rounded-2xl border border-dashed border-zinc-800">
+                  <p className="text-sm font-semibold text-zinc-400">No Plyndrox profile found</p>
+                  <p className="text-xs text-zinc-600 mt-1 max-w-xs">
+                    This candidate hasn't set up a full profile. Their resume and application details are shown above.
+                  </p>
+                </div>
+              ) : (
+              <>
               {seekerProfile.bio && (
                 <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Bio</p>
@@ -752,6 +816,8 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
                   </div>
                 )}
               </div>
+              </>
+              )}
             </>
           )}
         </div>

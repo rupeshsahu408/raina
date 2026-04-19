@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
-import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirebaseAuth, getFirebaseStorage } from "@/lib/firebaseClient";
 import RecruitHeader from "@/components/RecruitHeader";
 import { RecruitGuard } from "@/components/RecruitGuard";
 import { apiUrl, readApiJson } from "@/lib/api";
@@ -41,6 +42,7 @@ type Profile = {
   preferredSalaryMin: number | ""; preferredSalaryMax: number | "";
   preferredNiche: string; experienceLevel: string; resumeText: string;
   socialLinks: SocialLinks;
+  photoUrl: string;
 };
 
 const EMPTY_EXP: Experience = { title: "", company: "", location: "", startDate: "", endDate: "", current: false, description: "" };
@@ -86,6 +88,7 @@ function Select({ label, children, ...props }: { label: string } & React.SelectH
 function RecruitProfileContent() {
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+  const [uid, setUid] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -93,6 +96,9 @@ function RecruitProfileContent() {
   const [needsLogin, setNeedsLogin] = useState(false);
   const [skillInput, setSkillInput] = useState("");
   const [activeSection, setActiveSection] = useState<Section>("basics");
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<Profile>({
     name: "", email: "", phone: "", headline: "", bio: "",
     skills: [], experience: [], education: [],
@@ -100,6 +106,7 @@ function RecruitProfileContent() {
     preferredSalaryMin: "", preferredSalaryMax: "",
     preferredNiche: "", experienceLevel: "", resumeText: "",
     socialLinks: { linkedin: "", instagram: "", twitter: "", github: "", portfolio: "" },
+    photoUrl: "",
   });
 
   const completionItems = [
@@ -119,6 +126,7 @@ function RecruitProfileContent() {
       if (u) {
         const t = await u.getIdToken();
         setToken(t);
+        setUid(u.uid);
         setProfile(prev => ({
           ...prev,
           email: prev.email || u.email || "",
@@ -159,6 +167,7 @@ function RecruitProfileContent() {
             github: p.socialLinks?.github || "",
             portfolio: p.socialLinks?.portfolio || "",
           },
+          photoUrl: p.photoUrl || "",
         });
       }
     } catch { /* ignore */ }
@@ -183,6 +192,23 @@ function RecruitProfileContent() {
 
   function updateEdu(idx: number, field: keyof Education, value: any) {
     set("education", profile.education.map((e, i) => i === idx ? { ...e, [field]: value } : e));
+  }
+
+  async function handlePhotoUpload(file: File) {
+    if (!uid) return;
+    setUploadingPhoto(true);
+    setUploadError("");
+    try {
+      const storage = getFirebaseStorage();
+      const storageRef = ref(storage, `recruit/seekerPhotos/${uid}`);
+      await uploadBytes(storageRef, file);
+      const url = await getDownloadURL(storageRef);
+      set("photoUrl", url);
+    } catch (e: any) {
+      setUploadError("Photo upload failed. Please try again or paste a photo URL.");
+    } finally {
+      setUploadingPhoto(false);
+    }
   }
 
   async function save() {
@@ -344,6 +370,54 @@ function RecruitProfileContent() {
                 <h2 className="text-base font-bold text-slate-900">Basic Information</h2>
                 <p className="text-sm text-slate-500 mt-0.5">Your professional identity on Recruit AI.</p>
               </div>
+
+              <div className="flex items-center gap-5 p-4 rounded-2xl border border-slate-200 bg-slate-50">
+                <div className="relative shrink-0">
+                  {profile.photoUrl ? (
+                    <img src={profile.photoUrl} alt="Profile" className="h-20 w-20 rounded-full object-cover border-2 border-white shadow-md" />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#0a66c2] to-[#004182] text-2xl font-black text-white border-2 border-white shadow-md">
+                      {profile.name?.slice(0, 1).toUpperCase() || "?"}
+                    </div>
+                  )}
+                  {uploadingPhoto && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
+                      <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900">Profile Photo</p>
+                  <p className="text-xs text-slate-500 mt-0.5 mb-3">Upload a photo or paste a URL. Square photos work best.</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => photoInputRef.current?.click()}
+                      disabled={uploadingPhoto}
+                      className="rounded-full border border-[#0a66c2] px-4 py-1.5 text-xs font-semibold text-[#0a66c2] hover:bg-blue-50 transition disabled:opacity-50"
+                    >
+                      {uploadingPhoto ? "Uploading…" : "Upload photo"}
+                    </button>
+                    {profile.photoUrl && (
+                      <button type="button" onClick={() => set("photoUrl", "")} className="rounded-full border border-red-200 px-4 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50 transition">
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  {uploadError && <p className="mt-2 text-xs text-red-600">{uploadError}</p>}
+                </div>
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handlePhotoUpload(f); e.target.value = ""; }}
+                />
+              </div>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <Input label="Full Name" value={profile.name} onChange={e => set("name", e.target.value)} placeholder="Your full name" />
                 <Input label="Email" value={profile.email} onChange={e => set("email", e.target.value)} placeholder="you@email.com" type="email" />

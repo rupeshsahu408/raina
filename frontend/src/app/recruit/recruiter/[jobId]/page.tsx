@@ -31,6 +31,9 @@ type CompanyProfile = {
   description?: string;
   mission?: string;
   benefits?: string;
+  bio?: string;
+  photoUrl?: string;
+  socialLinks?: { instagram?: string; twitter?: string; github?: string; portfolio?: string };
 };
 
 type RecruiterData = {
@@ -99,8 +102,10 @@ export default function RecruiterProfilePage({ params }: { params: Promise<{ job
   const cp = data.companyProfile;
   const name = cp?.companyName || data.companyName || "Company";
   const type = cp?.companyType || data.companyType;
-  const loc = cp?.location || data.location;
+  const loc = (cp as any)?.location || data.location;
   const hasRichInfo = Boolean(cp?.description || cp?.mission || cp?.benefits || cp?.website || cp?.linkedinUrl);
+  const hasRecruiterInfo = Boolean(cp?.bio || cp?.photoUrl);
+  const hasSocialLinks = Boolean(cp?.linkedinUrl || cp?.socialLinks?.instagram || cp?.socialLinks?.twitter || cp?.socialLinks?.github || cp?.socialLinks?.portfolio);
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
@@ -155,6 +160,56 @@ export default function RecruiterProfilePage({ params }: { params: Promise<{ job
             </div>
           </div>
         </div>
+
+        {hasRecruiterInfo && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-sm font-bold text-slate-900 mb-4">About the Recruiter</h2>
+            <div className="flex items-start gap-4">
+              {cp?.photoUrl ? (
+                <img src={cp.photoUrl} alt="Recruiter" className="h-14 w-14 rounded-full object-cover border-2 border-slate-100 shrink-0" />
+              ) : (
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#0a66c2] to-[#004182] text-xl font-bold text-white">
+                  {name.slice(0, 1).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                {cp?.bio && <p className="text-sm text-slate-700 leading-relaxed">{cp.bio}</p>}
+                {hasSocialLinks && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {cp?.linkedinUrl && (
+                      <a href={cp.linkedinUrl.startsWith("http") ? cp.linkedinUrl : `https://${cp.linkedinUrl}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-[#0a66c2] hover:bg-blue-100 transition">
+                        <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+                        LinkedIn
+                      </a>
+                    )}
+                    {cp?.socialLinks?.instagram && (
+                      <a href={cp.socialLinks.instagram.startsWith("http") ? cp.socialLinks.instagram : `https://${cp.socialLinks.instagram}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-pink-200 bg-pink-50 px-3 py-1.5 text-xs font-semibold text-pink-600 hover:bg-pink-100 transition">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                        Instagram
+                      </a>
+                    )}
+                    {cp?.socialLinks?.twitter && (
+                      <a href={cp.socialLinks.twitter.startsWith("http") ? cp.socialLinks.twitter : `https://${cp.socialLinks.twitter}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+                        <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        X / Twitter
+                      </a>
+                    )}
+                    {cp?.socialLinks?.portfolio && (
+                      <a href={cp.socialLinks.portfolio.startsWith("http") ? cp.socialLinks.portfolio : `https://${cp.socialLinks.portfolio}`} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition">
+                        <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                        Portfolio
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {hasRichInfo && (
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">

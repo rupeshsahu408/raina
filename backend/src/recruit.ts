@@ -955,7 +955,7 @@ recruitPublicRouter.post("/jobs/:jobId/apply", async (req, res) => {
     });
     if (!job) return res.status(404).json({ error: "Job not found." });
 
-    const { name, email, phone, resumeText, source } = req.body;
+    const { name, email, phone, resumeText, source, location, currentStatus, educationLevel, currentClassYear, availability, coverLetter, linkedinUrl } = req.body;
     if (!name?.trim()) return res.status(400).json({ error: "Name is required." });
     if (!email?.trim()) return res.status(400).json({ error: "Email is required." });
     if (!resumeText?.trim() || resumeText.trim().length < 40) {
@@ -986,6 +986,13 @@ recruitPublicRouter.post("/jobs/:jobId/apply", async (req, res) => {
       previousResumeScore: scored.totalScore,
       scoringFailed: scored.scoringFailed,
       source: source || "Plyndrox Jobs",
+      location: location || "",
+      currentStatus: currentStatus || "",
+      educationLevel: educationLevel || "",
+      currentClassYear: currentClassYear || "",
+      availability: availability || "",
+      coverLetter: coverLetter || "",
+      linkedinUrl: linkedinUrl || "",
     });
 
     await RecruitJob.updateOne({ _id: job._id }, { $inc: { candidateCount: 1 } });
@@ -1671,7 +1678,21 @@ recruitRouter.get("/jobs/:jobId/candidates/:candidateId/seeker-profile", async (
     }).lean();
     if (!candidate) return res.status(404).json({ error: "Candidate not found." });
     const seekerProfile = await RecruitSeekerProfile.findOne({ email: candidate.email }).lean();
-    return res.json({ candidate: { name: candidate.name, email: candidate.email }, seekerProfile: seekerProfile ?? null });
+    return res.json({
+      candidate: {
+        name: candidate.name,
+        email: candidate.email,
+        phone: candidate.phone,
+        location: candidate.location,
+        currentStatus: candidate.currentStatus,
+        educationLevel: candidate.educationLevel,
+        currentClassYear: candidate.currentClassYear,
+        availability: candidate.availability,
+        coverLetter: candidate.coverLetter,
+        linkedinUrl: candidate.linkedinUrl,
+      },
+      seekerProfile: seekerProfile ?? null,
+    });
   } catch (err: any) {
     console.error("[recruit] GET /seeker-profile", err);
     return res.status(500).json({ error: err.message });
@@ -1841,6 +1862,7 @@ recruitRouter.put("/seeker/profile", async (req, res) => {
         portfolio: String(sl.portfolio || "").trim(),
       };
     }
+    if (req.body.photoUrl !== undefined) update.photoUrl = String(req.body.photoUrl).trim();
     const profile = await RecruitSeekerProfile.findOneAndUpdate(
       { uid },
       { $set: update },
@@ -1874,10 +1896,19 @@ recruitRouter.put("/company/profile", async (req, res) => {
     const uid = getUid(req);
     if (!uid) return res.status(401).json({ error: "Unauthorized" });
 
-    const fields = ["companyName", "companyType", "industry", "companySize", "website", "location", "description", "mission", "benefits", "linkedinUrl", "logoUrl"];
-    const update: Record<string, string> = {};
+    const fields = ["companyName", "companyType", "industry", "companySize", "website", "location", "description", "mission", "benefits", "linkedinUrl", "logoUrl", "photoUrl", "bio"];
+    const update: Record<string, any> = {};
     for (const f of fields) {
       if (req.body[f] !== undefined) update[f] = String(req.body[f]).trim();
+    }
+    if (req.body.socialLinks && typeof req.body.socialLinks === "object") {
+      const sl = req.body.socialLinks;
+      update.socialLinks = {
+        instagram: String(sl.instagram || "").trim(),
+        twitter: String(sl.twitter || "").trim(),
+        github: String(sl.github || "").trim(),
+        portfolio: String(sl.portfolio || "").trim(),
+      };
     }
 
     const profile = await RecruitCompanyProfile.findOneAndUpdate(

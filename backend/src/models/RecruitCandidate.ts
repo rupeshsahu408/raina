@@ -72,6 +72,13 @@ export interface IRecruitCandidate extends Document {
   talentPoolNote?: string;
   stageMovedAt?: Date;
   offerLetter?: string;
+  location?: string;
+  currentStatus?: string;
+  educationLevel?: string;
+  currentClassYear?: string;
+  availability?: string;
+  coverLetter?: string;
+  linkedinUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -160,6 +167,13 @@ const RecruitCandidateSchema = new Schema<IRecruitCandidate>(
     talentPoolNote: { type: String, default: "" },
     stageMovedAt: { type: Date },
     offerLetter: { type: String, default: "" },
+    location: { type: String, default: "" },
+    currentStatus: { type: String, default: "" },
+    educationLevel: { type: String, default: "" },
+    currentClassYear: { type: String, default: "" },
+    availability: { type: String, default: "" },
+    coverLetter: { type: String, default: "" },
+    linkedinUrl: { type: String, default: "" },
   },
   { timestamps: true }
 );
