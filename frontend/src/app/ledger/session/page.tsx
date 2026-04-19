@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLedgerAuth } from "@/contexts/LedgerAuthContext";
@@ -59,61 +59,43 @@ type SessionData = {
 function fmt(n: number) {
   return "₹" + Number(n).toLocaleString("en-IN");
 }
-
+function fmtRaw(n: number) {
+  return Number(n).toLocaleString("en-IN");
+}
 function fmtQty(n: number, unit = "qtl") {
   return `${Number(n).toLocaleString("en-IN")} ${unit}`;
 }
 
-function ArrowLeftIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="m12 19-7-7 7-7" /><path d="M19 12H5" />
-    </svg>
-  );
+/* ── Icons ── */
+function ArrowLeftIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>;
 }
-
-function EditIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z" />
-    </svg>
-  );
+function EditIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5Z"/></svg>;
 }
-
-function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M20 6 9 17l-5-5" />
-    </svg>
-  );
+function CheckIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M20 6 9 17l-5-5"/></svg>;
 }
-
-function AlertIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-      <path d="M12 9v4" /><path d="M12 17h.01" />
-    </svg>
-  );
+function AlertIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>;
 }
-
-function TrendingUpIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-      <polyline points="16 7 22 7 22 13" />
-    </svg>
-  );
+function TrendingUpIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>;
 }
-
-function PieChartIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
-      <path d="M22 12A10 10 0 0 0 12 2v10z" />
-    </svg>
-  );
+function PieChartIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>;
+}
+function DownloadIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>;
+}
+function FileTextIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>;
+}
+function ShareIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>;
+}
+function CheckCircleIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>;
 }
 
 type Tab = "raw" | "grouped" | "summary";
@@ -122,12 +104,6 @@ const CHART_COLORS = [
   "#059669", "#0ea5e9", "#8b5cf6", "#f59e0b", "#ef4444",
   "#10b981", "#3b82f6", "#a855f7", "#f97316", "#ec4899",
 ];
-
-const CustomDonutLabel = ({ cx, cy, value }: { cx: number; cy: number; value: string }) => (
-  <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" className="text-sm font-black fill-gray-800" style={{ fontSize: 13, fontWeight: 800 }}>
-    {value}
-  </text>
-);
 
 const CustomTooltipPie = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
@@ -166,6 +142,10 @@ export default function LedgerSession() {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editBuf, setEditBuf] = useState<Partial<Entry>>({});
+
+  /* Export state */
+  const [exportMsg, setExportMsg] = useState<string | null>(null);
+  const exportMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!loading && !user) { router.replace("/ledger/login"); return; }
@@ -228,6 +208,223 @@ export default function LedgerSession() {
     groupedLive[key].rates.push(e.rate);
   }
 
+  function flashMsg(msg: string) {
+    setExportMsg(msg);
+    if (exportMsgTimer.current) clearTimeout(exportMsgTimer.current);
+    exportMsgTimer.current = setTimeout(() => setExportMsg(null), 3000);
+  }
+
+  /* ── Export: CSV ── */
+  function exportCSV() {
+    const dateStr = new Date(data!.meta.processedAt).toLocaleDateString("en-IN");
+    const header = ["#", "Commodity", "Rate (₹/qtl)", "Quantity (qtl)", "Amount (₹)", "Confidence"];
+    const rows = entries.map((e, i) => [
+      i + 1,
+      e.commodity,
+      e.rate,
+      e.quantity,
+      e.amount,
+      e.uncertain ? "Review" : "High",
+    ]);
+    const summaryRows = [
+      [],
+      ["SUMMARY"],
+      ["Total Value (₹)", totalAmount],
+      ["Total Quantity (qtl)", totalQty],
+      ["Commodities", Object.keys(groupedLive).length],
+      ["Total Entries", entries.length],
+      ["Processed At", dateStr],
+    ];
+    const allRows = [header, ...rows, ...summaryRows];
+    const csvContent = allRows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `satti-${new Date(data!.meta.processedAt).toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    flashMsg("CSV downloaded");
+  }
+
+  /* ── Export: PDF ── */
+  async function exportPDF() {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
+
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    const dateStr = new Date(data!.meta.processedAt).toLocaleString("en-IN", {
+      day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit",
+    });
+
+    /* ── Header band ── */
+    doc.setFillColor(5, 150, 105); // emerald-600
+    doc.rect(0, 0, pageW, 28, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("SMART LEDGER", 14, 12);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Satti Analysis Report", 14, 19);
+    doc.text(dateStr, pageW - 14, 19, { align: "right" });
+
+    /* ── Summary boxes ── */
+    doc.setTextColor(30, 30, 30);
+    const boxY = 34;
+    const boxes = [
+      { label: "Total Value", value: fmt(totalAmount) },
+      { label: "Total Quantity", value: `${fmtRaw(totalQty)} qtl` },
+      { label: "Commodities", value: String(Object.keys(groupedLive).length) },
+      { label: "Entries", value: String(entries.length) },
+    ];
+    const boxW = (pageW - 28 - 9) / 4;
+    boxes.forEach((box, i) => {
+      const bx = 14 + i * (boxW + 3);
+      doc.setFillColor(240, 253, 244); // emerald-50
+      doc.setDrawColor(209, 250, 229);
+      doc.roundedRect(bx, boxY, boxW, 18, 3, 3, "FD");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(107, 114, 128);
+      doc.text(box.label, bx + boxW / 2, boxY + 6, { align: "center" });
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(5, 150, 105);
+      doc.text(box.value, bx + boxW / 2, boxY + 13, { align: "center" });
+    });
+
+    /* ── Entries table ── */
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text("All Entries", 14, boxY + 26);
+
+    autoTable(doc, {
+      startY: boxY + 30,
+      head: [["#", "Commodity", "Rate (₹/qtl)", "Qty (qtl)", "Amount (₹)", ""]],
+      body: entries.map((e, i) => [
+        i + 1,
+        e.commodity,
+        fmtRaw(e.rate),
+        fmtRaw(e.quantity),
+        fmtRaw(e.amount),
+        e.uncertain ? "⚠ Review" : "✓",
+      ]),
+      foot: [["", "TOTAL", "", fmtRaw(totalQty), fmtRaw(totalAmount), ""]],
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [5, 150, 105], textColor: 255, fontStyle: "bold" },
+      footStyles: { fillColor: [240, 253, 244], textColor: [5, 100, 80], fontStyle: "bold" },
+      columnStyles: {
+        0: { halign: "center", cellWidth: 10 },
+        2: { halign: "right" },
+        3: { halign: "right" },
+        4: { halign: "right", fontStyle: "bold" },
+        5: { halign: "center", cellWidth: 18 },
+      },
+      alternateRowStyles: { fillColor: [249, 250, 251] },
+    });
+
+    /* ── Per-commodity summary ── */
+    const afterEntries = (doc as any).lastAutoTable.finalY + 8;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+    doc.text("Commodity Summary", 14, afterEntries);
+
+    const commRows = Object.entries(groupedLive).map(([, g]) => {
+      const min = Math.min(...g.rates);
+      const max = Math.max(...g.rates);
+      const avg = Math.round(g.rates.reduce((a, b) => a + b, 0) / g.rates.length);
+      const share = totalAmount > 0 ? Math.round((g.totalAmt / totalAmount) * 100) : 0;
+      return [
+        g.displayName,
+        g.entries.length,
+        fmtRaw(g.totalQty),
+        fmtRaw(min),
+        fmtRaw(avg),
+        fmtRaw(max),
+        fmtRaw(g.totalAmt),
+        `${share}%`,
+      ];
+    });
+
+    autoTable(doc, {
+      startY: afterEntries + 4,
+      head: [["Commodity", "Entries", "Qty (qtl)", "Min ₹", "Avg ₹", "Max ₹", "Total ₹", "Share"]],
+      body: commRows,
+      styles: { fontSize: 8.5, cellPadding: 3 },
+      headStyles: { fillColor: [5, 150, 105], textColor: 255, fontStyle: "bold" },
+      columnStyles: {
+        1: { halign: "center" },
+        2: { halign: "right" },
+        3: { halign: "right" },
+        4: { halign: "right", fontStyle: "bold" },
+        5: { halign: "right" },
+        6: { halign: "right", fontStyle: "bold", textColor: [5, 100, 80] },
+        7: { halign: "center" },
+      },
+      alternateRowStyles: { fillColor: [249, 250, 251] },
+    });
+
+    /* ── Footer ── */
+    const totalPages = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(156, 163, 175);
+      doc.text(
+        `Generated by Smart Ledger · ${dateStr} · Page ${i} of ${totalPages}`,
+        pageW / 2,
+        doc.internal.pageSize.getHeight() - 8,
+        { align: "center" }
+      );
+    }
+
+    doc.save(`satti-report-${new Date(data!.meta.processedAt).toISOString().slice(0, 10)}.pdf`);
+    flashMsg("PDF downloaded");
+  }
+
+  /* ── Share: WhatsApp ── */
+  function shareWhatsApp() {
+    const dateStr = new Date(data!.meta.processedAt).toLocaleDateString("en-IN", {
+      day: "numeric", month: "short", year: "numeric",
+    });
+
+    const commLines = Object.entries(groupedLive)
+      .map(([, g]) => {
+        const avg = Math.round(g.rates.reduce((a, b) => a + b, 0) / g.rates.length);
+        return `• ${g.displayName}: ${fmtRaw(g.totalQty)} qtl @ avg ₹${fmtRaw(avg)}/qtl = ₹${fmtRaw(g.totalAmt)}`;
+      })
+      .join("\n");
+
+    const msg = [
+      `*Smart Ledger — Satti Report*`,
+      `📅 ${dateStr}`,
+      ``,
+      `*Overall Summary*`,
+      `💰 Total Value: ₹${fmtRaw(totalAmount)}`,
+      `📦 Total Qty: ${fmtRaw(totalQty)} qtl`,
+      `🌾 Commodities: ${Object.keys(groupedLive).length}`,
+      `📝 Entries: ${entries.length}`,
+      ``,
+      `*Commodity Breakdown*`,
+      commLines,
+      ``,
+      `_Generated by Smart Ledger_`,
+    ].join("\n");
+
+    const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    window.open(url, "_blank");
+    flashMsg("WhatsApp opened");
+  }
+
   const tabClass = (t: Tab) =>
     `px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
       tab === t ? "bg-emerald-600 text-white shadow-sm" : "text-gray-500 hover:text-[#1d2226] hover:bg-gray-100"
@@ -255,20 +452,15 @@ export default function LedgerSession() {
     };
   });
 
-  const priceDistData = Object.entries(groupedLive).map(([, g]) => {
-    const priceDist: Record<number, number> = {};
-    for (const e of g.entries) { priceDist[e.rate] = (priceDist[e.rate] || 0) + e.quantity; }
-    return { displayName: g.displayName, priceDist, totalQty: g.totalQty };
-  });
-
   return (
     <div className="min-h-screen bg-gray-50">
       <style>{`
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
         .afu { animation: fadeUp 0.4s ease-out forwards; }
         .entry-row { transition: background 0.15s; }
         .entry-row:hover { background: #f9fafb; }
-        .recharts-default-tooltip { border-radius: 12px !important; }
+        .export-toast { animation: slideDown 0.3s ease-out; }
       `}</style>
 
       {/* Navbar */}
@@ -297,16 +489,63 @@ export default function LedgerSession() {
         {/* Summary pills */}
         <div className="afu grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
-            { label: "Total Value", val: fmt(totalAmount), color: "emerald" },
-            { label: "Total Qty", val: fmtQty(totalQty), color: "blue" },
-            { label: "Commodities", val: String(Object.keys(groupedLive).length), color: "violet" },
-            { label: "Entries", val: String(entries.length), color: "gray" },
+            { label: "Total Value", val: fmt(totalAmount) },
+            { label: "Total Qty", val: fmtQty(totalQty) },
+            { label: "Commodities", val: String(Object.keys(groupedLive).length) },
+            { label: "Entries", val: String(entries.length) },
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
               <p className="text-xs text-gray-400 mb-1">{s.label}</p>
               <p className="text-base sm:text-lg font-black text-[#1d2226]">{s.val}</p>
             </div>
           ))}
+        </div>
+
+        {/* ── Export & Share toolbar ── */}
+        <div className="afu mb-5 bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <ShareIcon className="h-3.5 w-3.5 text-gray-400" />
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Export & Share</span>
+          </div>
+
+          {/* Toast confirmation */}
+          {exportMsg && (
+            <div className="export-toast flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-xl">
+              <CheckCircleIcon className="h-3.5 w-3.5" />
+              {exportMsg}
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* CSV */}
+            <button
+              onClick={exportCSV}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-sm"
+            >
+              <DownloadIcon className="h-3.5 w-3.5 text-gray-500" />
+              Download CSV
+            </button>
+
+            {/* PDF */}
+            <button
+              onClick={exportPDF}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-sm"
+            >
+              <FileTextIcon className="h-3.5 w-3.5 text-emerald-600" />
+              Download PDF
+            </button>
+
+            {/* WhatsApp */}
+            <button
+              onClick={shareWhatsApp}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-[#25D366] hover:bg-[#1ebe5d] rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-sm shadow-sm shadow-green-100"
+            >
+              <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+              </svg>
+              Share on WhatsApp
+            </button>
+          </div>
         </div>
 
         {/* Tabs */}
@@ -325,7 +564,6 @@ export default function LedgerSession() {
               <span className="text-xs text-gray-400 ml-auto">Exact extraction · editable</span>
             </div>
 
-            {/* Raw OCR text */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Original OCR text</p>
               <pre className="text-xs text-gray-600 font-mono whitespace-pre-wrap leading-relaxed bg-gray-50 rounded-xl p-4 border border-gray-100 max-h-48 overflow-y-auto">
@@ -333,7 +571,6 @@ export default function LedgerSession() {
               </pre>
             </div>
 
-            {/* Entry table */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="px-5 py-3.5 border-b border-gray-50 flex items-center justify-between">
                 <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Parsed entries</p>
@@ -347,7 +584,6 @@ export default function LedgerSession() {
                 <div className="py-12 text-center text-sm text-gray-400">No entries could be parsed from this image.</div>
               ) : (
                 <div className="divide-y divide-gray-50">
-                  {/* Header */}
                   <div className="grid grid-cols-12 gap-2 px-5 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider bg-gray-50">
                     <div className="col-span-1">#</div>
                     <div className="col-span-3">Commodity</div>
@@ -419,7 +655,6 @@ export default function LedgerSession() {
                     </div>
                   ))}
 
-                  {/* Footer total */}
                   <div className="grid grid-cols-12 gap-2 px-5 py-3.5 bg-emerald-50 border-t border-emerald-100">
                     <div className="col-span-4 text-sm font-bold text-[#1d2226]">Total</div>
                     <div className="col-span-2 text-right text-sm font-semibold text-gray-600">—</div>
@@ -454,7 +689,6 @@ export default function LedgerSession() {
 
                 return (
                   <div key={key} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                    {/* Group header */}
                     <div className="px-5 py-4 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between flex-wrap gap-2">
                       <div>
                         <h3 className="font-black text-[#1d2226] text-base">{group.displayName}</h3>
@@ -472,7 +706,6 @@ export default function LedgerSession() {
                       </div>
                     </div>
 
-                    {/* Entry calculations */}
                     <div className="divide-y divide-gray-50">
                       {group.entries.map((e, i) => (
                         <div key={i} className="px-5 py-3 flex items-center gap-3 text-sm flex-wrap">
@@ -486,7 +719,6 @@ export default function LedgerSession() {
                       ))}
                     </div>
 
-                    {/* Rate stats */}
                     <div className="px-5 py-4 border-t border-gray-50 bg-gray-50">
                       <div className="flex flex-wrap gap-4 mb-3">
                         <div className="text-xs"><span className="text-gray-400">Min rate </span><span className="font-bold text-[#1d2226]">{fmt(minRate)}</span></div>
@@ -521,15 +753,12 @@ export default function LedgerSession() {
         {/* ── SUMMARY VIEW ── */}
         {tab === "summary" && (
           <div className="afu space-y-6">
-
-            {/* Header */}
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-violet-500" />
               <h2 className="font-bold text-[#1d2226]">Summary Intelligence</h2>
               <span className="text-xs text-gray-400 ml-auto">AI-powered analytics</span>
             </div>
 
-            {/* Top KPI cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
                 <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Total Transaction Value</p>
@@ -546,28 +775,17 @@ export default function LedgerSession() {
               </div>
             </div>
 
-            {/* ── Donut Chart: Commodity Distribution ── */}
             {donutData.length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
                 <div className="flex items-center gap-2 mb-5">
                   <PieChartIcon className="h-4 w-4 text-violet-500" />
                   <h3 className="font-bold text-[#1d2226] text-sm">Commodity Value Distribution</h3>
                 </div>
-
                 <div className="flex flex-col md:flex-row items-center gap-6">
-                  {/* Donut */}
                   <div className="w-full md:w-64 h-56 flex-shrink-0">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
-                        <Pie
-                          data={donutData}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius="52%"
-                          outerRadius="75%"
-                          paddingAngle={3}
-                          dataKey="value"
-                        >
+                        <Pie data={donutData} cx="50%" cy="50%" innerRadius="52%" outerRadius="75%" paddingAngle={3} dataKey="value">
                           {donutData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.fill} />
                           ))}
@@ -576,8 +794,6 @@ export default function LedgerSession() {
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-
-                  {/* Legend + stats */}
                   <div className="flex-1 w-full space-y-3">
                     {donutData.map((item, i) => (
                       <div key={i} className="flex items-center justify-between gap-3">
@@ -594,7 +810,6 @@ export default function LedgerSession() {
                         </div>
                       </div>
                     ))}
-                    {/* Total row */}
                     <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
                       <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total</span>
                       <span className="text-sm font-black text-emerald-600">{fmt(totalAmount)}</span>
@@ -604,7 +819,6 @@ export default function LedgerSession() {
               </div>
             )}
 
-            {/* ── Bar Chart: Rate Comparison ── */}
             {barData.length > 0 && (
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
                 <div className="flex items-center gap-2 mb-5">
@@ -615,25 +829,10 @@ export default function LedgerSession() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={barData} margin={{ top: 4, right: 8, left: -8, bottom: 4 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                      <XAxis
-                        dataKey="name"
-                        tick={{ fontSize: 11, fill: "#9ca3af" }}
-                        tickLine={false}
-                        axisLine={false}
-                      />
-                      <YAxis
-                        tick={{ fontSize: 11, fill: "#9ca3af" }}
-                        tickLine={false}
-                        axisLine={false}
-                        tickFormatter={(v) => `₹${Number(v).toLocaleString("en-IN")}`}
-                        width={70}
-                      />
+                      <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#9ca3af" }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fontSize: 11, fill: "#9ca3af" }} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${Number(v).toLocaleString("en-IN")}`} width={70} />
                       <Tooltip content={<CustomTooltipBar />} />
-                      <Legend
-                        wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
-                        iconType="circle"
-                        iconSize={8}
-                      />
+                      <Legend wrapperStyle={{ fontSize: 11, paddingTop: 12 }} iconType="circle" iconSize={8} />
                       <Bar dataKey="Min Rate" fill="#6ee7b7" radius={[4, 4, 0, 0]} maxBarSize={40} />
                       <Bar dataKey="Avg Rate" fill="#059669" radius={[4, 4, 0, 0]} maxBarSize={40} />
                       <Bar dataKey="Max Rate" fill="#064e3b" radius={[4, 4, 0, 0]} maxBarSize={40} />
@@ -643,7 +842,6 @@ export default function LedgerSession() {
               </div>
             )}
 
-            {/* ── Per-commodity Intelligence Cards ── */}
             <div>
               <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Per-Commodity Breakdown</h3>
               <div className="space-y-4">
@@ -658,7 +856,6 @@ export default function LedgerSession() {
 
                   return (
                     <div key={key} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                      {/* Card header */}
                       <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
@@ -668,7 +865,6 @@ export default function LedgerSession() {
                         <span className="text-sm font-bold text-emerald-600">{fmt(group.totalAmt)}</span>
                       </div>
 
-                      {/* Stats grid */}
                       <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div>
                           <p className="text-xs text-gray-400 mb-1">Qty traded</p>
@@ -690,7 +886,6 @@ export default function LedgerSession() {
                         </div>
                       </div>
 
-                      {/* Probability distribution bars */}
                       {Object.entries(priceDist).length > 0 && (
                         <div className="px-5 pb-5">
                           <p className="text-xs text-gray-400 mb-3 uppercase tracking-wider font-semibold">Purchase probability distribution</p>
@@ -703,10 +898,7 @@ export default function LedgerSession() {
                                   <div key={rate} className="flex items-center gap-3">
                                     <span className="text-xs font-mono text-gray-500 w-20 flex-shrink-0">{fmt(Number(rate))}</span>
                                     <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                      <div
-                                        className="h-full rounded-full transition-all duration-500"
-                                        style={{ width: `${pct}%`, backgroundColor: color }}
-                                      />
+                                      <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: color }} />
                                     </div>
                                     <span className="text-xs text-gray-500 w-12 text-right flex-shrink-0">{qty} qtl</span>
                                     <span className="text-xs font-bold w-8 text-right flex-shrink-0" style={{ color }}>{pct}%</span>
@@ -720,7 +912,6 @@ export default function LedgerSession() {
                         </div>
                       )}
 
-                      {/* Share of total value bar */}
                       <div className="px-5 pb-4">
                         <div className="flex items-center justify-between mb-1.5">
                           <p className="text-xs text-gray-400">Share of total value</p>
@@ -731,10 +922,7 @@ export default function LedgerSession() {
                         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                           <div
                             className="h-full rounded-full transition-all duration-500"
-                            style={{
-                              width: `${totalAmount > 0 ? Math.round((group.totalAmt / totalAmount) * 100) : 0}%`,
-                              backgroundColor: color,
-                            }}
+                            style={{ width: `${totalAmount > 0 ? Math.round((group.totalAmt / totalAmount) * 100) : 0}%`, backgroundColor: color }}
                           />
                         </div>
                       </div>
@@ -744,7 +932,6 @@ export default function LedgerSession() {
               </div>
             </div>
 
-            {/* Processing note */}
             {data.summary?.processingNote && (
               <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex items-start gap-3">
                 <AlertIcon className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -752,7 +939,6 @@ export default function LedgerSession() {
               </div>
             )}
 
-            {/* New upload CTA */}
             <div className="bg-emerald-600 rounded-2xl p-6 text-center">
               <p className="text-white font-bold mb-1">Done with this satti?</p>
               <p className="text-emerald-100 text-sm mb-4">Upload another to continue your records.</p>
