@@ -13,6 +13,7 @@ const SEEKER_NAV: NavLink[] = [
   { href: "/recruit/job-alerts", label: "Alerts" },
   { href: "/recruit/my-applications", label: "My Applications" },
   { href: "/recruit/profile", label: "My Profile" },
+  { href: "/recruit/diagnostics", label: "Diagnostics" },
 ];
 
 function MenuIcon() {
