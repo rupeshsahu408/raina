@@ -49,6 +49,17 @@ function UsersIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function LedgerIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+      <path d="M8 7h6" />
+      <path d="M8 11h8" />
+      <path d="M8 15h5" />
+    </svg>
+  );
+}
+
 const products = [
   {
     href: "/whatsapp-ai",
@@ -113,6 +124,22 @@ const products = [
     cta: "text-indigo-700 hover:text-indigo-800",
     hoverBorder: "hover:border-indigo-200",
     hoverBg: "hover:bg-indigo-50/30",
+  },
+  {
+    href: "/ledger",
+    icon: <LedgerIcon className="h-7 w-7" />,
+    iconBg: "bg-teal-50 text-teal-600",
+    iconBorder: "border-teal-100",
+    badge: "New",
+    badgeColor: "text-teal-700 bg-teal-50 border-teal-200",
+    badgeDot: null,
+    title: "Smart Ledger",
+    description: "Digitize handwritten satti records in seconds. Photograph your grain register — AI reads Hindi and English, groups entries by commodity, calculates totals, and gives you full analytics.",
+    features: ["Hindi + English OCR", "Gemini AI parsing", "PDF & CSV export", "Session history"],
+    featureDot: "bg-teal-500",
+    cta: "text-teal-700 hover:text-teal-800",
+    hoverBorder: "hover:border-teal-200",
+    hoverBg: "hover:bg-teal-50/30",
   },
 ];
 
