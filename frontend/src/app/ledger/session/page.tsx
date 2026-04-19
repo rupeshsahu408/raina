@@ -4,6 +4,19 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useLedgerAuth } from "@/contexts/LedgerAuthContext";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Legend,
+} from "recharts";
 
 type Entry = {
   id: number;
@@ -85,7 +98,65 @@ function AlertIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function TrendingUpIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </svg>
+  );
+}
+
+function PieChartIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+      <path d="M22 12A10 10 0 0 0 12 2v10z" />
+    </svg>
+  );
+}
+
 type Tab = "raw" | "grouped" | "summary";
+
+const CHART_COLORS = [
+  "#059669", "#0ea5e9", "#8b5cf6", "#f59e0b", "#ef4444",
+  "#10b981", "#3b82f6", "#a855f7", "#f97316", "#ec4899",
+];
+
+const CustomDonutLabel = ({ cx, cy, value }: { cx: number; cy: number; value: string }) => (
+  <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" className="text-sm font-black fill-gray-800" style={{ fontSize: 13, fontWeight: 800 }}>
+    {value}
+  </text>
+);
+
+const CustomTooltipPie = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-gray-100 rounded-xl shadow-lg px-4 py-3">
+        <p className="text-sm font-bold text-gray-800">{payload[0].name}</p>
+        <p className="text-xs text-emerald-600 font-semibold">{fmt(payload[0].value)}</p>
+        <p className="text-xs text-gray-400">{payload[0].payload.pct}% of total</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+const CustomTooltipBar = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-gray-100 rounded-xl shadow-lg px-4 py-3">
+        <p className="text-xs font-semibold text-gray-500 mb-1">{label}</p>
+        {payload.map((p: any, i: number) => (
+          <p key={i} className="text-sm font-bold" style={{ color: p.color }}>
+            {p.name}: {p.name === "Quantity" ? `${p.value} qtl` : fmt(p.value)}
+          </p>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function LedgerSession() {
   const { user, loading } = useLedgerAuth();
@@ -141,7 +212,13 @@ export default function LedgerSession() {
   const totalAmount = entries.reduce((s, e) => s + e.amount, 0);
   const totalQty = entries.reduce((s, e) => s + e.quantity, 0);
 
-  const groupedLive: Record<string, { displayName: string; entries: Entry[]; totalQty: number; totalAmt: number; rates: number[] }> = {};
+  const groupedLive: Record<string, {
+    displayName: string;
+    entries: Entry[];
+    totalQty: number;
+    totalAmt: number;
+    rates: number[];
+  }> = {};
   for (const e of entries) {
     const key = e.commodityKey || e.commodity.toLowerCase().replace(/\s+/g, "_");
     if (!groupedLive[key]) groupedLive[key] = { displayName: e.commodity, entries: [], totalQty: 0, totalAmt: 0, rates: [] };
@@ -152,9 +229,37 @@ export default function LedgerSession() {
   }
 
   const tabClass = (t: Tab) =>
-    `px-4 py-2.5 text-sm font-semibold rounded-xl transition-all ${
+    `px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
       tab === t ? "bg-emerald-600 text-white shadow-sm" : "text-gray-500 hover:text-[#1d2226] hover:bg-gray-100"
     }`;
+
+  /* ── Chart data ── */
+  const donutData = Object.entries(groupedLive).map(([, g], i) => ({
+    name: g.displayName,
+    value: g.totalAmt,
+    pct: totalAmount > 0 ? Math.round((g.totalAmt / totalAmount) * 100) : 0,
+    fill: CHART_COLORS[i % CHART_COLORS.length],
+  }));
+
+  const barData = Object.entries(groupedLive).map(([, g]) => {
+    const minRate = Math.min(...g.rates);
+    const maxRate = Math.max(...g.rates);
+    const avgRate = Math.round(g.rates.reduce((a, b) => a + b, 0) / g.rates.length);
+    return {
+      name: g.displayName.length > 8 ? g.displayName.slice(0, 8) + "…" : g.displayName,
+      fullName: g.displayName,
+      "Min Rate": minRate,
+      "Avg Rate": avgRate,
+      "Max Rate": maxRate,
+      Quantity: g.totalQty,
+    };
+  });
+
+  const priceDistData = Object.entries(groupedLive).map(([, g]) => {
+    const priceDist: Record<number, number> = {};
+    for (const e of g.entries) { priceDist[e.rate] = (priceDist[e.rate] || 0) + e.quantity; }
+    return { displayName: g.displayName, priceDist, totalQty: g.totalQty };
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -163,6 +268,7 @@ export default function LedgerSession() {
         .afu { animation: fadeUp 0.4s ease-out forwards; }
         .entry-row { transition: background 0.15s; }
         .entry-row:hover { background: #f9fafb; }
+        .recharts-default-tooltip { border-radius: 12px !important; }
       `}</style>
 
       {/* Navbar */}
@@ -198,13 +304,13 @@ export default function LedgerSession() {
           ].map((s) => (
             <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
               <p className="text-xs text-gray-400 mb-1">{s.label}</p>
-              <p className="text-lg font-black text-[#1d2226]">{s.val}</p>
+              <p className="text-base sm:text-lg font-black text-[#1d2226]">{s.val}</p>
             </div>
           ))}
         </div>
 
         {/* Tabs */}
-        <div className="afu flex gap-2 mb-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-1.5 w-fit">
+        <div className="afu flex gap-1.5 sm:gap-2 mb-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-1.5 w-fit">
           <button className={tabClass("raw")} onClick={() => setTab("raw")}>🔵 Raw View</button>
           <button className={tabClass("grouped")} onClick={() => setTab("grouped")}>🟢 Grouped</button>
           <button className={tabClass("summary")} onClick={() => setTab("summary")}>📊 Summary</button>
@@ -414,83 +520,229 @@ export default function LedgerSession() {
 
         {/* ── SUMMARY VIEW ── */}
         {tab === "summary" && (
-          <div className="afu space-y-4">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="afu space-y-6">
+
+            {/* Header */}
+            <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-violet-500" />
               <h2 className="font-bold text-[#1d2226]">Summary Intelligence</h2>
+              <span className="text-xs text-gray-400 ml-auto">AI-powered analytics</span>
             </div>
 
-            {/* Top stats */}
+            {/* Top KPI cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
-                <p className="text-xs text-gray-400 mb-2">Total Transaction Value</p>
-                <p className="text-3xl font-black text-emerald-600">{fmt(totalAmount)}</p>
+                <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Total Transaction Value</p>
+                <p className="text-2xl sm:text-3xl font-black text-emerald-600">{fmt(totalAmount)}</p>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
-                <p className="text-xs text-gray-400 mb-2">Total Quantity</p>
-                <p className="text-3xl font-black text-[#1d2226]">{totalQty.toLocaleString("en-IN")}</p>
-                <p className="text-xs text-gray-400">quintals</p>
+                <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Total Quantity</p>
+                <p className="text-2xl sm:text-3xl font-black text-[#1d2226]">{totalQty.toLocaleString("en-IN")}</p>
+                <p className="text-xs text-gray-400 mt-1">quintals</p>
               </div>
               <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 text-center">
-                <p className="text-xs text-gray-400 mb-2">Commodities Traded</p>
-                <p className="text-3xl font-black text-[#1d2226]">{Object.keys(groupedLive).length}</p>
+                <p className="text-xs text-gray-400 mb-2 uppercase tracking-wider">Commodities Traded</p>
+                <p className="text-2xl sm:text-3xl font-black text-[#1d2226]">{Object.keys(groupedLive).length}</p>
               </div>
             </div>
 
-            {/* Per-commodity intelligence */}
-            {Object.entries(groupedLive).map(([key, group]) => {
-              const minRate = Math.min(...group.rates);
-              const maxRate = Math.max(...group.rates);
-              const avgRate = group.rates.reduce((a, b) => a + b, 0) / group.rates.length;
-              const priceDist: Record<number, number> = {};
-              for (const e of group.entries) { priceDist[e.rate] = (priceDist[e.rate] || 0) + e.quantity; }
-              const topPrice = Object.entries(priceDist).sort((a, b) => b[1] - a[1])[0];
+            {/* ── Donut Chart: Commodity Distribution ── */}
+            {donutData.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+                <div className="flex items-center gap-2 mb-5">
+                  <PieChartIcon className="h-4 w-4 text-violet-500" />
+                  <h3 className="font-bold text-[#1d2226] text-sm">Commodity Value Distribution</h3>
+                </div>
 
-              return (
-                <div key={key} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
-                    <h3 className="font-black text-[#1d2226]">{group.displayName}</h3>
-                    <span className="text-sm font-bold text-emerald-600">{fmt(group.totalAmt)}</span>
-                  </div>
-                  <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Qty traded</p>
-                      <p className="font-bold text-[#1d2226]">{fmtQty(group.totalQty)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Avg rate</p>
-                      <p className="font-bold text-[#1d2226]">{fmt(Math.round(avgRate))}<span className="text-xs font-normal text-gray-400">/qtl</span></p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Price range</p>
-                      <p className="font-bold text-[#1d2226]">{fmt(minRate)} – {fmt(maxRate)}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400 mb-1">Top price point</p>
-                      <p className="font-bold text-violet-600">
-                        {topPrice ? `${Math.round((topPrice[1] / group.totalQty) * 100)}% @ ${fmt(Number(topPrice[0]))}` : "—"}
-                      </p>
-                    </div>
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                  {/* Donut */}
+                  <div className="w-full md:w-64 h-56 flex-shrink-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={donutData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius="52%"
+                          outerRadius="75%"
+                          paddingAngle={3}
+                          dataKey="value"
+                        >
+                          {donutData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                          ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltipPie />} />
+                      </PieChart>
+                    </ResponsiveContainer>
                   </div>
 
-                  {/* Commodity share bar */}
-                  <div className="px-5 pb-4">
-                    <p className="text-xs text-gray-400 mb-2">Share of total value</p>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-emerald-500 rounded-full"
-                          style={{ width: `${totalAmount > 0 ? Math.round((group.totalAmt / totalAmount) * 100) : 0}%` }}
-                        />
+                  {/* Legend + stats */}
+                  <div className="flex-1 w-full space-y-3">
+                    {donutData.map((item, i) => (
+                      <div key={i} className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.fill }} />
+                          <span className="text-sm font-semibold text-[#1d2226] truncate">{item.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="w-20 sm:w-28 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${item.pct}%`, backgroundColor: item.fill }} />
+                          </div>
+                          <span className="text-xs font-bold text-gray-500 w-8 text-right">{item.pct}%</span>
+                          <span className="text-xs font-bold text-emerald-600 w-20 text-right hidden sm:block">{fmt(item.value)}</span>
+                        </div>
                       </div>
-                      <span className="text-xs font-bold text-[#1d2226]">
-                        {totalAmount > 0 ? Math.round((group.totalAmt / totalAmount) * 100) : 0}%
-                      </span>
+                    ))}
+                    {/* Total row */}
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total</span>
+                      <span className="text-sm font-black text-emerald-600">{fmt(totalAmount)}</span>
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            )}
+
+            {/* ── Bar Chart: Rate Comparison ── */}
+            {barData.length > 0 && (
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+                <div className="flex items-center gap-2 mb-5">
+                  <TrendingUpIcon className="h-4 w-4 text-blue-500" />
+                  <h3 className="font-bold text-[#1d2226] text-sm">Price Range by Commodity (₹/qtl)</h3>
+                </div>
+                <div className="w-full h-56 sm:h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={barData} margin={{ top: 4, right: 8, left: -8, bottom: 4 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                      <XAxis
+                        dataKey="name"
+                        tick={{ fontSize: 11, fill: "#9ca3af" }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11, fill: "#9ca3af" }}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(v) => `₹${Number(v).toLocaleString("en-IN")}`}
+                        width={70}
+                      />
+                      <Tooltip content={<CustomTooltipBar />} />
+                      <Legend
+                        wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+                        iconType="circle"
+                        iconSize={8}
+                      />
+                      <Bar dataKey="Min Rate" fill="#6ee7b7" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                      <Bar dataKey="Avg Rate" fill="#059669" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                      <Bar dataKey="Max Rate" fill="#064e3b" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )}
+
+            {/* ── Per-commodity Intelligence Cards ── */}
+            <div>
+              <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Per-Commodity Breakdown</h3>
+              <div className="space-y-4">
+                {Object.entries(groupedLive).map(([key, group], colorIdx) => {
+                  const minRate = Math.min(...group.rates);
+                  const maxRate = Math.max(...group.rates);
+                  const avgRate = group.rates.reduce((a, b) => a + b, 0) / group.rates.length;
+                  const priceDist: Record<number, number> = {};
+                  for (const e of group.entries) { priceDist[e.rate] = (priceDist[e.rate] || 0) + e.quantity; }
+                  const topPrice = Object.entries(priceDist).sort((a, b) => b[1] - a[1])[0];
+                  const color = CHART_COLORS[colorIdx % CHART_COLORS.length];
+
+                  return (
+                    <div key={key} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                      {/* Card header */}
+                      <div className="px-5 py-4 border-b border-gray-50 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                          <h3 className="font-black text-[#1d2226]">{group.displayName}</h3>
+                          <span className="text-xs text-gray-400">{group.entries.length} entries</span>
+                        </div>
+                        <span className="text-sm font-bold text-emerald-600">{fmt(group.totalAmt)}</span>
+                      </div>
+
+                      {/* Stats grid */}
+                      <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div>
+                          <p className="text-xs text-gray-400 mb-1">Qty traded</p>
+                          <p className="font-bold text-[#1d2226]">{fmtQty(group.totalQty)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400 mb-1">Avg rate</p>
+                          <p className="font-bold text-[#1d2226]">{fmt(Math.round(avgRate))}<span className="text-xs font-normal text-gray-400">/qtl</span></p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400 mb-1">Price range</p>
+                          <p className="font-bold text-[#1d2226] text-sm">{fmt(minRate)} – {fmt(maxRate)}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-400 mb-1">Top price point</p>
+                          <p className="font-bold text-violet-600 text-sm">
+                            {topPrice ? `${Math.round((topPrice[1] / group.totalQty) * 100)}% @ ${fmt(Number(topPrice[0]))}` : "—"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Probability distribution bars */}
+                      {Object.entries(priceDist).length > 0 && (
+                        <div className="px-5 pb-5">
+                          <p className="text-xs text-gray-400 mb-3 uppercase tracking-wider font-semibold">Purchase probability distribution</p>
+                          <div className="space-y-2">
+                            {Object.entries(priceDist)
+                              .sort((a, b) => b[1] - a[1])
+                              .map(([rate, qty]) => {
+                                const pct = Math.round((qty / group.totalQty) * 100);
+                                return (
+                                  <div key={rate} className="flex items-center gap-3">
+                                    <span className="text-xs font-mono text-gray-500 w-20 flex-shrink-0">{fmt(Number(rate))}</span>
+                                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                      <div
+                                        className="h-full rounded-full transition-all duration-500"
+                                        style={{ width: `${pct}%`, backgroundColor: color }}
+                                      />
+                                    </div>
+                                    <span className="text-xs text-gray-500 w-12 text-right flex-shrink-0">{qty} qtl</span>
+                                    <span className="text-xs font-bold w-8 text-right flex-shrink-0" style={{ color }}>{pct}%</span>
+                                  </div>
+                                );
+                              })}
+                          </div>
+                          <p className="text-xs text-gray-300 mt-3">
+                            {topPrice ? `${Math.round((topPrice[1] / group.totalQty) * 100)}% of ${group.displayName} purchased at ${fmt(Number(topPrice[0]))}` : ""}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Share of total value bar */}
+                      <div className="px-5 pb-4">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-xs text-gray-400">Share of total value</p>
+                          <span className="text-xs font-bold text-gray-500">
+                            {totalAmount > 0 ? Math.round((group.totalAmt / totalAmount) * 100) : 0}%
+                          </span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${totalAmount > 0 ? Math.round((group.totalAmt / totalAmount) * 100) : 0}%`,
+                              backgroundColor: color,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
             {/* Processing note */}
             {data.summary?.processingNote && (

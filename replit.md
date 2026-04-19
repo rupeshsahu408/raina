@@ -16,7 +16,12 @@ A multi-platform AI suite with four AI systems:
 - AI-powered accounting system for grain traders (satti digitization)
 - Stack: Google Vision API (OCR) + Gemini 1.5 Flash (intelligence)
 - Phase 1 complete: Landing page with own brand identity (emerald green)
-- Phases 2–8 planned (auth, upload, OCR, analytics, history, export, SaaS)
+- Phase 2 complete: Auth pages (/ledger/login, /ledger/signup), protected dashboard, Firebase Auth
+- Phase 3 complete: Image upload UI (file picker + camera), backend POST /ledger/upload, Google Vision OCR
+- Phase 4 complete: Gemini 1.5 Flash structuring, Grouped View (rate×qty=amount), inline editing with live recalc
+- Phase 5 complete: Summary Intelligence — KPI cards, Recharts donut chart (commodity distribution), Recharts bar chart (price range), per-commodity probability distribution, mobile-responsive
+- Phases 6–8 planned (session history/MongoDB, export/share, SaaS/monetisation)
+- recharts installed in frontend
 
 ## Workflows
 - `Start application` — Next.js frontend (port 5000, webview)
