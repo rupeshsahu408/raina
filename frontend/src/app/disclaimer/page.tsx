@@ -26,24 +26,24 @@ const tableOfContents = [
 
 export default function DisclaimerPage() {
   return (
-    <div className="min-h-screen bg-[#050506] text-zinc-100">
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(168,85,247,0.20),transparent_34%),radial-gradient(circle_at_90%_8%,rgba(56,189,248,0.12),transparent_28%),linear-gradient(180deg,#050506,#08080a_42%,#030304)]" />
-      <header className="relative z-10 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+    <div className="min-h-screen bg-white text-[#1d2226]">
+      
+      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="group flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/10 transition group-hover:border-purple-300/40">
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 bg-white/10 transition group-hover:border-purple-300/40">
               <img src="/evara-logo.png" alt="Evara AI" className="h-7 w-7 object-contain" draggable={false} />
             </span>
             <span>
-              <span className="block text-sm font-bold tracking-[0.22em] text-white uppercase">Evara AI</span>
-              <span className="block text-xs text-zinc-500">Disclaimer</span>
+              <span className="block text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+              <span className="block text-xs text-gray-400">Disclaimer</span>
             </span>
           </Link>
           <div className="flex items-center gap-2">
-            <Link href="/privacy-policy" className="hidden rounded-full border border-purple-300/20 bg-purple-300/10 px-4 py-2 text-xs font-semibold text-purple-200 transition hover:bg-purple-300/15 sm:inline-flex">
+            <Link href="/privacy-policy" className="hidden rounded-full border border-purple-300/20 bg-purple-300/10 px-4 py-2 text-xs font-semibold text-violet-700 transition hover:bg-purple-300/15 sm:inline-flex">
               Privacy Policy
             </Link>
-            <Link href="/" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10">
+            <Link href="/" className="rounded-full bg-[#1d2226] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#2d3238]">
               Back to Home
             </Link>
           </div>
@@ -53,47 +53,47 @@ export default function DisclaimerPage() {
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[320px_1fr] lg:items-start">
           <aside className="lg:sticky lg:top-6">
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-2xl shadow-purple-950/20 backdrop-blur-2xl">
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-purple-200">Table of Contents</p>
+            <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-2xl shadow-gray-100 backdrop-blur-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-violet-700">Table of Contents</p>
               <nav className="mt-5 space-y-1" aria-label="Disclaimer sections">
                 {tableOfContents.map(([label, id]) => (
                   <a
                     key={id}
                     href={`#${id}`}
-                    className="block rounded-2xl px-3 py-2 text-sm text-zinc-400 transition hover:bg-white/[0.07] hover:text-white"
+                    className="block rounded-2xl px-3 py-2 text-sm text-gray-500 transition hover:bg-gray-50 hover:text-[#1d2226]"
                   >
                     {label}
                   </a>
                 ))}
               </nav>
-              <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300">Services Covered</p>
-                <div className="mt-3 space-y-2 text-sm text-zinc-400">
+              <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-100 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-600">Services Covered</p>
+                <div className="mt-3 space-y-2 text-sm text-gray-500">
                   <p>Evara AI — Web/App AI assistant</p>
                   <p>WhatsApp AI — WhatsApp Business API automation</p>
                 </div>
               </div>
               <div className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/[0.06] p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">Important Notice</p>
-                <p className="mt-2 text-xs leading-5 text-zinc-400">
+                <p className="mt-2 text-xs leading-5 text-gray-500">
                   This document constitutes a legally binding disclaimer. Please read it carefully before using any Evara AI service.
                 </p>
               </div>
             </div>
           </aside>
 
-          <article className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30 backdrop-blur-2xl sm:p-8 lg:p-10">
-            <div className="border-b border-white/10 pb-8">
-              <p className="inline-flex rounded-full border border-purple-300/20 bg-purple-300/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.22em] text-purple-200">
+          <article className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-2xl shadow-gray-100 backdrop-blur-2xl sm:p-8 lg:p-10">
+            <div className="border-b border-gray-200 pb-8">
+              <p className="inline-flex rounded-full border border-purple-300/20 bg-purple-300/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.22em] text-violet-700">
                 Legal Document
               </p>
-              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[#1d2226] sm:text-5xl lg:text-6xl">
                 Disclaimer
               </h1>
-              <p className="mt-4 text-sm text-zinc-500">
+              <p className="mt-4 text-sm text-gray-400">
                 Last updated: April 12, 2026 · Effective date: April 12, 2026
               </p>
-              <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-300">
+              <p className="mt-6 max-w-3xl text-base leading-8 text-gray-600">
                 This Disclaimer governs your access to and use of Evara AI, its platforms, applications, dashboards, AI assistant services, WhatsApp automation tools, and all related features. By accessing or using any part of the Evara AI platform, you acknowledge that you have read, understood, and agree to the terms of this Disclaimer. Please read this document carefully, as it contains important information regarding the limitations of our services and the boundaries of our liability.
               </p>
             </div>
@@ -318,7 +318,7 @@ export default function DisclaimerPage() {
               <DisclaimerSection id="brand-independence-statement" title="10. Brand Independence Statement">
                 <div className="rounded-2xl border border-amber-400/30 bg-amber-400/[0.07] p-6">
                   <p className="text-xs font-bold uppercase tracking-[0.2em] text-amber-300 mb-4">Important Notice</p>
-                  <p className="text-base leading-8 text-zinc-300 font-medium">
+                  <p className="text-base leading-8 text-gray-600 font-medium">
                     Evara AI is an independent platform and has no affiliation, association, endorsement, sponsorship, partnership, or connection of any kind with vercal.com, Vercal, or any entity operating under a similarly named brand. Any resemblance in name, branding, or terminology between Evara AI and vercal.com or any similarly named entity is entirely coincidental and unintentional.
                   </p>
                 </div>
@@ -381,20 +381,20 @@ export default function DisclaimerPage() {
                 <p>
                   If you have any questions, concerns, or comments regarding this Disclaimer, the limitations described herein, the Brand Independence Statement in Section 10, or any aspect of your rights or responsibilities in connection with the Evara AI platform, please contact us using the details provided below. We are committed to addressing all inquiries promptly, clearly, and in good faith.
                 </p>
-                <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-300">Contact Details</p>
-                  <div className="mt-4 space-y-3 text-sm text-zinc-400">
-                    <p><strong className="text-zinc-200">Platform:</strong> Evara AI</p>
+                <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-100 p-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-600">Contact Details</p>
+                  <div className="mt-4 space-y-3 text-sm text-gray-500">
+                    <p><strong className="text-[#1d2226]">Platform:</strong> Evara AI</p>
                     <p>
-                      <strong className="text-zinc-200">Support Email:</strong>{" "}
+                      <strong className="text-[#1d2226]">Support Email:</strong>{" "}
                       <a
                         href="mailto:support.evara.ai@sendora.me"
-                        className="text-purple-300 underline underline-offset-2 hover:text-purple-200 transition"
+                        className="text-violet-600 underline underline-offset-2 hover:text-violet-700 transition"
                       >
                         support.evara.ai@sendora.me
                       </a>
                     </p>
-                    <p className="pt-2 text-xs text-zinc-600">
+                    <p className="pt-2 text-xs text-gray-400">
                       For matters related to the Brand Independence Statement (Section 10) or any misrepresentation of affiliation, please mark your inquiry as urgent.
                     </p>
                   </div>
@@ -403,13 +403,13 @@ export default function DisclaimerPage() {
 
             </div>
 
-            <div className="mt-12 border-t border-white/10 pt-8">
-              <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
-                <span>© 2026 Raina Jet. All rights reserved.</span>
-                <Link href="/privacy-policy" className="text-zinc-400 hover:text-white transition">Privacy Policy</Link>
-                <Link href="/terms" className="text-zinc-400 hover:text-white transition">Terms of Service</Link>
-                <Link href="/cookies" className="text-zinc-400 hover:text-white transition">Cookie Policy</Link>
-                <Link href="/disclaimer" className="text-purple-300 hover:text-purple-200 transition">Disclaimer</Link>
+            <div className="mt-12 border-t border-gray-200 pt-8">
+              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
+                <span>© 2026 Evara AI. All rights reserved.</span>
+                <Link href="/privacy-policy" className="text-gray-500 hover:text-white transition">Privacy Policy</Link>
+                <Link href="/terms" className="text-gray-500 hover:text-white transition">Terms of Service</Link>
+                <Link href="/cookies" className="text-gray-500 hover:text-white transition">Cookie Policy</Link>
+                <Link href="/disclaimer" className="text-violet-600 hover:text-violet-700 transition">Disclaimer</Link>
               </div>
             </div>
           </article>
@@ -422,8 +422,8 @@ export default function DisclaimerPage() {
 function DisclaimerSection({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section id={id} className="scroll-mt-6">
-      <h2 className="text-xl font-semibold text-white sm:text-2xl">{title}</h2>
-      <div className="mt-5 space-y-4 text-sm leading-7 text-zinc-400 [&_strong]:text-zinc-200 [&_ul]:mt-3 [&_ul]:space-y-3 [&_ul]:pl-5 [&_ul]:list-disc [&_a]:text-purple-300 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-purple-200">
+      <h2 className="text-xl font-semibold text-[#1d2226] sm:text-2xl">{title}</h2>
+      <div className="mt-5 space-y-4 text-sm leading-7 text-gray-500 [&_strong]:text-[#1d2226] [&_ul]:mt-3 [&_ul]:space-y-3 [&_ul]:pl-5 [&_ul]:list-disc [&_a]:text-violet-600 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-violet-700">
         {children}
       </div>
     </section>
@@ -433,7 +433,7 @@ function DisclaimerSection({ id, title, children }: { id: string; title: string;
 function SubSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="mt-6">
-      <h3 className="text-base font-semibold text-zinc-200">{title}</h3>
+      <h3 className="text-base font-semibold text-[#1d2226]">{title}</h3>
       <div className="mt-3 space-y-3">{children}</div>
     </div>
   );

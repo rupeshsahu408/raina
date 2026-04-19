@@ -55,7 +55,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
       onClick={() => onChange(!checked)}
       className={[
         "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none",
-        checked ? "bg-violet-600" : "bg-zinc-700",
+        checked ? "bg-violet-600" : "bg-gray-300",
       ].join(" ")}
     >
       <span
@@ -78,10 +78,10 @@ function SettingRow({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-6 py-4 border-b border-white/[0.05] last:border-0">
+    <div className="flex items-center justify-between gap-6 py-4 border-b border-gray-200 last:border-0">
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] text-zinc-200 font-medium">{label}</p>
-        {description && <p className="text-[12px] text-zinc-500 mt-0.5 leading-snug">{description}</p>}
+        <p className="text-[14px] text-[#1d2226] font-medium">{label}</p>
+        {description && <p className="text-[12px] text-gray-500 mt-0.5 leading-snug">{description}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -91,8 +91,8 @@ function SettingRow({
 function SectionHeader({ title, description }: { title: string; description?: string }) {
   return (
     <div className="mb-6">
-      <h2 className="text-[17px] font-semibold text-zinc-100">{title}</h2>
-      {description && <p className="text-[13px] text-zinc-500 mt-1">{description}</p>}
+      <h2 className="text-[17px] font-semibold text-[#1d2226]">{title}</h2>
+      {description && <p className="text-[13px] text-gray-500 mt-1">{description}</p>}
     </div>
   );
 }
@@ -126,8 +126,8 @@ function InlineConfirm({
   danger?: boolean;
 }) {
   return (
-    <div className="mt-3 rounded-2xl bg-white/[0.04] border border-white/[0.07] px-4 py-3 space-y-3">
-      <p className="text-[13px] text-zinc-300 leading-snug">{message}</p>
+    <div className="mt-3 rounded-2xl bg-gray-50 border border-white/[0.07] px-4 py-3 space-y-3">
+      <p className="text-[13px] text-gray-700 leading-snug">{message}</p>
       <div className="flex gap-2">
         <button
           type="button"
@@ -136,7 +136,7 @@ function InlineConfirm({
             "rounded-xl px-4 py-1.5 text-[12.5px] font-medium transition",
             danger
               ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
-              : "bg-violet-600/20 text-violet-400 hover:bg-violet-600/30",
+              : "bg-violet-600/20 text-violet-600 hover:bg-violet-600/30",
           ].join(" ")}
         >
           {confirmLabel}
@@ -144,7 +144,7 @@ function InlineConfirm({
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-xl bg-white/[0.05] px-4 py-1.5 text-[12.5px] font-medium text-zinc-400 hover:bg-white/[0.09] transition"
+          className="rounded-xl bg-white/[0.05] px-4 py-1.5 text-[12.5px] font-medium text-gray-500 hover:bg-white/[0.09] transition"
         >
           Cancel
         </button>
@@ -162,9 +162,9 @@ const NAV: { id: Section; label: string; icon: string }[] = [
   { id: "security", label: "Security", icon: "🛡️" },
 ];
 
-const SELECTS = "w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-zinc-200 outline-none focus:border-violet-500/60 transition cursor-pointer";
-const INPUT = "w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2.5 text-[13.5px] text-zinc-200 outline-none placeholder:text-zinc-600 focus:border-violet-500/60 transition";
-const BTN_GHOST = "rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-[13px] font-medium text-zinc-300 hover:bg-white/[0.08] hover:text-zinc-100 transition";
+const SELECTS = "w-full rounded-xl border border-white/[0.08] bg-gray-50 px-3 py-2.5 text-[13.5px] text-[#1d2226] outline-none focus:border-violet-500/60 transition cursor-pointer";
+const INPUT = "w-full rounded-xl border border-white/[0.08] bg-gray-50 px-3 py-2.5 text-[13.5px] text-[#1d2226] outline-none placeholder:text-zinc-600 focus:border-violet-500/60 transition";
+const BTN_GHOST = "rounded-xl border border-white/[0.08] bg-gray-50 px-4 py-2 text-[13px] font-medium text-gray-700 hover:bg-gray-50 hover:text-[#1d2226] transition";
 const BTN_DANGER = "rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-2 text-[13px] font-medium text-red-400 hover:bg-red-500/20 transition";
 const BTN_PRIMARY = "rounded-xl bg-violet-600 px-4 py-2 text-[13px] font-semibold text-white hover:bg-violet-500 transition";
 
@@ -472,8 +472,8 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#111111]">
-        <div className="flex items-center gap-2 text-[13px] text-zinc-500">
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="flex items-center gap-2 text-[13px] text-gray-500">
           <span className="animate-spin h-4 w-4 border-2 border-zinc-600 border-t-violet-500 rounded-full" />
           Loading settings…
         </div>
@@ -482,14 +482,14 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#111111] text-zinc-100">
+    <div className="flex min-h-screen bg-white text-[#1d2226]">
       {/* ── Sidebar nav ── */}
-      <aside className="w-56 shrink-0 border-r border-white/[0.06] bg-[#0f0f0f] flex flex-col py-6 px-3 gap-1 hidden md:flex">
+      <aside className="w-56 shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col py-6 px-3 gap-1 hidden md:flex">
         <div className="flex items-center gap-2.5 px-3 pb-4">
           <img src="/evara-logo.png" alt="Evara AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
-          <span className="text-[14px] font-semibold tracking-tight text-zinc-100">Settings</span>
+          <span className="text-[14px] font-semibold tracking-tight text-[#1d2226]">Settings</span>
         </div>
-        <a href="/chat" className="flex items-center gap-2 px-3 pb-5 text-[13px] text-zinc-500 hover:text-zinc-300 transition">
+        <a href="/chat" className="flex items-center gap-2 px-3 pb-5 text-[13px] text-gray-500 hover:text-gray-700 transition">
           ← Back to chat
         </a>
         {NAV.map((n) => (
@@ -500,8 +500,8 @@ export default function SettingsPage() {
             className={[
               "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-[13.5px] font-medium text-left transition",
               activeSection === n.id
-                ? "bg-white/[0.08] text-zinc-100"
-                : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200",
+                ? "bg-gray-50 text-[#1d2226]"
+                : "text-gray-500 hover:bg-gray-50 hover:text-[#1d2226]",
             ].join(" ")}
           >
             <span className="text-[15px]">{n.icon}</span>
@@ -512,7 +512,7 @@ export default function SettingsPage() {
         <button
           type="button"
           onClick={async () => { const auth = getFirebaseAuth(); await signOut(auth); router.replace("/login"); }}
-          className="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-[13.5px] font-medium text-zinc-500 hover:text-red-400 hover:bg-white/[0.04] transition"
+          className="flex items-center gap-3 rounded-2xl px-4 py-2.5 text-[13.5px] font-medium text-gray-500 hover:text-red-400 hover:bg-gray-50 transition"
         >
           <span className="text-[15px]">🚪</span>
           Sign out
@@ -520,7 +520,7 @@ export default function SettingsPage() {
       </aside>
 
       {/* ── Mobile top nav ── */}
-      <div className="fixed top-0 left-0 right-0 z-20 flex gap-1 overflow-x-auto border-b border-white/[0.06] bg-[#0f0f0f] px-3 py-2 md:hidden">
+      <div className="fixed top-0 left-0 right-0 z-20 flex gap-1 overflow-x-auto border-b border-gray-200 bg-gray-50 px-3 py-2 md:hidden">
         {NAV.map((n) => (
           <button
             key={n.id}
@@ -528,7 +528,7 @@ export default function SettingsPage() {
             onClick={() => setActiveSection(n.id)}
             className={[
               "shrink-0 rounded-xl px-3 py-1.5 text-[12px] font-medium transition",
-              activeSection === n.id ? "bg-white/[0.09] text-zinc-100" : "text-zinc-500",
+              activeSection === n.id ? "bg-white/[0.09] text-[#1d2226]" : "text-gray-500",
             ].join(" ")}
           >
             {n.label}
@@ -547,37 +547,37 @@ export default function SettingsPage() {
             {/* Avatar preview */}
             <div className="mb-6 flex items-center gap-4">
               {profile.photoUrl ? (
-                <img src={profile.photoUrl} alt="avatar" className="h-16 w-16 rounded-full object-cover border-2 border-white/[0.1]" />
+                <img src={profile.photoUrl} alt="avatar" className="h-16 w-16 rounded-full object-cover border-2 border-gray-200" />
               ) : (
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-600 to-purple-800 text-2xl font-bold text-white">
                   {profile.name ? profile.name.charAt(0).toUpperCase() : "?"}
                 </div>
               )}
               <div>
-                <p className="text-[14px] font-medium text-zinc-200">{profile.name || "No name set"}</p>
-                <p className="text-[12px] text-zinc-500">{currentEmail}</p>
+                <p className="text-[14px] font-medium text-[#1d2226]">{profile.name || "No name set"}</p>
+                <p className="text-[12px] text-gray-500">{currentEmail}</p>
               </div>
             </div>
 
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] divide-y divide-white/[0.05]">
               <div className="p-4 space-y-3">
                 <div>
-                  <label className="text-[12px] text-zinc-500 mb-1.5 block">Display name</label>
+                  <label className="text-[12px] text-gray-500 mb-1.5 block">Display name</label>
                   <input value={profile.name} onChange={(e) => patchProfile({ name: e.target.value })} className={INPUT} placeholder="Your name" />
                 </div>
                 <div>
-                  <label className="text-[12px] text-zinc-500 mb-1.5 block">Photo URL</label>
+                  <label className="text-[12px] text-gray-500 mb-1.5 block">Photo URL</label>
                   <input value={profile.photoUrl} onChange={(e) => patchProfile({ photoUrl: e.target.value })} className={INPUT} placeholder="https://…" />
                 </div>
                 <div>
-                  <label className="text-[12px] text-zinc-500 mb-1.5 block">Bio</label>
+                  <label className="text-[12px] text-gray-500 mb-1.5 block">Bio</label>
                   <textarea rows={2} value={profile.bio} onChange={(e) => patchProfile({ bio: e.target.value })} className={INPUT} placeholder="A short bio…" />
                 </div>
               </div>
 
               <div className="p-4">
                 <SettingRow label="AI Personality" description="Choose between Simi (warm & empathetic) and Loa (calm & analytical)">
-                  <div className="flex gap-1 rounded-xl bg-white/[0.04] p-1">
+                  <div className="flex gap-1 rounded-xl bg-gray-50 p-1">
                     {(["Simi", "Loa"] as const).map((p) => (
                       <button
                         key={p}
@@ -585,7 +585,7 @@ export default function SettingsPage() {
                         onClick={() => patchProfile({ selectedPersonality: p })}
                         className={[
                           "rounded-lg px-4 py-1.5 text-[12.5px] font-medium transition",
-                          profile.selectedPersonality === p ? "bg-violet-600 text-white shadow" : "text-zinc-500 hover:text-zinc-300",
+                          profile.selectedPersonality === p ? "bg-violet-600 text-white shadow" : "text-gray-500 hover:text-gray-700",
                         ].join(" ")}
                       >
                         {p}
@@ -611,7 +611,7 @@ export default function SettingsPage() {
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] divide-y divide-white/[0.05] p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[12px] text-zinc-500 mb-1.5 block">Theme</label>
+                  <label className="text-[12px] text-gray-500 mb-1.5 block">Theme</label>
                   <select
                     value={profile.personalization.theme}
                     onChange={(e) => {
@@ -627,7 +627,7 @@ export default function SettingsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[12px] text-zinc-500 mb-1.5 block">Font size</label>
+                  <label className="text-[12px] text-gray-500 mb-1.5 block">Font size</label>
                   <select value={profile.personalization.fontSize} onChange={(e) => patchPersonalization({ fontSize: e.target.value as never })} className={SELECTS}>
                     <option value="small">Small</option>
                     <option value="medium">Medium</option>
@@ -635,14 +635,14 @@ export default function SettingsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[12px] text-zinc-500 mb-1.5 block">Bubble style</label>
+                  <label className="text-[12px] text-gray-500 mb-1.5 block">Bubble style</label>
                   <select value={profile.personalization.bubbleStyle} onChange={(e) => patchPersonalization({ bubbleStyle: e.target.value as never })} className={SELECTS}>
                     <option value="rounded">Rounded</option>
                     <option value="sharp">Sharp</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-[12px] text-zinc-500 mb-1.5 block">AI typing speed</label>
+                  <label className="text-[12px] text-gray-500 mb-1.5 block">AI typing speed</label>
                   <select value={profile.personalization.typingSpeed} onChange={(e) => patchPersonalization({ typingSpeed: e.target.value as never })} className={SELECTS}>
                     <option value="slow">Slow</option>
                     <option value="normal">Normal</option>
@@ -651,10 +651,10 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="pt-3">
-                <label className="text-[12px] text-zinc-500 mb-2 block">Accent color</label>
+                <label className="text-[12px] text-gray-500 mb-2 block">Accent color</label>
                 <div className="flex items-center gap-3">
                   <input type="color" value={profile.personalization.accentColor} onChange={(e) => patchPersonalization({ accentColor: e.target.value })} className="h-10 w-12 cursor-pointer rounded-lg border border-white/[0.08] bg-transparent p-0.5" />
-                  <span className="text-[13px] text-zinc-400 font-mono">{profile.personalization.accentColor}</span>
+                  <span className="text-[13px] text-gray-500 font-mono">{profile.personalization.accentColor}</span>
                   {(["#7c3aed", "#2563eb", "#059669", "#dc2626", "#d97706"] as const).map((c) => (
                     <button key={c} type="button" onClick={() => patchPersonalization({ accentColor: c })} style={{ background: c }} className="h-6 w-6 rounded-full border-2 border-transparent hover:border-white/40 transition" />
                   ))}
@@ -674,16 +674,16 @@ export default function SettingsPage() {
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[12px] text-zinc-500 mb-1.5 block">Nickname (what AI calls you)</label>
+                  <label className="text-[12px] text-gray-500 mb-1.5 block">Nickname (what AI calls you)</label>
                   <input value={profile.about.nickname} onChange={(e) => patchAbout({ nickname: e.target.value })} className={INPUT} placeholder="e.g. Alex" />
                 </div>
                 <div>
-                  <label className="text-[12px] text-zinc-500 mb-1.5 block">Occupation</label>
+                  <label className="text-[12px] text-gray-500 mb-1.5 block">Occupation</label>
                   <input value={profile.about.occupation} onChange={(e) => patchAbout({ occupation: e.target.value })} className={INPUT} placeholder="e.g. Software engineer" />
                 </div>
               </div>
               <div>
-                <label className="text-[12px] text-zinc-500 mb-1.5 block">Language preference</label>
+                <label className="text-[12px] text-gray-500 mb-1.5 block">Language preference</label>
                 <select value={profile.languagePreference} onChange={(e) => patchProfile({ languagePreference: e.target.value as never })} className={SELECTS}>
                   <option value="english">English</option>
                   <option value="hindi">Hindi</option>
@@ -691,7 +691,7 @@ export default function SettingsPage() {
                 </select>
               </div>
               <div>
-                <label className="text-[12px] text-zinc-500 mb-1.5 block">More about you</label>
+                <label className="text-[12px] text-gray-500 mb-1.5 block">More about you</label>
                 <textarea rows={4} value={profile.about.moreAboutYou} onChange={(e) => patchAbout({ moreAboutYou: e.target.value })} className={INPUT} placeholder="Your interests, values, goals, personality traits…" />
                 <p className="mt-1.5 text-[11.5px] text-zinc-600">This is used by the AI to personalize your conversations.</p>
               </div>
@@ -728,8 +728,8 @@ export default function SettingsPage() {
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[14px] text-zinc-200 font-medium">Clear memory</p>
-                    <p className="text-[12px] text-zinc-500 mt-0.5">Deletes all learned signals and memory summaries.</p>
+                    <p className="text-[14px] text-[#1d2226] font-medium">Clear memory</p>
+                    <p className="text-[12px] text-gray-500 mt-0.5">Deletes all learned signals and memory summaries.</p>
                   </div>
                   <button type="button" onClick={() => setConfirm("clearMemory")} className={BTN_GHOST}>
                     Clear memory
@@ -766,19 +766,19 @@ export default function SettingsPage() {
               <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[14px] text-zinc-200 font-medium">Export your data</p>
-                    <p className="text-[12px] text-zinc-500 mt-0.5">Download all your conversations as a JSON file.</p>
+                    <p className="text-[14px] text-[#1d2226] font-medium">Export your data</p>
+                    <p className="text-[12px] text-gray-500 mt-0.5">Download all your conversations as a JSON file.</p>
                   </div>
                   <button type="button" onClick={handleExport} disabled={exporting} className={BTN_GHOST}>
                     {exporting ? "Exporting…" : "Export"}
                   </button>
                 </div>
 
-                <div className="border-t border-white/[0.05] pt-4">
+                <div className="border-t border-gray-200 pt-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[14px] text-zinc-200 font-medium">Delete all chats</p>
-                      <p className="text-[12px] text-zinc-500 mt-0.5">Permanently removes all conversations and messages.</p>
+                      <p className="text-[14px] text-[#1d2226] font-medium">Delete all chats</p>
+                      <p className="text-[12px] text-gray-500 mt-0.5">Permanently removes all conversations and messages.</p>
                     </div>
                     <button type="button" onClick={() => setConfirm("deleteChats")} className={BTN_DANGER}>
                       Delete all
@@ -794,11 +794,11 @@ export default function SettingsPage() {
                   )}
                 </div>
 
-                <div className="border-t border-white/[0.05] pt-4">
+                <div className="border-t border-gray-200 pt-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[14px] text-zinc-200 font-medium">Clear all account data</p>
-                      <p className="text-[12px] text-zinc-500 mt-0.5">Deletes all chats, memory, and your profile. You'll be signed out.</p>
+                      <p className="text-[14px] text-[#1d2226] font-medium">Clear all account data</p>
+                      <p className="text-[12px] text-gray-500 mt-0.5">Deletes all chats, memory, and your profile. You'll be signed out.</p>
                     </div>
                     <button type="button" onClick={() => setConfirm("clearAll")} className={BTN_DANGER}>
                       Clear all
@@ -826,23 +826,23 @@ export default function SettingsPage() {
             {/* Session info */}
             {sessionInfo && (
               <div className="mb-4 rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 text-[13px] space-y-1.5">
-                <p className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wide mb-2">Current session</p>
-                <p className="text-zinc-400">📧 {currentEmail}</p>
-                <p className="text-zinc-400">💻 {sessionInfo.device}</p>
-                <p className="text-zinc-400">🕐 Last sign-in: {sessionInfo.lastSignIn}</p>
-                <p className="text-zinc-400">📅 Account created: {sessionInfo.created}</p>
+                <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-2">Current session</p>
+                <p className="text-gray-500">📧 {currentEmail}</p>
+                <p className="text-gray-500">💻 {sessionInfo.device}</p>
+                <p className="text-gray-500">🕐 Last sign-in: {sessionInfo.lastSignIn}</p>
+                <p className="text-gray-500">📅 Account created: {sessionInfo.created}</p>
               </div>
             )}
 
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] divide-y divide-white/[0.05]">
               <div className="p-4 space-y-3">
-                <p className="text-[13px] font-semibold text-zinc-300">Change email</p>
+                <p className="text-[13px] font-semibold text-gray-700">Change email</p>
                 <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className={INPUT} placeholder="new@email.com" />
                 <button type="button" onClick={handleChangeEmail} className={BTN_GHOST}>Update email</button>
               </div>
 
               <div className="p-4 space-y-3">
-                <p className="text-[13px] font-semibold text-zinc-300">Change password</p>
+                <p className="text-[13px] font-semibold text-gray-700">Change password</p>
                 <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className={INPUT} placeholder="New password (min. 6 characters)" />
                 <button type="button" onClick={handleChangePassword} className={BTN_GHOST}>Update password</button>
               </div>
@@ -850,8 +850,8 @@ export default function SettingsPage() {
               <div className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[14px] text-zinc-200 font-medium">Sign out this device</p>
-                    <p className="text-[12px] text-zinc-500 mt-0.5">Signs you out from this browser only.</p>
+                    <p className="text-[14px] text-[#1d2226] font-medium">Sign out this device</p>
+                    <p className="text-[12px] text-gray-500 mt-0.5">Signs you out from this browser only.</p>
                   </div>
                   <button
                     type="button"
@@ -866,8 +866,8 @@ export default function SettingsPage() {
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[14px] text-zinc-200 font-medium">Sign out all devices</p>
-                    <p className="text-[12px] text-zinc-500 mt-0.5">Revokes access on all devices. You'll be signed out here too.</p>
+                    <p className="text-[14px] text-[#1d2226] font-medium">Sign out all devices</p>
+                    <p className="text-[12px] text-gray-500 mt-0.5">Revokes access on all devices. You'll be signed out here too.</p>
                   </div>
                   <button type="button" onClick={() => setConfirm("logoutAll")} className={BTN_DANGER}>
                     Sign out all
@@ -890,9 +890,9 @@ export default function SettingsPage() {
 
       {/* ── Floating save bar (when dirty) ── */}
       {dirty && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-2xl border border-white/[0.1] bg-[#1c1c1c]/95 px-5 py-3 shadow-2xl shadow-black/50 backdrop-blur-md">
-          <p className="text-[13px] text-zinc-400">You have unsaved changes</p>
-          <button type="button" onClick={() => { setDirty(false); }} className="text-[12.5px] text-zinc-500 hover:text-zinc-300 transition">Discard</button>
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white/95 px-5 py-3 shadow-2xl shadow-gray-200 backdrop-blur-md">
+          <p className="text-[13px] text-gray-500">You have unsaved changes</p>
+          <button type="button" onClick={() => { setDirty(false); }} className="text-[12.5px] text-gray-500 hover:text-gray-700 transition">Discard</button>
           <button type="button" onClick={saveProfile} className={BTN_PRIMARY}>Save</button>
         </div>
       )}

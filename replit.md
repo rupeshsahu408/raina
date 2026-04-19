@@ -33,6 +33,19 @@ A multi-platform AI suite with four AI systems:
 ## API Routing
 Frontend proxies `/v1/*`, `/backend/*`, `/recruit-public/*`, and health checks to the backend via Next.js rewrites in `next.config.ts` for local/Replit development. Production defaults to `https://raina-1.onrender.com` when `BACKEND_URL` is not set. Recruit browser-side API calls use `frontend/src/lib/api.ts`, which calls Render directly in production via `NEXT_PUBLIC_API_BASE_URL` or the built-in Render fallback and uses `/backend` locally, avoiding the Vercel rewrite layer for authenticated Recruit requests while preserving a clean local dev proxy. The API helper now rejects misconfigured frontend-domain API bases such as `https://plyndrox.app`/`https://www.plyndrox.app` and falls back to Render, preventing Vercel 404 text responses from being parsed as JSON. Vercel-safe Next.js route handlers under `frontend/src/app/backend/[...path]/route.ts` and `frontend/src/app/recruit-public/[...path]/route.ts` proxy relative API requests to Render as a second layer of protection. The backend CORS allowlist includes `https://www.plyndrox.app` and `https://plyndrox.app`. Inbox API calls are bridged through Next.js route handlers under `frontend/src/app/inbox/[...path]/route.ts`, with a dedicated lead-intelligence bridge at `frontend/src/app/inbox/lead-intelligence/route.ts`, so `/inbox/leads` can remain a frontend page while `/inbox/lead-intelligence` returns backend JSON.
 
+## Design System (LinkedIn-Inspired Light Theme)
+All public-facing and product pages use a consistent light design language:
+- **Backgrounds**: `bg-white` / `bg-gray-50` / `#f8f9fa`
+- **Primary text**: `#1d2226` (near-black)
+- **Secondary text**: `text-gray-500`
+- **Borders**: `border-gray-200`
+- **Accent / CTA**: `violet-600` / `violet-700`; product-specific: emerald (WhatsApp AI), blue (Recruit AI)
+- **Cards**: `rounded-2xl border border-gray-200 bg-white shadow-sm hover:-translate-y-0.5 hover:shadow-md`
+- **Dark CTA pills**: `bg-[#1d2226] hover:bg-[#2d3238] text-white`
+- **Navbars**: `sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md`
+- **Pages migrated**: all 60+ app pages (landing, about, contact, blog, help, partners, legal×5, data-deletion, chat, app, settings, WhatsApp AI+dashboard, Recruit×7, Inbox sub-pages, IBARA×4, shared components×7)
+- **Bihar AI** intentionally preserved with amber/saffron accents for regional identity
+
 ## Key Features
 - Firebase Auth (email/password + Google)
 - MongoDB memory system (short-term + long-term profile)

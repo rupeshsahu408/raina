@@ -71,7 +71,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+      <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-gray-400">
         {label}
       </span>
       <input
@@ -225,7 +225,7 @@ export default function DashboardPage() {
       <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/80 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 rounded-lg object-contain bg-black p-1" draggable={false} />
+            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 rounded-lg object-contain bg-white p-1" draggable={false} />
             <span className="font-semibold tracking-tight">Business Dashboard</span>
           </div>
           <div className="flex items-center gap-3">
@@ -241,7 +241,7 @@ export default function DashboardPage() {
       </header>
 
       {toast && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 rounded-full bg-zinc-900 px-4 py-2 text-sm text-white shadow-xl animate-in slide-in-from-top-2 fade-in">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 rounded-full bg-white px-4 py-2 text-sm text-white shadow-xl animate-in slide-in-from-top-2 fade-in">
           {toast}
         </div>
       )}
@@ -257,7 +257,7 @@ export default function DashboardPage() {
                 className={`w-full rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-colors ${
                   activeTab === tab 
                     ? "bg-emerald-50 text-emerald-900" 
-                    : "text-zinc-600 hover:bg-zinc-100"
+                    : "text-gray-400 hover:bg-zinc-100"
                 }`}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -274,7 +274,7 @@ export default function DashboardPage() {
                 <div className="mb-6 flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-bold">Business Profile</h2>
-                    <p className="text-sm text-zinc-500">Core details that guide AI context.</p>
+                    <p className="text-sm text-gray-400">Core details that guide AI context.</p>
                   </div>
                   <button
                     onClick={() => setConfig((p) => ({ ...p, autoReplyEnabled: !p.autoReplyEnabled }))}
@@ -296,7 +296,7 @@ export default function DashboardPage() {
                 </div>
 
                 <label className="mt-5 block">
-                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                     Services & Products
                   </span>
                   <textarea
@@ -307,7 +307,7 @@ export default function DashboardPage() {
                 </label>
 
                 <label className="mt-5 block">
-                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                  <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                     Knowledge Book
                   </span>
                   <textarea
@@ -320,7 +320,7 @@ export default function DashboardPage() {
 
                 <div className="mt-5 grid gap-5 sm:grid-cols-2">
                   <label className="block">
-                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Tone</span>
+                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-gray-400">Tone</span>
                     <select
                       value={config.tone}
                       onChange={(e) => setConfig((p) => ({ ...p, tone: e.target.value as BusinessConfig["tone"] }))}
@@ -331,7 +331,7 @@ export default function DashboardPage() {
                     </select>
                   </label>
                   <label className="block">
-                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-zinc-500">Language Mode</span>
+                    <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-gray-400">Language Mode</span>
                     <select
                       value={config.languageMode}
                       onChange={(e) => setConfig((p) => ({ ...p, languageMode: e.target.value as BusinessConfig["languageMode"] }))}
@@ -352,7 +352,7 @@ export default function DashboardPage() {
           {activeTab === "preview" && (
             <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm animate-in fade-in slide-in-from-bottom-2 h-[600px] flex flex-col">
               <h2 className="text-lg font-bold">Simulator</h2>
-              <p className="text-sm text-zinc-500 mb-6">Test how the AI responds using your config.</p>
+              <p className="text-sm text-gray-400 mb-6">Test how the AI responds using your config.</p>
               
               <div className="flex-1 overflow-y-auto space-y-4 mb-4 rounded-xl bg-[#EFEAE2] p-4 bg-[url('https://static.whatsapp.net/rsrc.php/v3/yl/r/r_QZ30M39s_.png')]">
                 {logs.slice(0, 5).reverse().map((log) => (
@@ -401,21 +401,21 @@ export default function DashboardPage() {
             <div className="rounded-2xl border border-zinc-200 bg-white p-0 sm:p-0 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2">
               <div className="border-b border-zinc-100 p-5 sm:p-6 bg-zinc-50/50">
                 <h2 className="text-lg font-bold">Chat History</h2>
-                <p className="text-sm text-zinc-500">Recent conversations with customers.</p>
+                <p className="text-sm text-gray-400">Recent conversations with customers.</p>
               </div>
               <div className="divide-y divide-zinc-100">
                 {logs.length === 0 ? (
-                  <div className="p-8 text-center text-sm text-zinc-500">No logs yet.</div>
+                  <div className="p-8 text-center text-sm text-gray-400">No logs yet.</div>
                 ) : (
                   logs.map((log) => (
                     <div key={log.id} className="p-5 sm:p-6 hover:bg-zinc-50/50 transition-colors">
                       <div className="flex items-center justify-between mb-3">
                         <span className="font-semibold text-sm">{log.customerName}</span>
-                        <span className="text-[11px] text-zinc-400 font-mono">{new Date(log.createdAt).toLocaleString()}</span>
+                        <span className="text-[11px] text-gray-500 font-mono">{new Date(log.createdAt).toLocaleString()}</span>
                       </div>
                       <div className="grid gap-3">
                         <div className="rounded-xl bg-zinc-100 px-4 py-3 text-sm text-zinc-700">
-                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest block mb-1">Customer</span>
+                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Customer</span>
                           {log.customerMessage}
                         </div>
                         <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
@@ -440,7 +440,7 @@ export default function DashboardPage() {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex flex-col items-center p-2 min-w-[70px] rounded-xl transition-colors ${
-                activeTab === tab ? "text-emerald-600" : "text-zinc-500"
+                activeTab === tab ? "text-emerald-600" : "text-gray-400"
               }`}
             >
               <span className="text-[11px] font-semibold tracking-wide mt-1">

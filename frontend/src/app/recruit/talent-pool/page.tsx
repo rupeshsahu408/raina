@@ -115,10 +115,10 @@ function CandidateRow({
                 <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-2 py-0.5 text-[10px] font-bold text-indigo-400">In Pool</span>
               )}
             </div>
-            {c.email && <p className="text-xs text-zinc-600 mt-0.5">{c.email}</p>}
-            <div className="flex items-center gap-3 mt-1.5 flex-wrap text-[11px] text-zinc-600">
+            {c.email && <p className="text-xs text-gray-400 mt-0.5">{c.email}</p>}
+            <div className="flex items-center gap-3 mt-1.5 flex-wrap text-[11px] text-gray-400">
               {jobInfo && (
-                <span className="text-zinc-500">
+                <span className="text-gray-400">
                   {jobInfo.title}{jobInfo.department ? ` · ${jobInfo.department}` : ""}
                 </span>
               )}
@@ -136,7 +136,7 @@ function CandidateRow({
             >
               <StarIcon filled={c.inTalentPool} />
             </button>
-            <button onClick={() => setExpanded(e => !e)} className="text-zinc-700 hover:text-zinc-400 transition">
+            <button onClick={() => setExpanded(e => !e)} className="text-zinc-700 hover:text-gray-500 transition">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 {expanded ? <path d="m18 15-6-6-6 6" /> : <path d="m6 9 6 6 6-6" />}
               </svg>
@@ -147,7 +147,7 @@ function CandidateRow({
         {expanded && (
           <div className="mt-4 space-y-3 border-t border-white/[0.05] pt-4">
             {c.aiSummary && (
-              <p className="text-xs text-zinc-400 leading-relaxed">{c.aiSummary}</p>
+              <p className="text-xs text-gray-500 leading-relaxed">{c.aiSummary}</p>
             )}
             {c.strengths.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
@@ -171,25 +171,25 @@ function CandidateRow({
                     onChange={e => setNote(e.target.value)}
                     rows={2}
                     placeholder="Add a note about this candidate for future roles..."
-                    className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-xs text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50 resize-none"
+                    className="w-full rounded-xl border border-white/[0.08] bg-white px-3 py-2 text-xs text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50 resize-none"
                   />
                   <div className="flex gap-2">
                     <button onClick={saveNote} disabled={savingNote} className="rounded-lg bg-indigo-500 px-3 py-1.5 text-[11px] font-bold text-white hover:bg-indigo-400 disabled:opacity-50 transition">
                       {savingNote ? "Saving..." : "Save"}
                     </button>
-                    <button onClick={() => { setEditingNote(false); setNote(c.talentPoolNote || ""); }} className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-[11px] text-zinc-500 hover:text-white transition">
+                    <button onClick={() => { setEditingNote(false); setNote(c.talentPoolNote || ""); }} className="rounded-lg border border-white/[0.08] px-3 py-1.5 text-[11px] text-gray-400 hover:text-white transition">
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
-                <button onClick={() => setEditingNote(true)} className="text-[11px] text-zinc-600 hover:text-indigo-400 transition flex items-center gap-1">
+                <button onClick={() => setEditingNote(true)} className="text-[11px] text-gray-400 hover:text-indigo-400 transition flex items-center gap-1">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   {c.talentPoolNote ? "Edit note" : "Add note"}
                 </button>
               )}
               {c.talentPoolNote && !editingNote && (
-                <p className="mt-1 text-xs text-zinc-500 italic">{c.talentPoolNote}</p>
+                <p className="mt-1 text-xs text-gray-400 italic">{c.talentPoolNote}</p>
               )}
             </div>
           </div>
@@ -238,13 +238,13 @@ function TalentPoolContent() {
   const displayed = filter === "pinned" ? pinned : candidates;
 
   return (
-    <div className="min-h-screen bg-[#050506] text-zinc-100">
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(99,102,241,0.08),transparent_40%),linear-gradient(180deg,#050506,#07070a)]" />
+    <div className="min-h-screen bg-white text-[#1d2226]">
+      
 
-      <header className="relative z-10 border-b border-white/[0.07] bg-black/30 backdrop-blur-xl">
+      <header className="relative z-10 border-b border-white/[0.07] bg-gray-100 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <Link href="/recruit/dashboard" className="flex items-center gap-1.5 text-zinc-500 hover:text-white transition text-xs">
+            <Link href="/recruit/dashboard" className="flex items-center gap-1.5 text-gray-400 hover:text-white transition text-xs">
               <BackIcon /> Dashboard
             </Link>
             <span className="text-zinc-700">/</span>
@@ -261,7 +261,7 @@ function TalentPoolContent() {
       <main className="relative z-10 mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6">
           <h1 className="text-xl font-semibold text-white">Talent Pool</h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <p className="mt-1 text-sm text-gray-400">
             Silver-medal candidates who scored 55%+ but weren&apos;t hired. Star candidates you&apos;d consider for future roles.
           </p>
         </div>
@@ -274,31 +274,31 @@ function TalentPoolContent() {
               className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
                 filter === val
                   ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                  : "text-zinc-500 hover:text-zinc-300"
+                  : "text-gray-400 hover:text-gray-600"
               }`}
             >
               {label}
             </button>
           ))}
-          <span className="ml-auto text-xs text-zinc-600">{displayed.length} candidate{displayed.length !== 1 ? "s" : ""}</span>
+          <span className="ml-auto text-xs text-gray-400">{displayed.length} candidate{displayed.length !== 1 ? "s" : ""}</span>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-24">
-            <div className="flex items-center gap-3 text-zinc-500 text-sm">
+            <div className="flex items-center gap-3 text-gray-400 text-sm">
               <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
               Loading talent pool...
             </div>
           </div>
         ) : displayed.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/[0.08] bg-white/[0.03] text-zinc-600 mb-5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-white/[0.08] bg-white/[0.03] text-gray-400 mb-5">
               <UsersIcon />
             </div>
-            <h2 className="text-base font-semibold text-zinc-300">
+            <h2 className="text-base font-semibold text-gray-600">
               {filter === "pinned" ? "No starred candidates yet" : "Talent pool is empty"}
             </h2>
-            <p className="mt-2 text-sm text-zinc-600 max-w-xs">
+            <p className="mt-2 text-sm text-gray-400 max-w-xs">
               {filter === "pinned"
                 ? "Star candidates you'd consider for future roles by clicking the ★ icon on any candidate card."
                 : "Candidates who score 55%+ and are rejected will appear here automatically. You can also star any candidate to add them manually."}

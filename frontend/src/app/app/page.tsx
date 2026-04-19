@@ -136,23 +136,19 @@ const iosSteps = [
 
 export default function AppPage() {
   return (
-    <div className="relative min-h-screen bg-black text-zinc-100 selection:bg-purple-500/30">
+    <div className="relative min-h-screen bg-white text-[#1d2226] ">
       {/* Background */}
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-black to-black" />
-        <div className="absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-pink-600/10 blur-[120px]" />
-        <div className="absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-sky-600/10 blur-[120px]" />
-      </div>
 
       {/* Navigation */}
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-black/50 backdrop-blur-xl">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-gray-50 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
             <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-bold uppercase tracking-widest text-zinc-100">Evara</span>
+            <span className="text-sm font-bold uppercase tracking-widest text-[#1d2226]">Evara</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden text-sm font-medium text-zinc-400 transition hover:text-white sm:block">Sign In</Link>
+            <Link href="/login" className="hidden text-sm font-medium text-gray-500 transition hover:text-white sm:block">Sign In</Link>
             <Link href="/signup" className="rounded-full bg-white px-4 py-2 text-xs font-bold text-black transition hover:scale-105 hover:bg-zinc-200">
               Get Started
             </Link>
@@ -169,7 +165,7 @@ export default function AppPage() {
           <div className="mx-auto max-w-6xl w-full grid gap-12 lg:grid-cols-2 lg:items-center pt-24 pb-12 text-left">
             {/* Text */}
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium text-zinc-300 backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-medium text-gray-600 backdrop-blur-md">
                 <SparklesIcon className="h-3.5 w-3.5 text-purple-400" />
                 <span>Available on Android, iOS & Web</span>
               </div>
@@ -179,12 +175,12 @@ export default function AppPage() {
                   App
                 </span>
               </h1>
-              <p className="mt-6 max-w-lg text-lg leading-relaxed text-zinc-400">
+              <p className="mt-6 max-w-lg text-lg leading-relaxed text-gray-500">
                 Experience powerful AI on your mobile device. Fast, lightweight, and always accessible — install once, use everywhere.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 {["Fast", "Lightweight", "Always Accessible"].map((badge) => (
-                  <span key={badge} className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1 text-xs font-semibold text-purple-300">
+                  <span key={badge} className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1 text-xs font-semibold text-violet-600">
                     <CheckIcon className="h-3 w-3" /> {badge}
                   </span>
                 ))}
@@ -194,7 +190,7 @@ export default function AppPage() {
                   label="📲 Install App Now"
                   className="rounded-full bg-white px-7 py-3.5 text-sm font-bold text-black shadow-lg transition hover:scale-105 hover:bg-zinc-100"
                 />
-                <Link href="/chat" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10">
+                <Link href="/chat" className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10">
                   Already installed? Open App <ArrowRightIcon className="h-4 w-4" />
                 </Link>
               </div>
@@ -206,10 +202,10 @@ export default function AppPage() {
                 {/* Outer glow */}
                 <div className="absolute -inset-8 rounded-[3rem] bg-gradient-to-br from-purple-500/20 via-pink-500/10 to-sky-500/20 blur-3xl" />
                 {/* Phone body */}
-                <div className="relative w-64 overflow-hidden rounded-[2.5rem] border-2 border-white/10 bg-zinc-950 shadow-2xl sm:w-72">
+                <div className="relative w-64 overflow-hidden rounded-[2.5rem] border-2 border-gray-200 bg-gray-50 shadow-2xl sm:w-72">
                   {/* Status bar */}
-                  <div className="flex items-center justify-between bg-black px-5 py-2">
-                    <span className="text-[10px] font-semibold text-zinc-400">9:41</span>
+                  <div className="flex items-center justify-between bg-white px-5 py-2">
+                    <span className="text-[10px] font-semibold text-gray-500">9:41</span>
                     <div className="flex items-center gap-1">
                       <div className="h-2 w-4 rounded-sm border border-zinc-500">
                         <div className="h-full w-3/4 rounded-sm bg-zinc-400" />
@@ -217,11 +213,11 @@ export default function AppPage() {
                     </div>
                   </div>
                   {/* Notch */}
-                  <div className="mx-auto mb-1 h-5 w-24 rounded-b-2xl bg-black" />
+                  <div className="mx-auto mb-1 h-5 w-24 rounded-b-2xl bg-white" />
                   {/* App content preview */}
-                  <div className="flex flex-col bg-zinc-950 px-4 pb-6">
+                  <div className="flex flex-col bg-gray-50 px-4 pb-6">
                     {/* App header */}
-                    <div className="flex items-center gap-2 py-3 border-b border-white/5">
+                    <div className="flex items-center gap-2 py-3 border-b border-gray-100">
                       <img src="/evara-logo.png" alt="Evara" className="h-6 w-6 object-contain" />
                       <span className="text-xs font-bold tracking-widest uppercase text-white">Evara AI</span>
                     </div>
@@ -229,7 +225,7 @@ export default function AppPage() {
                     <div className="mt-4 space-y-3">
                       <div className="flex justify-start">
                         <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-zinc-800 px-3 py-2">
-                          <p className="text-[11px] leading-relaxed text-zinc-300">Hey! How are you feeling today?</p>
+                          <p className="text-[11px] leading-relaxed text-gray-600">Hey! How are you feeling today?</p>
                         </div>
                       </div>
                       <div className="flex justify-end">
@@ -239,7 +235,7 @@ export default function AppPage() {
                       </div>
                       <div className="flex justify-start">
                         <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-zinc-800 px-3 py-2">
-                          <p className="text-[11px] leading-relaxed text-zinc-300">Of course! Let's switch to Study Mode. What subject?</p>
+                          <p className="text-[11px] leading-relaxed text-gray-600">Of course! Let's switch to Study Mode. What subject?</p>
                         </div>
                       </div>
                       <div className="flex justify-end">
@@ -249,15 +245,15 @@ export default function AppPage() {
                       </div>
                     </div>
                     {/* Input bar */}
-                    <div className="mt-4 flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2">
-                      <span className="flex-1 text-[11px] text-zinc-600">Type a message...</span>
+                    <div className="mt-4 flex items-center gap-2 rounded-2xl border border-gray-200 bg-gray-50 px-3 py-2">
+                      <span className="flex-1 text-[11px] text-gray-400">Type a message...</span>
                       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-purple-500">
                         <ArrowRightIcon className="h-3.5 w-3.5 text-white" />
                       </div>
                     </div>
                   </div>
                   {/* Home indicator */}
-                  <div className="flex justify-center bg-zinc-950 pb-3 pt-1">
+                  <div className="flex justify-center bg-gray-50 pb-3 pt-1">
                     <div className="h-1 w-20 rounded-full bg-zinc-700" />
                   </div>
                 </div>
@@ -267,14 +263,14 @@ export default function AppPage() {
         </section>
 
         {/* ── Store Availability ── */}
-        <section className="relative border-y border-white/5 bg-zinc-950/50 py-20">
+        <section className="relative border-y border-gray-100 bg-gray-50/50 py-20">
           <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">Store availability</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Store availability</p>
             <h2 className="mt-4 text-3xl font-medium text-white sm:text-4xl">Available everywhere, soon.</h2>
-            <p className="mt-4 text-base text-zinc-400">App Store and Google Play listings are on the way. For now, install instantly as a PWA — no store needed.</p>
+            <p className="mt-4 text-base text-gray-500">App Store and Google Play listings are on the way. For now, install instantly as a PWA — no store needed.</p>
             <div className="mt-10 grid gap-4 sm:grid-cols-2 max-w-xl mx-auto">
               {/* Google Play */}
-              <div className="group relative flex items-center gap-4 rounded-[1.5rem] border border-white/5 bg-white/[0.02] p-5 transition hover:bg-white/[0.04]">
+              <div className="group relative flex items-center gap-4 rounded-[1.5rem] border border-gray-100 bg-white/[0.02] p-5 transition hover:bg-white">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-800">
                   <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none">
                     <path d="M3 3.5 13.5 14 3 20.5V3.5Z" fill="#4CAF50" />
@@ -284,26 +280,26 @@ export default function AppPage() {
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="text-[11px] font-medium text-zinc-500">Coming Soon</p>
+                  <p className="text-[11px] font-medium text-gray-400">Coming Soon</p>
                   <p className="text-sm font-semibold text-white">Google Play Store</p>
                 </div>
                 <span className="ml-auto rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold text-amber-400">🚧 Soon</span>
               </div>
               {/* App Store */}
-              <div className="group relative flex items-center gap-4 rounded-[1.5rem] border border-white/5 bg-white/[0.02] p-5 transition hover:bg-white/[0.04]">
+              <div className="group relative flex items-center gap-4 rounded-[1.5rem] border border-gray-100 bg-white/[0.02] p-5 transition hover:bg-white">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-zinc-800">
                   <svg viewBox="0 0 24 24" className="h-6 w-6 text-sky-400" fill="currentColor">
                     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11Z" />
                   </svg>
                 </div>
                 <div className="text-left">
-                  <p className="text-[11px] font-medium text-zinc-500">Coming Soon</p>
+                  <p className="text-[11px] font-medium text-gray-400">Coming Soon</p>
                   <p className="text-sm font-semibold text-white">Apple App Store</p>
                 </div>
                 <span className="ml-auto rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold text-amber-400">🚧 Soon</span>
               </div>
             </div>
-            <p className="mt-8 text-sm text-zinc-500">
+            <p className="mt-8 text-sm text-gray-400">
               Already available right now as a <span className="text-purple-400 font-semibold">Progressive Web App</span> — no store, no waiting. Install below.
             </p>
           </div>
@@ -326,17 +322,17 @@ export default function AppPage() {
                 <h2 className="mt-6 text-3xl font-medium tracking-tight text-white sm:text-5xl text-balance">
                   Install on Android in seconds.
                 </h2>
-                <p className="mt-6 text-base leading-relaxed text-zinc-400">
+                <p className="mt-6 text-base leading-relaxed text-gray-500">
                   Evara AI is available as a Progressive Web App (PWA) on Android. It installs like a native app — no Play Store needed, no large download, no wait.
                 </p>
                 <div className="mt-10 space-y-4">
                   {androidSteps.map((step, i) => (
                     <div
                       key={i}
-                      className="group flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-all hover:bg-white/[0.05] hover:border-emerald-500/20"
+                      className="group flex items-start gap-4 rounded-2xl border border-gray-100 bg-white/[0.02] p-4 transition-all hover:bg-gray-50 hover:border-emerald-500/20"
                       style={{ animationDelay: `${i * 100}ms` }}
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-emerald-500/10 text-emerald-400 font-bold text-sm">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-emerald-500/10 text-emerald-400 font-bold text-sm">
                         {step.icon}
                       </div>
                       <div>
@@ -344,7 +340,7 @@ export default function AppPage() {
                           <span className="text-xs font-bold text-emerald-400">Step {i + 1}</span>
                           <span className="text-sm font-semibold text-white">{step.title}</span>
                         </div>
-                        <p className="mt-1 text-sm text-zinc-500">{step.desc}</p>
+                        <p className="mt-1 text-sm text-gray-400">{step.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -361,21 +357,21 @@ export default function AppPage() {
               <div className="flex items-center justify-center">
                 <div className="relative">
                   <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-emerald-500/15 via-green-500/10 to-transparent blur-3xl" />
-                  <div className="relative w-60 overflow-hidden rounded-[2.5rem] border-2 border-white/10 bg-zinc-950 shadow-2xl sm:w-64">
-                    <div className="flex items-center justify-between bg-black px-5 py-2">
-                      <span className="text-[10px] font-semibold text-zinc-400">9:41</span>
+                  <div className="relative w-60 overflow-hidden rounded-[2.5rem] border-2 border-gray-200 bg-gray-50 shadow-2xl sm:w-64">
+                    <div className="flex items-center justify-between bg-white px-5 py-2">
+                      <span className="text-[10px] font-semibold text-gray-500">9:41</span>
                       <div className="flex items-center gap-1.5">
                         <div className="h-2 w-3 rounded-sm border border-zinc-600"><div className="h-full w-3/4 rounded-sm bg-zinc-500" /></div>
                       </div>
                     </div>
-                    <div className="mx-auto mb-1 h-4 w-16 rounded-b-xl bg-black" />
+                    <div className="mx-auto mb-1 h-4 w-16 rounded-b-xl bg-white" />
                     <div className="px-4 pb-6">
                       {/* Chrome-style URL bar */}
-                      <div className="mt-2 flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+                      <div className="mt-2 flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
                         <div className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                        <span className="text-[10px] text-zinc-500 flex-1">evara.app</span>
+                        <span className="text-[10px] text-gray-400 flex-1">evara.app</span>
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] text-zinc-600">⋮</span>
+                          <span className="text-[10px] text-gray-400">⋮</span>
                         </div>
                       </div>
                       {/* Install banner */}
@@ -384,7 +380,7 @@ export default function AppPage() {
                           <img src="/evara-logo.png" alt="Evara" className="h-7 w-7 object-contain rounded-xl" />
                           <div>
                             <p className="text-[10px] font-bold text-white">Evara AI</p>
-                            <p className="text-[9px] text-zinc-400">Add to Home Screen</p>
+                            <p className="text-[9px] text-gray-500">Add to Home Screen</p>
                           </div>
                           <button className="ml-auto rounded-full bg-emerald-400 px-2.5 py-1 text-[9px] font-bold text-black">Install</button>
                         </div>
@@ -400,7 +396,7 @@ export default function AppPage() {
                         ))}
                       </div>
                     </div>
-                    <div className="flex justify-center bg-zinc-950 pb-3 pt-1">
+                    <div className="flex justify-center bg-gray-50 pb-3 pt-1">
                       <div className="h-1 w-16 rounded-full bg-zinc-700" />
                     </div>
                   </div>
@@ -411,27 +407,27 @@ export default function AppPage() {
         </section>
 
         {/* ── iOS Install ── */}
-        <section className="relative border-y border-white/5 bg-zinc-950/50 py-24 sm:py-32">
+        <section className="relative border-y border-gray-100 bg-gray-50/50 py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
               {/* iOS mockup */}
               <div className="flex items-center justify-center order-2 lg:order-1">
                 <div className="relative">
                   <div className="absolute -inset-6 rounded-[3rem] bg-gradient-to-br from-sky-500/15 via-blue-500/10 to-transparent blur-3xl" />
-                  <div className="relative w-60 overflow-hidden rounded-[2.5rem] border-2 border-white/10 bg-zinc-950 shadow-2xl sm:w-64">
-                    <div className="flex items-center justify-between bg-black px-5 py-2">
-                      <span className="text-[10px] font-semibold text-zinc-400">9:41</span>
+                  <div className="relative w-60 overflow-hidden rounded-[2.5rem] border-2 border-gray-200 bg-gray-50 shadow-2xl sm:w-64">
+                    <div className="flex items-center justify-between bg-white px-5 py-2">
+                      <span className="text-[10px] font-semibold text-gray-500">9:41</span>
                       <div className="flex items-center gap-1.5">
                         <div className="h-2 w-3 rounded-sm border border-zinc-600"><div className="h-full w-3/4 rounded-sm bg-zinc-500" /></div>
                       </div>
                     </div>
                     {/* iOS dynamic island */}
-                    <div className="mx-auto mb-2 h-6 w-28 rounded-full bg-black" />
+                    <div className="mx-auto mb-2 h-6 w-28 rounded-full bg-white" />
                     <div className="px-4 pb-6">
                       {/* Safari URL bar */}
-                      <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5">
+                      <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
                         <div className="h-2.5 w-2.5 rounded-full bg-sky-400" />
-                        <span className="text-[10px] text-zinc-500 flex-1">evara.app</span>
+                        <span className="text-[10px] text-gray-400 flex-1">evara.app</span>
                         <ShareIcon className="h-3.5 w-3.5 text-sky-400" />
                       </div>
                       {/* Share sheet */}
@@ -440,15 +436,15 @@ export default function AppPage() {
                         <div className="grid grid-cols-4 gap-2">
                           {[
                             { icon: <PlusCircleIcon className="h-4 w-4 text-sky-400" />, label: "Add" },
-                            { icon: <MessageCircleIcon className="h-4 w-4 text-zinc-400" />, label: "Message" },
-                            { icon: <DownloadIcon className="h-4 w-4 text-zinc-400" />, label: "Save" },
-                            { icon: <GlobeIcon className="h-4 w-4 text-zinc-400" />, label: "Open" },
+                            { icon: <MessageCircleIcon className="h-4 w-4 text-gray-500" />, label: "Message" },
+                            { icon: <DownloadIcon className="h-4 w-4 text-gray-500" />, label: "Save" },
+                            { icon: <GlobeIcon className="h-4 w-4 text-gray-500" />, label: "Open" },
                           ].map((item, i) => (
                             <div key={i} className="flex flex-col items-center gap-1">
-                              <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${i === 0 ? "bg-sky-500/20 border border-sky-500/30" : "bg-white/5"}`}>
+                              <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${i === 0 ? "bg-sky-500/20 border border-sky-500/30" : "bg-gray-50"}`}>
                                 {item.icon}
                               </div>
-                              <span className="text-[8px] text-zinc-500">{item.label}</span>
+                              <span className="text-[8px] text-gray-400">{item.label}</span>
                             </div>
                           ))}
                         </div>
@@ -467,7 +463,7 @@ export default function AppPage() {
                         ))}
                       </div>
                     </div>
-                    <div className="flex justify-center bg-zinc-950 pb-3 pt-1">
+                    <div className="flex justify-center bg-gray-50 pb-3 pt-1">
                       <div className="h-1 w-20 rounded-full bg-zinc-700" />
                     </div>
                   </div>
@@ -485,16 +481,16 @@ export default function AppPage() {
                 <h2 className="mt-6 text-3xl font-medium tracking-tight text-white sm:text-5xl text-balance">
                   Add to your Home Screen on iOS.
                 </h2>
-                <p className="mt-6 text-base leading-relaxed text-zinc-400">
+                <p className="mt-6 text-base leading-relaxed text-gray-500">
                   iPhone and iPad users can add Evara AI directly to their Home Screen using Safari. It opens full-screen with no browser bar — exactly like a native iOS app.
                 </p>
                 <div className="mt-10 space-y-4">
                   {iosSteps.map((step, i) => (
                     <div
                       key={i}
-                      className="group flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-all hover:bg-white/[0.05] hover:border-sky-500/20"
+                      className="group flex items-start gap-4 rounded-2xl border border-gray-100 bg-white/[0.02] p-4 transition-all hover:bg-gray-50 hover:border-sky-500/20"
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-sky-500/10 text-sky-400">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-sky-500/10 text-sky-400">
                         {step.icon}
                       </div>
                       <div>
@@ -502,7 +498,7 @@ export default function AppPage() {
                           <span className="text-xs font-bold text-sky-400">Step {i + 1}</span>
                           <span className="text-sm font-semibold text-white">{step.title}</span>
                         </div>
-                        <p className="mt-1 text-sm text-zinc-500">{step.desc}</p>
+                        <p className="mt-1 text-sm text-gray-400">{step.desc}</p>
                       </div>
                     </div>
                   ))}
@@ -519,11 +515,11 @@ export default function AppPage() {
         <section className="relative py-24 sm:py-32">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto mb-16 max-w-2xl text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">Why install</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">Why install</p>
               <h2 className="mt-4 text-3xl font-medium tracking-tight text-white sm:text-5xl">
                 More than a website.
               </h2>
-              <p className="mt-6 text-base leading-relaxed text-zinc-400">
+              <p className="mt-6 text-base leading-relaxed text-gray-500">
                 Installing Evara AI gives you a richer, faster, native-feeling experience compared to opening it in a browser tab every time.
               </p>
             </div>
@@ -536,13 +532,13 @@ export default function AppPage() {
                 { icon: <ShieldIcon className="h-5 w-5" />, color: "text-pink-400 bg-pink-500/10", title: "Lightweight & Secure", desc: "Tiny footprint with no unnecessary background processes. Your data is always protected." },
                 { icon: <BrainIcon className="h-5 w-5" />, color: "text-violet-400 bg-violet-500/10", title: "Always Updated", desc: "PWA updates automatically — you always have the latest version without manual updates." },
               ].map((item) => (
-                <div key={item.title} className="group flex flex-col gap-4 rounded-[1.5rem] border border-white/5 bg-white/[0.02] p-6 transition-all hover:bg-white/[0.04]">
+                <div key={item.title} className="group flex flex-col gap-4 rounded-[1.5rem] border border-gray-100 bg-white/[0.02] p-6 transition-all hover:bg-white">
                   <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${item.color}`}>
                     {item.icon}
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-white">{item.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-zinc-500">{item.desc}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-gray-400">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -551,10 +547,10 @@ export default function AppPage() {
         </section>
 
         {/* ── Feature Highlights ── */}
-        <section className="relative border-y border-white/5 bg-zinc-950/50 py-24">
+        <section className="relative border-y border-gray-100 bg-gray-50/50 py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto mb-12 max-w-2xl text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400">What's inside</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">What's inside</p>
               <h2 className="mt-4 text-3xl font-medium text-white sm:text-4xl">All your AI, in one app.</h2>
             </div>
             <div className="grid gap-5 sm:grid-cols-3">
@@ -587,7 +583,7 @@ export default function AppPage() {
                   badge: "Regional",
                 },
               ].map((card) => (
-                <div key={card.title} className={`group relative overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.02] p-7 transition-all hover:bg-white/[0.04]`}>
+                <div key={card.title} className={`group relative overflow-hidden rounded-[2rem] border border-gray-100 bg-white/[0.02] p-7 transition-all hover:bg-white`}>
                   <div className={`absolute inset-0 bg-gradient-to-br ${card.gradient} to-transparent opacity-0 transition-opacity group-hover:opacity-100`} />
                   <div className="relative z-10">
                     <div className={`mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl ${card.bg} ${card.text}`}>
@@ -597,7 +593,7 @@ export default function AppPage() {
                       {card.badge}
                     </span>
                     <h3 className="text-lg font-semibold text-white">{card.title}</h3>
-                    <p className="mt-3 text-sm leading-relaxed text-zinc-400">{card.desc}</p>
+                    <p className="mt-3 text-sm leading-relaxed text-gray-500">{card.desc}</p>
                   </div>
                 </div>
               ))}
@@ -615,7 +611,7 @@ export default function AppPage() {
             <h2 className="text-4xl font-medium tracking-tight text-white sm:text-6xl text-balance">
               Your AI, always in your pocket.
             </h2>
-            <p className="mt-6 text-lg leading-relaxed text-zinc-400">
+            <p className="mt-6 text-lg leading-relaxed text-gray-500">
               Install the Evara AI app in seconds and get instant access to personal AI, business automation, and regional intelligence — all from your home screen.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -623,7 +619,7 @@ export default function AppPage() {
                 label="🚀 Install App Now"
                 className="rounded-full bg-white px-8 py-4 text-sm font-bold text-black transition-transform hover:scale-105"
               />
-              <Link href="/chat" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/50 px-8 py-4 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10">
+              <Link href="/chat" className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-8 py-4 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10">
                 Already installed? Open App <ArrowRightIcon className="h-4 w-4" />
               </Link>
             </div>
@@ -633,36 +629,36 @@ export default function AppPage() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="relative z-10 overflow-hidden border-t border-white/10 bg-black">
+      <footer className="relative z-10 overflow-hidden border-t border-gray-200 bg-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(168,85,247,0.18),transparent_34%),radial-gradient(circle_at_90%_15%,rgba(56,189,248,0.12),transparent_30%),linear-gradient(180deg,rgba(24,24,27,0.78),rgba(0,0,0,1))]" />
         <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <div className="rounded-[2rem] border border-white/10 bg-white/[0.035] p-5 shadow-2xl shadow-purple-950/20 backdrop-blur-2xl sm:p-8 lg:p-10">
+          <div className="rounded-[2rem] border border-gray-200 bg-white/[0.035] p-5 shadow-2xl shadow-purple-950/20 backdrop-blur-2xl sm:p-8 lg:p-10">
             <div className="grid gap-10 lg:grid-cols-[1.15fr_1.65fr_1fr]">
               <div className="space-y-6">
                 <Link href="/" className="group inline-flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-lg shadow-purple-500/10 transition group-hover:scale-105 group-hover:border-purple-300/50">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white/10 shadow-lg shadow-purple-500/10 transition group-hover:scale-105 group-hover:border-purple-300/50">
                     <img src="/evara-logo.png" alt="Evara AI" className="h-7 w-7 object-contain" />
                   </span>
                   <span>
                     <span className="block text-base font-bold uppercase tracking-[0.22em] text-white">Evara AI</span>
-                    <span className="mt-1 block text-xs font-medium text-purple-200">Smart AI Automation Platform</span>
+                    <span className="mt-1 block text-xs font-medium text-violet-700">Smart AI Automation Platform</span>
                   </span>
                 </Link>
-                <p className="max-w-sm text-sm leading-6 text-zinc-400">
+                <p className="max-w-sm text-sm leading-6 text-gray-500">
                   AI automation for smarter workflows, faster customer support, and intelligent business growth.
                 </p>
                 <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
                   <Link href="/signup" className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 text-sm font-bold text-black shadow-lg shadow-white/10 transition hover:-translate-y-0.5 hover:bg-zinc-200">
                     Start Free
                   </Link>
-                  <Link href="/chat" className="inline-flex min-h-11 items-center justify-center rounded-full border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-purple-300/40 hover:bg-white/10">
+                  <Link href="/chat" className="inline-flex min-h-11 items-center justify-center rounded-full border border-gray-200 bg-gray-50 px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-purple-300/40 hover:bg-white/10">
                     Chat with AI
                   </Link>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {["Secure", "Fast", "Reliable"].map((badge) => (
-                    <span key={badge} className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-1 text-xs font-semibold text-emerald-200">
+                    <span key={badge} className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                       {badge}
                     </span>
                   ))}
@@ -671,11 +667,11 @@ export default function AppPage() {
               <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
                 {footerColumns.map((column) => (
                   <div key={column.title}>
-                    <h3 className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-100">{column.title}</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-[0.22em] text-[#1d2226]">{column.title}</h3>
                     <ul className="mt-4 space-y-3">
                       {column.links.map(([label, href]) => (
                         <li key={href}>
-                          <Link href={href} className="group inline-flex items-center gap-1 text-sm text-zinc-400 transition hover:translate-x-1 hover:text-white">
+                          <Link href={href} className="group inline-flex items-center gap-1 text-sm text-gray-500 transition hover:translate-x-1 hover:text-white">
                             <span className="h-px w-0 bg-purple-300 transition-all group-hover:w-3" />
                             {label}
                           </Link>
@@ -685,16 +681,16 @@ export default function AppPage() {
                   </div>
                 ))}
               </div>
-              <div className="rounded-3xl border border-white/10 bg-black/35 p-5 backdrop-blur-xl">
+              <div className="rounded-3xl border border-gray-200 bg-white p-5 backdrop-blur-xl">
                 <h3 className="text-sm font-bold text-white">Get latest AI updates</h3>
-                <p className="mt-2 text-sm leading-6 text-zinc-500">Product updates, automation ideas, and practical AI workflows.</p>
+                <p className="mt-2 text-sm leading-6 text-gray-400">Product updates, automation ideas, and practical AI workflows.</p>
                 <form className="mt-5 flex flex-col gap-3">
                   <label htmlFor="footer-email-app" className="sr-only">Email address</label>
                   <input
                     id="footer-email-app"
                     type="email"
                     placeholder="you@example.com"
-                    className="min-h-12 rounded-2xl border border-white/10 bg-white/[0.06] px-4 text-sm text-white outline-none transition placeholder:text-zinc-600 focus:border-purple-300/50 focus:bg-white/[0.08] focus:ring-4 focus:ring-purple-500/10"
+                    className="min-h-12 rounded-2xl border border-gray-200 bg-gray-50 px-4 text-sm text-white outline-none transition placeholder:text-gray-400 focus:border-purple-300/50 focus:bg-gray-50 focus:ring-4 focus:ring-purple-500/10"
                   />
                   <button type="button" className="min-h-12 rounded-2xl bg-gradient-to-r from-purple-300 via-fuchsia-300 to-sky-300 px-5 text-sm font-bold text-black shadow-lg shadow-purple-500/20 transition hover:-translate-y-0.5">
                     Subscribe
@@ -702,9 +698,9 @@ export default function AppPage() {
                 </form>
               </div>
             </div>
-            <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between">
-              <p>© 2026 Raina Jet</p>
-              <p>Built by <span className="font-semibold text-zinc-300">Riley Parker &amp; Rupesh Sahu</span></p>
+            <div className="mt-10 flex flex-col gap-4 border-t border-gray-200 pt-6 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
+              <p>© 2026 Evara AI</p>
+              <p>Built by <span className="font-semibold text-gray-600">Riley Parker &amp; Rupesh Sahu</span></p>
             </div>
           </div>
         </div>

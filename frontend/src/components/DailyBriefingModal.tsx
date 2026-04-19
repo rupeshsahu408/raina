@@ -147,7 +147,7 @@ export default function DailyBriefingModal({ data, onDismiss, userName }: Props)
     <div
       ref={backdropRef}
       onClick={handleBackdropClick}
-      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${visible ? "bg-black/50 backdrop-blur-sm" : "bg-black/0 backdrop-blur-none"}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${visible ? "bg-white/50 backdrop-blur-sm" : "bg-white/0 backdrop-blur-none"}`}
     >
       <div
         className={`relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl transition-all duration-300 ${visible ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-4 scale-95"}`}
@@ -167,11 +167,11 @@ export default function DailyBriefingModal({ data, onDismiss, userName }: Props)
               <h2 className="text-2xl font-black text-white leading-tight">
                 {data.greeting}{userName ? `, ${userName.split(" ")[0]}` : ""}! 👋
               </h2>
-              <p className="mt-1 text-sm text-zinc-400">{formatDate()}</p>
+              <p className="mt-1 text-sm text-gray-500">{formatDate()}</p>
             </div>
             <button
               onClick={handleDismiss}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-zinc-400 hover:bg-white/20 hover:text-white transition mt-0.5"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-gray-500 hover:bg-white/20 hover:text-white transition mt-0.5"
             >
               <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
             </button>
@@ -185,7 +185,7 @@ export default function DailyBriefingModal({ data, onDismiss, userName }: Props)
                 <div key={cat.key} className="flex flex-col items-center gap-1 rounded-2xl bg-white/8 px-1 py-2">
                   <span className="text-base">{cat.emoji}</span>
                   <span className={`text-lg font-black ${count > 0 ? "text-white" : "text-zinc-600"}`}>{count}</span>
-                  <span className="text-[9px] font-bold text-zinc-500 text-center leading-tight">{cat.label}</span>
+                  <span className="text-[9px] font-bold text-gray-400 text-center leading-tight">{cat.label}</span>
                 </div>
               );
             })}

@@ -377,7 +377,7 @@ function PreviewContent() {
               <p className="text-xs text-amber-300/70">
                 Your AI is inactive. Activate it in{" "}
                 <button onClick={() => router.push(`/ibara/dashboard/ai-setup?siteId=${siteId}`)}
-                  className="text-amber-300 underline hover:text-amber-200">AI Setup</button>{" "}
+                  className="text-amber-300 underline hover:text-amber-700">AI Setup</button>{" "}
                 to start responding to visitors.
               </p>
             </div>

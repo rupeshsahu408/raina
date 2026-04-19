@@ -87,7 +87,7 @@ const DEFAULT: FormData = {
 };
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500">{children}</span>;
+  return <span className="mb-2 block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400">{children}</span>;
 }
 
 function Input({ value, onChange, placeholder, type = "text" }: {
@@ -99,7 +99,7 @@ function Input({ value, onChange, placeholder, type = "text" }: {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-indigo-500/30"
+      className="w-full rounded-2xl border border-white/[0.08] bg-white px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:bg-gray-50 focus:ring-1 focus:ring-indigo-500/30"
     />
   );
 }
@@ -113,7 +113,7 @@ function Textarea({ value, onChange, placeholder, rows = 4 }: {
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
-      className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:bg-white/[0.06] focus:ring-1 focus:ring-indigo-500/30 resize-none"
+      className="w-full rounded-2xl border border-white/[0.08] bg-white px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:bg-gray-50 focus:ring-1 focus:ring-indigo-500/30 resize-none"
     />
   );
 }
@@ -182,7 +182,7 @@ function NewJobContent() {
     }
 
     return (
-      <div className="min-h-screen bg-[#050506] text-zinc-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-white text-[#1d2226] flex items-center justify-center p-4">
         <div className="w-full max-w-lg text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/15 border border-emerald-500/25 mx-auto mb-6">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
@@ -190,13 +190,13 @@ function NewJobContent() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-white mb-2">Job Posted!</h1>
-          <p className="text-zinc-400 text-sm mb-8">
+          <p className="text-gray-500 text-sm mb-8">
             <span className="text-white font-semibold">{createdJob.title}</span> is live. Share the link to start getting applicants.
           </p>
 
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-left mb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-1.5">Public Job Link</p>
-            <p className="text-sm text-zinc-300 break-all">{publicUrl}</p>
+          <div className="rounded-2xl border border-white/[0.08] bg-white px-4 py-3 text-left mb-4">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Public Job Link</p>
+            <p className="text-sm text-gray-600 break-all">{publicUrl}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3 mb-6">
@@ -205,7 +205,7 @@ function NewJobContent() {
               className={`flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-semibold transition border ${
                 copied
                   ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/25"
-                  : "bg-white/[0.06] text-white border-white/[0.1] hover:bg-white/[0.1]"
+                  : "bg-gray-50 text-white border-white/[0.1] hover:bg-white/[0.1]"
               }`}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -235,7 +235,7 @@ function NewJobContent() {
             </Link>
             <Link
               href="/recruit/dashboard"
-              className="text-xs text-zinc-600 hover:text-zinc-400 transition py-2"
+              className="text-xs text-gray-400 hover:text-gray-500 transition py-2"
             >
               Back to Dashboard
             </Link>
@@ -246,16 +246,16 @@ function NewJobContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050506] text-zinc-100">
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(99,102,241,0.18),transparent_36%),linear-gradient(180deg,#050506,#07070a)]" />
+    <div className="min-h-screen bg-white text-[#1d2226]">
+      
 
-      <header className="relative z-10 border-b border-white/[0.07] bg-black/30 backdrop-blur-xl">
+      <header className="relative z-10 border-b border-white/[0.07] bg-gray-100 backdrop-blur-xl">
         <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-4 sm:px-6">
-          <Link href="/recruit/dashboard" className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition">
+          <Link href="/recruit/dashboard" className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition">
             <ChevronLeftIcon /> Dashboard
           </Link>
           <span className="text-zinc-700">·</span>
-          <span className="text-xs text-zinc-400 font-medium">New Job Posting</span>
+          <span className="text-xs text-gray-500 font-medium">New Job Posting</span>
         </div>
       </header>
 
@@ -265,7 +265,7 @@ function NewJobContent() {
             <SparkIcon /> AI Job Description Generator
           </div>
           <h1 className="text-2xl font-semibold text-white sm:text-3xl">Create a New Job Posting</h1>
-          <p className="mt-2 text-sm text-zinc-500">Answer a few questions. The AI generates a full JD and scoring rubric automatically.</p>
+          <p className="mt-2 text-sm text-gray-400">Answer a few questions. The AI generates a full JD and scoring rubric automatically.</p>
         </div>
 
         <div className="mb-8 flex items-center gap-2">
@@ -276,13 +276,13 @@ function NewJobContent() {
                 className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
                   i < step ? "bg-indigo-500 text-white cursor-pointer"
                   : i === step ? "border-2 border-indigo-500 text-indigo-400"
-                  : "border border-white/10 text-zinc-600"
+                  : "border border-gray-200 text-gray-400"
                 }`}
               >
                 {i < step ? <CheckIcon /> : i + 1}
               </button>
-              <span className={`hidden text-xs sm:block truncate ${i === step ? "text-white font-medium" : "text-zinc-600"}`}>{s}</span>
-              {i < STEPS.length - 1 && <div className={`flex-1 h-px ${i < step ? "bg-indigo-500/40" : "bg-white/[0.06]"}`} />}
+              <span className={`hidden text-xs sm:block truncate ${i === step ? "text-white font-medium" : "text-gray-400"}`}>{s}</span>
+              {i < STEPS.length - 1 && <div className={`flex-1 h-px ${i < step ? "bg-indigo-500/40" : "bg-gray-50"}`} />}
             </div>
           ))}
         </div>
@@ -300,9 +300,9 @@ function NewJobContent() {
                 <select
                   value={form.niche}
                   onChange={e => update("niche")(e.target.value)}
-                  className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+                  className="w-full rounded-2xl border border-white/[0.08] bg-white px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
                 >
-                  {NICHES.map(n => <option key={n} value={n} className="bg-zinc-900">{n}</option>)}
+                  {NICHES.map(n => <option key={n} value={n} className="bg-gray-50">{n}</option>)}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -315,9 +315,9 @@ function NewJobContent() {
                   <select
                     value={form.companyType}
                     onChange={e => update("companyType")(e.target.value)}
-                    className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+                    className="w-full rounded-2xl border border-white/[0.08] bg-white px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
                   >
-                    {COMPANY_TYPES.map(t => <option key={t} value={t} className="bg-zinc-900">{t}</option>)}
+                    {COMPANY_TYPES.map(t => <option key={t} value={t} className="bg-gray-50">{t}</option>)}
                   </select>
                 </div>
               </div>
@@ -331,9 +331,9 @@ function NewJobContent() {
                   <select
                     value={form.seniority}
                     onChange={e => update("seniority")(e.target.value)}
-                    className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+                    className="w-full rounded-2xl border border-white/[0.08] bg-white px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
                   >
-                    {SENIORITY_OPTIONS.map(s => <option key={s} value={s} className="bg-zinc-900">{s}</option>)}
+                    {SENIORITY_OPTIONS.map(s => <option key={s} value={s} className="bg-gray-50">{s}</option>)}
                   </select>
                 </div>
                 <div>
@@ -341,9 +341,9 @@ function NewJobContent() {
                   <select
                     value={form.jobType}
                     onChange={e => update("jobType")(e.target.value)}
-                    className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
+                    className="w-full rounded-2xl border border-white/[0.08] bg-white px-4 py-3 text-sm text-white outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30"
                   >
-                    {JOB_TYPES.map(t => <option key={t} value={t} className="bg-zinc-900">{t}</option>)}
+                    {JOB_TYPES.map(t => <option key={t} value={t} className="bg-gray-50">{t}</option>)}
                   </select>
                 </div>
               </div>
@@ -358,7 +358,7 @@ function NewJobContent() {
                         className={`flex-1 rounded-2xl border py-3 text-xs font-semibold transition ${
                           form.workMode === m.value
                             ? "border-indigo-500/50 bg-indigo-500/15 text-indigo-300"
-                            : "border-white/[0.08] bg-white/[0.02] text-zinc-500 hover:text-zinc-300"
+                            : "border-white/[0.08] bg-white/[0.02] text-gray-400 hover:text-gray-600"
                         }`}
                       >
                         {m.label}
@@ -388,7 +388,7 @@ function NewJobContent() {
             <div className="space-y-5">
               <h2 className="text-base font-semibold text-white mb-6">Skills & Responsibilities</h2>
               <div>
-                <FieldLabel>Key Responsibilities * <span className="text-zinc-600 normal-case font-normal">(what they'll actually do)</span></FieldLabel>
+                <FieldLabel>Key Responsibilities * <span className="text-gray-400 normal-case font-normal">(what they'll actually do)</span></FieldLabel>
                 <Textarea
                   rows={5}
                   value={form.responsibilities}
@@ -397,7 +397,7 @@ function NewJobContent() {
                 />
               </div>
               <div>
-                <FieldLabel>Must-Have Skills * <span className="text-zinc-600 normal-case font-normal">(non-negotiable)</span></FieldLabel>
+                <FieldLabel>Must-Have Skills * <span className="text-gray-400 normal-case font-normal">(non-negotiable)</span></FieldLabel>
                 <Textarea
                   rows={3}
                   value={form.mustHaveSkills}
@@ -406,7 +406,7 @@ function NewJobContent() {
                 />
               </div>
               <div>
-                <FieldLabel>Nice-to-Have Skills <span className="text-zinc-600 normal-case font-normal">(preferred but not required)</span></FieldLabel>
+                <FieldLabel>Nice-to-Have Skills <span className="text-gray-400 normal-case font-normal">(preferred but not required)</span></FieldLabel>
                 <Textarea
                   rows={3}
                   value={form.niceToHaveSkills}
@@ -434,15 +434,15 @@ function NewJobContent() {
                     type="button"
                     onClick={() => setForm(prev => ({ ...prev, [key]: !prev[key as keyof FormData] }))}
                     className={`rounded-full border px-4 py-2 text-xs font-semibold transition ${
-                      form[key as keyof FormData] ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-300" : "border-white/[0.08] text-zinc-500 hover:text-zinc-300"
+                      form[key as keyof FormData] ? "border-indigo-500/40 bg-indigo-500/15 text-indigo-300" : "border-white/[0.08] text-gray-400 hover:text-gray-600"
                     }`}
                   >
                     {label}
                   </button>
                 ))}
               </div>
-              <p className="text-[11px] text-zinc-600">
-                ✓ <span className="text-zinc-500">Verified company badge</span> — automatically added when your company is verified.{" "}
+              <p className="text-[11px] text-gray-400">
+                ✓ <span className="text-gray-400">Verified company badge</span> — automatically added when your company is verified.{" "}
                 <a href="/recruit/company-profile" className="text-indigo-400 hover:underline">Request verification →</a>
               </p>
             </div>
@@ -451,7 +451,7 @@ function NewJobContent() {
           {step === 2 && (
             <div className="space-y-5">
               <h2 className="text-base font-semibold text-white mb-2">Compensation</h2>
-              <p className="text-xs text-zinc-500 mb-6">Adding a salary range helps attract better-fit candidates and reduces time wasted on mismatched expectations. You can skip this.</p>
+              <p className="text-xs text-gray-400 mb-6">Adding a salary range helps attract better-fit candidates and reduces time wasted on mismatched expectations. You can skip this.</p>
               <div>
                 <FieldLabel>Currency</FieldLabel>
                 <div className="flex flex-wrap gap-2">
@@ -462,7 +462,7 @@ function NewJobContent() {
                       className={`rounded-xl border px-4 py-2 text-xs font-semibold transition ${
                         form.salaryCurrency === c
                           ? "border-indigo-500/50 bg-indigo-500/15 text-indigo-300"
-                          : "border-white/[0.08] text-zinc-500 hover:text-zinc-300"
+                          : "border-white/[0.08] text-gray-400 hover:text-gray-600"
                       }`}
                     >
                       {c}
@@ -481,7 +481,7 @@ function NewJobContent() {
                 </div>
               </div>
               <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
-                <p className="text-xs text-zinc-500">
+                <p className="text-xs text-gray-400">
                   Salary information is used only by the AI to write better job descriptions. It is not shown publicly unless you paste the generated JD on a job board.
                 </p>
               </div>
@@ -503,14 +503,14 @@ function NewJobContent() {
                   ["Salary", form.salaryMin && form.salaryMax ? `${form.salaryCurrency} ${Number(form.salaryMin).toLocaleString()} – ${Number(form.salaryMax).toLocaleString()}` : "Not disclosed"],
                 ].map(([k, v]) => (
                   <div key={k} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600">{k}</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{k}</p>
                     <p className="mt-1 text-sm text-white">{v}</p>
                   </div>
                 ))}
               </div>
               <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-600 mb-2">Must-Have Skills</p>
-                <p className="text-sm text-zinc-300 leading-6">{form.mustHaveSkills}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Must-Have Skills</p>
+                <p className="text-sm text-gray-600 leading-6">{form.mustHaveSkills}</p>
               </div>
 
               {(() => {
@@ -528,7 +528,7 @@ function NewJobContent() {
                 const ringColor = q.tier === "high" ? "#22c55e" : q.tier === "standard" ? "#818cf8" : "#6b7280";
                 return (
                   <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-zinc-500 mb-3">Listing quality preview</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Listing quality preview</p>
                     <div className="flex items-center gap-4 mb-3">
                       <div className="relative flex h-14 w-14 shrink-0 items-center justify-center">
                         <svg width="56" height="56" viewBox="0 0 56 56" className="absolute inset-0">
@@ -540,14 +540,14 @@ function NewJobContent() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-white">{q.label}</p>
-                        <p className="text-[11px] text-zinc-500 mt-0.5">Based on what you've filled in so far</p>
+                        <p className="text-[11px] text-gray-400 mt-0.5">Based on what you've filled in so far</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-1.5">
                       {q.signals.filter(s => s.label !== "Full job description" && s.label !== "Verified company").map(s => (
                         <div key={s.label} className="flex items-center gap-2">
-                          <span className={`text-[10px] font-bold ${s.present ? "text-green-400" : "text-zinc-600"}`}>{s.present ? "✓" : "–"}</span>
-                          <span className={`text-[11px] ${s.present ? "text-zinc-300" : "text-zinc-600"}`}>{s.label}</span>
+                          <span className={`text-[10px] font-bold ${s.present ? "text-green-400" : "text-gray-400"}`}>{s.present ? "✓" : "–"}</span>
+                          <span className={`text-[11px] ${s.present ? "text-gray-600" : "text-gray-400"}`}>{s.label}</span>
                         </div>
                       ))}
                       <div className="flex items-center gap-2">
@@ -555,12 +555,12 @@ function NewJobContent() {
                         <span className="text-[11px] text-indigo-400">Full JD — AI will generate</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-zinc-600">✦</span>
-                        <span className="text-[11px] text-zinc-600">Verified company — by Plyndrox</span>
+                        <span className="text-[10px] font-bold text-gray-400">✦</span>
+                        <span className="text-[11px] text-gray-400">Verified company — by Plyndrox</span>
                       </div>
                     </div>
                     {q.tier !== "high" && (
-                      <p className="mt-3 text-[11px] text-zinc-500">
+                      <p className="mt-3 text-[11px] text-gray-400">
                         {!form.salaryMin && !form.salaryMax && "Adding a salary range +20 pts · "}
                         {!form.mustHaveSkills.trim() && "Skills listed +15 pts · "}
                         {!form.companyName.trim() && "Company name +5 pts"}
@@ -575,7 +575,7 @@ function NewJobContent() {
                   <SparkIcon />
                   <span className="text-xs font-semibold">What the AI will generate</span>
                 </div>
-                <ul className="space-y-1 text-xs text-zinc-400">
+                <ul className="space-y-1 text-xs text-gray-500">
                   <li>✦ Full job description (400–600 words, bias-reduced)</li>
                   <li>✦ 4–6 criterion scoring rubric with descriptions</li>
                   <li>✦ Rubric automatically used to score every future candidate</li>
@@ -592,7 +592,7 @@ function NewJobContent() {
         <div className="mt-6 flex items-center justify-between">
           <button
             onClick={() => step > 0 ? setStep(s => s - 1) : router.push("/recruit/dashboard")}
-            className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-2.5 text-sm text-zinc-400 transition hover:text-white"
+            className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-2.5 text-sm text-gray-500 transition hover:text-white"
           >
             {step === 0 ? "Cancel" : "Back"}
           </button>

@@ -304,7 +304,7 @@ export default function FollowUpsPage() {
     <div className="min-h-screen bg-[#f8f7ff] font-sans">
       {/* Header */}
       <header className="bg-[#14112a] text-white px-6 py-4 flex items-center gap-4">
-        <Link href="/inbox/dashboard" className="flex items-center gap-1.5 text-zinc-400 hover:text-white text-sm transition">
+        <Link href="/inbox/dashboard" className="flex items-center gap-1.5 text-gray-500 hover:text-white text-sm transition">
           <BackIcon />
           Back to Inbox
         </Link>
@@ -314,7 +314,7 @@ export default function FollowUpsPage() {
           </span>
           <div>
             <h1 className="text-lg font-black">Follow-Up Reminders</h1>
-            <p className="text-[11px] text-zinc-400">AI-detected opportunities you shouldn&apos;t miss</p>
+            <p className="text-[11px] text-gray-500">AI-detected opportunities you shouldn&apos;t miss</p>
           </div>
         </div>
         <button

@@ -62,7 +62,7 @@ function AuthForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#05050F] text-white flex flex-col">
+    <div className="min-h-screen bg-white text-[#1d2226] flex flex-col">
       <style>{`
         @keyframes pulse-glow {
           0%, 100% { opacity: 0.3; }
@@ -103,23 +103,18 @@ function AuthForm() {
 
       {/* Ambient */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-[500px] h-[500px] rounded-full animate-pulse-glow"
-          style={{ background: "radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)" }} />
-        <div className="absolute -bottom-40 -right-40 w-[400px] h-[400px] rounded-full animate-pulse-glow"
-          style={{ background: "radial-gradient(circle, rgba(6,182,212,0.08) 0%, transparent 70%)", animationDelay: "1.5s" }} />
-      </div>
 
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-6 py-5">
         <button onClick={() => router.push("/ibara")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
-            <span className="text-white font-bold text-xs">I</span>
+            <span className="text-[#1d2226] font-bold text-xs">I</span>
           </div>
           <span className="font-bold text-sm">IBARA AI</span>
         </button>
         <button
           onClick={() => setMode(mode === "login" ? "signup" : "login")}
-          className="text-sm text-white/40 hover:text-white/70 transition-colors"
+          className="text-sm text-white/40 hover:text-[#1d2226]/70 transition-colors"
         >
           {mode === "login" ? "Create an account →" : "Already have an account →"}
         </button>
@@ -131,7 +126,7 @@ function AuthForm() {
           <div className="card-glass rounded-3xl p-8">
             <div className="text-center mb-8">
               <div className="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 items-center justify-center mb-4 mx-auto">
-                <span className="text-2xl font-black text-white">I</span>
+                <span className="text-2xl font-black text-[#1d2226]">I</span>
               </div>
               <h1 className="text-2xl font-black mb-1">
                 {mode === "login" ? "Welcome back" : "Get started free"}
@@ -153,7 +148,7 @@ function AuthForm() {
             <button
               onClick={handleGoogle}
               disabled={googleLoading || loading}
-              className="w-full flex items-center justify-center gap-3 h-12 rounded-xl border border-white/10 hover:border-white/20 hover:bg-white/5 transition-all text-sm font-medium mb-5 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-3 h-12 rounded-xl border border-gray-200 hover:border-white/20 hover:bg-white/5 transition-all text-sm font-medium mb-5 disabled:opacity-50"
             >
               {googleLoading ? (
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -183,7 +178,7 @@ function AuthForm() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Your name"
-                    className="input-field w-full h-11 rounded-xl px-3.5 text-sm text-white placeholder:text-white/20"
+                    className="input-field w-full h-11 rounded-xl px-3.5 text-sm text-[#1d2226] placeholder:text-white/20"
                   />
                 </div>
               )}
@@ -195,7 +190,7 @@ function AuthForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@company.com"
                   required
-                  className="input-field w-full h-11 rounded-xl px-3.5 text-sm text-white placeholder:text-white/20"
+                  className="input-field w-full h-11 rounded-xl px-3.5 text-sm text-[#1d2226] placeholder:text-white/20"
                 />
               </div>
               <div>
@@ -207,14 +202,14 @@ function AuthForm() {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="input-field w-full h-11 rounded-xl px-3.5 text-sm text-white placeholder:text-white/20"
+                  className="input-field w-full h-11 rounded-xl px-3.5 text-sm text-[#1d2226] placeholder:text-white/20"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading || googleLoading}
-                className="btn-primary w-full h-12 rounded-xl text-sm font-semibold text-white mt-2"
+                className="btn-primary w-full h-12 rounded-xl text-sm font-semibold text-[#1d2226] mt-2"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -240,7 +235,7 @@ function AuthForm() {
 
 export default function IbaraAuthPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#05050F]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-white" />}>
       <AuthForm />
     </Suspense>
   );

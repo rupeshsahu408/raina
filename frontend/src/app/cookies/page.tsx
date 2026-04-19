@@ -3,9 +3,9 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy — Raina Jet",
+  title: "Cookie Policy — Evara AI",
   description:
-    "Comprehensive Cookie Policy for Raina Jet, including Evara AI and WhatsApp AI cookie and tracking technology practices.",
+    "Comprehensive Cookie Policy for Evara AI, including Evara AI and WhatsApp AI cookie and tracking technology practices.",
 };
 
 const tableOfContents = [
@@ -26,24 +26,24 @@ const tableOfContents = [
 
 export default function CookiePolicyPage() {
   return (
-    <div className="min-h-screen bg-[#050506] text-zinc-100">
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(168,85,247,0.20),transparent_34%),radial-gradient(circle_at_90%_8%,rgba(56,189,248,0.12),transparent_28%),linear-gradient(180deg,#050506,#08080a_42%,#030304)]" />
-      <header className="relative z-10 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+    <div className="min-h-screen bg-white text-[#1d2226]">
+      
+      <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="group flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/10 transition group-hover:border-purple-300/40">
-              <img src="/evara-logo.png" alt="Raina Jet" className="h-7 w-7 object-contain" draggable={false} />
+            <span className="flex h-10 w-10 items-center justify-center rounded-2xl border border-gray-200 bg-white/10 transition group-hover:border-purple-300/40">
+              <img src="/evara-logo.png" alt="Evara AI" className="h-7 w-7 object-contain" draggable={false} />
             </span>
             <span>
-              <span className="block text-sm font-bold tracking-[0.22em] text-white uppercase">Raina Jet</span>
-              <span className="block text-xs text-zinc-500">Cookie Policy</span>
+              <span className="block text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+              <span className="block text-xs text-gray-400">Cookie Policy</span>
             </span>
           </Link>
           <div className="flex items-center gap-2">
-            <Link href="/privacy-policy" className="hidden rounded-full border border-purple-300/20 bg-purple-300/10 px-4 py-2 text-xs font-semibold text-purple-200 transition hover:bg-purple-300/15 sm:inline-flex">
+            <Link href="/privacy-policy" className="hidden rounded-full border border-purple-300/20 bg-purple-300/10 px-4 py-2 text-xs font-semibold text-violet-700 transition hover:bg-purple-300/15 sm:inline-flex">
               Privacy Policy
             </Link>
-            <Link href="/" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10">
+            <Link href="/" className="rounded-full bg-[#1d2226] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#2d3238]">
               Back to Home
             </Link>
           </div>
@@ -53,18 +53,18 @@ export default function CookiePolicyPage() {
       <main className="relative z-10 mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <div className="grid gap-8 lg:grid-cols-[320px_1fr] lg:items-start">
           <aside className="lg:sticky lg:top-6">
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-2xl shadow-purple-950/20 backdrop-blur-2xl">
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-purple-200">Table of Contents</p>
+            <div className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-2xl shadow-gray-100 backdrop-blur-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.24em] text-violet-700">Table of Contents</p>
               <nav className="mt-5 space-y-1" aria-label="Cookie policy sections">
                 {tableOfContents.map(([label, id]) => (
-                  <a key={id} href={`#${id}`} className="block rounded-2xl px-3 py-2 text-sm text-zinc-400 transition hover:bg-white/[0.07] hover:text-white">
+                  <a key={id} href={`#${id}`} className="block rounded-2xl px-3 py-2 text-sm text-gray-500 transition hover:bg-gray-50 hover:text-[#1d2226]">
                     {label}
                   </a>
                 ))}
               </nav>
-              <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300">Services Covered</p>
-                <div className="mt-3 space-y-2 text-sm text-zinc-400">
+              <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-100 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-gray-600">Services Covered</p>
+                <div className="mt-3 space-y-2 text-sm text-gray-500">
                   <p>Evara AI — Web/App AI assistant</p>
                   <p>WhatsApp AI — WhatsApp Business API automation</p>
                 </div>
@@ -72,32 +72,32 @@ export default function CookiePolicyPage() {
             </div>
           </aside>
 
-          <article className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/30 backdrop-blur-2xl sm:p-8 lg:p-10">
-            <div className="border-b border-white/10 pb-8">
-              <p className="inline-flex rounded-full border border-purple-300/20 bg-purple-300/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.22em] text-purple-200">
+          <article className="rounded-[2rem] border border-gray-200 bg-white p-5 shadow-2xl shadow-gray-100 backdrop-blur-2xl sm:p-8 lg:p-10">
+            <div className="border-b border-gray-200 pb-8">
+              <p className="inline-flex rounded-full border border-purple-300/20 bg-purple-300/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.22em] text-violet-700">
                 Legal Document
               </p>
-              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+              <h1 className="mt-6 text-4xl font-semibold tracking-tight text-[#1d2226] sm:text-5xl lg:text-6xl">
                 Cookie Policy
               </h1>
-              <p className="mt-4 text-sm text-zinc-500">
+              <p className="mt-4 text-sm text-gray-400">
                 Last updated: April 12, 2026 · Effective date: April 12, 2026
               </p>
-              <p className="mt-6 max-w-3xl text-base leading-8 text-zinc-300">
-                This Cookie Policy explains how Raina Jet uses cookies and similar tracking technologies across its platform, including Evara AI and WhatsApp AI. It is intended to help you understand what cookies are, how we use them, and what choices you have regarding their use. This policy should be read alongside our Privacy Policy.
+              <p className="mt-6 max-w-3xl text-base leading-8 text-gray-600">
+                This Cookie Policy explains how Evara AI uses cookies and similar tracking technologies across its platform, including Evara AI and WhatsApp AI. It is intended to help you understand what cookies are, how we use them, and what choices you have regarding their use. This policy should be read alongside our Privacy Policy.
               </p>
             </div>
 
             <div className="policy-content mt-10 space-y-12">
               <PolicySection id="introduction" title="1. Introduction">
                 <p>
-                  Raina Jet operates through the rainajet.com platform and provides AI-powered software services for individuals and businesses, including Evara AI, a web and application-based AI assistant, and WhatsApp AI, a business automation service integrated with the WhatsApp Business API. As part of delivering and continuously improving these services, Raina Jet and its authorized third-party partners use cookies and similar tracking technologies on its websites, web applications, dashboards, and related digital properties.
+                  Evara AI operates through the rainajet.com platform and provides AI-powered software services for individuals and businesses, including Evara AI, a web and application-based AI assistant, and WhatsApp AI, a business automation service integrated with the WhatsApp Business API. As part of delivering and continuously improving these services, Evara AI and its authorized third-party partners use cookies and similar tracking technologies on its websites, web applications, dashboards, and related digital properties.
                 </p>
                 <p>
-                  This Cookie Policy describes the types of cookies and tracking technologies we use, the purposes for which they are used, how long they remain active, and the options available to you for managing or withdrawing your consent to such technologies. By using the Raina Jet platform, you acknowledge that you have reviewed this Cookie Policy and understand how cookies may be used in connection with your experience.
+                  This Cookie Policy describes the types of cookies and tracking technologies we use, the purposes for which they are used, how long they remain active, and the options available to you for managing or withdrawing your consent to such technologies. By using the Evara AI platform, you acknowledge that you have reviewed this Cookie Policy and understand how cookies may be used in connection with your experience.
                 </p>
                 <p>
-                  This Cookie Policy forms part of, and should be read in conjunction with, our Privacy Policy, which describes in greater detail how we collect, use, store, share, and protect personal information across all of our services. Where this Cookie Policy refers to "Services," it includes all Raina Jet products, features, websites, dashboards, and applications unless expressly limited to a specific service.
+                  This Cookie Policy forms part of, and should be read in conjunction with, our Privacy Policy, which describes in greater detail how we collect, use, store, share, and protect personal information across all of our services. Where this Cookie Policy refers to "Services," it includes all Evara AI products, features, websites, dashboards, and applications unless expressly limited to a specific service.
                 </p>
                 <p>
                   The WhatsApp AI service operates differently from Evara AI with respect to cookies, as WhatsApp AI primarily functions through the WhatsApp Business API and Meta-managed communication channels rather than traditional browser-based interfaces. Specific provisions for each service are set out where applicable throughout this policy.
@@ -140,11 +140,11 @@ export default function CookiePolicyPage() {
 
               <PolicySection id="types-of-cookies-we-use" title="3. Types of Cookies We Use">
                 <p>
-                  We use several categories of cookies across the Raina Jet platform, each serving a distinct purpose. The categories below reflect the standard classification of cookies used by digital services and are presented to give you a clear and transparent understanding of our practices.
+                  We use several categories of cookies across the Evara AI platform, each serving a distinct purpose. The categories below reflect the standard classification of cookies used by digital services and are presented to give you a clear and transparent understanding of our practices.
                 </p>
                 <SubSection title="3.1 Essential Cookies">
                   <p>
-                    Essential cookies are strictly necessary for the operation of the Raina Jet platform. Without these cookies, certain fundamental features of the Services cannot function, including user authentication, session management, secure access controls, and core application navigation. These cookies do not require your consent to the extent that they are indispensable to providing services you have specifically requested, but we are committed to transparency in disclosing their use.
+                    Essential cookies are strictly necessary for the operation of the Evara AI platform. Without these cookies, certain fundamental features of the Services cannot function, including user authentication, session management, secure access controls, and core application navigation. These cookies do not require your consent to the extent that they are indispensable to providing services you have specifically requested, but we are committed to transparency in disclosing their use.
                   </p>
                   <p>Essential cookies may include those used to:</p>
                   <ul>
@@ -158,7 +158,7 @@ export default function CookiePolicyPage() {
                 </SubSection>
                 <SubSection title="3.2 Performance and Analytics Cookies">
                   <p>
-                    Performance and analytics cookies collect information about how users interact with the Raina Jet platform, including which pages are visited most frequently, how long users spend on particular sections, what actions are taken, where errors occur, and what referral sources bring traffic to the platform. This data is used in aggregate or anonymized form to understand platform usage and improve the reliability, speed, and overall quality of our Services.
+                    Performance and analytics cookies collect information about how users interact with the Evara AI platform, including which pages are visited most frequently, how long users spend on particular sections, what actions are taken, where errors occur, and what referral sources bring traffic to the platform. This data is used in aggregate or anonymized form to understand platform usage and improve the reliability, speed, and overall quality of our Services.
                   </p>
                   <p>These cookies may be used to:</p>
                   <ul>
@@ -174,7 +174,7 @@ export default function CookiePolicyPage() {
                 </SubSection>
                 <SubSection title="3.3 Functionality Cookies">
                   <p>
-                    Functionality cookies enable the Raina Jet platform to remember choices you have made and provide enhanced, personalized features that improve your experience. These cookies are not strictly essential to basic functionality but significantly improve convenience, accessibility, and usability.
+                    Functionality cookies enable the Evara AI platform to remember choices you have made and provide enhanced, personalized features that improve your experience. These cookies are not strictly essential to basic functionality but significantly improve convenience, accessibility, and usability.
                   </p>
                   <p>Functionality cookies may be used to:</p>
                   <ul>
@@ -188,7 +188,7 @@ export default function CookiePolicyPage() {
                 </SubSection>
                 <SubSection title="3.4 Advertising and Tracking Cookies">
                   <p>
-                    Raina Jet does not currently operate display advertising campaigns that place targeting cookies directly on users through the rainajet.com platform. However, certain marketing activities, referral programs, or third-party integrations that may be present on publicly accessible pages of our website could involve cookies used for advertising attribution, conversion measurement, or retargeting purposes.
+                    Evara AI does not currently operate display advertising campaigns that place targeting cookies directly on users through the rainajet.com platform. However, certain marketing activities, referral programs, or third-party integrations that may be present on publicly accessible pages of our website could involve cookies used for advertising attribution, conversion measurement, or retargeting purposes.
                   </p>
                   <p>Where such cookies are present, they may be used to:</p>
                   <ul>
@@ -205,7 +205,7 @@ export default function CookiePolicyPage() {
 
               <PolicySection id="how-we-use-cookies" title="4. How We Use Cookies">
                 <p>
-                  Raina Jet uses cookies and similar tracking technologies for a range of purposes that collectively support the delivery, security, improvement, and personalization of the Services. The following describes the primary uses of cookies across the platform:
+                  Evara AI uses cookies and similar tracking technologies for a range of purposes that collectively support the delivery, security, improvement, and personalization of the Services. The following describes the primary uses of cookies across the platform:
                 </p>
                 <ul>
                   <li><strong>Ensuring Platform Functionality:</strong> Essential cookies are used to authenticate users, maintain sessions, prevent unauthorized access, protect against security threats, and ensure that core features of the platform operate correctly and reliably across different devices and browsers.</li>
@@ -213,13 +213,13 @@ export default function CookiePolicyPage() {
                   <li><strong>Analyzing Performance and Usage:</strong> Analytics cookies help us understand how users interact with the platform in aggregate, identify areas requiring improvement, diagnose technical issues, measure the impact of changes, and allocate development resources to the features and areas that matter most to users.</li>
                   <li><strong>Personalizing Content and Features:</strong> Certain cookies enable the platform to tailor content, recommendations, AI assistant behavior, and interface elements based on your interaction history, stated preferences, or account configuration, thereby delivering a more relevant and efficient experience.</li>
                   <li><strong>Maintaining Security and Preventing Abuse:</strong> Security-related cookies and device identifiers assist in detecting fraudulent activity, identifying suspicious login patterns, preventing account takeover, monitoring for unusual API activity, enforcing rate limits, and protecting the integrity of the platform and its users.</li>
-                  <li><strong>Supporting Attribution and Marketing Measurement:</strong> Where applicable, cookies may assist in tracking referral sources, campaign performance, and conversion events to help us understand how users discover and engage with the Raina Jet platform across different channels.</li>
+                  <li><strong>Supporting Attribution and Marketing Measurement:</strong> Where applicable, cookies may assist in tracking referral sources, campaign performance, and conversion events to help us understand how users discover and engage with the Evara AI platform across different channels.</li>
                 </ul>
               </PolicySection>
 
               <PolicySection id="ivana-ai-specific-cookie-usage" title="5. Evara AI Specific Cookie Usage">
                 <p>
-                  Evara AI is the web and application-based AI assistant service within the Raina Jet platform. As a browser-accessible service, Evara AI makes broader use of cookies and browser-based storage than the WhatsApp AI service. The following describes how cookies and similar technologies are used specifically in connection with Evara AI.
+                  Evara AI is the web and application-based AI assistant service within the Evara AI platform. As a browser-accessible service, Evara AI makes broader use of cookies and browser-based storage than the WhatsApp AI service. The following describes how cookies and similar technologies are used specifically in connection with Evara AI.
                 </p>
                 <SubSection title="5.1 Chat Session Management">
                   <p>
@@ -243,7 +243,7 @@ export default function CookiePolicyPage() {
                 </SubSection>
                 <SubSection title="5.5 Progressive Web Application Storage">
                   <p>
-                    If you install the Raina Jet progressive web application on a supported device, the application may register a service worker and maintain a local cache of application assets, user interface resources, and configuration data. This is necessary for the application to function in offline or low-connectivity environments and does not involve the transmission of sensitive user data. Such cached data is managed in accordance with applicable platform policies and may be cleared through your device or browser settings.
+                    If you install the Evara AI progressive web application on a supported device, the application may register a service worker and maintain a local cache of application assets, user interface resources, and configuration data. This is necessary for the application to function in offline or low-connectivity environments and does not involve the transmission of sensitive user data. Such cached data is managed in accordance with applicable platform policies and may be cleared through your device or browser settings.
                   </p>
                 </SubSection>
               </PolicySection>
@@ -254,29 +254,29 @@ export default function CookiePolicyPage() {
                 </p>
                 <SubSection title="6.1 Limited Direct Cookie Usage">
                   <p>
-                    WhatsApp AI does not set cookies on the devices of end customers who interact with a business through WhatsApp. Customer interactions occur within the WhatsApp application environment, which is owned and operated by Meta Platforms, Inc. As a result, Raina Jet does not directly place or access cookies on end-customer devices through the WhatsApp channel. Cookies used in connection with WhatsApp AI are limited to those placed on the browsers of business administrators who access the Raina Jet dashboard to configure, monitor, or manage their WhatsApp AI integration.
+                    WhatsApp AI does not set cookies on the devices of end customers who interact with a business through WhatsApp. Customer interactions occur within the WhatsApp application environment, which is owned and operated by Meta Platforms, Inc. As a result, Evara AI does not directly place or access cookies on end-customer devices through the WhatsApp channel. Cookies used in connection with WhatsApp AI are limited to those placed on the browsers of business administrators who access the Evara AI dashboard to configure, monitor, or manage their WhatsApp AI integration.
                   </p>
                 </SubSection>
                 <SubSection title="6.2 Data Flow Through WhatsApp Business API">
                   <p>
-                    When a business customer connects WhatsApp AI to the WhatsApp Business API, data including message content, phone number identifiers, delivery status, and webhook payloads flows between Raina Jet and Meta systems. This data flow does not involve traditional cookies but may involve API tokens, session identifiers, and integration credentials necessary to maintain the connection. These technical identifiers are used solely for the purpose of maintaining the authorized integration and are managed as sensitive credentials under our security and access control practices.
+                    When a business customer connects WhatsApp AI to the WhatsApp Business API, data including message content, phone number identifiers, delivery status, and webhook payloads flows between Evara AI and Meta systems. This data flow does not involve traditional cookies but may involve API tokens, session identifiers, and integration credentials necessary to maintain the connection. These technical identifiers are used solely for the purpose of maintaining the authorized integration and are managed as sensitive credentials under our security and access control practices.
                   </p>
                 </SubSection>
                 <SubSection title="6.3 Meta and WhatsApp Tracking Technologies">
                   <p>
-                    Meta Platforms, Inc. operates the WhatsApp application and the WhatsApp Business API infrastructure. Meta may use its own tracking technologies, cookies, device identifiers, and analytics systems in connection with the delivery of WhatsApp services to end customers and business users. Raina Jet does not control and is not responsible for Meta's independent tracking practices, cookie policies, or data processing activities. Business customers and end customers are encouraged to review Meta's Privacy Policy and WhatsApp's Privacy Policy to understand how Meta processes information within its ecosystem.
+                    Meta Platforms, Inc. operates the WhatsApp application and the WhatsApp Business API infrastructure. Meta may use its own tracking technologies, cookies, device identifiers, and analytics systems in connection with the delivery of WhatsApp services to end customers and business users. Evara AI does not control and is not responsible for Meta's independent tracking practices, cookie policies, or data processing activities. Business customers and end customers are encouraged to review Meta's Privacy Policy and WhatsApp's Privacy Policy to understand how Meta processes information within its ecosystem.
                   </p>
                 </SubSection>
                 <SubSection title="6.4 Business Dashboard Cookies">
                   <p>
-                    Business administrators who access the Raina Jet dashboard to configure or operate WhatsApp AI may be subject to the same categories of cookies described in this policy that apply to authenticated platform users, including essential authentication cookies, functionality cookies for dashboard preferences, and analytics cookies that help us improve the business dashboard experience. These cookies apply to the browser-based dashboard interface only and do not affect end customers interacting through WhatsApp.
+                    Business administrators who access the Evara AI dashboard to configure or operate WhatsApp AI may be subject to the same categories of cookies described in this policy that apply to authenticated platform users, including essential authentication cookies, functionality cookies for dashboard preferences, and analytics cookies that help us improve the business dashboard experience. These cookies apply to the browser-based dashboard interface only and do not affect end customers interacting through WhatsApp.
                   </p>
                 </SubSection>
               </PolicySection>
 
               <PolicySection id="third-party-cookies" title="7. Third-Party Cookies">
                 <p>
-                  In addition to cookies placed directly by Raina Jet, third-party service providers whose tools, scripts, or content are integrated into the Raina Jet platform may also place cookies on your device. These third-party cookies are governed by the privacy and cookie policies of the respective providers, and Raina Jet does not have direct control over their scope, duration, or behavior.
+                  In addition to cookies placed directly by Evara AI, third-party service providers whose tools, scripts, or content are integrated into the Evara AI platform may also place cookies on your device. These third-party cookies are governed by the privacy and cookie policies of the respective providers, and Evara AI does not have direct control over their scope, duration, or behavior.
                 </p>
                 <SubSection title="7.1 Analytics Providers">
                   <p>
@@ -285,29 +285,29 @@ export default function CookiePolicyPage() {
                 </SubSection>
                 <SubSection title="7.2 Hosting and Content Delivery Networks">
                   <p>
-                    Raina Jet uses third-party hosting infrastructure and content delivery network (CDN) services to ensure reliable, fast, and globally accessible delivery of the platform. These providers may set technical cookies related to routing, caching, load balancing, security challenges (such as bot detection), and content optimization. These cookies are generally essential to reliable service delivery and are subject to the privacy terms of the respective infrastructure providers.
+                    Evara AI uses third-party hosting infrastructure and content delivery network (CDN) services to ensure reliable, fast, and globally accessible delivery of the platform. These providers may set technical cookies related to routing, caching, load balancing, security challenges (such as bot detection), and content optimization. These cookies are generally essential to reliable service delivery and are subject to the privacy terms of the respective infrastructure providers.
                   </p>
                 </SubSection>
                 <SubSection title="7.3 Authentication and Identity Providers">
                   <p>
-                    If you use a third-party authentication provider, such as Google or another identity service, to create or access your Raina Jet account, that provider may set its own cookies or tokens on your device as part of the authentication flow. These cookies remain under the control and responsibility of the respective identity provider and are governed by their policies.
+                    If you use a third-party authentication provider, such as Google or another identity service, to create or access your Evara AI account, that provider may set its own cookies or tokens on your device as part of the authentication flow. These cookies remain under the control and responsibility of the respective identity provider and are governed by their policies.
                   </p>
                 </SubSection>
                 <SubSection title="7.4 AI Model Providers">
                   <p>
-                    Raina Jet may use third-party AI model providers to power certain AI features within Evara AI and WhatsApp AI. API calls to these providers are made server-to-server and generally do not involve the placement of cookies on your device. However, if any third-party AI provider integrates client-side scripts or widget components with the Raina Jet platform, such components may set their own cookies subject to the provider's policies.
+                    Evara AI may use third-party AI model providers to power certain AI features within Evara AI and WhatsApp AI. API calls to these providers are made server-to-server and generally do not involve the placement of cookies on your device. However, if any third-party AI provider integrates client-side scripts or widget components with the Evara AI platform, such components may set their own cookies subject to the provider's policies.
                   </p>
                 </SubSection>
                 <SubSection title="7.5 Disclaimer on External Control">
                   <p>
-                    Raina Jet is not responsible for the privacy or data handling practices of any third-party service provider. We encourage you to review the cookie and privacy policies of any third-party provider whose cookies may be placed through the Raina Jet platform. Where technically and commercially feasible, we configure third-party integrations to minimize the scope of data collection and to ensure alignment with applicable data protection standards.
+                    Evara AI is not responsible for the privacy or data handling practices of any third-party service provider. We encourage you to review the cookie and privacy policies of any third-party provider whose cookies may be placed through the Evara AI platform. Where technically and commercially feasible, we configure third-party integrations to minimize the scope of data collection and to ensure alignment with applicable data protection standards.
                   </p>
                 </SubSection>
               </PolicySection>
 
               <PolicySection id="cookie-duration" title="8. Cookie Duration">
                 <p>
-                  Cookies used on the Raina Jet platform vary in their duration depending on their purpose and technical implementation. Understanding how long cookies remain active on your device helps you make informed decisions about your preferences and browser settings.
+                  Cookies used on the Evara AI platform vary in their duration depending on their purpose and technical implementation. Understanding how long cookies remain active on your device helps you make informed decisions about your preferences and browser settings.
                 </p>
                 <SubSection title="8.1 Session Cookies">
                   <p>
@@ -316,7 +316,7 @@ export default function CookiePolicyPage() {
                 </SubSection>
                 <SubSection title="8.2 Persistent Cookies">
                   <p>
-                    Persistent cookies remain on your device for a defined period after your session ends. The retention duration of a persistent cookie depends on its purpose and is set by the originating server when the cookie is created. Common durations for persistent cookies on the Raina Jet platform include:
+                    Persistent cookies remain on your device for a defined period after your session ends. The retention duration of a persistent cookie depends on its purpose and is set by the originating server when the cookie is created. Common durations for persistent cookies on the Evara AI platform include:
                   </p>
                   <ul>
                     <li><strong>Short-term (up to 30 days):</strong> Typically used for recent preference storage, onboarding status, or short-cycle authentication tokens.</li>
@@ -331,7 +331,7 @@ export default function CookiePolicyPage() {
 
               <PolicySection id="managing-cookies" title="9. Managing Cookies">
                 <p>
-                  You have several options for managing or limiting the use of cookies in connection with your use of the Raina Jet platform. The following describes the primary mechanisms available to you and their practical effects.
+                  You have several options for managing or limiting the use of cookies in connection with your use of the Evara AI platform. The following describes the primary mechanisms available to you and their practical effects.
                 </p>
                 <SubSection title="9.1 Browser Settings">
                   <p>
@@ -352,7 +352,7 @@ export default function CookiePolicyPage() {
                 </SubSection>
                 <SubSection title="9.3 Impact of Disabling Cookies">
                   <p>
-                    If you choose to disable or block certain categories of cookies, please be aware that some features of the Raina Jet platform may not function correctly or at all. In particular:
+                    If you choose to disable or block certain categories of cookies, please be aware that some features of the Evara AI platform may not function correctly or at all. In particular:
                   </p>
                   <ul>
                     <li>Disabling essential cookies may prevent you from logging in, maintaining an authenticated session, or using protected features of the platform.</li>
@@ -366,18 +366,18 @@ export default function CookiePolicyPage() {
                 </SubSection>
                 <SubSection title="9.4 Opt-Out Tools for Analytics and Advertising">
                   <p>
-                    Certain third-party analytics and advertising providers offer their own opt-out mechanisms that allow you to prevent the collection of data about your usage through their respective technologies. You may also explore browser extensions or privacy tools that block tracking scripts across multiple providers simultaneously. Raina Jet does not guarantee the availability or effectiveness of third-party opt-out tools and is not responsible for their accuracy or completeness.
+                    Certain third-party analytics and advertising providers offer their own opt-out mechanisms that allow you to prevent the collection of data about your usage through their respective technologies. You may also explore browser extensions or privacy tools that block tracking scripts across multiple providers simultaneously. Evara AI does not guarantee the availability or effectiveness of third-party opt-out tools and is not responsible for their accuracy or completeness.
                   </p>
                 </SubSection>
               </PolicySection>
 
               <PolicySection id="consent-and-control" title="10. Consent and Control">
                 <p>
-                  Raina Jet is committed to providing meaningful transparency and control over the use of cookies and tracking technologies, consistent with applicable data protection and privacy laws in the jurisdictions where we operate.
+                  Evara AI is committed to providing meaningful transparency and control over the use of cookies and tracking technologies, consistent with applicable data protection and privacy laws in the jurisdictions where we operate.
                 </p>
                 <SubSection title="10.1 Cookie Consent Mechanism">
                   <p>
-                    Where required by applicable law, we display a cookie consent banner or notice upon your first visit to the Raina Jet platform. This notice informs you of the categories of cookies we use and invites you to accept, reject, or customize your cookie preferences. Your choices are recorded and respected across subsequent visits to the extent technically feasible. We do not set non-essential cookies prior to obtaining your consent where such consent is legally required.
+                    Where required by applicable law, we display a cookie consent banner or notice upon your first visit to the Evara AI platform. This notice informs you of the categories of cookies we use and invites you to accept, reject, or customize your cookie preferences. Your choices are recorded and respected across subsequent visits to the extent technically feasible. We do not set non-essential cookies prior to obtaining your consent where such consent is legally required.
                   </p>
                 </SubSection>
                 <SubSection title="10.2 Granular Cookie Preferences">
@@ -399,28 +399,28 @@ export default function CookiePolicyPage() {
 
               <PolicySection id="data-protection-and-privacy" title="11. Data Protection and Privacy">
                 <p>
-                  Cookies and similar technologies may collect or facilitate the collection of information that constitutes personal data under applicable data protection laws. Raina Jet takes its obligations regarding personal data seriously and processes all cookie-related data in accordance with our Privacy Policy and applicable legal requirements.
+                  Cookies and similar technologies may collect or facilitate the collection of information that constitutes personal data under applicable data protection laws. Evara AI takes its obligations regarding personal data seriously and processes all cookie-related data in accordance with our Privacy Policy and applicable legal requirements.
                 </p>
                 <p>
                   Information collected through cookies, including identifiers, session data, behavioral signals, and preference records, is treated with the same level of care and protection as other personal information we process. We implement appropriate technical and organizational measures to protect this data against unauthorized access, loss, destruction, or disclosure, including encryption in transit, access controls, and secure storage practices.
                 </p>
                 <p>
-                  For a comprehensive description of how we collect, use, store, share, protect, and retain personal information across all of our services, including the legal bases on which we process personal data, your rights as a data subject, and our data retention and deletion practices, please refer to our <Link href="/privacy-policy" className="text-purple-300 underline underline-offset-2 hover:text-purple-200 transition">Privacy Policy</Link>.
+                  For a comprehensive description of how we collect, use, store, share, protect, and retain personal information across all of our services, including the legal bases on which we process personal data, your rights as a data subject, and our data retention and deletion practices, please refer to our <Link href="/privacy-policy" className="text-violet-600 underline underline-offset-2 hover:text-violet-700 transition">Privacy Policy</Link>.
                 </p>
                 <p>
-                  Raina Jet does not sell personal data collected through cookies to third parties for their own independent marketing or advertising purposes. Where cookie data is shared with third-party providers, such sharing is governed by contractual data processing terms that obligate those providers to handle the data in accordance with applicable law and our instructions.
+                  Evara AI does not sell personal data collected through cookies to third parties for their own independent marketing or advertising purposes. Where cookie data is shared with third-party providers, such sharing is governed by contractual data processing terms that obligate those providers to handle the data in accordance with applicable law and our instructions.
                 </p>
               </PolicySection>
 
               <PolicySection id="updates-to-this-policy" title="12. Updates to This Policy">
                 <p>
-                  Raina Jet reserves the right to update, amend, or revise this Cookie Policy at any time to reflect changes in our cookie practices, the introduction of new technologies, changes in applicable law, or updates to the Services. Any changes will be effective upon posting the revised policy to the Raina Jet website, with the updated effective date indicated at the top of this document.
+                  Evara AI reserves the right to update, amend, or revise this Cookie Policy at any time to reflect changes in our cookie practices, the introduction of new technologies, changes in applicable law, or updates to the Services. Any changes will be effective upon posting the revised policy to the Evara AI website, with the updated effective date indicated at the top of this document.
                 </p>
                 <p>
                   Where changes to this Cookie Policy are material, we may notify you through appropriate means such as a notice displayed on the platform, an email notification to the address associated with your account, or an updated cookie consent prompt. We encourage you to review this Cookie Policy periodically to stay informed about how we use cookies and tracking technologies.
                 </p>
                 <p>
-                  Your continued use of the Raina Jet platform following the posting of any changes to this Cookie Policy constitutes your acknowledgment of the updated terms. If you do not agree with any changes, you should discontinue use of the affected Services or adjust your cookie preferences as described in this policy.
+                  Your continued use of the Evara AI platform following the posting of any changes to this Cookie Policy constitutes your acknowledgment of the updated terms. If you do not agree with any changes, you should discontinue use of the affected Services or adjust your cookie preferences as described in this policy.
                 </p>
               </PolicySection>
 
@@ -431,14 +431,14 @@ export default function CookiePolicyPage() {
                 <p>
                   We endeavor to respond to all privacy and cookie-related inquiries in a timely and thorough manner. If you are located in a jurisdiction that provides a right to lodge a complaint with a supervisory authority, you may also exercise that right in addition to or instead of contacting us directly.
                 </p>
-                <div className="mt-6 rounded-2xl border border-white/10 bg-black/30 p-6">
-                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-zinc-300">Contact Details</p>
-                  <div className="mt-4 space-y-3 text-sm text-zinc-400">
-                    <p><strong className="text-zinc-200">Platform:</strong> Raina Jet</p>
-                    <p><strong className="text-zinc-200">Website:</strong> rainajet.com</p>
+                <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-100 p-6">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-gray-600">Contact Details</p>
+                  <div className="mt-4 space-y-3 text-sm text-gray-500">
+                    <p><strong className="text-[#1d2226]">Platform:</strong> Evara AI</p>
+                    <p><strong className="text-[#1d2226]">Website:</strong> rainajet.com</p>
                     <p>
-                      <strong className="text-zinc-200">Email:</strong>{" "}
-                      <a href="mailto:support@rainajet.com" className="text-purple-300 hover:text-purple-200 transition underline underline-offset-2">
+                      <strong className="text-[#1d2226]">Email:</strong>{" "}
+                      <a href="mailto:support@rainajet.com" className="text-violet-600 hover:text-violet-700 transition underline underline-offset-2">
                         support@rainajet.com
                       </a>
                     </p>
@@ -447,12 +447,12 @@ export default function CookiePolicyPage() {
               </PolicySection>
             </div>
 
-            <div className="mt-12 border-t border-white/10 pt-8">
-              <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500">
-                <span>© 2026 Raina Jet. All rights reserved.</span>
-                <Link href="/privacy-policy" className="text-zinc-400 hover:text-white transition">Privacy Policy</Link>
-                <Link href="/terms" className="text-zinc-400 hover:text-white transition">Terms of Service</Link>
-                <Link href="/cookies" className="text-purple-300 hover:text-purple-200 transition">Cookie Policy</Link>
+            <div className="mt-12 border-t border-gray-200 pt-8">
+              <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
+                <span>© 2026 Evara AI. All rights reserved.</span>
+                <Link href="/privacy-policy" className="text-gray-500 hover:text-white transition">Privacy Policy</Link>
+                <Link href="/terms" className="text-gray-500 hover:text-white transition">Terms of Service</Link>
+                <Link href="/cookies" className="text-violet-600 hover:text-violet-700 transition">Cookie Policy</Link>
               </div>
             </div>
           </article>
@@ -465,8 +465,8 @@ export default function CookiePolicyPage() {
 function PolicySection({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section id={id} className="scroll-mt-6">
-      <h2 className="text-xl font-semibold text-white sm:text-2xl">{title}</h2>
-      <div className="mt-5 space-y-4 text-sm leading-7 text-zinc-400 [&_strong]:text-zinc-200 [&_ul]:mt-3 [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul]:list-disc [&_a]:text-purple-300 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-purple-200">
+      <h2 className="text-xl font-semibold text-[#1d2226] sm:text-2xl">{title}</h2>
+      <div className="mt-5 space-y-4 text-sm leading-7 text-gray-500 [&_strong]:text-[#1d2226] [&_ul]:mt-3 [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul]:list-disc [&_a]:text-violet-600 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-violet-700">
         {children}
       </div>
     </section>
@@ -476,7 +476,7 @@ function PolicySection({ id, title, children }: { id: string; title: string; chi
 function SubSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="mt-6">
-      <h3 className="text-base font-semibold text-zinc-200">{title}</h3>
+      <h3 className="text-base font-semibold text-[#1d2226]">{title}</h3>
       <div className="mt-3 space-y-3">{children}</div>
     </div>
   );

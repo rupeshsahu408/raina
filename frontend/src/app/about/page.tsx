@@ -112,13 +112,13 @@ const products = [
       "Personalized response tone and style preferences",
       "Progressive web application with offline support",
     ],
-    gradient: "from-purple-500 to-pink-500",
-    border: "border-purple-500/20",
-    bg: "bg-purple-500/[0.06]",
+    gradient: "from-violet-500 to-fuchsia-500",
+    border: "border-gray-200",
+    bg: "bg-white",
     icon: <BrainIcon className="h-7 w-7" />,
-    iconBg: "bg-purple-500/15 border-purple-500/20",
-    iconColor: "text-purple-300",
-    badge: "bg-purple-500/15 border-purple-400/20 text-purple-300",
+    iconBg: "bg-violet-50 border-violet-100",
+    iconColor: "text-violet-600",
+    badge: "bg-violet-50 border-violet-100 text-violet-700",
   },
   {
     name: "Bihar AI",
@@ -132,13 +132,13 @@ const products = [
       "Empowering small businesses with AI-driven guidance",
       "Bridging the gap between technology and regional communities",
     ],
-    gradient: "from-amber-400 to-orange-500",
-    border: "border-amber-500/20",
-    bg: "bg-amber-500/[0.06]",
+    gradient: "from-amber-500 to-orange-500",
+    border: "border-gray-200",
+    bg: "bg-white",
     icon: <GlobeIcon className="h-7 w-7" />,
-    iconBg: "bg-amber-500/15 border-amber-500/20",
-    iconColor: "text-amber-300",
-    badge: "bg-amber-500/15 border-amber-400/20 text-amber-300",
+    iconBg: "bg-amber-50 border-amber-100",
+    iconColor: "text-amber-600",
+    badge: "bg-amber-50 border-amber-100 text-amber-700",
   },
   {
     name: "WhatsApp AI",
@@ -152,13 +152,13 @@ const products = [
       "Multi-agent team dashboard for conversation management",
       "Seamless integration with existing business workflows",
     ],
-    gradient: "from-emerald-400 to-teal-500",
-    border: "border-emerald-500/20",
-    bg: "bg-emerald-500/[0.06]",
+    gradient: "from-emerald-500 to-teal-500",
+    border: "border-gray-200",
+    bg: "bg-white",
     icon: <MessageIcon className="h-7 w-7" />,
-    iconBg: "bg-emerald-500/15 border-emerald-500/20",
-    iconColor: "text-emerald-300",
-    badge: "bg-emerald-500/15 border-emerald-400/20 text-emerald-300",
+    iconBg: "bg-emerald-50 border-emerald-100",
+    iconColor: "text-emerald-600",
+    badge: "bg-emerald-50 border-emerald-100 text-emerald-700",
   },
 ];
 
@@ -189,44 +189,44 @@ const whyChooseItems = [
   {
     icon: <ZapIcon className="h-6 w-6" />,
     title: "Smart Automation",
-    description: "Raina Jet's intelligent automation eliminates repetitive tasks, accelerates workflows, and enables both individuals and businesses to focus on what truly matters — creative thinking, strategic decisions, and meaningful human interaction.",
-    color: "text-yellow-300",
-    bg: "bg-yellow-400/10 border-yellow-400/20",
+    description: "Evara AI's intelligent automation eliminates repetitive tasks, accelerates workflows, and enables both individuals and businesses to focus on what truly matters — creative thinking, strategic decisions, and meaningful human interaction.",
+    color: "text-amber-600",
+    bg: "bg-amber-50 border-amber-100",
   },
   {
     icon: <RocketIcon className="h-6 w-6" />,
     title: "Scalable Solutions",
-    description: "Whether you are a solo entrepreneur or a large enterprise, Raina Jet scales with your needs. Our platform is engineered to handle growing demands without sacrificing performance, reliability, or response quality.",
-    color: "text-purple-300",
-    bg: "bg-purple-400/10 border-purple-400/20",
+    description: "Whether you are a solo entrepreneur or a large enterprise, Evara AI scales with your needs. Our platform is engineered to handle growing demands without sacrificing performance, reliability, or response quality.",
+    color: "text-violet-600",
+    bg: "bg-violet-50 border-violet-100",
   },
   {
     icon: <ShieldIcon className="h-6 w-6" />,
     title: "Secure and Reliable",
-    description: "Data security and platform reliability are foundational commitments at Raina Jet. We implement rigorous security practices, encrypted data transmission, and resilient infrastructure to protect user information and maintain consistent service availability.",
-    color: "text-emerald-300",
-    bg: "bg-emerald-400/10 border-emerald-400/20",
+    description: "Data security and platform reliability are foundational commitments at Evara AI. We implement rigorous security practices, encrypted data transmission, and resilient infrastructure to protect user information and maintain consistent service availability.",
+    color: "text-emerald-600",
+    bg: "bg-emerald-50 border-emerald-100",
   },
   {
     icon: <SparklesIcon className="h-6 w-6" />,
     title: "Easy to Use",
-    description: "Advanced AI should not require a technical background to access and benefit from. Raina Jet is designed with simplicity and clarity at its core, delivering powerful capabilities through interfaces that feel natural, intuitive, and effortless to use.",
-    color: "text-pink-300",
-    bg: "bg-pink-400/10 border-pink-400/20",
+    description: "Advanced AI should not require a technical background to access and benefit from. Evara AI is designed with simplicity and clarity at its core, delivering powerful capabilities through interfaces that feel natural, intuitive, and effortless to use.",
+    color: "text-fuchsia-600",
+    bg: "bg-fuchsia-50 border-fuchsia-100",
   },
   {
     icon: <UsersIcon className="h-6 w-6" />,
     title: "Built for Modern Businesses",
-    description: "From automated customer communication to AI-assisted content generation and regional market intelligence, Raina Jet is purpose-built to address the real and evolving challenges of modern businesses operating in a fast-paced, digital-first world.",
-    color: "text-sky-300",
-    bg: "bg-sky-400/10 border-sky-400/20",
+    description: "From automated customer communication to AI-assisted content generation and regional market intelligence, Evara AI is purpose-built to address the real and evolving challenges of modern businesses operating in a fast-paced, digital-first world.",
+    color: "text-sky-600",
+    bg: "bg-sky-50 border-sky-100",
   },
   {
     icon: <GlobeIcon className="h-6 w-6" />,
     title: "Globally Accessible",
-    description: "Raina Jet is designed without geographic boundaries. With multilingual capability, regional AI initiatives like Bihar AI, and universal platform accessibility, we are committed to making intelligent technology available to every user, everywhere.",
-    color: "text-amber-300",
-    bg: "bg-amber-400/10 border-amber-400/20",
+    description: "Evara AI is designed without geographic boundaries. With multilingual capability, regional AI initiatives like Bihar AI, and universal platform accessibility, we are committed to making intelligent technology available to every user, everywhere.",
+    color: "text-orange-600",
+    bg: "bg-orange-50 border-orange-100",
   },
 ];
 
@@ -243,117 +243,111 @@ const futureGoals = [
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-black text-zinc-100 selection:bg-purple-500/30">
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.15),transparent_60%)]" />
-        <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-purple-900/15 blur-[140px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-sky-900/10 blur-[120px]" />
-        <div className="absolute top-[40%] left-[60%] w-[30%] h-[30%] rounded-full bg-pink-900/10 blur-[100px]" />
-      </div>
+    <div className="min-h-screen bg-white text-[#1d2226]">
 
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3 group">
-            <img src="/evara-logo.png" alt="Raina Jet" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-bold tracking-widest text-zinc-100 uppercase transition group-hover:text-white">Raina Jet</span>
+          <Link href="/" className="flex items-center gap-2.5">
+            <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/cookies" className="hidden text-sm text-zinc-500 transition hover:text-zinc-300 sm:block">Cookie Policy</Link>
-            <Link href="/privacy-policy" className="hidden text-sm text-zinc-500 transition hover:text-zinc-300 sm:block">Privacy</Link>
-            <Link href="/" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10">
+            <Link href="/cookies" className="hidden text-sm text-gray-500 transition hover:text-[#1d2226] sm:block">Cookie Policy</Link>
+            <Link href="/privacy-policy" className="hidden text-sm text-gray-500 transition hover:text-[#1d2226] sm:block">Privacy</Link>
+            <Link href="/" className="rounded-full bg-[#1d2226] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#2d3238]">
               Back to Home
             </Link>
           </div>
         </div>
       </nav>
 
-      <main className="relative z-10">
-        <section className="relative flex min-h-[85vh] flex-col items-center justify-center overflow-hidden px-4 pt-24 pb-16 text-center sm:px-6 lg:px-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-300 backdrop-blur-md mb-8">
-            <SparklesIcon className="h-3.5 w-3.5" />
-            <span>About Raina Jet</span>
-          </div>
-          <h1 className="max-w-5xl text-balance text-5xl font-semibold tracking-tight text-white sm:text-7xl lg:text-8xl">
-            Building the Future{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-sky-400">
-              with AI
-            </span>
-          </h1>
-          <p className="mt-8 max-w-2xl text-balance text-lg leading-relaxed text-zinc-400 sm:text-xl">
-            Raina Jet is an AI-powered SaaS platform on a singular mission — to make intelligent automation accessible, powerful, and genuinely useful for every person and business on the planet.
-          </p>
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-zinc-500">
-            From individual productivity to enterprise-scale automation, from regional communities to global markets, we are building AI tools that make a real difference.
-          </p>
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/signup" className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-black transition hover:scale-105 hover:bg-zinc-100">
-              Start for Free
-              <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
-            </Link>
-            <Link href="/whatsapp-ai" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10">
-              Explore Products
-            </Link>
-          </div>
+      <main>
+        <section className="relative flex min-h-[70vh] flex-col items-center justify-center overflow-hidden px-4 pt-16 pb-16 text-center sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white">
+          <div className="premium-grid absolute inset-0 opacity-50" />
+          <div className="relative">
+            <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-violet-700 mb-7">
+              <SparklesIcon className="h-3.5 w-3.5" />
+              <span>About Evara AI</span>
+            </div>
+            <h1 className="max-w-5xl text-balance text-4xl font-black tracking-tight text-[#1d2226] sm:text-6xl lg:text-7xl">
+              Building the Future{" "}
+              <span className="text-violet-600">with AI</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-balance text-lg leading-relaxed text-gray-500">
+              Evara AI is an AI-powered platform on a singular mission — to make intelligent automation accessible, powerful, and genuinely useful for every person and business on the planet.
+            </p>
+            <p className="mt-3 max-w-2xl text-base leading-relaxed text-gray-400">
+              From individual productivity to enterprise-scale automation, from regional communities to global markets, we are building AI tools that make a real difference.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+              <Link href="/signup" className="inline-flex items-center gap-2 rounded-full bg-[#1d2226] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#2d3238]">
+                Start for Free
+                <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
+              </Link>
+              <Link href="/business-ai" className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-semibold text-gray-600 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300">
+                Explore Products
+              </Link>
+            </div>
 
-          <div className="mt-20 grid grid-cols-2 gap-6 sm:grid-cols-4 max-w-3xl mx-auto">
-            {[
-              { value: "3+", label: "AI Products" },
-              { value: "10K+", label: "Users Served" },
-              { value: "99.9%", label: "Uptime" },
-              { value: "24/7", label: "AI Availability" },
-            ].map((stat) => (
-              <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl text-center">
-                <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-pink-300">{stat.value}</p>
-                <p className="mt-1 text-xs text-zinc-500">{stat.label}</p>
-              </div>
-            ))}
+            <div className="mt-14 grid grid-cols-2 gap-4 sm:grid-cols-4 max-w-3xl mx-auto">
+              {[
+                { value: "3+", label: "AI Products" },
+                { value: "10K+", label: "Users Served" },
+                { value: "99.9%", label: "Uptime" },
+                { value: "24/7", label: "AI Availability" },
+              ].map((stat) => (
+                <div key={stat.label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm text-center">
+                  <p className="text-3xl font-black text-violet-600">{stat.value}</p>
+                  <p className="mt-1 text-xs text-gray-400">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
         <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="inline-flex rounded-full border border-purple-400/20 bg-purple-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-purple-300">
+              <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-violet-700">
                 Our Story
               </p>
-              <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
+              <h2 className="mt-6 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl lg:text-5xl">
                 From an Idea to a{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                  Platform
-                </span>
+                <span className="text-violet-600">
+                  Platform</span>
               </h2>
-              <div className="mt-6 space-y-5 text-base leading-8 text-zinc-400">
+              <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                 <p>
-                  Raina Jet began as a bold question: why should intelligent AI tools only be available to those with technical expertise or enterprise budgets? The founders of Raina Jet saw a world where artificial intelligence was transforming industries at a rapid pace, yet the vast majority of individuals and small businesses were left behind — unable to access, understand, or benefit from these powerful technologies.
+                  Evara AI began as a bold question: why should intelligent AI tools only be available to those with technical expertise or enterprise budgets? The founders saw a world where artificial intelligence was transforming industries at a rapid pace, yet the vast majority of individuals and small businesses were left behind — unable to access, understand, or benefit from these powerful technologies.
                 </p>
                 <p>
-                  The idea was simple in concept but ambitious in execution: build a platform that makes AI genuinely useful, approachable, and scalable for everyone. From the earliest prototypes to the full-featured platform it is today, Raina Jet has been built with a singular focus on the people it serves — their needs, their challenges, and their aspirations.
+                  The idea was simple in concept but ambitious in execution: build a platform that makes AI genuinely useful, approachable, and scalable for everyone. From the earliest prototypes to the full-featured platform it is today, Evara AI has been built with a singular focus on the people it serves — their needs, their challenges, and their aspirations.
                 </p>
                 <p>
-                  What started as a vision between two passionate builders has grown into a multi-product AI platform serving users across India and beyond, with a roadmap that points toward global reach and transformative impact. The journey from idea to platform has not been without challenges, but every obstacle has only deepened the commitment to the mission.
+                  What started as a vision between two passionate builders has grown into a multi-product AI platform serving users across India and beyond, with a roadmap that points toward global reach and transformative impact.
                 </p>
               </div>
             </div>
             <div className="relative">
-              <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl">
+              <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
                 <div className="space-y-6">
                   {[
                     { year: "2023", event: "Concept & ideation — identifying the gap in accessible AI tools for everyday users and businesses." },
                     { year: "2024", event: "Platform development begins — building core AI infrastructure, Evara AI assistant, and WhatsApp AI integration framework." },
                     { year: "Early 2025", event: "Beta launch — first users onboarded, real-world feedback shapes product direction and feature priorities." },
                     { year: "Mid 2025", event: "Bihar AI initiative launched — expanding AI access to regional communities with localized intelligence." },
-                    { year: "2026", event: "Full platform release — Raina Jet goes live with all three products, growing user base, and global expansion underway." },
+                    { year: "2026", event: "Full platform release — Evara AI goes live with all products, growing user base, and global expansion underway." },
                   ].map((item, i) => (
                     <div key={i} className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-purple-400/30 bg-purple-400/10 text-xs font-bold text-purple-300">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-violet-200 bg-violet-50 text-xs font-bold text-violet-700">
                           {i + 1}
                         </div>
-                        {i < 4 && <div className="mt-1 h-full w-px bg-white/10" />}
+                        {i < 4 && <div className="mt-1 h-full w-px bg-gray-200" />}
                       </div>
                       <div className="pb-6">
-                        <p className="text-xs font-bold uppercase tracking-widest text-purple-400">{item.year}</p>
-                        <p className="mt-1 text-sm leading-6 text-zinc-400">{item.event}</p>
+                        <p className="text-xs font-bold uppercase tracking-widest text-violet-600">{item.year}</p>
+                        <p className="mt-1 text-sm leading-6 text-gray-500">{item.event}</p>
                       </div>
                     </div>
                   ))}
@@ -363,34 +357,34 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="relative overflow-hidden border-y border-white/5 bg-white/[0.02] py-20">
+        <section className="bg-gray-50 py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-10 lg:grid-cols-2">
-              <div className="rounded-[2rem] border border-purple-500/20 bg-purple-500/[0.06] p-8 backdrop-blur-xl">
-                <p className="inline-flex rounded-full border border-purple-400/20 bg-purple-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-purple-300">
+            <div className="grid gap-8 lg:grid-cols-2">
+              <div className="rounded-2xl border border-violet-100 bg-white p-8 shadow-sm">
+                <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-violet-700">
                   Our Mission
                 </p>
-                <h3 className="mt-5 text-2xl font-semibold text-white sm:text-3xl">
+                <h3 className="mt-5 text-2xl font-black text-[#1d2226] sm:text-3xl">
                   Simplify AI for Everyone
                 </h3>
-                <p className="mt-5 text-base leading-8 text-zinc-400">
+                <p className="mt-5 text-base leading-8 text-gray-500">
                   Our mission is to dismantle the barriers that separate everyday users from the transformative power of artificial intelligence. We believe that AI should not be complex, exclusive, or intimidating. It should be approachable, intuitive, and empowering — a tool that every person, whether a student, a small business owner, or a global enterprise, can pick up, use, and benefit from immediately.
                 </p>
-                <p className="mt-4 text-base leading-8 text-zinc-400">
-                  Every product, every feature, and every design decision at Raina Jet is evaluated through this mission lens: does it make AI simpler, more useful, and more accessible? If the answer is yes, we build it.
+                <p className="mt-4 text-base leading-8 text-gray-500">
+                  Every product, every feature, and every design decision at Evara AI is evaluated through this mission lens: does it make AI simpler, more useful, and more accessible? If the answer is yes, we build it.
                 </p>
               </div>
-              <div className="rounded-[2rem] border border-sky-500/20 bg-sky-500/[0.06] p-8 backdrop-blur-xl">
-                <p className="inline-flex rounded-full border border-sky-400/20 bg-sky-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-sky-300">
+              <div className="rounded-2xl border border-sky-100 bg-white p-8 shadow-sm">
+                <p className="inline-flex rounded-full border border-sky-200 bg-sky-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-sky-700">
                   Our Vision
                 </p>
-                <h3 className="mt-5 text-2xl font-semibold text-white sm:text-3xl">
+                <h3 className="mt-5 text-2xl font-black text-[#1d2226] sm:text-3xl">
                   Powerful AI for Businesses Globally
                 </h3>
-                <p className="mt-5 text-base leading-8 text-zinc-400">
-                  We envision a world where AI-powered tools are the standard operating environment for businesses of all sizes — where intelligent automation handles routine work, enabling humans to focus on creativity, strategy, and relationships. Raina Jet is building toward that world, one product, one integration, and one user at a time.
+                <p className="mt-5 text-base leading-8 text-gray-500">
+                  We envision a world where AI-powered tools are the standard operating environment for businesses of all sizes — where intelligent automation handles routine work, enabling humans to focus on creativity, strategy, and relationships. Evara AI is building toward that world, one product, one integration, and one user at a time.
                 </p>
-                <p className="mt-4 text-base leading-8 text-zinc-400">
+                <p className="mt-4 text-base leading-8 text-gray-500">
                   Our vision extends beyond product features. We see a global community of AI-enabled businesses and individuals, from metropolitan enterprises to rural entrepreneurs, all equipped with the same quality of intelligence and the same opportunity to thrive.
                 </p>
               </div>
@@ -398,56 +392,54 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+            <p className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
               The Platform
             </p>
-            <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              What Raina Jet Does
+            <h2 className="mt-6 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl lg:text-5xl">
+              What Evara AI Does
             </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-zinc-400">
-              Raina Jet is more than a single product — it is a unified ecosystem of AI tools designed to address the diverse needs of modern users and businesses. At its core, the platform connects three powerful services under one intelligent infrastructure.
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-gray-500">
+              Evara AI is more than a single product — it is a unified ecosystem of AI tools designed to address the diverse needs of modern users and businesses. At its core, the platform connects powerful services under one intelligent infrastructure.
             </p>
           </div>
 
-          <div className="mt-16 grid gap-6 sm:grid-cols-3">
+          <div className="mt-12 grid gap-5 sm:grid-cols-3">
             {[
-              { icon: <BrainIcon className="h-6 w-6 text-purple-300" />, title: "AI-Powered Conversations", desc: "Deliver human-quality responses across personal and business contexts through advanced language models.", bg: "bg-purple-500/10 border-purple-500/20" },
-              { icon: <ZapIcon className="h-6 w-6 text-yellow-300" />, title: "Intelligent Automation", desc: "Automate repetitive communication, customer support, and business workflows with precision and reliability.", bg: "bg-yellow-500/10 border-yellow-500/20" },
-              { icon: <RocketIcon className="h-6 w-6 text-sky-300" />, title: "Scalable Infrastructure", desc: "Handle growing usage, multiple channels, and concurrent workloads without compromising speed or quality.", bg: "bg-sky-500/10 border-sky-500/20" },
+              { icon: <BrainIcon className="h-6 w-6 text-violet-600" />, title: "AI-Powered Conversations", desc: "Deliver human-quality responses across personal and business contexts through advanced language models.", bg: "bg-violet-50 border-violet-100" },
+              { icon: <ZapIcon className="h-6 w-6 text-amber-600" />, title: "Intelligent Automation", desc: "Automate repetitive communication, customer support, and business workflows with precision and reliability.", bg: "bg-amber-50 border-amber-100" },
+              { icon: <RocketIcon className="h-6 w-6 text-sky-600" />, title: "Scalable Infrastructure", desc: "Handle growing usage, multiple channels, and concurrent workloads without compromising speed or quality.", bg: "bg-sky-50 border-sky-100" },
             ].map((item) => (
-              <div key={item.title} className={`rounded-[1.5rem] border p-6 backdrop-blur-xl ${item.bg}`}>
-                <div className="h-10 w-10 rounded-xl border border-white/10 bg-black/30 flex items-center justify-center">{item.icon}</div>
-                <h3 className="mt-4 font-semibold text-white">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-zinc-400">{item.desc}</p>
+              <div key={item.title} className={`rounded-2xl border p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${item.bg}`}>
+                <div className="h-10 w-10 rounded-xl border border-white bg-white flex items-center justify-center shadow-sm">{item.icon}</div>
+                <h3 className="mt-4 font-bold text-[#1d2226]">{item.title}</h3>
+                <p className="mt-2 text-sm leading-6 text-gray-500">{item.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="relative border-y border-white/5 bg-white/[0.015] py-24">
+        <section className="bg-gray-50 py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+              <p className="inline-flex rounded-full border border-gray-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-500 shadow-sm">
                 Our AI Products
               </p>
-              <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
+              <h2 className="mt-6 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl lg:text-5xl">
                 Three Products.{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400">
-                  One Platform.
-                </span>
+                <span className="text-violet-600">One Platform.</span>
               </h2>
-              <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-zinc-400">
-                Each product within the Raina Jet ecosystem is purpose-built for a distinct use case, audience, and context — yet all share the same foundational commitment to intelligence, reliability, and accessibility.
+              <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-gray-500">
+                Each product within the Evara AI ecosystem is purpose-built for a distinct use case, audience, and context — yet all share the same foundational commitment to intelligence, reliability, and accessibility.
               </p>
             </div>
 
-            <div className="mt-16 space-y-8">
-              {products.map((product, i) => (
+            <div className="mt-12 space-y-6">
+              {products.map((product) => (
                 <div
                   key={product.name}
-                  className={`group rounded-[2rem] border p-8 backdrop-blur-xl transition-all duration-300 hover:scale-[1.01] hover:shadow-2xl ${product.border} ${product.bg} ${i % 2 === 1 ? "lg:flex-row-reverse" : ""}`}
+                  className="group rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                 >
                   <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
                     <div className="shrink-0">
@@ -457,16 +449,16 @@ export default function AboutPage() {
                     </div>
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="text-2xl font-semibold text-white">{product.name}</h3>
+                        <h3 className="text-2xl font-black text-[#1d2226]">{product.name}</h3>
                         <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${product.badge}`}>
                           {product.tagline}
                         </span>
                       </div>
-                      <p className="mt-4 text-base leading-8 text-zinc-400">{product.description}</p>
+                      <p className="mt-4 text-base leading-8 text-gray-500">{product.description}</p>
                       <ul className="mt-6 grid gap-2 sm:grid-cols-2">
                         {product.capabilities.map((cap) => (
-                          <li key={cap} className="flex items-start gap-2 text-sm text-zinc-400">
-                            <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+                          <li key={cap} className="flex items-start gap-2 text-sm text-gray-600">
+                            <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
                             {cap}
                           </li>
                         ))}
@@ -479,48 +471,45 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+            <p className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
               The Founders
             </p>
-            <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              The People Behind{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-sky-400">
-                the Vision
-              </span>
+            <h2 className="mt-6 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl lg:text-5xl">
+              The People Behind the Vision
             </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-zinc-400">
-              Raina Jet was founded by two passionate individuals who share a deep conviction that AI can and should be a democratizing force — empowering individuals and businesses of every size, background, and geography.
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-gray-500">
+              Evara AI was founded by two passionate individuals who share a deep conviction that AI can and should be a democratizing force — empowering individuals and businesses of every size, background, and geography.
             </p>
           </div>
 
-          <div className="mt-16 grid gap-8 lg:grid-cols-2">
+          <div className="mt-12 grid gap-8 lg:grid-cols-2">
             {founders.map((founder) => (
               <div
                 key={founder.name}
-                className={`group rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl ring-1 ring-transparent transition-all duration-300 hover:ring-1 ${founder.ring} hover:border-white/20 hover:bg-white/[0.06]`}
+                className="group rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
                 <div className="flex items-start gap-5">
                   <div className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white font-bold text-lg ${founder.gradient}`}>
                     {founder.avatar}
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-white">{founder.name}</h3>
-                    <p className="mt-0.5 text-sm text-zinc-500">{founder.title}</p>
+                    <h3 className="text-xl font-black text-[#1d2226]">{founder.name}</h3>
+                    <p className="mt-0.5 text-sm text-gray-500">{founder.title}</p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {founder.traits.map((trait) => (
-                        <span key={trait} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-zinc-400">
+                        <span key={trait} className="rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs text-gray-600">
                           {trait}
                         </span>
                       ))}
                     </div>
                   </div>
                 </div>
-                <p className="mt-6 text-sm leading-7 text-zinc-400">{founder.description}</p>
+                <p className="mt-6 text-sm leading-7 text-gray-500">{founder.description}</p>
                 <div className="mt-6 flex gap-1">
                   {[1, 2, 3, 4, 5].map((s) => (
-                    <StarIcon key={s} className="h-3.5 w-3.5 text-yellow-400" />
+                    <StarIcon key={s} className="h-3.5 w-3.5 text-amber-400" />
                   ))}
                 </div>
               </div>
@@ -528,25 +517,25 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="relative border-y border-white/5 bg-white/[0.015] py-20">
+        <section className="bg-gray-50 py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
               <div>
-                <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+                <p className="inline-flex rounded-full border border-gray-200 bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-500 shadow-sm">
                   Team & Development
                 </p>
-                <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                <h2 className="mt-6 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl">
                   Driven by People Who Care
                 </h2>
-                <div className="mt-6 space-y-5 text-base leading-8 text-zinc-400">
+                <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                   <p>
-                    Behind every feature, every interface, and every AI capability within the Raina Jet platform is a team of skilled, passionate professionals dedicated to crafting software that is reliable, elegant, and genuinely useful. Our development team brings together expertise in artificial intelligence, full-stack engineering, mobile development, UX design, and product strategy.
+                    Behind every feature, every interface, and every AI capability within the Evara AI platform is a team of skilled, passionate professionals dedicated to crafting software that is reliable, elegant, and genuinely useful.
                   </p>
                   <p>
-                    We operate as a culture of continuous improvement — rigorously evaluating every aspect of the platform, gathering user feedback with care, iterating on design and functionality, and pushing the boundaries of what is possible with today's AI technologies. Every release reflects a collective commitment to doing the work properly, not just quickly.
+                    We operate as a culture of continuous improvement — rigorously evaluating every aspect of the platform, gathering user feedback with care, iterating on design and functionality, and pushing the boundaries of what is possible with today's AI technologies.
                   </p>
                   <p>
-                    Our team believes in open collaboration, intellectual curiosity, and the idea that the best tools are built by people who use and care deeply about them. This philosophy permeates every layer of the Raina Jet platform.
+                    Our team believes in open collaboration, intellectual curiosity, and the idea that the best tools are built by people who use and care deeply about them.
                   </p>
                 </div>
               </div>
@@ -557,9 +546,9 @@ export default function AboutPage() {
                   { label: "UX & Product Designers", value: "Crafting interfaces that are intuitive, beautiful, and user-first." },
                   { label: "QA & Reliability", value: "Ensuring every release meets the highest standards of performance and quality." },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl">
-                    <p className="text-sm font-semibold text-white">{item.label}</p>
-                    <p className="mt-2 text-xs leading-5 text-zinc-500">{item.value}</p>
+                  <div key={item.label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+                    <p className="text-sm font-bold text-[#1d2226]">{item.label}</p>
+                    <p className="mt-2 text-xs leading-5 text-gray-500">{item.value}</p>
                   </div>
                 ))}
               </div>
@@ -567,58 +556,55 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="text-center">
-            <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
-              Why Raina Jet
+            <p className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
+              Why Evara AI
             </p>
-            <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              Why Businesses Choose{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-sky-400">
-                Raina Jet
-              </span>
+            <h2 className="mt-6 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl lg:text-5xl">
+              Why Businesses Choose Evara AI
             </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-zinc-400">
-              In a crowded landscape of AI tools and automation platforms, Raina Jet stands apart through its combination of depth, accessibility, reliability, and purpose-driven design.
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-gray-500">
+              In a crowded landscape of AI tools and automation platforms, Evara AI stands apart through its combination of depth, accessibility, reliability, and purpose-driven design.
             </p>
           </div>
-          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {whyChooseItems.map((item) => (
               <div
                 key={item.title}
-                className={`group rounded-[1.5rem] border p-6 backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${item.bg}`}
+                className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
               >
-                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-black/30 ${item.color}`}>
+                <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-50 border border-gray-100 ${item.color}`}>
                   {item.icon}
                 </div>
-                <h3 className="mt-5 text-base font-semibold text-white">{item.title}</h3>
-                <p className="mt-3 text-sm leading-6 text-zinc-400">{item.description}</p>
+                <h3 className="mt-5 text-base font-bold text-[#1d2226]">{item.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-gray-500">{item.description}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="relative border-y border-white/5 bg-white/[0.015] py-20">
+        <section className="bg-gray-50 py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-12 lg:grid-cols-2 lg:items-start">
               <div>
-                <p className="inline-flex rounded-full border border-purple-400/20 bg-purple-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-purple-300">
+                <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-violet-700">
                   Future Goals
                 </p>
-                <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                <h2 className="mt-6 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl">
                   Where We Are Going
                 </h2>
-                <p className="mt-5 text-base leading-8 text-zinc-400">
-                  The work we have done so far is just the beginning. Raina Jet has an ambitious roadmap built around expanding capabilities, deepening integrations, and broadening access to intelligent automation for users and businesses across the globe. Our future is defined by continuous innovation and an unrelenting commitment to the people we serve.
+                <p className="mt-5 text-base leading-8 text-gray-500">
+                  The work we have done so far is just the beginning. Evara AI has an ambitious roadmap built around expanding capabilities, deepening integrations, and broadening access to intelligent automation for users and businesses across the globe.
                 </p>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {futureGoals.map((goal, i) => (
-                  <div key={i} className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4 backdrop-blur-xl">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-xs font-bold text-white">
+                  <div key={i} className="flex items-start gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white">
                       {i + 1}
                     </div>
-                    <p className="text-sm leading-6 text-zinc-400">{goal}</p>
+                    <p className="text-sm leading-6 text-gray-500">{goal}</p>
                   </div>
                 ))}
               </div>
@@ -626,42 +612,37 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="relative overflow-hidden px-4 py-28 sm:px-6 lg:px-8">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.18),transparent_65%)]" />
-          <div className="relative mx-auto max-w-4xl text-center">
-            <p className="inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-400/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] text-purple-300">
+        <section className="bg-[#1d2226] px-4 py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-xs font-bold uppercase tracking-[0.2em] text-white/80 mb-7">
               <SparklesIcon className="h-3.5 w-3.5" />
               Start Your Journey
-            </p>
-            <h2 className="mt-8 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Start Your AI Journey{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-sky-400">
-                Today
-              </span>
+            </div>
+            <h2 className="text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Start Your AI Journey Today
             </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
-              Join thousands of users and businesses who are already using Raina Jet to work smarter, communicate better, and grow faster. The future of intelligent automation is here — and it is built for you.
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-white/60">
+              Join thousands of users and businesses who are already using Evara AI to work smarter, communicate better, and grow faster. The future of intelligent automation is here — and it is built for you.
             </p>
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-5">
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Link
                 href="/signup"
-                className="group inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-bold text-black transition hover:scale-105 hover:bg-zinc-100 shadow-2xl shadow-purple-900/30"
+                className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-bold text-[#1d2226] shadow-lg transition hover:-translate-y-0.5 hover:bg-gray-100"
               >
-                Try Raina Jet Now
-                <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
+                Try Evara AI Now
+                <ArrowRightIcon className="h-4 w-4" />
               </Link>
               <Link
-                href="/whatsapp-ai"
-                className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-8 py-4 text-sm font-semibold text-emerald-200 transition hover:bg-emerald-400/15"
+                href="/business-ai"
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/15"
               >
-                Explore WhatsApp AI
+                Explore Products
               </Link>
             </div>
-
-            <div className="mt-16 flex flex-wrap items-center justify-center gap-8 text-xs text-zinc-600">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-xs text-white/40">
               {["No credit card required", "Free to start", "Cancel anytime", "24/7 AI support"].map((item) => (
                 <span key={item} className="flex items-center gap-2">
-                  <CheckIcon className="h-3.5 w-3.5 text-emerald-500" />
+                  <CheckIcon className="h-3.5 w-3.5 text-emerald-400" />
                   {item}
                 </span>
               ))}
@@ -670,14 +651,14 @@ export default function AboutPage() {
         </section>
       </main>
 
-      <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Raina Jet. All rights reserved.</span>
+      <footer className="border-t border-gray-200 bg-white px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
+          <span>© {new Date().getFullYear()} Evara AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
-            <Link href="/privacy-policy" className="transition hover:text-zinc-400">Privacy Policy</Link>
-            <Link href="/terms" className="transition hover:text-zinc-400">Terms of Service</Link>
-            <Link href="/cookies" className="transition hover:text-zinc-400">Cookie Policy</Link>
-            <Link href="/" className="transition hover:text-zinc-400">Home</Link>
+            <Link href="/privacy-policy" className="transition hover:text-[#1d2226]">Privacy Policy</Link>
+            <Link href="/terms" className="transition hover:text-[#1d2226]">Terms of Service</Link>
+            <Link href="/cookies" className="transition hover:text-[#1d2226]">Cookie Policy</Link>
+            <Link href="/" className="transition hover:text-[#1d2226]">Home</Link>
           </div>
         </div>
       </footer>

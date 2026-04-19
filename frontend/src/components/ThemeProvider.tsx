@@ -12,7 +12,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "dark",
+  theme: "light",
   setTheme: () => {},
 });
 
@@ -31,10 +31,10 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
+  const [theme, setThemeState] = useState<Theme>("light");
 
   useLayoutEffect(() => {
-    const stored = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "dark";
+    const stored = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "light";
     setThemeState(stored);
     applyTheme(stored);
 
@@ -47,7 +47,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const mqHandler = () => {
-      const current = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "dark";
+      const current = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "light";
       if (current === "auto") applyTheme("auto");
     };
     mq.addEventListener("change", mqHandler);
@@ -78,7 +78,7 @@ export function useTheme() {
 
 export function applyThemeFromStorage() {
   try {
-    const stored = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "dark";
+    const stored = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "light";
     const resolved = resolveTheme(stored);
     document.documentElement.setAttribute("data-theme", resolved);
   } catch {}

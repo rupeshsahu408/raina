@@ -148,7 +148,7 @@ function AISetupContent() {
           <p className="text-white/30 text-sm">Train your chatbot with your business information</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border ${config.isActive ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-zinc-400 bg-zinc-400/10 border-zinc-400/20"}`}>
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border ${config.isActive ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-gray-500 bg-zinc-400/10 border-zinc-400/20"}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${config.isActive ? "bg-green-400" : "bg-zinc-400"}`} />
             {config.isActive ? "Active" : "Inactive"}
           </div>
@@ -307,7 +307,7 @@ function AISetupContent() {
           <button
             onClick={() => handleSave(false)}
             disabled={saving}
-            className="flex-1 h-12 rounded-xl border border-white/10 hover:border-white/20 text-sm font-semibold text-white/60 hover:text-white transition-all"
+            className="flex-1 h-12 rounded-xl border border-gray-200 hover:border-white/20 text-sm font-semibold text-white/60 hover:text-white transition-all"
           >
             {saving ? (
               <span className="flex items-center justify-center gap-2">

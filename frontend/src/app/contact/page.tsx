@@ -84,36 +84,36 @@ const contactRoutes = [
     label: "General Support",
     description: "Account issues, billing questions, platform feedback, or anything else",
     icon: <MailIcon className="h-5 w-5" />,
-    color: "text-purple-300",
-    border: "border-purple-500/30",
-    bg: "bg-purple-500/[0.08]",
-    activeBorder: "border-purple-400",
-    activeBg: "bg-purple-500/[0.15]",
-    badge: "bg-purple-500/15 border-purple-400/30 text-purple-300",
+    color: "text-violet-600",
+    border: "border-gray-200",
+    bg: "bg-white",
+    activeBorder: "border-violet-300",
+    activeBg: "bg-violet-50",
+    badge: "bg-violet-50 border-violet-200 text-violet-600",
   },
   {
     id: "ivana",
     label: "Evara AI",
     description: "Questions or issues with the Evara AI web/app assistant",
     icon: <BrainIcon className="h-5 w-5" />,
-    color: "text-pink-300",
-    border: "border-pink-500/30",
-    bg: "bg-pink-500/[0.08]",
-    activeBorder: "border-pink-400",
-    activeBg: "bg-pink-500/[0.15]",
-    badge: "bg-pink-500/15 border-pink-400/30 text-pink-300",
+    color: "text-fuchsia-600",
+    border: "border-gray-200",
+    bg: "bg-white",
+    activeBorder: "border-fuchsia-200",
+    activeBg: "bg-fuchsia-50",
+    badge: "bg-fuchsia-50 border-fuchsia-200 text-fuchsia-600",
   },
   {
     id: "whatsapp",
     label: "WhatsApp AI",
     description: "Setup, automation, Business API issues, or integration support",
     icon: <WhatsAppIcon className="h-5 w-5" />,
-    color: "text-emerald-300",
-    border: "border-emerald-500/30",
-    bg: "bg-emerald-500/[0.08]",
-    activeBorder: "border-emerald-400",
-    activeBg: "bg-emerald-500/[0.15]",
-    badge: "bg-emerald-500/15 border-emerald-400/30 text-emerald-300",
+    color: "text-emerald-600",
+    border: "border-gray-200",
+    bg: "bg-white",
+    activeBorder: "border-emerald-200",
+    activeBg: "bg-emerald-50",
+    badge: "bg-emerald-50 border-emerald-200 text-emerald-600",
   },
 ];
 
@@ -184,43 +184,35 @@ export default function ContactPage() {
   const isValid = form.name.trim() && form.email.trim() && form.subject && form.message.trim();
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100 selection:bg-purple-500/30">
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.14),transparent_60%)]" />
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-purple-900/15 blur-[140px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[35%] h-[35%] rounded-full bg-sky-900/10 blur-[120px]" />
-        <div className="absolute top-[50%] left-[55%] w-[25%] h-[25%] rounded-full bg-pink-900/10 blur-[100px]" />
-      </div>
+    <div className="min-h-screen bg-white text-[#1d2226]">
 
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link href="/" className="flex items-center gap-2.5">
             <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-bold tracking-widest text-zinc-100 uppercase transition group-hover:text-white">Evara AI</span>
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/about" className="hidden text-sm text-zinc-500 transition hover:text-zinc-300 sm:block">About</Link>
-            <Link href="/privacy-policy" className="hidden text-sm text-zinc-500 transition hover:text-zinc-300 sm:block">Privacy</Link>
-            <Link href="/" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10">
+            <Link href="/about" className="hidden text-sm text-gray-500 transition hover:text-[#1d2226] sm:block">About</Link>
+            <Link href="/privacy-policy" className="hidden text-sm text-gray-500 transition hover:text-[#1d2226] sm:block">Privacy</Link>
+            <Link href="/" className="rounded-full bg-[#1d2226] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#2d3238]">
               Back to Home
             </Link>
           </div>
         </div>
       </nav>
 
-      <main className="relative z-10 mx-auto max-w-7xl px-4 pt-28 pb-20 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 pt-12 pb-20 sm:px-6 lg:px-8">
         <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-300 backdrop-blur-md mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-violet-700 mb-6">
             <SparklesIcon className="h-3.5 w-3.5" />
             <span>Contact Us</span>
           </div>
-          <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="text-4xl font-black tracking-tight text-[#1d2226] sm:text-5xl lg:text-6xl">
             We&apos;re Here to{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-sky-400">
-              Help
-            </span>
+            <span className="text-violet-600">Help</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-zinc-400">
+          <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-gray-500">
             Choose your inquiry type below and we&apos;ll route your message to the right team. We aim to respond within 24 hours.
           </p>
         </div>
@@ -228,26 +220,26 @@ export default function ContactPage() {
         <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:items-start">
           <div className="space-y-6">
             <div>
-              <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-zinc-500">Select inquiry type</p>
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Select inquiry type</p>
               <div className="grid gap-3 sm:grid-cols-3">
                 {contactRoutes.map((r) => (
                   <button
                     key={r.id}
                     type="button"
                     onClick={() => handleRouteChange(r.id)}
-                    className={`group relative rounded-2xl border p-4 text-left backdrop-blur-xl transition-all duration-200 hover:scale-[1.02] ${
+                    className={`group relative rounded-2xl border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${
                       selectedRoute === r.id
-                        ? `${r.activeBorder} ${r.activeBg} ring-1 ring-inset ring-white/10`
-                        : `${r.border} ${r.bg} hover:border-white/20`
+                        ? "border-violet-300 bg-violet-50 shadow-sm"
+                        : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
-                    <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/30 ${r.color}`}>
+                    <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 ${r.color}`}>
                       {r.icon}
                     </div>
-                    <p className="font-semibold text-white text-sm">{r.label}</p>
-                    <p className="mt-1 text-xs leading-5 text-zinc-500">{r.description}</p>
+                    <p className="font-semibold text-[#1d2226] text-sm">{r.label}</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">{r.description}</p>
                     {selectedRoute === r.id && (
-                      <div className={`absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full ${r.badge} border text-xs`}>
+                      <div className="absolute top-3 right-3 flex h-5 w-5 items-center justify-center rounded-full bg-violet-50 border border-violet-200 text-violet-600 text-xs">
                         <CheckCircleIcon className="h-3 w-3" />
                       </div>
                     )}
@@ -257,26 +249,26 @@ export default function ContactPage() {
             </div>
 
             {submitted ? (
-              <div className="rounded-[2rem] border border-emerald-400/30 bg-emerald-400/[0.07] p-10 text-center backdrop-blur-xl">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-emerald-400/30 bg-emerald-400/10">
-                  <CheckCircleIcon className="h-8 w-8 text-emerald-400" />
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-10 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-emerald-200 bg-emerald-100">
+                  <CheckCircleIcon className="h-8 w-8 text-emerald-600" />
                 </div>
-                <h3 className="mt-5 text-xl font-semibold text-white">Message Ready to Send</h3>
-                <p className="mt-3 text-sm leading-7 text-zinc-400">
+                <h3 className="mt-5 text-xl font-bold text-[#1d2226]">Message Ready to Send</h3>
+                <p className="mt-3 text-sm leading-7 text-gray-500">
                   Your email client should have opened with your message pre-filled and addressed to{" "}
-                  <span className="text-purple-300">{SUPPORT_EMAIL}</span>. If it didn&apos;t open automatically, you can email us directly.
+                  <span className="text-violet-600">{SUPPORT_EMAIL}</span>. If it didn&apos;t open automatically, you can email us directly.
                 </p>
                 <div className="mt-6 flex flex-wrap justify-center gap-3">
                   <a
                     href={`mailto:${SUPPORT_EMAIL}`}
-                    className="inline-flex items-center gap-2 rounded-full border border-purple-400/30 bg-purple-400/10 px-5 py-2.5 text-sm font-semibold text-purple-200 transition hover:bg-purple-400/15"
+                    className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-5 py-2.5 text-sm font-semibold text-violet-700 transition hover:bg-violet-100"
                   >
                     <MailIcon className="h-4 w-4" />
                     Email Us Directly
                   </a>
                   <button
                     onClick={() => { setSubmitted(false); setForm({ name: "", email: "", subject: "", message: "" }); }}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10"
+                    className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-gray-300"
                   >
                     Send Another Message
                   </button>
@@ -285,23 +277,23 @@ export default function ContactPage() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl sm:p-8"
+                className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8"
               >
                 <div className="mb-6 flex items-center gap-3">
-                  <span className={`flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-black/30 ${route.color}`}>
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 ${route.color}`}>
                     {route.icon}
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-white">{route.label} Inquiry</p>
-                    <p className="text-xs text-zinc-500">Fill in your details and we&apos;ll be in touch</p>
+                    <p className="text-sm font-semibold text-[#1d2226]">{route.label} Inquiry</p>
+                    <p className="text-xs text-gray-500">Fill in your details and we&apos;ll be in touch</p>
                   </div>
                 </div>
 
                 <div className="space-y-5">
                   <div className="grid gap-5 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="name" className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">
-                        Full Name <span className="text-pink-400">*</span>
+                      <label htmlFor="name" className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
+                        Full Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         id="name"
@@ -311,12 +303,12 @@ export default function ContactPage() {
                         placeholder="Your full name"
                         value={form.name}
                         onChange={handleChange}
-                        className="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white placeholder-zinc-600 backdrop-blur-xl outline-none transition focus:border-purple-400/50 focus:bg-white/[0.07] focus:ring-1 focus:ring-purple-400/20"
+                        className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-[#1d2226] outline-none transition placeholder:text-gray-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                       />
                     </div>
                     <div>
-                      <label htmlFor="email" className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">
-                        Email Address <span className="text-pink-400">*</span>
+                      <label htmlFor="email" className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
+                        Email Address <span className="text-red-500">*</span>
                       </label>
                       <input
                         id="email"
@@ -326,14 +318,14 @@ export default function ContactPage() {
                         placeholder="you@example.com"
                         value={form.email}
                         onChange={handleChange}
-                        className="w-full rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white placeholder-zinc-600 backdrop-blur-xl outline-none transition focus:border-purple-400/50 focus:bg-white/[0.07] focus:ring-1 focus:ring-purple-400/20"
+                        className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-[#1d2226] outline-none transition placeholder:text-gray-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label htmlFor="subject" className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">
-                      Subject <span className="text-pink-400">*</span>
+                    <label htmlFor="subject" className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
+                      Subject <span className="text-red-500">*</span>
                     </label>
                     <select
                       id="subject"
@@ -341,18 +333,18 @@ export default function ContactPage() {
                       required
                       value={form.subject}
                       onChange={handleChange}
-                      className="w-full rounded-2xl border border-white/10 bg-[#0d0d10] px-4 py-3 text-sm text-white placeholder-zinc-600 backdrop-blur-xl outline-none transition focus:border-purple-400/50 focus:ring-1 focus:ring-purple-400/20 appearance-none cursor-pointer"
+                      className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-[#1d2226] outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100 cursor-pointer"
                     >
-                      <option value="" disabled className="text-zinc-500">Select a subject…</option>
+                      <option value="" disabled>Select a subject…</option>
                       {subjects.map((s) => (
-                        <option key={s} value={s} className="bg-[#0d0d10]">{s}</option>
+                        <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label htmlFor="message" className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-zinc-400">
-                      Message <span className="text-pink-400">*</span>
+                    <label htmlFor="message" className="mb-2 block text-xs font-semibold uppercase tracking-[0.15em] text-gray-500">
+                      Message <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       id="message"
@@ -368,15 +360,15 @@ export default function ContactPage() {
                       }
                       value={form.message}
                       onChange={handleChange}
-                      className="w-full resize-none rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-sm text-white placeholder-zinc-600 backdrop-blur-xl outline-none transition focus:border-purple-400/50 focus:bg-white/[0.07] focus:ring-1 focus:ring-purple-400/20"
+                      className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-[#1d2226] outline-none transition placeholder:text-gray-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
                     />
-                    <p className="mt-2 text-right text-xs text-zinc-600">{form.message.length} / 2000</p>
+                    <p className="mt-2 text-right text-xs text-gray-400">{form.message.length} / 2000</p>
                   </div>
 
                   <button
                     type="submit"
                     disabled={!isValid || loading}
-                    className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-6 py-3.5 text-sm font-bold text-black transition hover:scale-[1.01] hover:bg-zinc-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[#1d2226] px-6 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#2d3238] disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {loading ? (
                       <>
@@ -393,9 +385,9 @@ export default function ContactPage() {
                       </>
                     )}
                   </button>
-                  <p className="text-center text-xs text-zinc-600">
+                  <p className="text-center text-xs text-gray-400">
                     Your message will open in your default email app pre-addressed to{" "}
-                    <span className="text-zinc-500">{SUPPORT_EMAIL}</span>
+                    <span className="text-gray-500">{SUPPORT_EMAIL}</span>
                   </p>
                 </div>
               </form>
@@ -403,71 +395,71 @@ export default function ContactPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-5">Contact Details</p>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 mb-5">Contact Details</p>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-purple-300">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-violet-100 bg-violet-50 text-violet-600">
                     <MailIcon className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-zinc-300">Support Email</p>
-                    <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-0.5 block text-sm text-purple-300 underline underline-offset-2 transition hover:text-purple-200 break-all">
+                    <p className="text-xs font-semibold text-[#1d2226]">Support Email</p>
+                    <a href={`mailto:${SUPPORT_EMAIL}`} className="mt-0.5 block text-sm text-violet-600 underline underline-offset-2 transition hover:text-violet-700 break-all">
                       {SUPPORT_EMAIL}
                     </a>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-emerald-300">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600">
                     <ClockIcon className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-zinc-300">Response Time</p>
-                    <p className="mt-0.5 text-sm text-zinc-400">Within 24 hours on business days</p>
+                    <p className="text-xs font-semibold text-[#1d2226]">Response Time</p>
+                    <p className="mt-0.5 text-sm text-gray-500">Within 24 hours on business days</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-sky-300">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-sky-100 bg-sky-50 text-sky-600">
                     <ShieldIcon className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-zinc-300">Privacy Assured</p>
-                    <p className="mt-0.5 text-sm text-zinc-400">Your inquiry is handled confidentially</p>
+                    <p className="text-xs font-semibold text-[#1d2226]">Privacy Assured</p>
+                    <p className="mt-0.5 text-sm text-gray-500">Your inquiry is handled confidentially</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-5">Route Your Inquiry</p>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 mb-5">Route Your Inquiry</p>
               <div className="space-y-3">
                 {contactRoutes.map((r) => (
                   <button
                     key={r.id}
                     type="button"
                     onClick={() => { handleRouteChange(r.id); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                    className={`w-full flex items-center gap-3 rounded-2xl border p-3.5 text-left transition hover:border-white/20 hover:bg-white/[0.05] ${
-                      selectedRoute === r.id ? `${r.activeBorder} ${r.activeBg}` : "border-white/[0.07] bg-transparent"
+                    className={`w-full flex items-center gap-3 rounded-xl border p-3.5 text-left transition hover:border-gray-300 hover:bg-gray-50 ${
+                      selectedRoute === r.id ? "border-violet-200 bg-violet-50" : "border-gray-200 bg-transparent"
                     }`}
                   >
-                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-black/30 ${r.color}`}>
+                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 ${r.color}`}>
                       {r.icon}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white">{r.label}</p>
-                      <p className="mt-0.5 truncate text-xs text-zinc-500">{r.description}</p>
+                      <p className="text-sm font-semibold text-[#1d2226]">{r.label}</p>
+                      <p className="mt-0.5 truncate text-xs text-gray-500">{r.description}</p>
                     </div>
                     {selectedRoute === r.id && (
-                      <CheckCircleIcon className={`ml-auto h-4 w-4 shrink-0 ${r.color}`} />
+                      <CheckCircleIcon className="ml-auto h-4 w-4 shrink-0 text-violet-600" />
                     )}
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-4">Quick Links</p>
-              <div className="space-y-2">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 mb-4">Quick Links</p>
+              <div className="space-y-1">
                 {[
                   ["Privacy Policy", "/privacy-policy"],
                   ["Terms of Service", "/terms"],
@@ -478,7 +470,7 @@ export default function ContactPage() {
                   <Link
                     key={href}
                     href={href}
-                    className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-zinc-400 transition hover:bg-white/[0.05] hover:text-white"
+                    className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-gray-500 transition hover:bg-gray-50 hover:text-[#1d2226]"
                   >
                     {label}
                     <ArrowRightIcon className="h-3.5 w-3.5 opacity-40" />
@@ -487,12 +479,12 @@ export default function ContactPage() {
               </div>
             </div>
 
-            <div className="rounded-[2rem] border border-purple-400/20 bg-purple-400/[0.06] p-5 backdrop-blur-xl">
+            <div className="rounded-2xl border border-violet-100 bg-violet-50 p-5">
               <div className="flex items-start gap-3">
-                <MessageIcon className="h-5 w-5 text-purple-300 shrink-0 mt-0.5" />
+                <MessageIcon className="h-5 w-5 text-violet-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-white">WhatsApp AI Users</p>
-                  <p className="mt-1.5 text-xs leading-5 text-zinc-400">
+                  <p className="text-sm font-bold text-[#1d2226]">WhatsApp AI Users</p>
+                  <p className="mt-1.5 text-xs leading-5 text-gray-500">
                     When contacting us about WhatsApp AI, please include your WhatsApp Business Account ID and a brief description of your automation setup to help us assist you faster.
                   </p>
                 </div>
@@ -502,14 +494,14 @@ export default function ContactPage() {
         </div>
       </main>
 
-      <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Raina Jet. All rights reserved.</span>
+      <footer className="border-t border-gray-200 bg-white px-4 py-8 sm:px-6 lg:px-8 mt-8">
+        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
+          <span>© {new Date().getFullYear()} Evara AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
-            <Link href="/privacy-policy" className="transition hover:text-zinc-400">Privacy Policy</Link>
-            <Link href="/terms" className="transition hover:text-zinc-400">Terms of Service</Link>
-            <Link href="/cookies" className="transition hover:text-zinc-400">Cookie Policy</Link>
-            <Link href="/disclaimer" className="transition hover:text-zinc-400">Disclaimer</Link>
+            <Link href="/privacy-policy" className="transition hover:text-[#1d2226]">Privacy Policy</Link>
+            <Link href="/terms" className="transition hover:text-[#1d2226]">Terms of Service</Link>
+            <Link href="/cookies" className="transition hover:text-[#1d2226]">Cookie Policy</Link>
+            <Link href="/disclaimer" className="transition hover:text-[#1d2226]">Disclaimer</Link>
           </div>
         </div>
       </footer>

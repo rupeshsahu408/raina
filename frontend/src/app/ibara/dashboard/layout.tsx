@@ -65,7 +65,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
           isActive
             ? "bg-violet-600/20 text-violet-300 border border-violet-500/20"
-            : "text-white/40 hover:text-white/80 hover:bg-white/5"
+            : "text-white/40 hover:text-[#1d2226]/80 hover:bg-white/5"
         }`}
       >
         <span className="text-base">{icon}</span>
@@ -85,7 +85,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#05050F] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
       </div>
     );
@@ -94,7 +94,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   const activeSite = sites.find((s) => s._id === activeSiteId);
 
   return (
-    <div className="min-h-screen bg-[#05050F] text-white flex">
+    <div className="min-h-screen bg-white text-[#1d2226] flex">
       <style>{`
         .card-glass { background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.07); }
         .sidebar-glass { background: rgba(8,8,20,0.95); border-right: 1px solid rgba(255,255,255,0.06); }
@@ -103,7 +103,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/60 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-white/60 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
@@ -113,16 +113,16 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
         {/* Logo */}
-        <div className="flex items-center gap-2 px-5 py-5 border-b border-white/5">
+        <div className="flex items-center gap-2 px-5 py-5 border-b border-gray-200">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-xs">I</span>
+            <span className="text-[#1d2226] font-bold text-xs">I</span>
           </div>
           <span className="font-bold text-sm">IBARA AI</span>
         </div>
 
         {/* Site selector */}
         {activeSite && (
-          <div className="px-3 py-4 border-b border-white/5">
+          <div className="px-3 py-4 border-b border-gray-200">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-white/25 px-2 mb-2">Active Site</p>
             <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/5 border border-white/8">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-800 to-violet-600 flex items-center justify-center text-xs shrink-0">
@@ -154,10 +154,10 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Bottom */}
-        <div className="px-3 py-4 border-t border-white/5 space-y-1">
+        <div className="px-3 py-4 border-t border-gray-200 space-y-1">
           <button
             onClick={() => router.push("/ibara/onboarding")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white/80 hover:bg-white/5 transition-all"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-[#1d2226]/80 hover:bg-white/5 transition-all"
           >
             <span>+</span> Add Website
           </button>
@@ -168,7 +168,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-white/70 truncate">{user?.email}</p>
             </div>
-            <button onClick={handleSignOut} className="text-white/25 hover:text-white/60 transition-colors text-sm" title="Sign out">
+            <button onClick={handleSignOut} className="text-white/25 hover:text-[#1d2226]/60 transition-colors text-sm" title="Sign out">
               ⇥
             </button>
           </div>
@@ -178,10 +178,10 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="flex items-center gap-4 px-6 py-4 border-b border-white/5">
+        <header className="flex items-center gap-4 px-6 py-4 border-b border-gray-200">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden w-8 h-8 flex items-center justify-center text-white/40 hover:text-white rounded-lg hover:bg-white/5"
+            className="md:hidden w-8 h-8 flex items-center justify-center text-white/40 hover:text-[#1d2226] rounded-lg hover:bg-white/5"
           >
             ☰
           </button>
@@ -202,7 +202,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#05050F] flex items-center justify-center">
+    <Suspense fallback={<div className="min-h-screen bg-white flex items-center justify-center">
       <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
     </div>}>
       <DashboardShell>{children}</DashboardShell>

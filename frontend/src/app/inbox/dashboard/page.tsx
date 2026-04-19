@@ -1547,7 +1547,7 @@ export default function InboxDashboard() {
       {/* ── Mobile sidebar backdrop ──────────────────────────────────── */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] lg:hidden"
+          className="fixed inset-0 z-40 bg-white backdrop-blur-[2px] lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -1596,7 +1596,7 @@ export default function InboxDashboard() {
               className={`w-full rounded-2xl px-3.5 py-2.5 text-left transition-all duration-200 border ${
                 commandView === "mission"
                   ? "border-violet-500/50 text-white"
-                  : "border-white/[0.07] bg-white/[0.04] hover:bg-white/[0.08] text-white"
+                  : "border-white/[0.07] bg-white hover:bg-gray-50 text-white"
               }`}
               style={commandView === "mission" ? { background: "linear-gradient(135deg,rgba(92,79,246,0.7) 0%,rgba(124,58,237,0.7) 100%)", boxShadow: "0 4px 14px rgba(92,79,246,0.25)" } : undefined}
             >
@@ -1605,7 +1605,7 @@ export default function InboxDashboard() {
                   <SparkleIcon />
                 </span>
                 <span className="text-sm font-bold flex-1 text-left">Today&apos;s Mission</span>
-                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black shrink-0 ${commandView === "mission" ? "bg-white/25 text-white" : "bg-white/10 text-zinc-400"}`}>
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-black shrink-0 ${commandView === "mission" ? "bg-white/25 text-white" : "bg-white/10 text-gray-500"}`}>
                   {missionCount}
                 </span>
               </div>
@@ -1614,7 +1614,7 @@ export default function InboxDashboard() {
 
           {/* Nav: Mailbox */}
           <div className="px-4 mb-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-2 px-1">Mailbox</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2 px-1">Mailbox</p>
             <nav className="space-y-0.5">
               {NAV_ITEMS.map(item => (
                 <button
@@ -1623,10 +1623,10 @@ export default function InboxDashboard() {
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                     folder === item.id
                       ? "bg-white/10 text-white"
-                      : "text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200"
+                      : "text-gray-400 hover:bg-gray-50 hover:text-[#1d2226]"
                   }`}
                 >
-                  <span className={`transition-colors ${folder === item.id ? "text-violet-400" : "text-zinc-600"}`}>{item.icon}</span>
+                  <span className={`transition-colors ${folder === item.id ? "text-violet-400" : "text-gray-400"}`}>{item.icon}</span>
                   <span className="flex-1 text-left">{item.label}</span>
                 </button>
               ))}
@@ -1635,7 +1635,7 @@ export default function InboxDashboard() {
 
           {/* Nav: AI Tools */}
           <div className="px-4 pb-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-600 mb-2 px-1">AI Tools</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-gray-400 mb-2 px-1">AI Tools</p>
             <nav className="space-y-0.5">
               <Link href="/inbox/analyze" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all" style={{ background: "linear-gradient(135deg,rgba(92,79,246,0.18) 0%,rgba(124,58,237,0.12) 100%)", color: "#a78bfa", border: "1px solid rgba(139,92,246,0.25)" }}>
                 <span style={{ color: "#a78bfa" }}>
@@ -1644,22 +1644,22 @@ export default function InboxDashboard() {
                 <span className="font-bold">Analyze</span>
                 <span className="ml-auto text-[9px] font-black px-1.5 py-0.5 rounded-md" style={{ background: "rgba(139,92,246,0.25)", color: "#c4b5fd" }}>NEW</span>
               </Link>
-              <Link href="/inbox/smart-digest" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
-                <span className="text-zinc-600">
+              <Link href="/inbox/smart-digest" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-50 hover:text-[#1d2226] transition-all">
+                <span className="text-gray-400">
                   <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.44l-1.74-9.7A2.5 2.5 0 0 1 7.76 6.7L9.5 6"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96-.44l1.74-9.7a2.5 2.5 0 0 0-1.96-2.86L14.5 6"/></svg>
                 </span>
                 Smart Digest
               </Link>
-              <Link href="/inbox/leads" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
-                <span className="text-zinc-600"><SparkleIcon /></span>
+              <Link href="/inbox/leads" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-50 hover:text-[#1d2226] transition-all">
+                <span className="text-gray-400"><SparkleIcon /></span>
                 Lead Intelligence
               </Link>
-              <Link href="/inbox/followups" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
-                <span className="text-zinc-600"><BellIcon /></span>
+              <Link href="/inbox/followups" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-50 hover:text-[#1d2226] transition-all">
+                <span className="text-gray-400"><BellIcon /></span>
                 Follow-Ups
               </Link>
-              <Link href="/inbox/health" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-zinc-500 hover:bg-white/[0.05] hover:text-zinc-200 transition-all">
-                <span className="text-zinc-600">
+              <Link href="/inbox/health" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-50 hover:text-[#1d2226] transition-all">
+                <span className="text-gray-400">
                   <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                 </span>
                 Inbox Health
@@ -1671,12 +1671,12 @@ export default function InboxDashboard() {
 
         {/* Bottom — user + settings */}
         <div className="px-4 pb-4 pt-3 border-t border-white/[0.06] shrink-0">
-          <Link href="/inbox/connect" className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.05] transition-all mb-1">
+          <Link href="/inbox/connect" className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-gray-400 hover:text-[#1d2226] hover:bg-gray-50 transition-all mb-1">
             <svg className="w-[17px] h-[17px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.071 4.929A10 10 0 1 0 4.93 19.07A10 10 0 0 0 19.07 4.93"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M2 12h2"/><path d="M20 12h2"/></svg>
             Settings
           </Link>
           {(connectedGmailEmail || user?.email) && (
-            <Link href="/inbox/connect" className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white/[0.04] transition-all group">
+            <Link href="/inbox/connect" className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-white transition-all group">
               <div className="relative shrink-0">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-black" style={{ background: avatarColor(connectedGmailEmail || user?.email || "") }}>
                   {(connectedGmailEmail || user?.email || "?")[0].toUpperCase()}
@@ -1689,10 +1689,10 @@ export default function InboxDashboard() {
                 {connectedGmailEmail ? (
                   <>
                     <p className="text-[10px] text-emerald-400 font-bold truncate leading-none mb-0.5">Gmail Connected</p>
-                    <p className="text-[11px] text-zinc-400 truncate leading-none">{connectedGmailEmail}</p>
+                    <p className="text-[11px] text-gray-500 truncate leading-none">{connectedGmailEmail}</p>
                   </>
                 ) : (
-                  <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
+                  <p className="text-xs text-gray-400 truncate">{user?.email}</p>
                 )}
               </div>
             </Link>
@@ -1817,7 +1817,7 @@ export default function InboxDashboard() {
                       </span>
                       <h1 className="text-lg font-black text-white tracking-tight">Today's Mission</h1>
                     </div>
-                    <p className="text-xs text-zinc-400 ml-10">{missionDate} · {getMissionGreeting()}! Here's what needs your focus.</p>
+                    <p className="text-xs text-gray-500 ml-10">{missionDate} · {getMissionGreeting()}! Here's what needs your focus.</p>
                   </div>
                   <button
                     onClick={() => setCommandView("inbox")}

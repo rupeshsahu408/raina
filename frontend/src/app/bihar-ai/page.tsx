@@ -482,7 +482,7 @@ export default function BiharAiPage() {
   // ── RENDER ──────────────────────────────────────────────────────────────
   return (
     <>
-    <div className="flex h-screen overflow-hidden bg-[#111111] text-zinc-100">
+    <div className="flex h-screen overflow-hidden bg-white text-[#1d2226]">
 
       {/* Mobile overlay */}
       {sidebarOpen && (
@@ -493,21 +493,21 @@ export default function BiharAiPage() {
           SIDEBAR
       ══════════════════════════════════════════ */}
       <aside className={[
-        "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-white/[0.06] bg-[#0d0d0d] transition-transform duration-300",
+        "fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-gray-200 bg-white transition-transform duration-300",
         "lg:static lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full",
       ].join(" ")}>
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.05] px-4 pt-5 pb-4">
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 pt-5 pb-4">
           <div className="flex items-center gap-2">
             <img src="/evara-logo.png" alt="Bihar AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
             <div>
-              <p className="text-[14px] font-semibold text-amber-300 leading-tight">Bihar AI</p>
-              <p className="text-[10px] text-zinc-600 leading-tight">Bihar-focused assistant</p>
+              <p className="text-[14px] font-semibold text-amber-600 leading-tight">Bihar AI</p>
+              <p className="text-[10px] text-gray-400 leading-tight">Bihar-focused assistant</p>
             </div>
           </div>
-          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1 text-zinc-600 hover:text-zinc-300 lg:hidden">
+          <button type="button" onClick={() => setSidebarOpen(false)} className="rounded-lg p-1 text-gray-400 hover:text-[#1d2226] lg:hidden">
             <IconX size={14} />
           </button>
         </div>
@@ -518,7 +518,7 @@ export default function BiharAiPage() {
             type="button"
             onClick={startNewChat}
             disabled={isTyping}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] py-2.5 text-[13px] font-medium text-amber-300/90 transition hover:bg-amber-500/[0.12] disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 py-2.5 text-[13px] font-medium text-amber-700 transition hover:bg-amber-100 disabled:opacity-50"
           >
             <IconPlus size={13} />
             New chat
@@ -527,7 +527,7 @@ export default function BiharAiPage() {
 
         {/* Categories */}
         <div className="flex-1 overflow-y-auto px-3">
-          <p className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">Category</p>
+          <p className="mb-1.5 px-1 text-[10px] font-semibold uppercase tracking-widest text-gray-400">Category</p>
           <div className="space-y-0.5">
             <button
               type="button"
@@ -535,8 +535,8 @@ export default function BiharAiPage() {
               className={[
                 "flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] transition",
                 categoryAutoMode
-                  ? "bg-amber-500/[0.1] text-amber-300 ring-1 ring-inset ring-amber-500/20"
-                  : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200",
+                  ? "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-[#1d2226]",
               ].join(" ")}
             >
               <span className="text-[14px]">🤖</span>
@@ -550,8 +550,8 @@ export default function BiharAiPage() {
                 className={[
                   "flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-[13px] transition",
                   !categoryAutoMode && selectedCategory === c.id
-                    ? "bg-amber-500/[0.1] text-amber-300 ring-1 ring-inset ring-amber-500/20"
-                    : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200",
+                    ? "bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
+                    : "text-gray-500 hover:bg-gray-50 hover:text-[#1d2226]",
                 ].join(" ")}
               >
                 <span className="text-[14px]">{c.emoji}</span>
@@ -562,31 +562,31 @@ export default function BiharAiPage() {
 
           {/* District */}
           <div className="mt-4 px-1">
-            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">District</p>
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400">District</p>
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="w-full rounded-xl border border-white/[0.07] bg-white/[0.04] px-3 py-2 text-[13px] text-zinc-200 outline-none focus:border-amber-400/40 focus:bg-white/[0.06]"
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-[13px] text-[#1d2226] outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
             >
               {BIHAR_DISTRICTS.map((d) => (
-                <option key={d.value} value={d.value} className="bg-zinc-900">{d.label}</option>
+                <option key={d.value} value={d.value}>{d.label}</option>
               ))}
             </select>
           </div>
         </div>
 
         {/* Bottom actions */}
-        <div className="border-t border-white/[0.05] px-3 py-3 space-y-1.5">
+        <div className="border-t border-gray-100 px-3 py-3 space-y-1.5">
           <a
             href="/chat"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.03] py-2 text-[12px] text-zinc-400 transition hover:bg-white/[0.06] hover:text-zinc-200"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 py-2 text-[12px] text-gray-500 transition hover:bg-gray-100 hover:text-[#1d2226]"
           >
             ← Evara AI
           </a>
           <button
             type="button"
             onClick={async () => { const auth = getFirebaseAuth(); await signOut(auth); router.replace("/login"); }}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-[12px] text-zinc-600 hover:text-red-400 transition"
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-[12px] text-gray-400 hover:text-red-500 transition"
           >
             <IconLogout size={13} />
             Sign out
@@ -600,25 +600,25 @@ export default function BiharAiPage() {
       <div className="flex flex-1 flex-col min-h-0 overflow-hidden">
 
         {/* Header */}
-        <header className="flex shrink-0 items-center justify-between border-b border-white/[0.06] bg-[#111111]/95 px-4 py-3 backdrop-blur-md">
+        <header className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-white px-4 py-3">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="rounded-xl p-1.5 text-zinc-500 hover:bg-white/[0.07] hover:text-zinc-200 lg:hidden"
+              className="rounded-xl p-1.5 text-gray-400 hover:bg-gray-100 hover:text-[#1d2226] lg:hidden"
             >
               <IconMenu size={18} />
             </button>
             <div>
-              <p className="text-[14px] font-semibold text-amber-300 leading-tight">Bihar AI</p>
-              <p className="text-[11px] text-zinc-600 leading-tight">{contextChip}</p>
+              <p className="text-[14px] font-semibold text-amber-600 leading-tight">Bihar AI</p>
+              <p className="text-[11px] text-gray-400 leading-tight">{contextChip}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             {/* Usage */}
             {(typeof usage.messagesLeft === "number" || typeof usage.webSearchLeft === "number") && (
-              <span className="hidden text-[11px] text-zinc-600 sm:block">
+              <span className="hidden text-[11px] text-gray-400 sm:block">
                 {typeof usage.messagesLeft === "number" ? `${usage.messagesLeft} msgs` : ""}
                 {typeof usage.messagesLeft === "number" && typeof usage.webSearchLeft === "number" ? " · " : ""}
                 {typeof usage.webSearchLeft === "number" ? `${usage.webSearchLeft} web` : ""} left
@@ -632,8 +632,8 @@ export default function BiharAiPage() {
               className={[
                 "flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[12px] font-medium transition",
                 webEnabled
-                  ? "border-amber-400/40 bg-amber-400/[0.08] text-amber-300"
-                  : "border-white/[0.07] bg-white/[0.03] text-zinc-500 hover:text-zinc-300",
+                  ? "border-amber-300 bg-amber-50 text-amber-700"
+                  : "border-gray-200 bg-gray-50 text-gray-500 hover:text-[#1d2226]",
               ].join(" ")}
               aria-pressed={webEnabled}
             >
@@ -642,7 +642,7 @@ export default function BiharAiPage() {
             </button>
 
             {/* Category badge */}
-            <div className="hidden items-center gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-1.5 text-[12px] text-zinc-400 sm:flex">
+            <div className="hidden items-center gap-1.5 rounded-xl border border-gray-200 bg-gray-50 px-3 py-1.5 text-[12px] text-gray-500 sm:flex">
               {categoryAutoMode
                 ? <>🤖 Auto{lastResolvedLabel ? ` → ${lastResolvedLabel}` : ""}</>
                 : <>{BIHAR_CATEGORIES.find((c) => c.id === selectedCategory)?.emoji} {lockedCategoryLabel}</>}
@@ -651,10 +651,10 @@ export default function BiharAiPage() {
         </header>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto bg-gray-50/50">
           <div className="mx-auto max-w-3xl px-4 py-6 space-y-6">
             {historyLoading && (
-              <p className="text-center text-[12px] text-zinc-600">Loading chat…</p>
+              <p className="text-center text-[12px] text-gray-400">Loading chat…</p>
             )}
             {messages.map((m) => (
               <div key={m.id} className={["msg-in", m.role === "user" ? "flex justify-end" : "flex items-start gap-3"].join(" ")}>
@@ -662,20 +662,20 @@ export default function BiharAiPage() {
                 <div className={[
                   "group relative",
                   m.role === "user"
-                    ? "max-w-[80%] rounded-2xl rounded-br-sm bg-amber-500/[0.08] px-4 py-3 text-[14px] leading-relaxed text-zinc-100 ring-1 ring-inset ring-amber-500/15"
+                    ? "max-w-[80%] rounded-2xl rounded-br-sm bg-amber-50 px-4 py-3 text-[14px] leading-relaxed text-[#1d2226] ring-1 ring-inset ring-amber-200"
                     : "flex-1 min-w-0",
                 ].join(" ")}>
                   {m.role === "ai" ? (
-                    <div className="text-[14px] text-zinc-100">
+                    <div className="text-[14px] text-[#1d2226]">
                       <div className="chat-markdown">
                         <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                       </div>
                       {m.sources && m.sources.length > 0 && (
-                        <div className="mt-3 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[12px]">
-                          <p className="font-medium text-zinc-400 mb-1">Sources</p>
+                        <div className="mt-3 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-[12px] shadow-sm">
+                          <p className="font-medium text-gray-400 mb-1">Sources</p>
                           {m.sources.map((s) => (
                             <a key={`${s.link}-${s.title}`} href={s.link} target="_blank" rel="noreferrer"
-                              className="block truncate text-amber-400 underline decoration-amber-400/40 underline-offset-2 hover:text-amber-300">
+                              className="block truncate text-amber-600 underline decoration-amber-300 underline-offset-2 hover:text-amber-700">
                               {s.title}
                             </a>
                           ))}
@@ -684,9 +684,9 @@ export default function BiharAiPage() {
                       <button
                         type="button"
                         onClick={() => copyMessage(m.id, m.content)}
-                        className="mt-1.5 flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] text-zinc-600 opacity-0 transition hover:bg-white/[0.06] hover:text-zinc-300 group-hover:opacity-100"
+                        className="mt-1.5 flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] text-gray-400 opacity-0 transition hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100"
                       >
-                        {copiedMessageId === m.id ? <><IconCheck size={11} /><span className="text-emerald-400">Copied</span></> : <><IconCopy size={11} />Copy</>}
+                        {copiedMessageId === m.id ? <><IconCheck size={11} /><span className="text-emerald-600">Copied</span></> : <><IconCopy size={11} />Copy</>}
                       </button>
                     </div>
                   ) : (
@@ -695,9 +695,9 @@ export default function BiharAiPage() {
                       <button
                         type="button"
                         onClick={() => copyMessage(m.id, m.content)}
-                        className="mt-1.5 flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] text-zinc-600 opacity-0 transition hover:text-zinc-300 group-hover:opacity-100"
+                        className="mt-1.5 flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] text-gray-400 opacity-0 transition hover:text-gray-600 group-hover:opacity-100"
                       >
-                        {copiedMessageId === m.id ? <><IconCheck size={11} /><span className="text-emerald-400">Copied</span></> : <><IconCopy size={11} />Copy</>}
+                        {copiedMessageId === m.id ? <><IconCheck size={11} /><span className="text-emerald-600">Copied</span></> : <><IconCopy size={11} />Copy</>}
                       </button>
                     </>
                   )}
@@ -708,7 +708,7 @@ export default function BiharAiPage() {
             {isTyping && (
               <div className="msg-in flex items-start gap-3">
                 <BiharAvatar />
-                <div className="rounded-2xl border border-amber-500/[0.15] bg-amber-500/[0.04] px-4 py-3">
+                <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
                   <TypingDots />
                 </div>
               </div>
@@ -718,7 +718,7 @@ export default function BiharAiPage() {
         </div>
 
         {/* Input */}
-        <div className="shrink-0 border-t border-white/[0.05] bg-[#111111] px-4 py-4">
+        <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-4">
           <div className="mx-auto max-w-3xl">
             {isListening ? (
               <VoiceRecordingBar
@@ -731,12 +731,12 @@ export default function BiharAiPage() {
             ) : (
               <form
                 onSubmit={handleSubmit}
-                className="relative rounded-2xl border border-white/[0.09] bg-[#1c1c1c] p-3 shadow-xl ring-1 ring-inset ring-white/[0.04] transition-all focus-within:border-amber-400/30 focus-within:ring-amber-400/[0.07]"
+                className="relative rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition-all focus-within:border-amber-300 focus-within:ring-2 focus-within:ring-amber-100"
               >
                 <textarea
                   ref={textareaRef}
                   rows={1}
-                  className="w-full resize-none bg-transparent pr-16 text-[14px] leading-relaxed text-zinc-100 outline-none placeholder:text-zinc-600"
+                  className="w-full resize-none bg-transparent pr-16 text-[14px] leading-relaxed text-[#1d2226] outline-none placeholder:text-gray-400"
                   placeholder="Bihar ke baare mein kuch bhi pucho…"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -757,8 +757,8 @@ export default function BiharAiPage() {
                       className={[
                         "flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition",
                         categoryAutoMode
-                          ? "bg-amber-500/[0.1] text-amber-300 ring-1 ring-amber-500/20"
-                          : "text-zinc-600 hover:text-zinc-400",
+                          ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                          : "text-gray-400 hover:text-gray-600",
                       ].join(" ")}
                     >
                       🤖 Auto
@@ -771,8 +771,8 @@ export default function BiharAiPage() {
                         className={[
                           "hidden items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] transition sm:flex",
                           !categoryAutoMode && selectedCategory === c.id
-                            ? "bg-amber-500/[0.1] text-amber-300 ring-1 ring-amber-500/20"
-                            : "text-zinc-600 hover:text-zinc-400",
+                            ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                            : "text-gray-400 hover:text-gray-600",
                         ].join(" ")}
                       >
                         {c.emoji}
@@ -784,7 +784,7 @@ export default function BiharAiPage() {
                       type="button"
                       onClick={startRecording}
                       disabled={isTyping}
-                      className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.06] text-zinc-500 transition hover:border-white/10 hover:text-zinc-300 disabled:opacity-40"
+                      className="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-200 text-gray-400 transition hover:border-gray-300 hover:text-[#1d2226] disabled:opacity-40"
                       aria-label="Voice input"
                       title="Voice input"
                     >
@@ -793,7 +793,7 @@ export default function BiharAiPage() {
                     <button
                       type="submit"
                       disabled={isTyping || input.trim().length === 0}
-                      className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-zinc-900 shadow-lg transition hover:bg-amber-400 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm transition hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <IconSend size={14} />
                     </button>
@@ -802,14 +802,14 @@ export default function BiharAiPage() {
               </form>
             )}
             {micError && (
-              <p className="mt-1.5 text-center text-[11px] text-red-400">{micError}</p>
+              <p className="mt-1.5 text-center text-[11px] text-red-500">{micError}</p>
             )}
-            <p className="mt-1 text-center text-[11px] text-zinc-700">
+            <p className="mt-1 text-center text-[11px] text-gray-400">
               Words like &quot;latest / aaj / abhi&quot; auto-enable web search.{" "}
               <button
                 type="button"
                 onClick={() => setShowCookieModal(true)}
-                className="underline underline-offset-2 transition hover:text-zinc-500"
+                className="underline underline-offset-2 transition hover:text-gray-600"
               >
                 Cookie Preferences
               </button>

@@ -122,11 +122,11 @@ function ConnectContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#04030a] text-zinc-100 flex flex-col">
-      <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(124,58,237,0.15),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(6,182,212,0.10),transparent_50%)]" />
+    <div className="min-h-screen bg-[#04030a] text-[#1d2226] flex flex-col">
+      
 
       <nav className="relative z-10 flex items-center justify-between px-6 py-5 max-w-5xl mx-auto w-full">
-        <Link href="/inbox" className="flex items-center gap-2.5 text-zinc-400 hover:text-white transition">
+        <Link href="/inbox" className="flex items-center gap-2.5 text-gray-500 hover:text-white transition">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m15 18-6-6 6-6" />
           </svg>
@@ -134,7 +134,7 @@ function ConnectContent() {
         </Link>
         <div className="flex items-center gap-2">
           <img src="/evara-logo.png" alt="Evara" className="h-7 w-7 object-contain opacity-70" />
-          <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Plyndrox</span>
+          <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Plyndrox</span>
         </div>
       </nav>
 
@@ -149,7 +149,7 @@ function ConnectContent() {
                 </svg>
               </div>
               <h1 className="text-2xl font-black text-white mb-2">Gmail Connected</h1>
-              <p className="text-sm text-zinc-400 mb-1">Signed in as</p>
+              <p className="text-sm text-gray-500 mb-1">Signed in as</p>
               <p className="text-sm font-bold text-emerald-300 mb-6">{connectedEmail}</p>
               <div className="flex flex-col gap-3">
                 <button
@@ -161,14 +161,14 @@ function ConnectContent() {
                 <button
                   onClick={handleDisconnect}
                   disabled={disconnecting}
-                  className="w-full rounded-2xl border border-white/10 py-3 text-sm font-semibold text-zinc-400 transition hover:border-red-500/30 hover:text-red-400 disabled:opacity-50"
+                  className="w-full rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-500 transition hover:border-red-500/30 hover:text-red-400 disabled:opacity-50"
                 >
                   {disconnecting ? "Disconnecting..." : "Disconnect Gmail"}
                 </button>
               </div>
             </div>
           ) : (
-            <div className="rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 text-center">
+            <div className="rounded-[2rem] border border-gray-200 bg-white/[0.03] p-8 text-center">
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-violet-500/25 bg-violet-500/10">
                 <svg className="h-8 w-8" viewBox="0 0 24 24">
                   <rect width="20" height="16" x="2" y="4" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-violet-400" />
@@ -177,7 +177,7 @@ function ConnectContent() {
               </div>
 
               <h1 className="text-2xl font-black text-white mb-2">Connect your Gmail</h1>
-              <p className="text-sm text-zinc-400 mb-8 leading-6">
+              <p className="text-sm text-gray-500 mb-8 leading-6">
                 Securely authorize Plyndrox to read and reply to your emails. We use OAuth 2.0 — we never store your password.
               </p>
 

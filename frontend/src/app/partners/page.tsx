@@ -140,14 +140,14 @@ const partnerBenefits = [
     icon: <LayersIcon className="h-6 w-6" />,
     title: "Scalable Solutions",
     description: "Partners contribute critical scalability capabilities that allow the Evara AI platform to grow seamlessly alongside user demand — from early adopters to large enterprise deployments — without compromising quality.",
-    color: "text-purple-300",
+    color: "text-violet-600",
     bg: "bg-purple-400/10 border-purple-400/20",
   },
   {
     icon: <RocketIcon className="h-6 w-6" />,
     title: "Faster Innovation",
     description: "Collaborative partnerships accelerate the pace of product innovation by giving Evara AI access to cutting-edge technologies, specialized expertise, and complementary capabilities that would take significantly longer to build independently.",
-    color: "text-pink-300",
+    color: "text-fuchsia-600",
     bg: "bg-pink-400/10 border-pink-400/20",
   },
   {
@@ -170,7 +170,7 @@ const collaborationAreas = [
   {
     title: "Technology Integration",
     description: "We partner with technology providers to integrate specialized capabilities directly into the Evara AI platform. These integrations expand what our products can do and ensure that users benefit from the best available tools — without needing to manage multiple separate platforms.",
-    icon: <LayersIcon className="h-5 w-5 text-purple-300" />,
+    icon: <LayersIcon className="h-5 w-5 text-violet-600" />,
     items: ["API and SDK integration", "Platform capability extension", "Shared development resources", "Joint technical roadmaps"],
   },
   {
@@ -182,7 +182,7 @@ const collaborationAreas = [
   {
     title: "AI Development and Scaling",
     description: "As the AI capabilities of the Evara AI platform grow, partners contribute the compute resources, model infrastructure, and technical expertise necessary to scale AI services reliably and cost-effectively — ensuring that Evara AI and WhatsApp AI continue to perform as demand grows.",
-    icon: <BrainIcon className="h-5 w-5 text-pink-300" />,
+    icon: <BrainIcon className="h-5 w-5 text-fuchsia-600" />,
     items: ["Model infrastructure support", "Compute and storage resources", "AI performance optimization", "Safety and reliability systems"],
   },
   {
@@ -202,7 +202,7 @@ const trustStats = [
 
 export default function PartnersPage() {
   return (
-    <div className="min-h-screen bg-black text-zinc-100 selection:bg-purple-500/30">
+    <div className="min-h-screen bg-white text-[#1d2226] ">
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.14),transparent_60%)]" />
         <div className="absolute top-[-15%] right-[-10%] w-[45%] h-[45%] rounded-full bg-indigo-900/15 blur-[140px]" />
@@ -210,16 +210,16 @@ export default function PartnersPage() {
         <div className="absolute top-[45%] left-[50%] w-[30%] h-[30%] rounded-full bg-sky-900/10 blur-[100px]" />
       </div>
 
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
             <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-bold tracking-widest text-zinc-100 uppercase transition group-hover:text-white">Evara AI</span>
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226] transition group-hover:text-white">Evara AI</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link href="/about" className="hidden text-sm text-zinc-500 transition hover:text-zinc-300 sm:block">About</Link>
-            <Link href="/contact" className="hidden text-sm text-zinc-500 transition hover:text-zinc-300 sm:block">Contact</Link>
-            <Link href="/" className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold text-white transition hover:bg-white/10">
+            <Link href="/about" className="hidden text-sm text-gray-400 transition hover:text-gray-600 sm:block">About</Link>
+            <Link href="/contact" className="hidden text-sm text-gray-400 transition hover:text-gray-600 sm:block">Contact</Link>
+            <Link href="/" className="rounded-full bg-[#1d2226] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#2d3238]">
               Back to Home
             </Link>
           </div>
@@ -242,10 +242,10 @@ export default function PartnersPage() {
                 Partners
               </span>
             </h1>
-            <p className="mx-auto mt-8 max-w-2xl text-balance text-lg leading-relaxed text-zinc-400 sm:text-xl">
+            <p className="mx-auto mt-8 max-w-2xl text-balance text-lg leading-relaxed text-gray-500 sm:text-xl">
               Collaborating with innovative companies to build the future of AI — reliably, scalably, and with purpose.
             </p>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-zinc-500">
+            <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-gray-400">
               Evara AI is built on a foundation of trusted partnerships. Every collaboration is chosen with care, aligned to our values, and oriented toward delivering the best possible experience for our users.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
@@ -253,7 +253,7 @@ export default function PartnersPage() {
                 Become a Partner
                 <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </Link>
-              <Link href="#featured-partner" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10">
+              <Link href="#featured-partner" className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/10">
                 Meet Our Partners
               </Link>
             </div>
@@ -264,21 +264,21 @@ export default function PartnersPage() {
         <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {trustStats.map((s) => (
-              <div key={s.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 text-center backdrop-blur-xl">
+              <div key={s.label} className="rounded-2xl border border-gray-200 bg-white p-5 text-center backdrop-blur-xl">
                 <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">{s.value}</p>
-                <p className="mt-1 text-sm font-semibold text-zinc-300">{s.label}</p>
-                <p className="mt-0.5 text-xs text-zinc-600">{s.sub}</p>
+                <p className="mt-1 text-sm font-semibold text-gray-600">{s.label}</p>
+                <p className="mt-0.5 text-xs text-gray-400">{s.sub}</p>
               </div>
             ))}
           </div>
         </section>
 
         {/* Introduction */}
-        <section className="relative border-y border-white/5 bg-white/[0.015] py-20">
+        <section className="relative border-y border-gray-100 bg-white/[0.015] py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
               <div>
-                <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+                <p className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-600">
                   Why Partnerships Matter
                 </p>
                 <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
@@ -287,7 +287,7 @@ export default function PartnersPage() {
                     Built Better.
                   </span>
                 </h2>
-                <div className="mt-6 space-y-5 text-base leading-8 text-zinc-400">
+                <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                   <p>
                     Great AI platforms are never built in isolation. Behind every reliable, high-performance, and genuinely useful AI product is a network of trusted partners, technology providers, and collaborative relationships that contribute the infrastructure, services, and capabilities necessary to deliver on ambitious promises.
                   </p>
@@ -306,12 +306,12 @@ export default function PartnersPage() {
                   { icon: <HandshakeIcon className="h-5 w-5 text-indigo-300" />, label: "Long-Term Vision", desc: "We build partnerships with the future in mind, not just today." },
                   { icon: <GlobeIcon className="h-5 w-5 text-sky-300" />, label: "Global Scalability", desc: "Partners that help us reach and serve users everywhere." },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-black/30 mb-3">
+                  <div key={item.label} className="rounded-2xl border border-gray-200 bg-white p-5 backdrop-blur-xl">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-gray-100 mb-3">
                       {item.icon}
                     </div>
                     <p className="text-sm font-semibold text-white">{item.label}</p>
-                    <p className="mt-1 text-xs leading-5 text-zinc-500">{item.desc}</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-400">{item.desc}</p>
                   </div>
                 ))}
               </div>
@@ -331,19 +331,19 @@ export default function PartnersPage() {
                 Partner
               </span>
             </h2>
-            <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-zinc-400">
+            <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-gray-500">
               We are proud to work with an exceptional partner who has been instrumental in shaping the Evara AI platform.
             </p>
           </div>
 
           <div className="relative overflow-hidden rounded-[2.5rem] border border-indigo-500/25 bg-gradient-to-br from-indigo-950/60 via-purple-950/40 to-black p-1 shadow-2xl shadow-indigo-950/40">
-            <div className="rounded-[2.25rem] border border-white/5 bg-black/50 backdrop-blur-2xl p-8 sm:p-12 lg:p-16">
+            <div className="rounded-[2.25rem] border border-gray-100 bg-gray-50 backdrop-blur-2xl p-8 sm:p-12 lg:p-16">
               <div className="grid gap-12 lg:grid-cols-[auto_1fr] lg:items-start">
 
                 <div className="flex flex-col items-center lg:items-start gap-6">
                   <div className="relative">
                     <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-pink-500/10 blur-xl" />
-                    <div className="relative flex h-44 w-44 items-center justify-center rounded-[1.75rem] border border-white/10 bg-white p-4 shadow-2xl">
+                    <div className="relative flex h-44 w-44 items-center justify-center rounded-[1.75rem] border border-gray-200 bg-white p-4 shadow-2xl">
                       <img
                         src="/sendora-logo.png"
                         alt="Sendora.me"
@@ -367,14 +367,14 @@ export default function PartnersPage() {
                 </div>
 
                 <div>
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 mb-6">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-gray-500 mb-6">
                     <SparklesIcon className="h-3 w-3" />
                     <span>Partnership Overview</span>
                   </div>
                   <h3 className="text-2xl font-semibold text-white sm:text-3xl">
                     The Infrastructure Behind Evara AI
                   </h3>
-                  <div className="mt-6 space-y-5 text-base leading-8 text-zinc-400">
+                  <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                     <p>
                       Sendora.me is a premier technology and communication platform that serves as one of the most critical infrastructure partners supporting the Evara AI ecosystem. Since the earliest stages of the platform's development, Sendora.me has been instrumental in providing the reliable, scalable, and performance-optimized services that allow Evara AI to serve its users with consistency and quality.
                     </p>
@@ -398,7 +398,7 @@ export default function PartnersPage() {
                       "Long-term vision and collaborative product planning",
                       "Scalable solutions supporting Evara AI's growth trajectory",
                     ].map((item) => (
-                      <div key={item} className="flex items-start gap-2.5 text-sm text-zinc-400">
+                      <div key={item} className="flex items-start gap-2.5 text-sm text-gray-500">
                         <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
                         {item}
                       </div>
@@ -423,10 +423,10 @@ export default function PartnersPage() {
         </section>
 
         {/* Partnership Benefits */}
-        <section className="relative border-y border-white/5 bg-white/[0.015] py-24">
+        <section className="relative border-y border-gray-100 bg-white/[0.015] py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-14">
-              <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+              <p className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-600">
                 Partnership Benefits
               </p>
               <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
@@ -435,7 +435,7 @@ export default function PartnersPage() {
                   Us Stronger
                 </span>
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-zinc-400">
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-gray-500">
                 Every partnership within the Evara AI ecosystem delivers concrete, measurable benefits — not just for the platform, but for every user who depends on it.
               </p>
             </div>
@@ -445,11 +445,11 @@ export default function PartnersPage() {
                   key={b.title}
                   className={`group rounded-[1.5rem] border p-6 backdrop-blur-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${b.bg}`}
                 >
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-black/30 ${b.color}`}>
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border border-gray-200 bg-gray-100 ${b.color}`}>
                     {b.icon}
                   </div>
                   <h3 className="mt-5 text-base font-semibold text-white">{b.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-zinc-400">{b.description}</p>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">{b.description}</p>
                 </div>
               ))}
             </div>
@@ -459,7 +459,7 @@ export default function PartnersPage() {
         {/* Collaboration Areas */}
         <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+            <p className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-600">
               Collaboration Areas
             </p>
             <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
@@ -468,7 +468,7 @@ export default function PartnersPage() {
                 Together
               </span>
             </h2>
-            <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-zinc-400">
+            <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-gray-500">
               Our partnerships span four core collaboration areas, each contributing directly to the quality and capability of the Evara AI platform.
             </p>
           </div>
@@ -476,18 +476,18 @@ export default function PartnersPage() {
             {collaborationAreas.map((area) => (
               <div
                 key={area.title}
-                className="group rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 backdrop-blur-xl transition-all hover:border-white/20 hover:bg-white/[0.06]"
+                className="group rounded-[2rem] border border-gray-200 bg-white p-8 backdrop-blur-xl transition-all hover:border-gray-300 hover:bg-gray-50"
               >
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/30">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-gray-100">
                     {area.icon}
                   </div>
                   <h3 className="text-lg font-semibold text-white">{area.title}</h3>
                 </div>
-                <p className="text-sm leading-7 text-zinc-400">{area.description}</p>
+                <p className="text-sm leading-7 text-gray-500">{area.description}</p>
                 <ul className="mt-5 space-y-2">
                   {area.items.map((item) => (
-                    <li key={item} className="flex items-center gap-2 text-sm text-zinc-400">
+                    <li key={item} className="flex items-center gap-2 text-sm text-gray-500">
                       <CheckIcon className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
                       {item}
                     </li>
@@ -499,10 +499,10 @@ export default function PartnersPage() {
         </section>
 
         {/* AI Ecosystem */}
-        <section className="relative border-y border-white/5 bg-white/[0.015] py-24">
+        <section className="relative border-y border-gray-100 bg-white/[0.015] py-24">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-14">
-              <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+              <p className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-600">
                 AI Ecosystem
               </p>
               <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
@@ -511,7 +511,7 @@ export default function PartnersPage() {
                   Evara Ecosystem
                 </span>
               </h2>
-              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-zinc-400">
+              <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-gray-500">
                 Every Evara AI product benefits from the contributions of our partner ecosystem. Here is how partnerships directly enhance each service.
               </p>
             </div>
@@ -521,7 +521,7 @@ export default function PartnersPage() {
                   icon: <BrainIcon className="h-7 w-7" />,
                   name: "Evara AI",
                   tagline: "Web / App AI Assistant",
-                  color: "text-purple-300",
+                  color: "text-violet-600",
                   border: "border-purple-500/25",
                   bg: "bg-purple-500/[0.07]",
                   iconBg: "bg-purple-500/15 border-purple-500/20",
@@ -576,7 +576,7 @@ export default function PartnersPage() {
                   </div>
                   <ul className="space-y-3">
                     {product.points.map((point, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-sm leading-6 text-zinc-400">
+                      <li key={i} className="flex items-start gap-2.5 text-sm leading-6 text-gray-500">
                         <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                         {point}
                       </li>
@@ -592,13 +592,13 @@ export default function PartnersPage() {
         <section className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="inline-flex rounded-full border border-purple-400/20 bg-purple-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-purple-300">
+              <p className="inline-flex rounded-full border border-purple-400/20 bg-purple-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-violet-600">
                 Future Partnerships
               </p>
               <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
                 Growing Together
               </h2>
-              <div className="mt-6 space-y-5 text-base leading-8 text-zinc-400">
+              <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                 <p>
                   We are continuously looking to collaborate with innovative companies to expand the Evara AI ecosystem. As the platform grows and its products mature, new partnership opportunities emerge across infrastructure, AI capabilities, vertical markets, geographic expansion, and complementary technology domains.
                 </p>
@@ -623,13 +623,13 @@ export default function PartnersPage() {
                 { title: "Regional Partners", desc: "Organizations with deep expertise in specific geographies, languages, or markets where Evara AI is expanding." },
                 { title: "Strategic Alliances", desc: "Established companies interested in co-building, co-marketing, or co-distributing AI-powered products with Evara AI." },
               ].map((item, i) => (
-                <div key={item.title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl">
+                <div key={item.title} className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-5 backdrop-blur-xl">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-xs font-bold text-white">
                     {i + 1}
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-white">{item.title}</p>
-                    <p className="mt-1 text-xs leading-5 text-zinc-500">{item.desc}</p>
+                    <p className="mt-1 text-xs leading-5 text-gray-400">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -638,10 +638,10 @@ export default function PartnersPage() {
         </section>
 
         {/* Trust & Credibility */}
-        <section className="relative border-y border-white/5 bg-white/[0.015] py-20">
+        <section className="relative border-y border-gray-100 bg-white/[0.015] py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <p className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-zinc-300">
+              <p className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-600">
                 Trust & Credibility
               </p>
               <h2 className="mt-5 text-3xl font-semibold text-white sm:text-4xl">
@@ -651,7 +651,7 @@ export default function PartnersPage() {
             <div className="grid gap-4 sm:grid-cols-3">
               {[
                 {
-                  icon: <UsersIcon className="h-6 w-6 text-purple-300" />,
+                  icon: <UsersIcon className="h-6 w-6 text-violet-600" />,
                   title: "Trusted by Growing Businesses",
                   desc: "Evara AI is used by thousands of individuals and businesses who rely on the platform for critical communication, AI automation, and productivity workflows.",
                 },
@@ -666,12 +666,12 @@ export default function PartnersPage() {
                   desc: "Every layer of the Evara AI platform is designed to scale — from individual users to large enterprise deployments — without sacrificing quality, speed, or reliability.",
                 },
               ].map((item) => (
-                <div key={item.title} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-7 backdrop-blur-xl text-center">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-black/30">
+                <div key={item.title} className="rounded-[1.5rem] border border-gray-200 bg-white p-7 backdrop-blur-xl text-center">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-gray-200 bg-gray-100">
                     {item.icon}
                   </div>
                   <h3 className="text-base font-semibold text-white">{item.title}</h3>
-                  <p className="mt-3 text-sm leading-6 text-zinc-400">{item.desc}</p>
+                  <p className="mt-3 text-sm leading-6 text-gray-500">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -692,7 +692,7 @@ export default function PartnersPage() {
                 Together
               </span>
             </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-500">
               If your company shares our commitment to innovation, reliability, and building technology that makes a genuine difference, we would love to explore what a partnership could look like.
             </p>
             <div className="mt-12 flex flex-wrap items-center justify-center gap-5">
@@ -705,7 +705,7 @@ export default function PartnersPage() {
               </Link>
               <Link
                 href="/about"
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
+                className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
               >
                 Learn About Evara AI
               </Link>
@@ -714,15 +714,15 @@ export default function PartnersPage() {
         </section>
       </main>
 
-      <footer className="relative z-10 border-t border-white/5 bg-black/50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-zinc-600">
-          <span>© 2026 Raina Jet. All rights reserved.</span>
+      <footer className="relative z-10 border-t border-gray-100 bg-gray-50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
+          <span>© 2026 Evara AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
-            <Link href="/about" className="transition hover:text-zinc-400">About</Link>
-            <Link href="/contact" className="transition hover:text-zinc-400">Contact</Link>
-            <Link href="/privacy-policy" className="transition hover:text-zinc-400">Privacy Policy</Link>
-            <Link href="/terms" className="transition hover:text-zinc-400">Terms of Service</Link>
-            <Link href="/disclaimer" className="transition hover:text-zinc-400">Disclaimer</Link>
+            <Link href="/about" className="transition hover:text-gray-500">About</Link>
+            <Link href="/contact" className="transition hover:text-gray-500">Contact</Link>
+            <Link href="/privacy-policy" className="transition hover:text-gray-500">Privacy Policy</Link>
+            <Link href="/terms" className="transition hover:text-gray-500">Terms of Service</Link>
+            <Link href="/disclaimer" className="transition hover:text-gray-500">Disclaimer</Link>
           </div>
         </div>
       </footer>

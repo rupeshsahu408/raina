@@ -784,8 +784,8 @@ export default function ChatPage() {
       <div className="group relative">
         {/* ── Inline delete confirmation ── */}
         {isDeleting ? (
-          <div className="mx-1 mb-0.5 flex flex-col gap-2 rounded-xl bg-white/[0.05] px-3 py-2.5">
-            <p className="text-[11.5px] text-zinc-300 leading-snug">Delete &ldquo;{c.title || "this chat"}&rdquo;?</p>
+          <div className="mx-1 mb-0.5 flex flex-col gap-2 rounded-xl bg-gray-50 px-3 py-2.5">
+            <p className="text-[11.5px] text-gray-600 leading-snug">Delete &ldquo;{c.title || "this chat"}&rdquo;?</p>
             <div className="flex gap-1.5">
               <button
                 type="button"
@@ -797,7 +797,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => setDeletingConversationId(null)}
-                className="flex-1 rounded-lg bg-white/[0.05] py-1.5 text-[11px] font-medium text-zinc-400 hover:bg-white/[0.08] transition"
+                className="flex-1 rounded-lg bg-gray-50 py-1.5 text-[11px] font-medium text-gray-500 hover:bg-gray-50 transition"
               >
                 Cancel
               </button>
@@ -817,8 +817,8 @@ export default function ChatPage() {
               className={[
                 "w-full rounded-xl px-3 py-2 pr-8 text-left text-[13px] transition-colors",
                 isActive
-                  ? "bg-white/[0.08] text-zinc-100"
-                  : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200",
+                  ? "bg-gray-50 text-[#1d2226]"
+                  : "text-gray-500 hover:bg-white hover:text-[#1d2226]",
               ].join(" ")}
             >
               {isRenaming ? (
@@ -831,7 +831,7 @@ export default function ChatPage() {
                     if (e.key === "Enter") commitRename();
                     if (e.key === "Escape") { setRenamingConversationId(null); setActiveMenuConversationId(null); }
                   }}
-                  className="w-full bg-transparent text-[13px] text-zinc-100 outline-none border-b border-violet-500/50 pb-px"
+                  className="w-full bg-transparent text-[13px] text-[#1d2226] outline-none border-b border-violet-500/50 pb-px"
                   onClick={(e) => e.stopPropagation()}
                 />
               ) : (
@@ -847,7 +847,7 @@ export default function ChatPage() {
               type="button"
               className={[
                 "absolute right-1 top-1/2 -translate-y-1/2 rounded-lg p-1 transition",
-                "text-zinc-600 hover:bg-white/[0.07] hover:text-zinc-300",
+                "text-gray-400 hover:bg-gray-100 hover:text-gray-600",
                 isActive || isMenuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100",
               ].join(" ")}
               onClick={(e) => {
@@ -863,7 +863,7 @@ export default function ChatPage() {
               <div className="absolute right-1 top-9 z-30 w-38 overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1a] py-1 text-[12px] shadow-2xl shadow-black/60">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-zinc-300 hover:bg-white/[0.06] transition"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-gray-600 hover:bg-gray-50 transition"
                   onClick={(e) => {
                     e.stopPropagation();
                     setRenamingConversationId(c.conversationId);
@@ -871,12 +871,12 @@ export default function ChatPage() {
                     setActiveMenuConversationId(null);
                   }}
                 >
-                  <IconEdit size={12} className="text-zinc-500" />
+                  <IconEdit size={12} className="text-gray-400" />
                   Rename
                 </button>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-zinc-300 hover:bg-white/[0.06] transition"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-gray-600 hover:bg-gray-50 transition"
                   onClick={async (e) => {
                     e.stopPropagation();
                     await patchConversation(c.conversationId, { pinned: !c.pinned });
@@ -884,13 +884,13 @@ export default function ChatPage() {
                     if (user) await loadConversations(user, searchQuery);
                   }}
                 >
-                  <IconPin size={12} className="text-zinc-500" />
+                  <IconPin size={12} className="text-gray-400" />
                   {c.pinned ? "Unpin" : "Pin"}
                 </button>
                 <div className="my-1 mx-2 border-t border-white/[0.06]" />
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-red-400 hover:bg-white/[0.06] transition"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2 text-red-400 hover:bg-gray-50 transition"
                   onClick={(e) => {
                     e.stopPropagation();
                     setDeletingConversationId(c.conversationId);
@@ -910,7 +910,7 @@ export default function ChatPage() {
 
   // ── RENDER ──────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen overflow-hidden bg-[#05030a] text-zinc-100">
+    <div className="flex h-screen overflow-hidden bg-[#05030a] text-[#1d2226]">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_22%_0%,rgba(168,85,247,0.18),transparent_30%),radial-gradient(circle_at_95%_16%,rgba(14,165,233,0.14),transparent_28%),linear-gradient(180deg,#07040d,#0d0a14_48%,#05030a)]" />
 
       {/* ── Mobile sidebar overlay ── */}
@@ -934,12 +934,12 @@ export default function ChatPage() {
         <div className="flex items-center justify-between px-3 pb-3 pt-4">
           <div className="flex items-center gap-2.5">
             <img src="/evara-logo.png" alt="Evara AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
-            <span className="text-[14px] font-black tracking-tight text-zinc-100">Evara AI</span>
+            <span className="text-[14px] font-black tracking-tight text-[#1d2226]">Evara AI</span>
           </div>
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
-            className="rounded-lg p-1.5 text-zinc-500 hover:bg-white/[0.07] hover:text-zinc-300 lg:hidden transition"
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 lg:hidden transition"
           >
             <IconX size={15} />
           </button>
@@ -951,15 +951,15 @@ export default function ChatPage() {
             type="button"
             onClick={startNewChat}
             disabled={loading || isTyping}
-            className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.09] bg-white/[0.035] px-3.5 py-3 text-[13px] font-bold text-zinc-200 shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-white/[0.07] hover:text-white disabled:opacity-40"
+            className="flex w-full items-center gap-3 rounded-2xl border border-white/[0.09] bg-white/[0.035] px-3.5 py-3 text-[13px] font-bold text-[#1d2226] shadow-lg shadow-black/10 transition hover:-translate-y-0.5 hover:bg-gray-100 hover:text-white disabled:opacity-40"
           >
-            <IconPlus size={15} className="shrink-0 text-zinc-400" />
+            <IconPlus size={15} className="shrink-0 text-gray-500" />
             New chat
           </button>
         </div>
 
         {/* ── Personality toggle ── */}
-        <div className="mx-3 mb-3 flex gap-1 rounded-2xl border border-white/[0.06] bg-white/[0.045] p-1">
+        <div className="mx-3 mb-3 flex gap-1 rounded-2xl border border-white/[0.06] bg-white p-1">
           {(["Simi", "Loa"] as Personality[]).map((p) => (
             <button
               key={p}
@@ -969,7 +969,7 @@ export default function ChatPage() {
                 "flex-1 rounded-lg py-1.5 text-[12px] font-medium transition",
                 personality === p
                   ? "bg-white text-black shadow shadow-white/10"
-                  : "text-zinc-500 hover:text-zinc-300",
+                  : "text-gray-400 hover:text-gray-600",
               ].join(" ")}
             >
               {p}
@@ -979,16 +979,16 @@ export default function ChatPage() {
 
         {/* ── Search ── */}
         <div className="px-3 pb-2">
-          <div className="flex items-center gap-2 rounded-2xl border border-white/[0.06] bg-white/[0.045] px-3 py-2.5">
-            <IconSearch size={13} className="shrink-0 text-zinc-600" />
+          <div className="flex items-center gap-2 rounded-2xl border border-white/[0.06] bg-white px-3 py-2.5">
+            <IconSearch size={13} className="shrink-0 text-gray-400" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search chats…"
-              className="flex-1 bg-transparent text-[12.5px] text-zinc-300 outline-none placeholder:text-zinc-600"
+              className="flex-1 bg-transparent text-[12.5px] text-gray-600 outline-none placeholder:text-gray-400"
             />
             {searchQuery && (
-              <button type="button" onClick={() => setSearchQuery("")} className="text-zinc-600 hover:text-zinc-400 transition">
+              <button type="button" onClick={() => setSearchQuery("")} className="text-gray-400 hover:text-gray-500 transition">
                 <IconX size={12} />
               </button>
             )}
@@ -1000,7 +1000,7 @@ export default function ChatPage() {
           <a
             href="/bihar-ai"
             onClick={() => setSidebarOpen(false)}
-            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-[13px] font-medium text-zinc-400 transition hover:bg-white/[0.05] hover:text-zinc-200"
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2 text-[13px] font-medium text-gray-500 transition hover:bg-gray-50 hover:text-[#1d2226]"
           >
             <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-gradient-to-br from-amber-300 to-orange-500" />
             Bihar AI
@@ -1014,12 +1014,12 @@ export default function ChatPage() {
         <div className="flex-1 overflow-y-auto px-2 py-1">
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-12 px-4 text-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.04] text-zinc-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-400">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <p className="text-[12.5px] font-medium text-zinc-500">No conversations yet</p>
+              <p className="text-[12.5px] font-medium text-gray-400">No conversations yet</p>
               <p className="text-[11.5px] text-zinc-700 leading-relaxed">Start a new chat to see your history here</p>
             </div>
           ) : (() => {
@@ -1058,13 +1058,13 @@ export default function ChatPage() {
               <div className="space-y-0.5">
                 {pinned.length > 0 && (
                   <div className="mb-1">
-                    <p className="px-2 pt-1 pb-1 text-[10.5px] font-semibold uppercase tracking-widest text-zinc-600">Pinned</p>
+                    <p className="px-2 pt-1 pb-1 text-[10.5px] font-semibold uppercase tracking-widest text-gray-400">Pinned</p>
                     {pinned.map((c) => <ConvItem key={c.conversationId} c={c} />)}
                   </div>
                 )}
                 {groups.filter((g) => g.items.length > 0).map((g) => (
                   <div key={g.label}>
-                    <p className="px-2 pt-3 pb-1 text-[10.5px] font-semibold uppercase tracking-widest text-zinc-600 first:pt-1">{g.label}</p>
+                    <p className="px-2 pt-3 pb-1 text-[10.5px] font-semibold uppercase tracking-widest text-gray-400 first:pt-1">{g.label}</p>
                     {g.items.map((c) => <ConvItem key={c.conversationId} c={c} />)}
                   </div>
                 ))}
@@ -1078,10 +1078,10 @@ export default function ChatPage() {
           {/* Usage (compact) */}
           {(typeof messageLeft === "number" || typeof webLeft === "number") && (
             <div className="rounded-xl bg-white/[0.03] px-3 py-2.5 text-[11px] space-y-2 mb-1">
-              <p className="font-medium text-zinc-500">Today&apos;s usage</p>
+              <p className="font-medium text-gray-400">Today&apos;s usage</p>
               <div className="space-y-1.5">
                 <div>
-                  <div className="mb-1 flex justify-between text-zinc-600">
+                  <div className="mb-1 flex justify-between text-gray-400">
                     <span>Messages</span>
                     <span className={isLow(messageLeft) ? "text-amber-400 font-medium" : ""}>
                       {typeof messageLeft === "number" ? `${messageLeft} left` : "—"}
@@ -1093,7 +1093,7 @@ export default function ChatPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="mb-1 flex justify-between text-zinc-600">
+                  <div className="mb-1 flex justify-between text-gray-400">
                     <span>Web searches</span>
                     <span className={isLow(webLeft) ? "text-amber-400 font-medium" : ""}>
                       {typeof webLeft === "number" ? `${webLeft} left` : "—"}
@@ -1112,18 +1112,18 @@ export default function ChatPage() {
           <button
             type="button"
             onClick={() => router.push("/settings")}
-            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13px] text-zinc-400 transition hover:bg-white/[0.06] hover:text-zinc-200"
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[13px] text-gray-500 transition hover:bg-gray-50 hover:text-[#1d2226]"
           >
             <IconSettings size={15} className="shrink-0" />
             Settings
           </button>
 
           {/* User row */}
-          <div className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 hover:bg-white/[0.04] transition cursor-default group">
+          <div className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 hover:bg-white transition cursor-default group">
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-700 text-[11px] font-bold text-white">
               {avatarInitial}
             </div>
-            <span className="flex-1 truncate text-[13px] text-zinc-300">{displayName}</span>
+            <span className="flex-1 truncate text-[13px] text-gray-600">{displayName}</span>
             <button
               type="button"
               title="Sign out"
@@ -1148,7 +1148,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={() => setSidebarOpen(true)}
-              className="rounded-xl p-1.5 text-zinc-500 hover:bg-white/[0.07] hover:text-zinc-200 lg:hidden"
+              className="rounded-xl p-1.5 text-gray-400 hover:bg-gray-100 hover:text-[#1d2226] lg:hidden"
             >
               <IconMenu size={18} />
             </button>
@@ -1157,7 +1157,7 @@ export default function ChatPage() {
             <button
               type="button"
               onClick={() => setShowModeMenu((v) => !v)}
-              className="flex items-center gap-1.5 rounded-2xl border border-white/[0.09] bg-white/[0.06] px-3 py-2 text-[12px] font-bold text-zinc-200 shadow-lg shadow-black/10 transition hover:bg-white/[0.1] hover:text-zinc-100"
+              className="flex items-center gap-1.5 rounded-2xl border border-white/[0.09] bg-gray-50 px-3 py-2 text-[12px] font-bold text-[#1d2226] shadow-lg shadow-black/10 transition hover:bg-white/[0.1] hover:text-[#1d2226]"
             >
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[10px]">{modeConfig[mode].icon}</span>
               <span>{modeConfig[mode].label}</span>
@@ -1176,7 +1176,7 @@ export default function ChatPage() {
               type="button"
               onClick={startNewChat}
               disabled={loading || isTyping}
-              className="hidden items-center gap-1.5 rounded-2xl border border-white/[0.09] bg-white/[0.05] px-3 py-2 text-[12px] font-bold text-zinc-300 transition hover:bg-white/[0.09] hover:text-zinc-100 disabled:opacity-40 sm:flex"
+              className="hidden items-center gap-1.5 rounded-2xl border border-white/[0.09] bg-gray-50 px-3 py-2 text-[12px] font-bold text-gray-600 transition hover:bg-white/[0.09] hover:text-[#1d2226] disabled:opacity-40 sm:flex"
             >
               <IconPlus size={12} />
               New chat
@@ -1192,10 +1192,10 @@ export default function ChatPage() {
                 {avatarInitial}
               </button>
               {showTopMenu && (
-                <div className="absolute right-0 top-10 z-50 w-44 overflow-hidden rounded-2xl border border-white/[0.07] bg-zinc-900/95 py-1.5 shadow-2xl backdrop-blur-xl">
+                <div className="absolute right-0 top-10 z-50 w-44 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/95 py-1.5 shadow-2xl backdrop-blur-xl">
                   <div className="border-b border-white/[0.06] px-4 py-2.5">
-                    <p className="text-[13px] font-medium text-zinc-200">{displayName}</p>
-                    <p className="text-[11px] text-zinc-500 truncate">{user?.email ?? ""}</p>
+                    <p className="text-[13px] font-medium text-[#1d2226]">{displayName}</p>
+                    <p className="text-[11px] text-gray-400 truncate">{user?.email ?? ""}</p>
                   </div>
                   {[
                     { label: "Profile", href: "/settings" },
@@ -1204,14 +1204,14 @@ export default function ChatPage() {
                     { label: "Upgrade Plan", href: "/settings#upgrade" },
                   ].map((item) => (
                     <a key={item.label} href={item.href}
-                      className="block px-4 py-2 text-[13px] text-zinc-300 hover:bg-white/[0.05] hover:text-white">
+                      className="block px-4 py-2 text-[13px] text-gray-600 hover:bg-gray-50 hover:text-white">
                       {item.label}
                     </a>
                   ))}
                   <div className="border-t border-white/[0.06] mt-1 pt-1">
                     <button type="button"
                       onClick={async () => { const auth = getFirebaseAuth(); await signOut(auth); router.replace("/login"); }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-[13px] text-red-400 hover:bg-white/[0.05]">
+                      className="flex w-full items-center gap-2 px-4 py-2 text-[13px] text-red-400 hover:bg-gray-50">
                       <IconLogout size={13} />
                       Sign out
                     </button>
@@ -1224,13 +1224,13 @@ export default function ChatPage() {
 
         {/* ── Error banners ── */}
         {conversationsLoadError && (
-          <div role="alert" className="shrink-0 border-b border-amber-600/30 bg-amber-950/80 px-4 py-2.5 text-[12px] text-amber-200">
+          <div role="alert" className="shrink-0 border-b border-amber-600/30 bg-amber-950/80 px-4 py-2.5 text-[12px] text-amber-700">
             <div className="mx-auto flex max-w-3xl items-start justify-between gap-3">
               <div className="min-w-0">
                 <span className="font-semibold">Conversation list error — </span>
                 Make sure the backend is running and MongoDB Atlas IP whitelist includes your IP (or 0.0.0.0/0).
               </div>
-              <button type="button" onClick={() => setConversationsLoadError(null)} className="shrink-0 rounded-lg text-amber-400 hover:text-amber-200">
+              <button type="button" onClick={() => setConversationsLoadError(null)} className="shrink-0 rounded-lg text-amber-400 hover:text-amber-700">
                 <IconX size={14} />
               </button>
             </div>
@@ -1255,7 +1255,7 @@ export default function ChatPage() {
           <div className="flex flex-1 items-center justify-center">
             <div className="flex flex-col items-center gap-4">
               <img src="/evara-logo.png" alt="Evara AI" className="h-12 w-12 object-contain" draggable={false} />
-              <p className="text-[13px] text-zinc-500">
+              <p className="text-[13px] text-gray-400">
                 {historyLoading ? "Loading chat history…" : "Loading…"}
               </p>
             </div>
@@ -1274,13 +1274,13 @@ export default function ChatPage() {
                         : "flex-1 min-w-0",
                     ].join(" ")}>
                       {m.role === "ai" ? (
-                        <div className="rounded-[1.6rem] border border-white/[0.07] bg-white/[0.045] px-4 py-3 text-[14px] text-zinc-100 shadow-xl shadow-black/10 backdrop-blur-xl">
+                        <div className="rounded-[1.6rem] border border-white/[0.07] bg-white px-4 py-3 text-[14px] text-[#1d2226] shadow-xl shadow-black/10 backdrop-blur-xl">
                           <div className="chat-markdown">
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                           </div>
                           {m.sources && m.sources.length > 0 && (
                             <div className="mt-3 space-y-1 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2.5 text-[12px]">
-                              <p className="font-medium text-zinc-400 mb-1">Sources</p>
+                              <p className="font-medium text-gray-500 mb-1">Sources</p>
                               {m.sources.map((s) => (
                                 <a key={`${s.link}-${s.title}`} href={s.link} target="_blank" rel="noreferrer"
                                   className="block truncate text-sky-400 underline decoration-sky-400/40 underline-offset-2 hover:text-sky-300">
@@ -1292,7 +1292,7 @@ export default function ChatPage() {
                           <button
                             type="button"
                             onClick={() => copyMessage(m.id, m.content)}
-                            className="mt-1.5 flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] text-zinc-600 opacity-0 transition hover:bg-white/[0.06] hover:text-zinc-300 group-hover:opacity-100"
+                            className="mt-1.5 flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] text-gray-400 opacity-0 transition hover:bg-gray-50 hover:text-gray-600 group-hover:opacity-100"
                           >
                             {copiedMessageId === m.id ? <><IconCheck size={11} /><span className="text-emerald-400">Copied</span></> : <><IconCopy size={11} />Copy</>}
                           </button>
@@ -1303,7 +1303,7 @@ export default function ChatPage() {
                           <button
                             type="button"
                             onClick={() => copyMessage(m.id, m.content)}
-                            className="mt-1.5 flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] text-zinc-600 opacity-0 transition hover:text-zinc-300 group-hover:opacity-100"
+                            className="mt-1.5 flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-[11px] text-gray-400 opacity-0 transition hover:text-gray-600 group-hover:opacity-100"
                           >
                             {copiedMessageId === m.id ? <><IconCheck size={11} /><span className="text-emerald-400">Copied</span></> : <><IconCopy size={11} />Copy</>}
                           </button>
@@ -1340,12 +1340,12 @@ export default function ChatPage() {
                 ) : (
                   <form
                     onSubmit={handleSubmit}
-                    className="relative rounded-[1.6rem] border border-white/[0.1] bg-white/[0.07] p-3 shadow-2xl shadow-black/30 ring-1 ring-inset ring-white/[0.05] backdrop-blur-xl transition-all focus-within:border-violet-300/50 focus-within:bg-white/[0.09] focus-within:ring-violet-500/10"
+                    className="relative rounded-[1.6rem] border border-white/[0.1] bg-gray-100 p-3 shadow-2xl shadow-black/30 ring-1 ring-inset ring-white/[0.05] backdrop-blur-xl transition-all focus-within:border-violet-300/50 focus-within:bg-white/[0.09] focus-within:ring-violet-500/10"
                   >
                     <textarea
                       ref={textareaRef}
                       rows={1}
-                      className="w-full resize-none bg-transparent pr-20 text-[14px] leading-relaxed text-zinc-100 outline-none placeholder:text-zinc-600"
+                      className="w-full resize-none bg-transparent pr-20 text-[14px] leading-relaxed text-[#1d2226] outline-none placeholder:text-gray-400"
                       placeholder="Ask anything…"
                       value={input}
                       onChange={(e) => setInput(e.target.value)}
@@ -1362,7 +1362,7 @@ export default function ChatPage() {
                       <button
                         type="button"
                         onClick={() => setShowModeMenu(true)}
-                          className={["flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-black/10 px-2.5 py-1.5 text-[11px] font-bold transition hover:border-white/10 hover:bg-white/[0.08]", modeConfig[mode].color].join(" ")}
+                          className={["flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/10 px-2.5 py-1.5 text-[11px] font-bold transition hover:border-gray-200 hover:bg-gray-50", modeConfig[mode].color].join(" ")}
                       >
                         <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/10 text-[9px]">{modeConfig[mode].icon}</span> {modeConfig[mode].label}
                       </button>
@@ -1371,7 +1371,7 @@ export default function ChatPage() {
                           type="button"
                           onClick={startRecording}
                           disabled={isTyping}
-                          className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04] text-zinc-400 transition hover:border-white/12 hover:bg-white/[0.08] hover:text-zinc-200 disabled:opacity-40"
+                          className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/[0.08] bg-white text-gray-500 transition hover:border-white/12 hover:bg-gray-50 hover:text-[#1d2226] disabled:opacity-40"
                           aria-label="Voice input"
                           title="Voice input"
                         >
@@ -1396,7 +1396,7 @@ export default function ChatPage() {
                   <button
                     type="button"
                     onClick={() => setShowCookieModal(true)}
-                    className="underline underline-offset-2 transition hover:text-zinc-500"
+                    className="underline underline-offset-2 transition hover:text-gray-400"
                   >
                     Cookie Preferences
                   </button>
@@ -1415,7 +1415,7 @@ export default function ChatPage() {
       ══════════════════════════════════════════ */}
       {showModeMenu && (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm sm:items-center"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-white p-4 backdrop-blur-sm sm:items-center"
           onClick={() => setShowModeMenu(false)}
         >
           <div
@@ -1423,8 +1423,8 @@ export default function ChatPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="border-b border-white/[0.06] px-5 py-4">
-              <p className="font-semibold text-zinc-100">Choose mode</p>
-              <p className="mt-0.5 text-[12px] text-zinc-500">Switch behavior instantly without losing memory.</p>
+              <p className="font-semibold text-[#1d2226]">Choose mode</p>
+              <p className="mt-0.5 text-[12px] text-gray-400">Switch behavior instantly without losing memory.</p>
             </div>
             <div className="p-3 space-y-1">
               {(Object.entries(modeConfig) as [Mode, typeof modeConfig[Mode]][]).map(([key, cfg]) => (
@@ -1436,7 +1436,7 @@ export default function ChatPage() {
                     "flex w-full items-center justify-between rounded-2xl px-4 py-3 text-[13px] transition",
                     mode === key
                       ? "bg-violet-600/20 text-violet-200 ring-1 ring-inset ring-violet-500/30"
-                      : "text-zinc-300 hover:bg-white/[0.05]",
+                      : "text-gray-600 hover:bg-gray-50",
                   ].join(" ")}
                 >
                   <span className="flex items-center gap-2.5">
@@ -1455,7 +1455,7 @@ export default function ChatPage() {
 
       {/* ── Incognito toast ── */}
       {showIncognitoToast && (
-        <div className="fixed bottom-28 left-1/2 z-[70] -translate-x-1/2 rounded-2xl border border-amber-500/30 bg-amber-950/90 px-4 py-2.5 text-[13px] text-amber-200 shadow-xl backdrop-blur-md">
+        <div className="fixed bottom-28 left-1/2 z-[70] -translate-x-1/2 rounded-2xl border border-amber-500/30 bg-amber-950/90 px-4 py-2.5 text-[13px] text-amber-700 shadow-xl backdrop-blur-md">
           Incognito is ON — this chat won&apos;t be saved.
         </div>
       )}

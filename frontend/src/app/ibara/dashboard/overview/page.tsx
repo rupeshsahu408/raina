@@ -128,13 +128,13 @@ function OverviewContent() {
                   ? <span className="px-2 py-1 rounded-lg text-xs font-semibold border text-green-400 bg-green-400/10 border-green-400/20">Live</span>
                   : site.connectionStatus === "pending"
                   ? <span className="px-2 py-1 rounded-lg text-xs font-semibold border text-amber-400 bg-amber-400/10 border-amber-400/20">Pending</span>
-                  : <span className="px-2 py-1 rounded-lg text-xs font-semibold border text-zinc-400 bg-zinc-400/10 border-zinc-400/20">Not Connected</span>,
+                  : <span className="px-2 py-1 rounded-lg text-xs font-semibold border text-gray-500 bg-zinc-400/10 border-zinc-400/20">Not Connected</span>,
                 icon: "🔗",
                 sub: site.connectionMethod ? `via ${site.connectionMethod}` : "Connect via dashboard"
               },
               {
                 label: "AI Bot",
-                value: bot ? <span className={`px-2 py-1 rounded-lg text-xs font-semibold border ${bot.isActive ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-zinc-400 bg-zinc-400/10 border-zinc-400/20"}`}>{bot.isActive ? "Active" : "Inactive"}</span> : <span className="text-white/20 text-sm">Not set up</span>,
+                value: bot ? <span className={`px-2 py-1 rounded-lg text-xs font-semibold border ${bot.isActive ? "text-green-400 bg-green-400/10 border-green-400/20" : "text-gray-500 bg-zinc-400/10 border-zinc-400/20"}`}>{bot.isActive ? "Active" : "Inactive"}</span> : <span className="text-white/20 text-sm">Not set up</span>,
                 icon: "🤖",
                 sub: bot ? `${bot.businessName || "Unnamed"} bot` : "Configure in AI Setup"
               },
@@ -257,7 +257,7 @@ function OverviewContent() {
               </div>
             </div>
           ) : (
-            <div className="card-glass rounded-2xl p-8 text-center border-dashed border-white/10">
+            <div className="card-glass rounded-2xl p-8 text-center border-dashed border-gray-200">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600/20 to-cyan-600/20 border border-violet-500/20 flex items-center justify-center text-2xl mx-auto mb-4">
                 🤖
               </div>

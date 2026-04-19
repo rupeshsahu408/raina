@@ -119,15 +119,15 @@ export function DemoChatWidget() {
   const canSend = !isTyping && remainingReplies > 0 && input.trim().length > 0;
 
   return (
-    <div className="rounded-[1.7rem] border border-white/10 bg-white/[0.055] p-3 text-xs text-zinc-300 shadow-2xl shadow-black/30">
+    <div className="rounded-[1.7rem] border border-gray-200 bg-white/[0.055] p-3 text-xs text-gray-600 shadow-2xl shadow-black/30">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-pink-400 via-purple-500 to-sky-400 shadow-lg shadow-violet-500/20" />
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-zinc-400">
+            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
               Demo chat
             </p>
-            <p className="mt-0.5 text-[11px] text-zinc-200">
+            <p className="mt-0.5 text-[11px] text-[#1d2226]">
               {remainingReplies > 0
                 ? `${remainingReplies} replies left`
                 : "Limit reached"}
@@ -135,7 +135,7 @@ export function DemoChatWidget() {
           </div>
         </div>
 
-        <div className="flex items-center rounded-2xl border border-white/10 bg-black/20 p-0.5">
+        <div className="flex items-center rounded-2xl border border-gray-200 bg-white/20 p-0.5">
           {(["Simi", "Loa"] as Personality[]).map((p) => (
             <button
               key={p}
@@ -145,7 +145,7 @@ export function DemoChatWidget() {
                 "rounded-2xl px-2 py-1 text-[10px] transition-colors",
                 personality === p
                   ? "bg-white text-black shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200",
+                  : "text-gray-500 hover:text-[#1d2226]",
               ].join(" ")}
             >
               {p}
@@ -154,9 +154,9 @@ export function DemoChatWidget() {
         </div>
       </div>
 
-      <div className="mt-3 max-h-56 min-h-40 overflow-y-auto rounded-[1.35rem] border border-white/8 bg-black/25 p-2.5">
+      <div className="mt-3 max-h-56 min-h-40 overflow-y-auto rounded-[1.35rem] border border-white/8 bg-white/25 p-2.5">
         {messages.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.035] p-4 text-[11px] leading-5 text-zinc-400">
+          <div className="rounded-2xl border border-dashed border-gray-200 bg-white/[0.035] p-4 text-[11px] leading-5 text-gray-500">
             Send one thought—Evara will respond gently.
           </div>
         ) : (
@@ -171,7 +171,7 @@ export function DemoChatWidget() {
                     "max-w-[86%] whitespace-pre-wrap rounded-2xl px-3 py-2 leading-relaxed shadow-sm",
                     m.role === "user"
                       ? "bg-white text-black"
-                      : "border border-white/8 bg-white/[0.08] text-zinc-100",
+                      : "border border-white/8 bg-white/[0.08] text-[#1d2226]",
                   ].join(" ")}
                 >
                   {m.content}
@@ -180,7 +180,7 @@ export function DemoChatWidget() {
             ))}
             {isTyping ? (
               <div className="flex">
-                <div className="rounded-2xl border border-white/8 bg-white/[0.08] px-3 py-2 text-zinc-100">
+                <div className="rounded-2xl border border-white/8 bg-white/[0.08] px-3 py-2 text-[#1d2226]">
                   <span className="inline-flex items-center gap-1">
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-200" />
                     <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-zinc-200 delay-100" />
@@ -252,7 +252,7 @@ export function DemoChatWidget() {
       >
         <textarea
           rows={1}
-          className="max-h-24 flex-1 resize-none rounded-2xl border border-white/10 bg-black/35 px-3 py-2 text-[12px] leading-relaxed text-zinc-100 outline-none ring-0 transition focus:border-violet-300/50"
+          className="max-h-24 flex-1 resize-none rounded-2xl border border-gray-200 bg-white/35 px-3 py-2 text-[12px] leading-relaxed text-[#1d2226] outline-none ring-0 transition focus:border-violet-300/50"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Share what you’re feeling…"
@@ -263,7 +263,7 @@ export function DemoChatWidget() {
           disabled={!canSend}
           className={[
             "h-9 rounded-2xl px-3 text-[12px] font-bold transition-colors",
-            canSend ? "bg-white text-black" : "bg-white/8 text-zinc-500",
+            canSend ? "bg-white text-black" : "bg-white/8 text-gray-400",
           ].join(" ")}
         >
           Send
@@ -271,7 +271,7 @@ export function DemoChatWidget() {
       </form>
 
       {remainingReplies <= 0 ? (
-        <div className="mt-2 text-[11px] text-zinc-500">
+        <div className="mt-2 text-[11px] text-gray-400">
           Demo limit reached. Sign up to keep chatting.
         </div>
       ) : null}

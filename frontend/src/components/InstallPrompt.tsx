@@ -85,7 +85,7 @@ export function InstallPrompt({
       ) : showManualGuide ? (
         <button
           type="button"
-          className={`rounded-2xl border border-zinc-700 bg-zinc-950/70 px-4 py-2 text-xs font-semibold text-zinc-100 transition hover:border-zinc-500 hover:bg-zinc-900 ${className}`.trim()}
+          className={`rounded-2xl border border-zinc-700 bg-gray-50/70 px-4 py-2 text-xs font-semibold text-[#1d2226] transition hover:border-zinc-500 hover:bg-gray-50 ${className}`.trim()}
           onClick={() => setShowGuide(true)}
         >
           {label}
@@ -96,11 +96,11 @@ export function InstallPrompt({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-end bg-black/70 p-4 sm:items-center sm:justify-center"
+          className="fixed inset-0 z-50 flex items-end bg-white/70 p-4 sm:items-center sm:justify-center"
           onClick={() => setShowGuide(false)}
         >
           <div
-            className="w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950 p-4"
+            className="w-full max-w-md rounded-3xl border border-zinc-800 bg-gray-50 p-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-3">
@@ -108,7 +108,7 @@ export function InstallPrompt({
                 <p className="text-sm font-semibold text-zinc-50">
                   Install Evara AI
                 </p>
-                <p className="mt-1 text-xs text-zinc-400">
+                <p className="mt-1 text-xs text-gray-500">
                   {isIos
                     ? "Use Safari to add Evara to your Home Screen."
                     : "Install directly from Chrome to get the app-like experience."}
@@ -116,7 +116,7 @@ export function InstallPrompt({
               </div>
               <button
                 type="button"
-                className="rounded-xl border border-zinc-800 px-3 py-1 text-xs text-zinc-300"
+                className="rounded-xl border border-zinc-800 px-3 py-1 text-xs text-gray-600"
                 onClick={() => setShowGuide(false)}
               >
                 Close
@@ -124,14 +124,14 @@ export function InstallPrompt({
             </div>
 
             {isIos ? (
-              <ol className="mt-4 space-y-2 rounded-2xl bg-zinc-900/60 p-3 text-xs text-zinc-200">
+              <ol className="mt-4 space-y-2 rounded-2xl bg-gray-50/60 p-3 text-xs text-[#1d2226]">
                 <li>1. Open this website in <b>Safari</b>.</li>
                 <li>2. Tap the <b>Share</b> icon.</li>
                 <li>3. Select <b>Add to Home Screen</b>.</li>
                 <li>4. Tap <b>Add</b> and launch Evara from your home screen.</li>
               </ol>
             ) : (
-              <ol className="mt-4 space-y-2 rounded-2xl bg-zinc-900/60 p-3 text-xs text-zinc-200">
+              <ol className="mt-4 space-y-2 rounded-2xl bg-gray-50/60 p-3 text-xs text-[#1d2226]">
                 <li>1. Open this website in <b>Chrome</b>.</li>
                 <li>2. Tap menu <b>(⋮)</b>.</li>
                 <li>3. Tap <b>Install app</b> or <b>Add to Home screen</b>.</li>
@@ -139,7 +139,7 @@ export function InstallPrompt({
               </ol>
             )}
 
-            <div className="mt-3 rounded-2xl border border-zinc-800 bg-black/30 p-3 text-[11px] text-zinc-400">
+            <div className="mt-3 rounded-2xl border border-zinc-800 bg-white/30 p-3 text-[11px] text-gray-500">
               After installation, Evara opens in standalone full-screen style
               (no browser bar) for a real app feel.
             </div>

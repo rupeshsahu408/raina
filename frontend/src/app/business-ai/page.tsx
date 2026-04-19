@@ -29,216 +29,190 @@ function GlobeIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function MailIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect width="20" height="16" x="2" y="4" rx="2" />
+      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+    </svg>
+  );
+}
+
+function UsersIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  );
+}
+
+const products = [
+  {
+    href: "/whatsapp-ai",
+    icon: <WhatsAppIcon className="h-7 w-7" />,
+    iconBg: "bg-emerald-50 text-emerald-600",
+    iconBorder: "border-emerald-100",
+    badge: "Live",
+    badgeColor: "text-emerald-700 bg-emerald-50 border-emerald-200",
+    badgeDot: "bg-emerald-500",
+    title: "WhatsApp AI",
+    description: "Automate customer support, bookings, and inquiries directly on WhatsApp. Connect your Cloud API and let AI handle the conversations — 24/7, in multiple languages.",
+    features: ["Multilingual support", "Instant replies", "Custom knowledge", "Cloud API ready"],
+    featureDot: "bg-emerald-500",
+    cta: "text-emerald-700 hover:text-emerald-800",
+    hoverBorder: "hover:border-emerald-200",
+    hoverBg: "hover:bg-emerald-50/30",
+  },
+  {
+    href: "/ibara",
+    icon: <GlobeIcon className="h-7 w-7" />,
+    iconBg: "bg-violet-50 text-violet-600",
+    iconBorder: "border-violet-100",
+    badge: "New",
+    badgeColor: "text-violet-700 bg-violet-50 border-violet-200",
+    badgeDot: null,
+    title: "Website AI",
+    description: "Embed an intelligent AI chatbot on any website — WordPress, Shopify, Wix, or custom. Train it on your business and go live in minutes. No code required.",
+    features: ["No code needed", "DNS verified", "Custom training", "Any platform"],
+    featureDot: "bg-violet-500",
+    cta: "text-violet-700 hover:text-violet-800",
+    hoverBorder: "hover:border-violet-200",
+    hoverBg: "hover:bg-violet-50/30",
+  },
+  {
+    href: "/inbox",
+    icon: <MailIcon className="h-7 w-7" />,
+    iconBg: "bg-fuchsia-50 text-fuchsia-600",
+    iconBorder: "border-fuchsia-100",
+    badge: "Beta",
+    badgeColor: "text-fuchsia-700 bg-fuchsia-50 border-fuchsia-200",
+    badgeDot: "bg-fuchsia-500",
+    title: "Inbox AI",
+    description: "Connect Gmail and let AI summarize every email, detect intent, and generate perfect replies in your tone — Formal, Casual, Sales, or Short.",
+    features: ["Intent detection", "Smart replies", "AI summaries", "Auto-reply rules"],
+    featureDot: "bg-fuchsia-500",
+    cta: "text-fuchsia-700 hover:text-fuchsia-800",
+    hoverBorder: "hover:border-fuchsia-200",
+    hoverBg: "hover:bg-fuchsia-50/30",
+  },
+  {
+    href: "/recruit/dashboard",
+    icon: <UsersIcon className="h-7 w-7" />,
+    iconBg: "bg-indigo-50 text-indigo-600",
+    iconBorder: "border-indigo-100",
+    badge: "New",
+    badgeColor: "text-indigo-700 bg-indigo-50 border-indigo-200",
+    badgeDot: null,
+    title: "Recruit AI",
+    description: "AI-powered hiring from job description to final decision. Score resumes, send smart assessments, and get AI hiring recommendations — all in one pipeline.",
+    features: ["AI resume scoring", "Smart assessments", "Hiring decisions", "Candidate pipeline"],
+    featureDot: "bg-indigo-500",
+    cta: "text-indigo-700 hover:text-indigo-800",
+    hoverBorder: "hover:border-indigo-200",
+    hoverBg: "hover:bg-indigo-50/30",
+  },
+];
+
 export default function BusinessAIPage() {
   return (
-    <div className="min-h-screen bg-[#04030a] text-zinc-100 relative overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_20%,rgba(52,211,153,0.10),transparent_40%),radial-gradient(circle_at_85%_80%,rgba(124,58,237,0.12),transparent_40%),radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.06),transparent_50%)]" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-      </div>
+    <div className="min-h-screen bg-white text-[#1d2226]">
 
-      <nav className="relative z-20 flex items-center justify-between px-6 py-5 max-w-6xl mx-auto">
-        <Link href="/" className="flex items-center gap-3 group">
-          <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
-          <span className="text-sm font-black uppercase tracking-[0.28em] text-white">Evara</span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <Link href="/login" className="text-sm font-medium text-zinc-400 hover:text-white transition px-4 py-2 rounded-full hover:bg-white/8">
-            Sign in
+      {/* Nav */}
+      <nav className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Link href="/" className="flex items-center gap-2.5">
+            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara</span>
           </Link>
-          <Link href="/signup" className="rounded-full bg-white px-5 py-2 text-sm font-black text-black transition hover:bg-zinc-200 hover:-translate-y-0.5">
-            Get started
-          </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-[#1d2226] transition px-3 py-2 rounded-full hover:bg-gray-100">
+              Sign in
+            </Link>
+            <Link href="/signup" className="rounded-full bg-[#1d2226] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#2d3238] hover:-translate-y-0.5">
+              Get started
+            </Link>
+          </div>
         </div>
       </nav>
 
-      <main className="relative z-10 max-w-6xl mx-auto px-6 pt-16 pb-28">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-zinc-300 mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-24">
+
+        {/* Hero */}
+        <div className="text-center mb-14">
+          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-5 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Business AI Suite
           </div>
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-[-0.06em] text-white leading-[0.95] mb-6">
-            AI tools built<br />
-            <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-violet-400 bg-clip-text text-transparent">
-              for your business
-            </span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#1d2226] leading-[1.05] mb-5">
+            AI tools built for<br />
+            <span className="text-violet-600">your business</span>
           </h1>
-          <p className="max-w-xl mx-auto text-base sm:text-lg leading-7 text-zinc-400">
+          <p className="max-w-xl mx-auto text-base sm:text-lg leading-7 text-gray-500">
             Choose how you want to automate. Whether it's customer support on WhatsApp or an AI chatbot on your website — we've got you covered.
           </p>
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 max-w-6xl mx-auto">
-
-          {/* WhatsApp AI */}
-          <Link
-            href="/whatsapp-ai"
-            className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-emerald-500/30 hover:bg-emerald-950/20 hover:shadow-2xl hover:shadow-emerald-950/40"
-          >
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_30%_20%,rgba(52,211,153,0.08),transparent_60%)]" />
-            <div className="relative">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-400/10 border border-emerald-400/20">
-                  <WhatsAppIcon className="h-7 w-7 text-emerald-400" />
-                </div>
-                <div className="flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/8 px-3 py-1 text-xs font-semibold text-emerald-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  Live
-                </div>
-              </div>
-              <h2 className="text-3xl font-black tracking-tight text-white mb-3">WhatsApp AI</h2>
-              <p className="text-zinc-400 text-sm leading-7 mb-8">
-                Automate customer support, bookings, and inquiries directly on WhatsApp. Connect your Cloud API and let AI handle the conversations — 24/7, in multiple languages.
-              </p>
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                {["Multilingual support", "Instant replies", "Custom knowledge", "Cloud API ready"].map((feat) => (
-                  <div key={feat} className="flex items-center gap-2 text-xs text-zinc-400">
-                    <span className="w-1 h-1 rounded-full bg-emerald-400 shrink-0" />
-                    {feat}
+        {/* Product Grid */}
+        <div className="grid gap-5 sm:grid-cols-2">
+          {products.map((p) => (
+            <Link
+              key={p.title}
+              href={p.href}
+              className={`group relative rounded-2xl border border-gray-200 bg-white p-7 sm:p-8 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${p.hoverBorder} ${p.hoverBg}`}
+            >
+              <div className="relative">
+                <div className="flex items-center justify-between mb-7">
+                  <div className={`flex h-13 w-13 items-center justify-center rounded-2xl border ${p.iconBorder} ${p.iconBg}`}>
+                    {p.icon}
                   </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 text-sm font-bold text-emerald-400 group-hover:gap-3 transition-all">
-                Get started
-                <ArrowRightIcon className="h-4 w-4" />
-              </div>
-            </div>
-          </Link>
-
-          {/* Website AI */}
-          <Link
-            href="/ibara"
-            className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-violet-500/30 hover:bg-violet-950/20 hover:shadow-2xl hover:shadow-violet-950/40"
-          >
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_70%_20%,rgba(124,58,237,0.10),transparent_60%)]" />
-            <div className="relative">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-500/10 border border-violet-500/20">
-                  <GlobeIcon className="h-7 w-7 text-violet-400" />
-                </div>
-                <div className="flex items-center gap-1.5 rounded-full border border-violet-400/20 bg-violet-400/8 px-3 py-1 text-xs font-semibold text-violet-300">
-                  <span className="text-[10px] font-black">NEW</span>
-                </div>
-              </div>
-              <h2 className="text-3xl font-black tracking-tight text-white mb-3">Website AI</h2>
-              <p className="text-zinc-400 text-sm leading-7 mb-8">
-                Embed an intelligent AI chatbot on any website — WordPress, Shopify, Wix, or custom. Train it on your business and go live in minutes. No code required.
-              </p>
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                {["No code needed", "DNS verified", "Custom training", "Any platform"].map((feat) => (
-                  <div key={feat} className="flex items-center gap-2 text-xs text-zinc-400">
-                    <span className="w-1 h-1 rounded-full bg-violet-400 shrink-0" />
-                    {feat}
+                  <div className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${p.badgeColor}`}>
+                    {p.badgeDot && <span className={`w-1.5 h-1.5 rounded-full ${p.badgeDot} animate-pulse`} />}
+                    {p.badge}
                   </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 text-sm font-bold text-violet-400 group-hover:gap-3 transition-all">
-                Get started
-                <ArrowRightIcon className="h-4 w-4" />
-              </div>
-            </div>
-          </Link>
-
-          {/* Inbox AI */}
-          <Link
-            href="/inbox"
-            className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-fuchsia-500/30 hover:bg-fuchsia-950/20 hover:shadow-2xl hover:shadow-fuchsia-950/40"
-          >
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_50%_20%,rgba(217,70,219,0.10),transparent_60%)]" />
-            <div className="relative">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-fuchsia-500/10 border border-fuchsia-500/20">
-                  <svg className="h-7 w-7 text-fuchsia-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="20" height="16" x="2" y="4" rx="2" />
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                  </svg>
                 </div>
-                <div className="flex items-center gap-1.5 rounded-full border border-fuchsia-400/20 bg-fuchsia-400/8 px-3 py-1 text-xs font-semibold text-fuchsia-300">
-                  <span className="w-1.5 h-1.5 rounded-full bg-fuchsia-400 animate-pulse" />
-                  Beta
+                <h2 className="text-2xl font-black tracking-tight text-[#1d2226] mb-3">{p.title}</h2>
+                <p className="text-gray-500 text-sm leading-7 mb-7">{p.description}</p>
+                <div className="grid grid-cols-2 gap-2.5 mb-7">
+                  {p.features.map((feat) => (
+                    <div key={feat} className="flex items-center gap-2 text-xs text-gray-500">
+                      <span className={`w-1.5 h-1.5 rounded-full ${p.featureDot} shrink-0`} />
+                      {feat}
+                    </div>
+                  ))}
+                </div>
+                <div className={`flex items-center gap-2 text-sm font-bold transition-all ${p.cta} group-hover:gap-3`}>
+                  Get started
+                  <ArrowRightIcon className="h-4 w-4" />
                 </div>
               </div>
-              <h2 className="text-3xl font-black tracking-tight text-white mb-3">Inbox AI</h2>
-              <p className="text-zinc-400 text-sm leading-7 mb-8">
-                Connect Gmail and let AI summarize every email, detect intent, and generate perfect replies in your tone — Formal, Casual, Sales, or Short.
-              </p>
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                {["Intent detection", "Smart replies", "AI summaries", "Auto-reply rules"].map((feat) => (
-                  <div key={feat} className="flex items-center gap-2 text-xs text-zinc-400">
-                    <span className="w-1 h-1 rounded-full bg-fuchsia-400 shrink-0" />
-                    {feat}
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 text-sm font-bold text-fuchsia-400 group-hover:gap-3 transition-all">
-                Get started
-                <ArrowRightIcon className="h-4 w-4" />
-              </div>
-            </div>
-          </Link>
-
-          {/* Recruit AI */}
-          <Link
-            href="/recruit/dashboard"
-            className="group relative rounded-[2.5rem] border border-white/10 bg-white/[0.04] p-8 sm:p-10 overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-indigo-500/30 hover:bg-indigo-950/20 hover:shadow-2xl hover:shadow-indigo-950/40"
-          >
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.10),transparent_60%)]" />
-            <div className="relative">
-              <div className="flex items-center justify-between mb-8">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
-                  <svg className="h-7 w-7 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                    <circle cx="9" cy="7" r="4" />
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                  </svg>
-                </div>
-                <div className="flex items-center gap-1.5 rounded-full border border-indigo-400/20 bg-indigo-400/8 px-3 py-1 text-xs font-semibold text-indigo-300">
-                  <span className="text-[10px] font-black">NEW</span>
-                </div>
-              </div>
-              <h2 className="text-3xl font-black tracking-tight text-white mb-3">Recruit AI</h2>
-              <p className="text-zinc-400 text-sm leading-7 mb-8">
-                AI-powered hiring from job description to final decision. Score resumes, send smart assessments, and get AI hiring recommendations — all in one pipeline.
-              </p>
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                {["AI resume scoring", "Smart assessments", "Hiring decisions", "Candidate pipeline"].map((feat) => (
-                  <div key={feat} className="flex items-center gap-2 text-xs text-zinc-400">
-                    <span className="w-1 h-1 rounded-full bg-indigo-400 shrink-0" />
-                    {feat}
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 text-sm font-bold text-indigo-400 group-hover:gap-3 transition-all">
-                Get started
-                <ArrowRightIcon className="h-4 w-4" />
-              </div>
-            </div>
-          </Link>
-
+            </Link>
+          ))}
         </div>
 
-        <div className="mt-20 max-w-4xl mx-auto rounded-3xl border border-white/8 bg-white/[0.025] p-8 sm:p-10 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.22em] text-zinc-500 mb-3">Not sure which to pick?</p>
-          <h3 className="text-2xl font-black text-white mb-3">Use both together</h3>
-          <p className="text-zinc-400 text-sm leading-7 max-w-lg mx-auto">
+        {/* Bottom note */}
+        <div className="mt-14 max-w-3xl mx-auto rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">Not sure which to pick?</p>
+          <h3 className="text-xl font-black text-[#1d2226] mb-3">Use both together</h3>
+          <p className="text-gray-500 text-sm leading-7 max-w-lg mx-auto">
             Many businesses run WhatsApp AI for customer conversations and Website AI for their site visitors. They work independently and complement each other perfectly.
           </p>
         </div>
       </main>
 
-      <footer className="relative z-10 border-t border-white/8 py-8 px-6">
+      <footer className="border-t border-gray-200 bg-white py-7 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5 text-zinc-500 hover:text-white transition">
+          <Link href="/" className="flex items-center gap-2.5 text-gray-400 hover:text-[#1d2226] transition">
             <img src="/evara-logo.png" alt="Evara" className="h-5 w-5 object-contain opacity-60" />
-            <span className="text-xs font-bold uppercase tracking-[0.2em]">Evara AI</span>
+            <span className="text-xs font-bold uppercase tracking-[0.18em]">Evara AI</span>
           </Link>
-          <p className="text-xs text-zinc-600">© {new Date().getFullYear()} Evara AI. All rights reserved.</p>
-          <div className="flex gap-5 text-xs text-zinc-600">
-            <Link href="/privacy-policy" className="hover:text-white transition">Privacy</Link>
-            <Link href="/terms" className="hover:text-white transition">Terms</Link>
-            <Link href="/contact" className="hover:text-white transition">Contact</Link>
+          <p className="text-xs text-gray-400">© {new Date().getFullYear()} Evara AI. All rights reserved.</p>
+          <div className="flex gap-5 text-xs text-gray-400">
+            <Link href="/privacy-policy" className="hover:text-[#1d2226] transition">Privacy</Link>
+            <Link href="/terms" className="hover:text-[#1d2226] transition">Terms</Link>
+            <Link href="/contact" className="hover:text-[#1d2226] transition">Contact</Link>
           </div>
         </div>
       </footer>

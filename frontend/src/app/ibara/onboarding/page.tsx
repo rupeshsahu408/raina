@@ -78,14 +78,14 @@ export default function IbaraOnboarding() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#05050F] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#05050F] text-white">
+    <div className="min-h-screen bg-white text-[#1d2226]">
       <style>{`
         @keyframes pulse-glow { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.6; } }
         .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
@@ -107,10 +107,10 @@ export default function IbaraOnboarding() {
           style={{ background: "radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%)" }} />
       </div>
 
-      <header className="relative z-10 flex items-center px-6 py-5 border-b border-white/5">
+      <header className="relative z-10 flex items-center px-6 py-5 border-b border-gray-200">
         <button onClick={() => router.push("/ibara")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
-            <span className="text-white font-bold text-xs">I</span>
+            <span className="text-[#1d2226] font-bold text-xs">I</span>
           </div>
           <span className="font-bold text-sm">IBARA AI</span>
         </button>
@@ -144,13 +144,13 @@ export default function IbaraOnboarding() {
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://yourcompany.com"
                   required
-                  className="input-field w-full h-12 rounded-xl px-4 text-sm text-white placeholder:text-white/20"
+                  className="input-field w-full h-12 rounded-xl px-4 text-sm text-[#1d2226] placeholder:text-white/20"
                 />
               </div>
               <button
                 type="submit"
                 disabled={creating}
-                className="btn-primary w-full h-12 rounded-xl text-sm font-semibold text-white"
+                className="btn-primary w-full h-12 rounded-xl text-sm font-semibold text-[#1d2226]"
               >
                 {creating ? (
                   <span className="flex items-center justify-center gap-2">

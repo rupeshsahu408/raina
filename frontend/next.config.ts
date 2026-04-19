@@ -9,7 +9,11 @@ const BACKEND_URL = (
 ).replace(/\/$/, "");
 
 // Allow Replit dev proxy origins
-const allowedDevOrigins = new Set<string>();
+const allowedDevOrigins = new Set<string>([
+  "*.replit.dev",
+  "*.janeway.replit.dev",
+  "*.repl.co",
+]);
 if (process.env.REPLIT_DEV_DOMAIN) {
   allowedDevOrigins.add(process.env.REPLIT_DEV_DOMAIN.replace(/^https?:\/\//, ""));
 }

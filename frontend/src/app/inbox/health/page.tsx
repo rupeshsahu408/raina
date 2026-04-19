@@ -217,7 +217,7 @@ export default function InboxHealthPage() {
     <div className="min-h-screen bg-[#f8f7ff] text-slate-900">
 
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-white/10 bg-[#14112a] px-5 py-4 text-white shadow-xl shadow-indigo-950/10">
+      <header className="sticky top-0 z-20 border-b border-gray-200 bg-[#14112a] px-5 py-4 text-white shadow-xl shadow-indigo-950/10">
         <div className="mx-auto flex max-w-5xl items-center gap-4">
           <Link href="/inbox/dashboard" className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold text-zinc-300 transition hover:bg-white/15 hover:text-white">
             <BackIcon />
@@ -227,7 +227,7 @@ export default function InboxHealthPage() {
             <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-400/15 text-rose-300"><HeartIcon /></span>
             <div>
               <h1 className="text-xl font-black tracking-tight">Inbox Health Score</h1>
-              <p className="text-xs text-zinc-400">Your daily inbox productivity score</p>
+              <p className="text-xs text-gray-500">Your daily inbox productivity score</p>
             </div>
           </div>
           <button

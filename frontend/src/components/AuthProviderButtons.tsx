@@ -164,7 +164,7 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
     <div className="mt-6">
       <div className="relative mb-4">
         <div className="h-px bg-zinc-800" />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black px-3 text-[10px] uppercase tracking-[0.25em] text-zinc-500">
+        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-3 text-[10px] uppercase tracking-[0.25em] text-gray-400">
           or
         </span>
       </div>
@@ -185,10 +185,10 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
               opacity: 0,
               transform: "translateY(6px)",
             }}
-            className="group relative flex h-11 w-full items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 text-sm font-medium text-zinc-100 transition duration-300 hover:-translate-y-0.5 hover:border-zinc-600 hover:bg-zinc-900 disabled:opacity-60"
+            className="group relative flex h-11 w-full items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 bg-gray-50 text-sm font-medium text-[#1d2226] transition duration-300 hover:-translate-y-0.5 hover:border-zinc-600 hover:bg-gray-50 disabled:opacity-60"
           >
             <span className="absolute inset-0 -z-0 bg-gradient-to-r from-pink-500/0 via-purple-500/20 to-sky-500/0 opacity-0 transition group-hover:opacity-100" />
-            <span className="absolute left-4 text-zinc-300">
+            <span className="absolute left-4 text-gray-600">
               {item.id === "google" ? (
                 <GoogleIcon />
               ) : item.id === "apple" ? (
@@ -210,17 +210,17 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
 
       {showPhoneModal ? (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-black/70 p-4 sm:items-center sm:justify-center"
+          className="fixed inset-0 z-50 flex items-end bg-white/70 p-4 sm:items-center sm:justify-center"
           onClick={() => setShowPhoneModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950 p-4"
+            className="w-full max-w-md rounded-3xl border border-zinc-800 bg-gray-50 p-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-base font-semibold text-zinc-100">
+            <h3 className="text-base font-semibold text-[#1d2226]">
               Verify phone number
             </h3>
-            <p className="mt-1 text-xs text-zinc-400">
+            <p className="mt-1 text-xs text-gray-500">
               Enter your phone in E.164 format (example: +919876543210).
             </p>
 
@@ -230,7 +230,7 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 text-sm outline-none focus:border-zinc-500"
+                  className="h-11 w-full rounded-xl border border-zinc-800 bg-gray-50 px-3 text-sm outline-none focus:border-zinc-500"
                   placeholder="+919876543210"
                 />
                 <div id={recaptchaId} />
@@ -249,7 +249,7 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
                   type="text"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-zinc-800 bg-zinc-900 px-3 text-sm outline-none focus:border-zinc-500"
+                  className="h-11 w-full rounded-xl border border-zinc-800 bg-gray-50 px-3 text-sm outline-none focus:border-zinc-500"
                   placeholder="Enter OTP"
                 />
                 <button

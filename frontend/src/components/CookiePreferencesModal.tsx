@@ -113,7 +113,7 @@ export function CookiePreferencesModal({ open, onClose }: Props) {
         aria-hidden={!open}
         onClick={onClose}
         className={[
-          "fixed inset-0 z-[200] bg-black/70 backdrop-blur-sm transition-opacity duration-200",
+          "fixed inset-0 z-[200] bg-white/70 backdrop-blur-sm transition-opacity duration-200",
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
         ].join(" ")}
       />
@@ -138,14 +138,14 @@ export function CookiePreferencesModal({ open, onClose }: Props) {
           {/* Header */}
           <div className="flex items-start justify-between border-b border-white/[0.06] px-6 py-5">
             <div>
-              <h2 className="text-base font-semibold text-zinc-100">Cookie Preferences</h2>
-              <p className="mt-1 text-[12px] leading-relaxed text-zinc-500">
+              <h2 className="text-base font-semibold text-[#1d2226]">Cookie Preferences</h2>
+              <p className="mt-1 text-[12px] leading-relaxed text-gray-400">
                 Evara uses cookies to improve your experience. You can choose which types of cookies you allow below. Essential cookies are always required for the site to work.
               </p>
             </div>
             <button
               onClick={onClose}
-              className="ml-4 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-white/[0.06] text-zinc-500 transition hover:border-white/10 hover:text-zinc-300"
+              className="ml-4 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-white/[0.06] text-gray-400 transition hover:border-gray-200 hover:text-gray-600"
               aria-label="Close"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -160,8 +160,8 @@ export function CookiePreferencesModal({ open, onClose }: Props) {
             <div className="flex items-start justify-between gap-4 py-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-medium text-zinc-200">Essential Cookies</span>
-                  <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-500">Always on</span>
+                  <span className="text-[13px] font-medium text-[#1d2226]">Essential Cookies</span>
+                  <span className="rounded-full bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-gray-400">Always on</span>
                 </div>
                 <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-600">
                   Required for core functions like authentication, security, and session management. Cannot be disabled.
@@ -173,7 +173,7 @@ export function CookiePreferencesModal({ open, onClose }: Props) {
             {/* Analytics */}
             <div className="flex items-start justify-between gap-4 py-4">
               <div className="min-w-0">
-                <span className="text-[13px] font-medium text-zinc-200">Analytics Cookies</span>
+                <span className="text-[13px] font-medium text-[#1d2226]">Analytics Cookies</span>
                 <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-600">
                   Help us understand how you use Evara so we can improve performance, features, and reliability.
                 </p>
@@ -188,7 +188,7 @@ export function CookiePreferencesModal({ open, onClose }: Props) {
             {/* Marketing */}
             <div className="flex items-start justify-between gap-4 py-4">
               <div className="min-w-0">
-                <span className="text-[13px] font-medium text-zinc-200">Marketing Cookies</span>
+                <span className="text-[13px] font-medium text-[#1d2226]">Marketing Cookies</span>
                 <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-600">
                   Used to personalise content and measure the effectiveness of campaigns shown to you.
                 </p>
@@ -221,7 +221,7 @@ export function CookiePreferencesModal({ open, onClose }: Props) {
             <button
               type="button"
               onClick={handleRejectAll}
-              className="rounded-xl border border-white/[0.08] px-4 py-2 text-[12px] font-medium text-zinc-400 transition hover:border-white/[0.14] hover:text-zinc-200"
+              className="rounded-xl border border-white/[0.08] px-4 py-2 text-[12px] font-medium text-gray-500 transition hover:border-white/[0.14] hover:text-[#1d2226]"
             >
               Reject All
             </button>

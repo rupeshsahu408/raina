@@ -66,7 +66,7 @@ type Job = {
 };
 
 const STAGES: { id: CandidateStage; label: string; color: string; bg: string }[] = [
-  { id: "applied", label: "Applied", color: "text-zinc-400", bg: "bg-zinc-500/15 border-zinc-500/20" },
+  { id: "applied", label: "Applied", color: "text-gray-500", bg: "bg-zinc-500/15 border-zinc-500/20" },
   { id: "screened", label: "Screened", color: "text-blue-400", bg: "bg-blue-500/15 border-blue-500/20" },
   { id: "assessed", label: "Assessed", color: "text-violet-400", bg: "bg-violet-500/15 border-violet-500/20" },
   { id: "interview", label: "Interview", color: "text-amber-400", bg: "bg-amber-500/15 border-amber-500/20" },
@@ -134,7 +134,7 @@ function decisionBadge(decision: HiringDecision) {
 
 function assessmentStatusBadge(status: AssessmentStatus) {
   const map = {
-    not_sent: { label: "Not Sent", cls: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20" },
+    not_sent: { label: "Not Sent", cls: "bg-zinc-500/10 text-gray-400 border-zinc-500/20" },
     sent: { label: "Pending", cls: "bg-amber-500/10 text-amber-400 border-amber-500/20" },
     completed: { label: "Completed", cls: "bg-violet-500/10 text-violet-400 border-violet-500/20" },
   };
@@ -182,26 +182,26 @@ function AssessmentLinkModal({ link, candidateName, candidateEmail, onClose }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/70 backdrop-blur-sm">
       <div className="w-full max-w-lg rounded-[2rem] border border-white/[0.09] bg-[#0a0a0f] shadow-2xl">
         <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4">
           <div>
             <h2 className="text-sm font-semibold text-white">Assessment Link Ready</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">Share this with {candidateName}</p>
+            <p className="text-xs text-gray-400 mt-0.5">Share this with {candidateName}</p>
           </div>
-          <button onClick={onClose} className="text-zinc-600 hover:text-white transition"><XIcon /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition"><XIcon /></button>
         </div>
         <div className="p-6 space-y-4">
           {candidateEmail && (
             <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-2.5">
-              <p className="text-[10px] text-zinc-600 mb-0.5">Email</p>
-              <p className="text-sm text-zinc-300">{candidateEmail}</p>
+              <p className="text-[10px] text-gray-400 mb-0.5">Email</p>
+              <p className="text-sm text-gray-600">{candidateEmail}</p>
             </div>
           )}
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-widest text-zinc-500 mb-2">Assessment URL</label>
+            <label className="block text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Assessment URL</label>
             <div className="flex items-center gap-2">
-              <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-xs text-zinc-400 break-all min-w-0">
+              <div className="flex-1 rounded-2xl border border-white/[0.08] bg-white px-4 py-3 text-xs text-gray-500 break-all min-w-0">
                 {link}
               </div>
               <button
@@ -243,23 +243,23 @@ function RejectionEmailModal({ email, candidateName, candidateEmail, onClose }: 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/70 backdrop-blur-sm">
       <div className="w-full max-w-xl rounded-[2rem] border border-white/[0.09] bg-[#0a0a0f] shadow-2xl">
         <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4">
           <div>
             <h2 className="text-sm font-semibold text-white">AI Rejection Email</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">For {candidateName}{candidateEmail ? ` · ${candidateEmail}` : ""}</p>
+            <p className="text-xs text-gray-400 mt-0.5">For {candidateName}{candidateEmail ? ` · ${candidateEmail}` : ""}</p>
           </div>
-          <button onClick={onClose} className="text-zinc-600 hover:text-white transition"><XIcon /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition"><XIcon /></button>
         </div>
         <div className="p-6">
           <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4 max-h-72 overflow-y-auto">
-            <p className="text-sm text-zinc-300 leading-7 whitespace-pre-wrap">{email}</p>
+            <p className="text-sm text-gray-600 leading-7 whitespace-pre-wrap">{email}</p>
           </div>
-          <p className="mt-3 text-[11px] text-zinc-600">Copy and send via your email client. You can edit before sending.</p>
+          <p className="mt-3 text-[11px] text-gray-400">Copy and send via your email client. You can edit before sending.</p>
         </div>
         <div className="flex justify-end gap-3 border-t border-white/[0.07] px-6 py-4">
-          <button onClick={onClose} className="rounded-xl border border-white/[0.08] px-4 py-2 text-sm text-zinc-500 hover:text-white transition">Close</button>
+          <button onClick={onClose} className="rounded-xl border border-white/[0.08] px-4 py-2 text-sm text-gray-400 hover:text-white transition">Close</button>
           <button
             onClick={copy}
             className={`flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-bold transition ${
@@ -317,26 +317,26 @@ function OfferLetterModal({ candidate, job, token, onClose }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/70 backdrop-blur-sm">
       <div className="w-full max-w-2xl rounded-[2rem] border border-white/[0.09] bg-[#0a0a0f] shadow-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4 shrink-0">
           <div>
             <h2 className="text-sm font-semibold text-white">Offer Letter — {candidate.name}</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">{job.title} · AI-generated, ready to send or copy</p>
+            <p className="text-xs text-gray-400 mt-0.5">{job.title} · AI-generated, ready to send or copy</p>
           </div>
-          <button onClick={onClose} className="text-zinc-600 hover:text-white transition"><XIcon /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition"><XIcon /></button>
         </div>
 
         {!letter ? (
           <div className="p-6 overflow-y-auto flex-1 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Start Date *</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-1.5">Start Date *</label>
                 <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
-                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white outline-none focus:border-indigo-500/50" />
+                  className="w-full rounded-xl border border-white/[0.08] bg-white px-3 py-2 text-sm text-white outline-none focus:border-indigo-500/50" />
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Currency</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-1.5">Currency</label>
                 <select value={currency} onChange={e => setCurrency(e.target.value)}
                   className="w-full rounded-xl border border-white/[0.08] bg-[#0a0a0f] px-3 py-2 text-sm text-white outline-none focus:border-indigo-500/50">
                   {["INR", "USD", "GBP", "EUR", "AED", "SGD", "AUD"].map(c => <option key={c} value={c}>{c}</option>)}
@@ -344,38 +344,38 @@ function OfferLetterModal({ candidate, job, token, onClose }: {
               </div>
             </div>
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Annual Salary *</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-1.5">Annual Salary *</label>
               <input type="text" value={salary} onChange={e => setSalary(e.target.value)} placeholder="e.g. 12,00,000 or 1,200,000"
-                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+                className="w-full rounded-xl border border-white/[0.08] bg-white px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Signing Bonus <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-1.5">Signing Bonus <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
                 <input type="text" value={signingBonus} onChange={e => setSigningBonus(e.target.value)} placeholder="e.g. 50,000"
-                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+                  className="w-full rounded-xl border border-white/[0.08] bg-white px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Company Name <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+                <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-1.5">Company Name <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
                 <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Your company name"
-                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+                  className="w-full rounded-xl border border-white/[0.08] bg-white px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
               </div>
             </div>
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Key Benefits <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-1.5">Key Benefits <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
               <input type="text" value={benefits} onChange={e => setBenefits(e.target.value)} placeholder="e.g. Health insurance, 25 days PTO, flexible hours"
-                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+                className="w-full rounded-xl border border-white/[0.08] bg-white px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-1.5">Hiring Manager Name <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+              <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-1.5">Hiring Manager Name <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
               <input type="text" value={hiringManagerName} onChange={e => setHiringManagerName(e.target.value)} placeholder="Name that will sign the letter"
-                className="w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
+                className="w-full rounded-xl border border-white/[0.08] bg-white px-3 py-2 text-sm text-white placeholder-zinc-600 outline-none focus:border-indigo-500/50" />
             </div>
             {error && <p className="text-xs text-rose-400">{error}</p>}
           </div>
         ) : (
           <div className="p-6 overflow-y-auto flex-1">
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
-              <p className="text-sm text-zinc-300 leading-7 whitespace-pre-wrap font-mono text-[13px]">{letter}</p>
+              <p className="text-sm text-gray-600 leading-7 whitespace-pre-wrap font-mono text-[13px]">{letter}</p>
             </div>
           </div>
         )}
@@ -383,7 +383,7 @@ function OfferLetterModal({ candidate, job, token, onClose }: {
         <div className="flex items-center justify-between gap-3 border-t border-white/[0.07] px-6 py-4 shrink-0">
           {letter ? (
             <>
-              <button onClick={() => setLetter("")} className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs text-zinc-500 hover:text-white transition">Edit Details</button>
+              <button onClick={() => setLetter("")} className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs text-gray-400 hover:text-white transition">Edit Details</button>
               <div className="flex items-center gap-2">
                 <button onClick={() => generate(true)} disabled={loading} className="rounded-xl border border-indigo-500/20 bg-indigo-500/[0.07] px-4 py-2 text-xs text-indigo-400 hover:bg-indigo-500/15 transition disabled:opacity-50">
                   Regenerate
@@ -395,7 +395,7 @@ function OfferLetterModal({ candidate, job, token, onClose }: {
             </>
           ) : (
             <>
-              <button onClick={onClose} className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs text-zinc-500 hover:text-white transition">Cancel</button>
+              <button onClick={onClose} className="rounded-xl border border-white/[0.08] px-4 py-2 text-xs text-gray-400 hover:text-white transition">Cancel</button>
               <button onClick={() => generate(false)} disabled={loading || !startDate || !salary} className="flex items-center gap-2 rounded-xl bg-indigo-500 px-5 py-2 text-xs font-bold text-white hover:bg-indigo-400 disabled:opacity-50 transition">
                 {loading ? <><svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Generating...</> : <><SparkIcon /> Generate Offer Letter</>}
               </button>
@@ -458,7 +458,7 @@ function AddCandidateModal({ jobId, token, onClose, onAdded }: {
     const scorePct = previousApp.maxScore > 0 ? Math.round((previousApp.totalScore / previousApp.maxScore) * 100) : 0;
     const rejectedDate = new Date(previousApp.rejectedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/70 backdrop-blur-sm">
         <div className="w-full max-w-lg rounded-[2rem] border border-amber-500/20 bg-[#0a0a0f] shadow-2xl">
           <div className="flex items-center gap-3 border-b border-white/[0.07] px-6 py-4">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
@@ -466,25 +466,25 @@ function AddCandidateModal({ jobId, token, onClose, onAdded }: {
             </div>
             <div>
               <h2 className="text-sm font-semibold text-white">Returning Candidate Detected</h2>
-              <p className="text-xs text-zinc-500 mt-0.5">AI Memory found a previous application on record</p>
+              <p className="text-xs text-gray-400 mt-0.5">AI Memory found a previous application on record</p>
             </div>
           </div>
           <div className="p-6 space-y-4">
             <div className="rounded-2xl border border-amber-500/15 bg-amber-500/[0.06] p-4 space-y-2">
               <p className="text-xs font-bold text-amber-400 uppercase tracking-wide">Previous Application</p>
               <p className="text-sm text-white font-medium">{previousApp.jobTitle}</p>
-              <div className="flex items-center gap-3 text-xs text-zinc-500">
-                <span>Stage reached: <span className="text-zinc-300 capitalize">{previousApp.stage}</span></span>
+              <div className="flex items-center gap-3 text-xs text-gray-400">
+                <span>Stage reached: <span className="text-gray-600 capitalize">{previousApp.stage}</span></span>
                 <span>·</span>
-                <span>Score: <span className="text-zinc-300">{scorePct}%</span></span>
+                <span>Score: <span className="text-gray-600">{scorePct}%</span></span>
                 <span>·</span>
                 <span>{rejectedDate}</span>
               </div>
               {previousApp.aiSummary && (
-                <p className="text-xs text-zinc-400 pt-1 border-t border-white/[0.06]">{previousApp.aiSummary}</p>
+                <p className="text-xs text-gray-500 pt-1 border-t border-white/[0.06]">{previousApp.aiSummary}</p>
               )}
             </div>
-            <p className="text-xs text-zinc-500">The candidate has been added to the pipeline. Keep this history in mind during evaluation.</p>
+            <p className="text-xs text-gray-400">The candidate has been added to the pipeline. Keep this history in mind during evaluation.</p>
           </div>
           <div className="flex justify-end border-t border-white/[0.07] px-6 py-4">
             <button onClick={onClose} className="rounded-xl bg-indigo-500 px-5 py-2 text-sm font-bold text-white hover:bg-indigo-400 transition">Got it</button>
@@ -495,28 +495,28 @@ function AddCandidateModal({ jobId, token, onClose, onAdded }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/70 backdrop-blur-sm">
       <div className="w-full max-w-xl rounded-[2rem] border border-white/[0.09] bg-[#0a0a0f] shadow-2xl">
         <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4">
           <div>
             <h2 className="text-sm font-semibold text-white">Add Candidate</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">Paste the resume text — AI will score it automatically</p>
+            <p className="text-xs text-gray-400 mt-0.5">Paste the resume text — AI will score it automatically</p>
           </div>
-          <button onClick={onClose} className="text-zinc-600 hover:text-white transition"><XIcon /></button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition"><XIcon /></button>
         </div>
         <div className="p-6 space-y-4">
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-2">Resume Text *</label>
+            <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-2">Resume Text *</label>
             <textarea
               value={resumeText}
               onChange={e => setResumeText(e.target.value)}
               rows={10}
               placeholder="Paste the full resume text here — name, contact info, work experience, skills, education, projects, etc."
-              className="w-full rounded-2xl border border-white/[0.08] bg-white/[0.04] px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 resize-none"
+              className="w-full rounded-2xl border border-white/[0.08] bg-white px-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/30 resize-none"
             />
           </div>
           <div>
-            <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-zinc-500 mb-2">Source <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
+            <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-gray-400 mb-2">Source <span className="text-zinc-700 normal-case tracking-normal">(optional)</span></label>
             <select
               value={source}
               onChange={e => setSource(e.target.value)}
@@ -534,7 +534,7 @@ function AddCandidateModal({ jobId, token, onClose, onAdded }: {
           </div>
         </div>
         <div className="flex justify-end gap-3 border-t border-white/[0.07] px-6 py-4">
-          <button onClick={onClose} className="rounded-xl border border-white/[0.08] px-4 py-2 text-sm text-zinc-500 hover:text-white transition">Cancel</button>
+          <button onClick={onClose} className="rounded-xl border border-white/[0.08] px-4 py-2 text-sm text-gray-400 hover:text-white transition">Cancel</button>
           <button
             onClick={handleSubmit}
             disabled={loading || !resumeText.trim()}
@@ -599,14 +599,14 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
   const hasSocialLinks = sl && (sl.linkedin || sl.instagram || sl.twitter || sl.github || sl.portfolio);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/70 backdrop-blur-sm">
       <div className="w-full max-w-xl rounded-[2rem] border border-white/[0.09] bg-[#0a0a0f] shadow-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between border-b border-white/[0.07] px-6 py-4 shrink-0">
           <div>
             <h2 className="text-sm font-semibold text-white">Candidate Profile</h2>
-            <p className="text-xs text-zinc-500 mt-0.5">{candidateApp?.name || ""}</p>
+            <p className="text-xs text-gray-400 mt-0.5">{candidateApp?.name || ""}</p>
           </div>
-          <button onClick={onClose} className="text-zinc-600 hover:text-white transition">
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
           </button>
         </div>
@@ -633,43 +633,43 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-base font-semibold text-white">{seekerProfile?.name || candidateApp?.name}</p>
-                  {seekerProfile?.headline && <p className="text-xs text-zinc-400 mt-0.5">{seekerProfile.headline}</p>}
-                  {candidateApp?.email && <p className="text-xs text-zinc-500 mt-0.5">{candidateApp.email}</p>}
+                  {seekerProfile?.headline && <p className="text-xs text-gray-500 mt-0.5">{seekerProfile.headline}</p>}
+                  {candidateApp?.email && <p className="text-xs text-gray-400 mt-0.5">{candidateApp.email}</p>}
                 </div>
               </div>
 
               {candidateApp && (candidateApp.location || candidateApp.currentStatus || candidateApp.educationLevel || candidateApp.availability || candidateApp.linkedinUrl) && (
                 <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-3">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Application Details</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Application Details</p>
                   <div className="grid grid-cols-2 gap-2">
                     {candidateApp.location && (
-                      <div className="col-span-2 flex items-center gap-2 text-xs text-zinc-400">
+                      <div className="col-span-2 flex items-center gap-2 text-xs text-gray-500">
                         <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                         {candidateApp.location}
                       </div>
                     )}
                     {candidateApp.currentStatus && (
                       <div className="rounded-lg border border-white/[0.05] bg-white/[0.03] p-2">
-                        <p className="text-[10px] text-zinc-600 mb-0.5">Current Status</p>
-                        <p className="text-[11px] font-semibold text-zinc-300">{candidateApp.currentStatus}</p>
+                        <p className="text-[10px] text-gray-400 mb-0.5">Current Status</p>
+                        <p className="text-[11px] font-semibold text-gray-600">{candidateApp.currentStatus}</p>
                       </div>
                     )}
                     {candidateApp.availability && (
                       <div className="rounded-lg border border-white/[0.05] bg-white/[0.03] p-2">
-                        <p className="text-[10px] text-zinc-600 mb-0.5">Availability</p>
-                        <p className="text-[11px] font-semibold text-zinc-300">{candidateApp.availability}</p>
+                        <p className="text-[10px] text-gray-400 mb-0.5">Availability</p>
+                        <p className="text-[11px] font-semibold text-gray-600">{candidateApp.availability}</p>
                       </div>
                     )}
                     {candidateApp.educationLevel && (
                       <div className="rounded-lg border border-white/[0.05] bg-white/[0.03] p-2">
-                        <p className="text-[10px] text-zinc-600 mb-0.5">Education</p>
-                        <p className="text-[11px] font-semibold text-zinc-300">{candidateApp.educationLevel}{candidateApp.currentClassYear ? ` · ${candidateApp.currentClassYear}` : ""}</p>
+                        <p className="text-[10px] text-gray-400 mb-0.5">Education</p>
+                        <p className="text-[11px] font-semibold text-gray-600">{candidateApp.educationLevel}{candidateApp.currentClassYear ? ` · ${candidateApp.currentClassYear}` : ""}</p>
                       </div>
                     )}
                     {candidateApp.phone && (
                       <div className="rounded-lg border border-white/[0.05] bg-white/[0.03] p-2">
-                        <p className="text-[10px] text-zinc-600 mb-0.5">Phone</p>
-                        <p className="text-[11px] font-semibold text-zinc-300">{candidateApp.phone}</p>
+                        <p className="text-[10px] text-gray-400 mb-0.5">Phone</p>
+                        <p className="text-[11px] font-semibold text-gray-600">{candidateApp.phone}</p>
                       </div>
                     )}
                   </div>
@@ -685,15 +685,15 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
 
               {candidateApp?.coverLetter && (
                 <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Cover Letter</p>
-                  <p className="text-xs text-zinc-300 leading-5 whitespace-pre-line">{candidateApp.coverLetter}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Cover Letter</p>
+                  <p className="text-xs text-gray-600 leading-5 whitespace-pre-line">{candidateApp.coverLetter}</p>
                 </div>
               )}
 
               {noProfile || !seekerProfile ? (
                 <div className="flex flex-col items-center justify-center py-6 text-center rounded-2xl border border-dashed border-zinc-800">
-                  <p className="text-sm font-semibold text-zinc-400">No Plyndrox profile found</p>
-                  <p className="text-xs text-zinc-600 mt-1 max-w-xs">
+                  <p className="text-sm font-semibold text-gray-500">No Plyndrox profile found</p>
+                  <p className="text-xs text-gray-400 mt-1 max-w-xs">
                     This candidate hasn't set up a full profile. Their resume and application details are shown above.
                   </p>
                 </div>
@@ -701,14 +701,14 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
               <>
               {seekerProfile.bio && (
                 <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Bio</p>
-                  <p className="text-xs text-zinc-300 leading-5">{seekerProfile.bio}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Bio</p>
+                  <p className="text-xs text-gray-600 leading-5">{seekerProfile.bio}</p>
                 </div>
               )}
 
               {seekerProfile.skills && seekerProfile.skills.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Skills</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Skills</p>
                   <div className="flex flex-wrap gap-1.5">
                     {seekerProfile.skills.map(s => (
                       <span key={s} className="rounded-full border border-sky-500/20 bg-sky-500/[0.08] px-2.5 py-1 text-[11px] font-semibold text-sky-400">{s}</span>
@@ -719,7 +719,7 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
 
               {hasSocialLinks && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Social & Portfolio</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Social & Portfolio</p>
                   <div className="flex flex-wrap gap-2">
                     {sl?.linkedin && (
                       <a href={sl.linkedin.startsWith("http") ? sl.linkedin : `https://${sl.linkedin}`} target="_blank" rel="noopener noreferrer"
@@ -737,14 +737,14 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
                     )}
                     {sl?.twitter && (
                       <a href={sl.twitter.startsWith("http") ? sl.twitter : `https://${sl.twitter}`} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-500/20 bg-zinc-500/[0.08] px-3 py-1.5 text-[11px] font-semibold text-zinc-400 hover:bg-zinc-500/15 transition">
+                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-500/20 bg-zinc-500/[0.08] px-3 py-1.5 text-[11px] font-semibold text-gray-500 hover:bg-zinc-500/15 transition">
                         <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                         X / Twitter
                       </a>
                     )}
                     {sl?.github && (
                       <a href={sl.github.startsWith("http") ? sl.github : `https://${sl.github}`} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-500/20 bg-zinc-500/[0.08] px-3 py-1.5 text-[11px] font-semibold text-zinc-400 hover:bg-zinc-500/15 transition">
+                        className="inline-flex items-center gap-1.5 rounded-full border border-zinc-500/20 bg-zinc-500/[0.08] px-3 py-1.5 text-[11px] font-semibold text-gray-500 hover:bg-zinc-500/15 transition">
                         <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
                         GitHub
                       </a>
@@ -762,14 +762,14 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
 
               {seekerProfile.experience && seekerProfile.experience.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Experience</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Experience</p>
                   <div className="space-y-2">
                     {seekerProfile.experience.map((exp, i) => (
                       <div key={i} className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
                         <p className="text-xs font-semibold text-white">{exp.title}</p>
-                        <p className="text-[11px] text-zinc-400 mt-0.5">{exp.company}{exp.location ? ` · ${exp.location}` : ""}</p>
-                        <p className="text-[10px] text-zinc-600 mt-0.5">{exp.startDate} — {exp.current ? "Present" : exp.endDate}</p>
-                        {exp.description && <p className="text-[11px] text-zinc-500 mt-1.5 leading-4">{exp.description}</p>}
+                        <p className="text-[11px] text-gray-500 mt-0.5">{exp.company}{exp.location ? ` · ${exp.location}` : ""}</p>
+                        <p className="text-[10px] text-gray-400 mt-0.5">{exp.startDate} — {exp.current ? "Present" : exp.endDate}</p>
+                        {exp.description && <p className="text-[11px] text-gray-400 mt-1.5 leading-4">{exp.description}</p>}
                       </div>
                     ))}
                   </div>
@@ -778,12 +778,12 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
 
               {seekerProfile.education && seekerProfile.education.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Education</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Education</p>
                   <div className="space-y-2">
                     {seekerProfile.education.map((edu, i) => (
                       <div key={i} className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
                         <p className="text-xs font-semibold text-white">{edu.degree}</p>
-                        <p className="text-[11px] text-zinc-400 mt-0.5">{edu.institution}{edu.year ? ` · ${edu.year}` : ""}</p>
+                        <p className="text-[11px] text-gray-500 mt-0.5">{edu.institution}{edu.year ? ` · ${edu.year}` : ""}</p>
                       </div>
                     ))}
                   </div>
@@ -793,26 +793,26 @@ function SeekerProfileModal({ candidateId, jobId, token, onClose }: {
               <div className="grid grid-cols-2 gap-3">
                 {seekerProfile.experienceLevel && (
                   <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                    <p className="text-[10px] text-zinc-600 mb-0.5">Experience Level</p>
-                    <p className="text-xs font-semibold text-zinc-300">{seekerProfile.experienceLevel}</p>
+                    <p className="text-[10px] text-gray-400 mb-0.5">Experience Level</p>
+                    <p className="text-xs font-semibold text-gray-600">{seekerProfile.experienceLevel}</p>
                   </div>
                 )}
                 {seekerProfile.preferredWorkMode && (
                   <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                    <p className="text-[10px] text-zinc-600 mb-0.5">Preferred Mode</p>
-                    <p className="text-xs font-semibold text-zinc-300">{seekerProfile.preferredWorkMode}</p>
+                    <p className="text-[10px] text-gray-400 mb-0.5">Preferred Mode</p>
+                    <p className="text-xs font-semibold text-gray-600">{seekerProfile.preferredWorkMode}</p>
                   </div>
                 )}
                 {seekerProfile.preferredLocation && (
                   <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                    <p className="text-[10px] text-zinc-600 mb-0.5">Preferred Location</p>
-                    <p className="text-xs font-semibold text-zinc-300">{seekerProfile.preferredLocation}</p>
+                    <p className="text-[10px] text-gray-400 mb-0.5">Preferred Location</p>
+                    <p className="text-xs font-semibold text-gray-600">{seekerProfile.preferredLocation}</p>
                   </div>
                 )}
                 {seekerProfile.preferredNiche && (
                   <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
-                    <p className="text-[10px] text-zinc-600 mb-0.5">Preferred Niche</p>
-                    <p className="text-xs font-semibold text-zinc-300">{seekerProfile.preferredNiche}</p>
+                    <p className="text-[10px] text-gray-400 mb-0.5">Preferred Niche</p>
+                    <p className="text-xs font-semibold text-gray-600">{seekerProfile.preferredNiche}</p>
                   </div>
                 )}
               </div>
@@ -1031,7 +1031,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
                   <span className="flex items-center gap-1 text-rose-400 text-[10px]"><AlertIcon /> {c.redFlags.length} flag{c.redFlags.length > 1 ? "s" : ""}</span>
                 )}
               </div>
-              {c.email && <p className="text-[11px] text-zinc-600">{c.email}</p>}
+              {c.email && <p className="text-[11px] text-gray-400">{c.email}</p>}
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <div className="text-right">
@@ -1041,21 +1041,21 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
                   <>
                     <p className={`text-lg font-bold leading-none ${scoreColor(pct)}`}>{pct}%</p>
                     {scoreChanged && prevPct !== null && (
-                      <p className="text-[10px] text-zinc-600 mt-0.5">
+                      <p className="text-[10px] text-gray-400 mt-0.5">
                         <span className="line-through text-zinc-700">{prevPct}%</span>
                         <span className={pct > prevPct ? " text-emerald-500" : " text-rose-500"}>
                           {" "}{pct > prevPct ? "▲" : "▼"}
                         </span>
                       </p>
                     )}
-                    <p className="text-[10px] text-zinc-600 mt-0.5">{c.totalScore}/{c.maxScore} pts</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{c.totalScore}/{c.maxScore} pts</p>
                   </>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="mb-2 h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden">
+          <div className="mb-2 h-1.5 w-full rounded-full bg-gray-50 overflow-hidden">
             {!scoringFailed && (
               <div className={`h-full rounded-full transition-all ${scoreBarColor(pct)}`} style={{ width: `${pct}%` }} />
             )}
@@ -1077,7 +1077,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
               {retryError && <p className="mt-1 text-[11px] text-rose-400">{retryError}</p>}
             </div>
           ) : (
-            <p className="text-xs text-zinc-500 leading-5 line-clamp-2 mb-3">{c.aiSummary}</p>
+            <p className="text-xs text-gray-400 leading-5 line-clamp-2 mb-3">{c.aiSummary}</p>
           )}
 
           <div className="flex items-center gap-2 mb-3 flex-wrap">
@@ -1103,7 +1103,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
               className={`rounded-xl border text-[11px] font-semibold px-3 py-1.5 outline-none cursor-pointer bg-transparent ${stageStyle.bg} ${stageStyle.color}`}
             >
               {STAGES.map(s => (
-                <option key={s.id} value={s.id} className="bg-zinc-900 text-white">{s.label}</option>
+                <option key={s.id} value={s.id} className="bg-gray-50 text-white">{s.label}</option>
               ))}
             </select>
 
@@ -1117,7 +1117,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
 
             <button
               onClick={() => setExpanded(e => !e)}
-              className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 py-1.5 text-[11px] text-zinc-500 hover:text-white transition"
+              className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 py-1.5 text-[11px] text-gray-400 hover:text-white transition"
             >
               {expanded ? "Collapse" : "Details"}
             </button>
@@ -1193,15 +1193,15 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-violet-400/70 mb-2 flex items-center gap-1"><SparkIcon /> Assessment Impact</p>
                 {scoreChanged && prevPct !== null && (
                   <div className="flex items-center gap-3 mb-3">
-                    <span className="text-sm text-zinc-500">{prevPct}%</span>
+                    <span className="text-sm text-gray-400">{prevPct}%</span>
                     <svg width="20" height="12" viewBox="0 0 20 12" fill="none"><path d="M1 6h16M13 1l5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     <span className={`text-lg font-bold ${scoreColor(pct)}`}>{pct}%</span>
-                    <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${pct > prevPct ? "bg-emerald-500/15 text-emerald-400" : pct < prevPct ? "bg-rose-500/15 text-rose-400" : "bg-zinc-500/15 text-zinc-400"}`}>
+                    <span className={`text-[11px] font-semibold rounded-full px-2 py-0.5 ${pct > prevPct ? "bg-emerald-500/15 text-emerald-400" : pct < prevPct ? "bg-rose-500/15 text-rose-400" : "bg-zinc-500/15 text-gray-500"}`}>
                       {pct > prevPct ? `+${pct - prevPct}%` : pct < prevPct ? `-${prevPct - pct}%` : "No change"}
                     </span>
                   </div>
                 )}
-                <p className="text-xs text-zinc-400 leading-5 mb-3">{c.assessmentImpact.reasoning}</p>
+                <p className="text-xs text-gray-500 leading-5 mb-3">{c.assessmentImpact.reasoning}</p>
                 {c.assessmentImpact.strengths.length > 0 && (
                   <div className="space-y-1 mb-2">
                     {c.assessmentImpact.strengths.map((s, i) => (
@@ -1228,7 +1228,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-500/70 mb-2">Resume Strengths</p>
                 <div className="space-y-1">
                   {c.strengths.map((s, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                    <div key={i} className="flex items-start gap-2 text-xs text-gray-500">
                       <span className="text-emerald-400 mt-0.5"><CheckCircleIcon /></span>{s}
                     </div>
                   ))}
@@ -1240,7 +1240,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
                 <p className="text-[10px] font-bold uppercase tracking-widest text-rose-500/70 mb-2">Red Flags</p>
                 <div className="space-y-1">
                   {c.redFlags.map((f, i) => (
-                    <div key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                    <div key={i} className="flex items-start gap-2 text-xs text-gray-500">
                       <span className="text-rose-400 mt-0.5"><AlertIcon /></span>{f}
                     </div>
                   ))}
@@ -1250,7 +1250,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
             {c.scoreBreakdown.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Score Breakdown</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Score Breakdown</p>
                   {(() => {
                     const conf = overallConfidence(c.scoreBreakdown);
                     const cs = confidenceStyle(conf);
@@ -1273,15 +1273,15 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-1.5 min-w-0">
                             <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${cs.dot}`} title={cs.label} />
-                            <span className="text-xs text-zinc-400 truncate">{b.criterion}</span>
+                            <span className="text-xs text-gray-500 truncate">{b.criterion}</span>
                           </div>
                           <span className={`ml-2 shrink-0 text-xs font-semibold ${scoreColor(bPct)}`}>{b.score}/{b.maxScore}</span>
                         </div>
-                        <div className="h-1 w-full rounded-full bg-white/[0.05]">
+                        <div className="h-1 w-full rounded-full bg-gray-50">
                           <div className={`h-full rounded-full ${scoreBarColor(bPct)}`} style={{ width: `${bPct}%` }} />
                         </div>
                         <div className="mt-1 flex items-start justify-between gap-2">
-                          <p className="text-[10px] text-zinc-600 leading-4">{b.reasoning}</p>
+                          <p className="text-[10px] text-gray-400 leading-4">{b.reasoning}</p>
                           <span className={`shrink-0 text-[9px] font-semibold uppercase tracking-wide ${cs.text}`}>{conf}</span>
                         </div>
                       </div>
@@ -1293,7 +1293,7 @@ function CandidateCard({ c, jobId, job, token, onUpdate, onDelete }: {
             {brief && (
               <div className="rounded-2xl border border-indigo-500/15 bg-indigo-500/[0.05] p-4">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400/70 mb-2 flex items-center gap-1"><SparkIcon /> Interview Brief</p>
-                <p className="text-xs text-zinc-300 leading-6 whitespace-pre-wrap">{brief}</p>
+                <p className="text-xs text-gray-600 leading-6 whitespace-pre-wrap">{brief}</p>
               </div>
             )}
           </div>
@@ -1352,7 +1352,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050506] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <svg className="animate-spin h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -1363,7 +1363,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
 
   if (!job) {
     return (
-      <div className="min-h-screen bg-[#050506] flex flex-col items-center justify-center gap-4 text-zinc-400">
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center gap-4 text-gray-500">
         <p>Job not found.</p>
         <Link href="/recruit/dashboard" className="text-indigo-400 text-sm hover:underline">Back to Dashboard</Link>
       </div>
@@ -1381,8 +1381,8 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
   const assessedCount = candidates.filter(c => c.assessmentStatus === "completed").length;
 
   return (
-    <div className="min-h-screen bg-[#050506] text-zinc-100">
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(99,102,241,0.15),transparent_36%),linear-gradient(180deg,#050506,#07070a)]" />
+    <div className="min-h-screen bg-white text-[#1d2226]">
+      
 
       {showAddModal && (
         <AddCandidateModal
@@ -1393,14 +1393,14 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
         />
       )}
 
-      <header className="relative z-10 border-b border-white/[0.07] bg-black/30 backdrop-blur-xl">
+      <header className="relative z-10 border-b border-white/[0.07] bg-gray-100 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <Link href="/recruit/dashboard" className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-300 transition">
+            <Link href="/recruit/dashboard" className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition">
               <ChevronLeftIcon /> Dashboard
             </Link>
             <span className="text-zinc-700">·</span>
-            <span className="text-xs text-zinc-400 font-medium truncate max-w-[180px] sm:max-w-xs">{job.title}</span>
+            <span className="text-xs text-gray-500 font-medium truncate max-w-[180px] sm:max-w-xs">{job.title}</span>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <button
@@ -1415,7 +1415,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
               className={`flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-xs font-semibold transition ${
                 linkCopied
                   ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
-                  : "border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/20"
+                  : "border-white/[0.08] text-gray-500 hover:text-white hover:border-gray-300"
               }`}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1438,7 +1438,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
                   a.href = url; a.download = `${job.title.replace(/[^a-z0-9]/gi, "_")}_candidates.csv`;
                   a.click(); URL.revokeObjectURL(url);
                 }}
-                className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-zinc-400 transition hover:text-white hover:border-white/20"
+                className="flex items-center gap-1.5 rounded-full border border-white/[0.08] px-3.5 py-2 text-xs font-semibold text-gray-500 transition hover:text-white hover:border-gray-300"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Export CSV
@@ -1459,7 +1459,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <h1 className="text-xl font-semibold text-white">{job.title}</h1>
-              <p className="mt-1 text-sm text-zinc-500">
+              <p className="mt-1 text-sm text-gray-400">
                 {job.seniority}
                 {job.department ? ` · ${job.department}` : ""}
                 {" · "}{job.location}
@@ -1469,32 +1469,32 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
             <div className="flex items-center gap-3 flex-wrap">
               {assessedCount > 0 && (
                 <div className="rounded-2xl border border-violet-500/20 bg-violet-500/[0.07] px-4 py-2">
-                  <p className="text-[10px] text-zinc-500">Assessed</p>
+                  <p className="text-[10px] text-gray-400">Assessed</p>
                   <p className="text-sm font-bold text-violet-400">{assessedCount}</p>
                 </div>
               )}
               {strongYesCount > 0 && (
                 <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-2">
-                  <p className="text-[10px] text-zinc-500">Strong Yes</p>
+                  <p className="text-[10px] text-gray-400">Strong Yes</p>
                   <p className="text-sm font-bold text-emerald-400">{strongYesCount}</p>
                 </div>
               )}
               {maybeCount > 0 && (
                 <div className="rounded-2xl border border-amber-500/20 bg-amber-500/[0.07] px-4 py-2">
-                  <p className="text-[10px] text-zinc-500">Maybe</p>
+                  <p className="text-[10px] text-gray-400">Maybe</p>
                   <p className="text-sm font-bold text-amber-400">{maybeCount}</p>
                 </div>
               )}
               {topCandidates.length > 0 && (
                 <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/[0.07] px-4 py-2">
-                  <p className="text-[10px] text-zinc-500">Top Score</p>
+                  <p className="text-[10px] text-gray-400">Top Score</p>
                   <p className="text-sm font-bold text-emerald-400">
                     {topCandidates[0] ? `${Math.round((topCandidates[0].totalScore / topCandidates[0].maxScore) * 100)}%` : "—"}
                   </p>
                 </div>
               )}
               <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] px-4 py-2">
-                <p className="text-[10px] text-zinc-500">Candidates</p>
+                <p className="text-[10px] text-gray-400">Candidates</p>
                 <p className="text-sm font-bold text-white">{candidates.length}</p>
               </div>
             </div>
@@ -1509,7 +1509,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
               className={`px-4 py-2.5 text-sm capitalize transition border-b-2 -mb-px ${
                 activeTab === tab
                   ? "border-indigo-500 text-white font-medium"
-                  : "border-transparent text-zinc-500 hover:text-zinc-300"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
               }`}
             >
               {tab === "jd" ? "Job Description" : tab === "rubric" ? "Scoring Rubric" : tab === "post" ? "Post to Boards" : "Pipeline"}
@@ -1521,8 +1521,8 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
           <div>
             {candidates.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
-                <p className="text-zinc-400 text-sm mb-2">No candidates yet</p>
-                <p className="text-zinc-600 text-xs mb-6">Add your first candidate — paste a resume and the AI will score it against your rubric.</p>
+                <p className="text-gray-500 text-sm mb-2">No candidates yet</p>
+                <p className="text-gray-400 text-xs mb-6">Add your first candidate — paste a resume and the AI will score it against your rubric.</p>
                 <button
                   onClick={() => setShowAddModal(true)}
                   className="flex items-center gap-2 rounded-2xl bg-indigo-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-400"
@@ -1541,7 +1541,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
                         <span className={`rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-wide ${stage.bg} ${stage.color}`}>
                           {stage.label}
                         </span>
-                        <span className="text-xs text-zinc-600">{stageCandidates.length} candidate{stageCandidates.length !== 1 ? "s" : ""}</span>
+                        <span className="text-xs text-gray-400">{stageCandidates.length} candidate{stageCandidates.length !== 1 ? "s" : ""}</span>
                       </div>
                       {stageCandidates.length === 0 ? (
                         <div className="rounded-2xl border border-dashed border-white/[0.05] px-4 py-5 text-center text-xs text-zinc-700">
@@ -1563,7 +1563,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
                       <span className="rounded-full border border-rose-500/20 bg-rose-500/15 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-rose-400">
                         Rejected
                       </span>
-                      <span className="text-xs text-zinc-600">{byStage.rejected.length}</span>
+                      <span className="text-xs text-gray-400">{byStage.rejected.length}</span>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       {byStage.rejected.map(c => (
@@ -1579,7 +1579,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
 
         {activeTab === "jd" && (
           <div className="rounded-3xl border border-white/[0.07] bg-white/[0.02] p-6 sm:p-8">
-            <p className="text-sm text-zinc-300 leading-8 whitespace-pre-wrap">{formatJobDescription(job.generatedJD)}</p>
+            <p className="text-sm text-gray-600 leading-8 whitespace-pre-wrap">{formatJobDescription(job.generatedJD)}</p>
           </div>
         )}
 
@@ -1591,7 +1591,7 @@ function JobDetailContent({ params }: { params: Promise<{ id: string }> }) {
                   <h3 className="text-sm font-semibold text-white">{r.name}</h3>
                   <span className="rounded-full border border-indigo-500/20 bg-indigo-500/10 px-3 py-1 text-xs font-bold text-indigo-400">{r.weight} pts</span>
                 </div>
-                <p className="text-xs text-zinc-500 leading-5">{r.description}</p>
+                <p className="text-xs text-gray-400 leading-5">{r.description}</p>
               </div>
             ))}
           </div>
@@ -1698,7 +1698,7 @@ ${jobDescription}`;
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <p className="text-sm font-semibold text-indigo-300 mb-1">Share your Plyndrox listing</p>
-            <p className="text-xs text-zinc-500 leading-relaxed break-all">{plyndroxUrl}</p>
+            <p className="text-xs text-gray-400 leading-relaxed break-all">{plyndroxUrl}</p>
           </div>
           <button
             onClick={() => {
@@ -1720,10 +1720,10 @@ ${jobDescription}`;
       </div>
 
       <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 py-4">
-        <p className="text-sm text-zinc-400 leading-relaxed">
+        <p className="text-sm text-gray-500 leading-relaxed">
           Your AI-generated job description is ready to post. Copy the formatted content for each platform below — each version is optimized for that board&apos;s format and character style.
         </p>
-        <p className="text-xs text-zinc-600 mt-2">
+        <p className="text-xs text-gray-400 mt-2">
           Note: Direct API posting to LinkedIn, Indeed, and Naukri requires OAuth credentials from each platform&apos;s developer program. Until those are connected, use the copy buttons below to paste into each platform.
         </p>
       </div>
@@ -1734,7 +1734,7 @@ ${jobDescription}`;
             <div className="flex items-center gap-3">
               <span className={`rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wide ${board.badge}`}>{board.name}</span>
               <a href={board.applyUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-400 transition">
+                className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-500 transition">
                 Open {board.name}
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </a>
@@ -1750,19 +1750,19 @@ ${jobDescription}`;
           </div>
 
           <div className="mb-4">
-            <p className="text-[11px] font-semibold text-zinc-600 uppercase tracking-wide mb-2">How to post on {board.name}:</p>
+            <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wide mb-2">How to post on {board.name}:</p>
             <ol className="space-y-1">
               {board.instructions.map((step, i) => (
-                <li key={i} className="flex items-start gap-2 text-xs text-zinc-500">
-                  <span className="shrink-0 flex h-4 w-4 items-center justify-center rounded-full bg-white/[0.05] text-[10px] font-bold text-zinc-600 mt-0.5">{i + 1}</span>
+                <li key={i} className="flex items-start gap-2 text-xs text-gray-400">
+                  <span className="shrink-0 flex h-4 w-4 items-center justify-center rounded-full bg-gray-50 text-[10px] font-bold text-gray-400 mt-0.5">{i + 1}</span>
                   {step}
                 </li>
               ))}
             </ol>
           </div>
 
-          <div className="rounded-2xl border border-white/[0.06] bg-black/20 p-4 max-h-52 overflow-y-auto">
-            <p className="text-xs text-zinc-400 leading-6 whitespace-pre-wrap font-mono">{board.content}</p>
+          <div className="rounded-2xl border border-white/[0.06] bg-gray-50 p-4 max-h-52 overflow-y-auto">
+            <p className="text-xs text-gray-500 leading-6 whitespace-pre-wrap font-mono">{board.content}</p>
           </div>
         </div>
       ))}

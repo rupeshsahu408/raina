@@ -15,10 +15,10 @@ function renderMessage(content: string) {
       const lines = part.replace(/^```\w*\n?/, "").replace(/```$/, "");
       return (
         <div key={i} className="relative mt-2 mb-2">
-          <pre className="bg-black/60 border border-white/10 rounded-xl p-3 text-xs font-mono text-green-300 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">{lines}</pre>
+          <pre className="bg-white border border-gray-200 rounded-xl p-3 text-xs font-mono text-green-300 overflow-x-auto whitespace-pre-wrap break-all leading-relaxed">{lines}</pre>
           <button
             onClick={() => navigator.clipboard.writeText(lines)}
-            className="absolute top-2 right-2 text-[10px] text-white/30 hover:text-white/70 bg-white/5 hover:bg-white/10 px-2 py-0.5 rounded transition-all"
+            className="absolute top-2 right-2 text-[10px] text-white/30 hover:text-white/70 bg-gray-50 hover:bg-white/10 px-2 py-0.5 rounded transition-all"
           >copy</button>
         </div>
       );
@@ -682,7 +682,7 @@ window.dataLayer = window.dataLayer || [];
         </button>
 
         {dnsOpen && (
-          <div className="px-6 pb-6 border-t border-white/5 pt-5">
+          <div className="px-6 pb-6 border-t border-gray-100 pt-5">
             <p className="text-xs text-white/40 leading-relaxed mb-4">
               Add the following DNS TXT record to <strong className="text-white/60">{domain}</strong> through your domain registrar (e.g. GoDaddy, Namecheap, Cloudflare). This confirms you own the domain and is entirely optional.
             </p>
@@ -754,7 +754,7 @@ window.dataLayer = window.dataLayer || [];
         {chatOpen && (
           <div className="w-[370px] h-[520px] rounded-2xl overflow-hidden flex flex-col shadow-2xl shadow-black/60"
             style={{ background: "rgba(8,8,20,0.97)", border: "1px solid rgba(124,58,237,0.3)" }}>
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5"
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100"
               style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.2), rgba(6,182,212,0.1))" }}>
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center text-sm shrink-0">🤖</div>
               <div className="flex-1 min-w-0">
@@ -772,7 +772,7 @@ window.dataLayer = window.dataLayer || [];
                   )}
                   <div className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${m.role === "user"
                     ? "bg-violet-600/30 border border-violet-500/30 text-white rounded-tr-sm"
-                    : "bg-white/5 border border-white/8 text-white/85 rounded-tl-sm"
+                    : "bg-gray-50 border border-white/8 text-white/85 rounded-tl-sm"
                   }`}>
                     {renderMessage(m.content)}
                   </div>
@@ -781,7 +781,7 @@ window.dataLayer = window.dataLayer || [];
               {chatLoading && (
                 <div className="flex gap-2.5 justify-start">
                   <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600/50 to-cyan-500/50 flex items-center justify-center text-sm shrink-0">🤖</div>
-                  <div className="bg-white/5 border border-white/8 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1 items-center">
+                  <div className="bg-gray-50 border border-white/8 rounded-2xl rounded-tl-sm px-4 py-3 flex gap-1 items-center">
                     <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
                     <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
                     <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
@@ -791,7 +791,7 @@ window.dataLayer = window.dataLayer || [];
               <div ref={chatEndRef} />
             </div>
 
-            <div className="px-4 py-3 border-t border-white/5">
+            <div className="px-4 py-3 border-t border-gray-100">
               <div className="flex gap-2">
                 <input
                   type="text"

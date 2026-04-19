@@ -1798,7 +1798,7 @@ export default function ComposeModal({
 
       {/* ── Link dialog (modal) ───────────────────────────────────────────────── */}
       {showLinkDialog && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white/30 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl p-5 w-[380px] max-w-[90vw]">
             <h3 className="text-base font-bold text-gray-800 mb-4">Insert link</h3>
             <div className="space-y-3">
