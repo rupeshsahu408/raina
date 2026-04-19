@@ -177,8 +177,10 @@ ledgerRouter.post(
         return;
       }
 
+      const buf = req.file.buffer;
+      const rawMime = req.file.mimetype.toLowerCase().trim();
+
       // Reject HEIC/HEIF — Gemini inline_data does not support these formats
-      const rawMime = req.file.mimetype.toLowerCase();
       if (rawMime === "image/heic" || rawMime === "image/heif") {
         res.status(415).json({
           error: "HEIC/HEIF images are not supported. Please convert your photo to JPEG or PNG before uploading (most phones let you share as JPEG).",
@@ -186,25 +188,28 @@ ledgerRouter.post(
         return;
       }
 
-      // Validate image buffer has valid magic bytes
-      const buf = req.file.buffer;
-      const isJpeg = buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
-      const isPng  = buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
-      const isWebp = buf.slice(0, 4).toString("ascii") === "RIFF" && buf.slice(8, 12).toString("ascii") === "WEBP";
-      const isGif  = buf.slice(0, 6).toString("ascii").startsWith("GIF");
-
-      if (!isJpeg && !isPng && !isWebp && !isGif) {
-        res.status(400).json({
-          error: "Unrecognized image format. Please upload a JPEG, PNG, or WebP photo of your satti.",
-        });
+      if (!buf || buf.length < 4) {
+        res.status(400).json({ error: "Uploaded file is empty or too small." });
         return;
       }
 
-      // Determine correct MIME type from actual magic bytes (overrides browser-reported type)
-      let mimeType = "image/jpeg";
-      if (isPng)  mimeType = "image/png";
-      if (isWebp) mimeType = "image/webp";
-      if (isGif)  mimeType = "image/gif";
+      // Use magic bytes to detect real format; fall back to browser-reported MIME type
+      const isJpeg = buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff;
+      const isPng  = buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
+      const isWebp = buf.length >= 12 && buf.slice(0, 4).toString("ascii") === "RIFF" && buf.slice(8, 12).toString("ascii") === "WEBP";
+      const isGif  = buf.length >= 3 && buf.slice(0, 3).toString("ascii") === "GIF";
+
+      let mimeType: string;
+      if (isJpeg)      mimeType = "image/jpeg";
+      else if (isPng)  mimeType = "image/png";
+      else if (isWebp) mimeType = "image/webp";
+      else if (isGif)  mimeType = "image/gif";
+      else {
+        // Magic bytes not recognized — trust browser MIME type and let Gemini decide
+        const fallback = rawMime === "image/jpg" ? "image/jpeg" : rawMime;
+        mimeType = fallback || "image/jpeg";
+        console.warn(`[ledger/upload] Unknown magic bytes for mime=${rawMime}, buf=${buf.slice(0,4).toString("hex")} — using ${mimeType}`);
+      }
 
       const imageBase64 = buf.toString("base64");
 
