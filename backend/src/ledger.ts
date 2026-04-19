@@ -1,20 +1,10 @@
 import express from "express";
-import multer from "multer";
 import sharp from "sharp";
 import { connectMongo } from "./db";
 import { LedgerSession } from "./models/LedgerSession";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 
 export const ledgerRouter = express.Router();
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max (frontend pre-resizes to ~500 KB anyway)
-  fileFilter: (_req, file, cb) => {
-    if (file.mimetype.startsWith("image/")) cb(null, true);
-    else cb(new Error("Only image files are supported."));
-  },
-});
 
 const NVIDIA_KEY = process.env.NVIDIA_API_KEY || "";
 
@@ -274,7 +264,7 @@ ledgerRouter.post(
 /* ── Upload & Process ── */
 ledgerRouter.post(
   "/upload",
-  upload.single("satti"),
+  express.json({ limit: "10mb" }),
   async (req: express.Request, res: express.Response): Promise<void> => {
     try {
       const uid = getUid(req);
@@ -283,50 +273,46 @@ ledgerRouter.post(
         return;
       }
 
-      if (!req.file) {
-        res.status(400).json({ error: "No image file provided." });
-        return;
-      }
-
       if (!NVIDIA_KEY) {
         res.status(500).json({ error: "NVIDIA API key not configured." });
         return;
       }
 
-      const rawBuf = req.file.buffer;
+      // Accept base64 image from JSON body (avoids multipart binary corruption through proxies)
+      const { image: imageBase64Input, mimeType: inputMime } = req.body || {};
 
-      if (!rawBuf || rawBuf.length < 10) {
-        res.status(400).json({ error: "Uploaded file is empty or too small." });
+      if (!imageBase64Input || typeof imageBase64Input !== "string") {
+        res.status(400).json({ error: "No image provided." });
         return;
       }
 
-      // Re-encode with sharp: always outputs a clean JPEG at ≤800px, ≤70 KB
-      // This normalises any input format (JPEG, PNG, WebP, HEIC, etc.) and
-      // guarantees NVIDIA can identify the image.
+      // Decode the base64 to a buffer so sharp can re-encode it cleanly
+      const rawBuf = Buffer.from(imageBase64Input, "base64");
+
+      if (!rawBuf || rawBuf.length < 10) {
+        res.status(400).json({ error: "Uploaded image is empty or too small." });
+        return;
+      }
+
+      console.log(`[ledger/upload] received base64 image: ${rawBuf.length}B (mime hint: ${inputMime})`);
+
+      // Re-encode with sharp: always outputs a clean JPEG at ≤800px
+      // This normalises any input format and guarantees NVIDIA can identify the image.
       let imageBase64: string;
-      let mimeType = "image/jpeg";
+      const mimeType = "image/jpeg";
       try {
         const processed = await sharp(rawBuf)
           .rotate()                        // auto-rotate from EXIF
           .resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true })
-          .jpeg({ quality: 75, progressive: false })
+          .jpeg({ quality: 80, progressive: false })
           .toBuffer();
         imageBase64 = processed.toString("base64");
         console.log(`[ledger/upload] sharp re-encoded: ${rawBuf.length}B → ${processed.length}B (base64 ${imageBase64.length} chars)`);
       } catch (sharpErr: any) {
-        console.error("[ledger/upload] sharp failed, falling back to raw buffer:", sharpErr.message);
-        // Fallback: use the original buffer directly if it's a supported mime type
-        const fileMime = req.file.mimetype || "";
-        const supportedMimes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-        if (!supportedMimes.includes(fileMime)) {
-          res.status(400).json({
-            error: "Could not read the image file. Please upload a JPEG, PNG, or WebP photo.",
-          });
-          return;
-        }
-        imageBase64 = rawBuf.toString("base64");
-        mimeType = fileMime;
-        console.log(`[ledger/upload] using raw buffer fallback: ${rawBuf.length}B, mime: ${mimeType}`);
+        console.error("[ledger/upload] sharp failed, using client-provided base64 directly:", sharpErr.message);
+        // Fallback: use the client-provided base64 directly (already JPEG from canvas)
+        imageBase64 = imageBase64Input;
+        console.log(`[ledger/upload] fallback to client base64: ${imageBase64.length} chars`);
       }
 
       let rawText = "";
@@ -350,8 +336,8 @@ ledgerRouter.post(
 
       const meta = {
         processedAt: new Date().toISOString(),
-        fileSizeKb: Math.round(req.file.size / 1024),
-        mimeType: req.file.mimetype,
+        fileSizeKb: Math.round(rawBuf.length / 1024),
+        mimeType: "image/jpeg",
       };
 
       /* Save session to MongoDB */

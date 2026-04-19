@@ -23,6 +23,7 @@ A multi-platform AI suite with four AI systems:
 - Phase 6 complete: Session History & Persistence — LedgerSession MongoDB model, auto-save on upload, GET/DELETE /ledger/sessions routes, dashboard shows history list with search + date filter + delete + re-open
 - Phase 7 complete: Export & Share — CSV download (UTF-8 BOM, full summary), branded PDF (jsPDF + autotable, header band, summary boxes, entries table, commodity breakdown, footer pagination), WhatsApp share (pre-filled structured message), toast confirmation feedback
 - Phase 8 planned (SaaS/monetisation)
+- **Image upload fixed**: Frontend now converts image to base64 (via FileReader) and sends as JSON (`{ image, mimeType }`) to `/ledger/upload`. Backend accepts JSON, decodes to Buffer, processes with sharp (with fallback to raw base64 if sharp fails), then sends to NVIDIA. This avoids multipart binary corruption through the Vercel→Render proxy chain.
 - recharts installed in frontend
 
 ## Workflows

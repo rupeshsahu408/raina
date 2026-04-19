@@ -228,6 +228,20 @@ export default function LedgerDashboard() {
       img.src = objectUrl;
     });
 
+  /* Convert a Blob to a base64 string (without the data: prefix) */
+  const blobToBase64 = (blob: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(",")[1];
+        if (!base64) reject(new Error("Failed to convert image to base64."));
+        else resolve(base64);
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    });
+
   const processFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       setError("Please upload an image file (JPG, PNG, HEIC, WebP).");
@@ -246,14 +260,18 @@ export default function LedgerDashboard() {
       } catch {
         uploadBlob = file; // fallback: send original if canvas fails
       }
+
+      /* Send as base64 JSON — avoids multipart binary corruption through proxies */
+      const imageBase64 = await blobToBase64(uploadBlob);
       const token = await user.getIdToken();
-      const formData = new FormData();
-      formData.append("satti", uploadBlob, "satti.jpg");
       setStage("ai");
       const res = await fetch(`/backend/ledger/upload`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ image: imageBase64, mimeType: "image/jpeg" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Processing failed. Please try again.");
