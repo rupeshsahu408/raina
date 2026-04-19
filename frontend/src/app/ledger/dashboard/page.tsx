@@ -149,6 +149,37 @@ export default function LedgerDashboard() {
 
   const firstName = user.displayName?.split(" ")[0] ?? user.email?.split("@")[0] ?? "there";
 
+  /* Resize + convert any image to JPEG via canvas before uploading */
+  const prepareImage = (file: File): Promise<Blob> =>
+    new Promise((resolve, reject) => {
+      const MAX_DIM = 1920;
+      const QUALITY = 0.88;
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas not supported."));
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject(new Error("Image conversion failed."))),
+          "image/jpeg",
+          QUALITY
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("Could not load image. Please try a different photo."));
+      };
+      img.src = objectUrl;
+    });
+
   const processFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
       setError("Please upload an image file (JPG, PNG, HEIC, WebP).");
@@ -160,9 +191,16 @@ export default function LedgerDashboard() {
     setPreview(objectUrl);
     try {
       setStage("ocr");
+      /* Convert & resize on the client — ensures a clean JPEG reaches the server */
+      let uploadBlob: Blob;
+      try {
+        uploadBlob = await prepareImage(file);
+      } catch {
+        uploadBlob = file; // fallback: send original if canvas fails
+      }
       const token = await user.getIdToken();
       const formData = new FormData();
-      formData.append("satti", file);
+      formData.append("satti", uploadBlob, "satti.jpg");
       setStage("ai");
       const res = await fetch(`/backend/ledger/upload`, {
         method: "POST",
