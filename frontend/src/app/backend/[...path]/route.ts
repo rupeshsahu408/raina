@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { backendProxyMaxDuration, proxyBackendRequest } from "@/lib/backendProxy";
+import { proxyBackendRequest } from "@/lib/backendProxy";
 
-export const maxDuration = backendProxyMaxDuration;
+export const maxDuration = 70;
 
 async function proxy(req: NextRequest, params: Promise<{ path: string[] }>) {
   const { path } = await params;

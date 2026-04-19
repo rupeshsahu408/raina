@@ -20,8 +20,6 @@ const BACKEND_URL = normalizeBackendUrl(
   (process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : "http://localhost:8080")
 );
 
-export const backendProxyMaxDuration = 70;
-
 export async function proxyBackendRequest(
   req: NextRequest,
   path: string[],
