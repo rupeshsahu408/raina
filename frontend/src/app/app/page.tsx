@@ -138,7 +138,7 @@ export default function AppPage() {
   return (
     <div className="relative min-h-screen bg-white text-[#1d2226] ">
       {/* Background */}
-      <div className="pointer-events-none fixed inset-0 z-0">
+      <div className="pointer-events-none fixed inset-0 z-0" />
 
       {/* Navigation */}
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-gray-50 backdrop-blur-xl">

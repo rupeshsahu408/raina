@@ -102,7 +102,7 @@ function AuthForm() {
       `}</style>
 
       {/* Ambient */}
-      <div className="fixed inset-0 pointer-events-none">
+      <div className="fixed inset-0 pointer-events-none" />
 
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-6 py-5">

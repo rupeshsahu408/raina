@@ -69,7 +69,7 @@ export default function IbaraLanding() {
       `}</style>
 
       {/* Ambient background orbs */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" />
 
       {/* Navbar */}
       <nav
