@@ -161,9 +161,9 @@ export default function LedgerDashboard() {
 
   const firstName = user.displayName?.split(" ")[0] ?? user.email?.split("@")[0] ?? "there";
 
-  /* Resize + convert any image to a small JPEG before uploading.
-     NVIDIA vision API requires the base64 payload to be well under 180 KB,
-     so we adaptively compress until the blob is ≤ 70 KB. */
+  /* Resize + convert any image to a high-quality JPEG for OCR.
+     Target ≤ 130 KB raw (≈ 175 KB base64), which is safely under NVIDIA's 180 KB limit
+     while preserving enough detail for handwritten text recognition. */
   const prepareImage = (file: File): Promise<Blob> =>
     new Promise((resolve, reject) => {
       const img = new Image();
@@ -194,8 +194,8 @@ export default function LedgerDashboard() {
           canvas.toBlob(
             (blob) => {
               if (!blob) return reject(new Error("Image conversion failed."));
-              // Target ≤ 70 KB so base64 stays under ~95 KB (NVIDIA's safe zone)
-              if (blob.size <= 70 * 1024 || rest.length === 0) {
+              // Target ≤ 130 KB — good quality for OCR, safe under NVIDIA's 180 KB base64 limit
+              if (blob.size <= 130 * 1024 || rest.length === 0) {
                 onDone(blob);
               } else {
                 tryCompress(canvas, rest, onDone);
@@ -207,13 +207,13 @@ export default function LedgerDashboard() {
         };
 
         try {
-          // First pass: 1024 px, descending quality
-          const canvas1024 = drawCanvas(1024);
-          tryCompress(canvas1024, [0.85, 0.7, 0.55, 0.4], (blob) => {
-            if (blob.size <= 70 * 1024) return resolve(blob);
-            // Second pass: drop to 800 px if still too large
-            const canvas800 = drawCanvas(800);
-            tryCompress(canvas800, [0.7, 0.5, 0.35], resolve);
+          // First pass: 1280 px at high quality — preserves text detail for OCR
+          const canvas1280 = drawCanvas(1280);
+          tryCompress(canvas1280, [0.92, 0.85, 0.75, 0.65], (blob) => {
+            if (blob.size <= 130 * 1024) return resolve(blob);
+            // Second pass: drop to 1024 px if still too large
+            const canvas1024 = drawCanvas(1024);
+            tryCompress(canvas1024, [0.85, 0.75, 0.6, 0.5], resolve);
           });
         } catch (e: any) {
           reject(e);

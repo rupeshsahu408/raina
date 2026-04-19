@@ -74,24 +74,43 @@ Respond ONLY with valid JSON, no explanation, no markdown code blocks. Use this 
 }`;
 
 function parseAIResponse(raw: string): { rawText: string; structured: any } {
-  const cleaned = raw
+  // Strip markdown code fences if present
+  let cleaned = raw
     .replace(/^```json\s*/i, "")
     .replace(/^```\s*/i, "")
     .replace(/\s*```$/i, "")
     .trim();
+
+  // If still not valid JSON at the top level, try to extract the first {...} block
+  if (!cleaned.startsWith("{")) {
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (jsonMatch) cleaned = jsonMatch[0];
+  }
+
   try {
     const parsed = JSON.parse(cleaned);
+    const rawText = parsed.rawText || "";
+    const entries = parsed.entries || [];
+    const grouped = parsed.grouped || {};
+    const summary = parsed.summary || {};
+
+    // If the model returned entries/grouped data but no rawText, synthesize rawText from entries
+    const effectiveRawText =
+      rawText ||
+      (entries.length > 0
+        ? entries.map((e: any) => e.rawLine || `${e.commodity} ${e.rate} ${e.quantity}`).join("\n")
+        : "");
+
     return {
-      rawText: parsed.rawText || "",
-      structured: {
-        entries: parsed.entries || [],
-        grouped: parsed.grouped || {},
-        summary: parsed.summary || {},
-      },
+      rawText: effectiveRawText,
+      structured: { entries, grouped, summary },
     };
   } catch {
+    // JSON parsing failed — the model may have returned a plain-text explanation.
+    // Treat the raw text as the rawText so downstream checks can use it.
+    console.error("[ledger] parseAIResponse: JSON parse failed, raw response:", raw.slice(0, 500));
     return {
-      rawText: "",
+      rawText: raw.trim().slice(0, 500), // keep the raw model output for debugging
       structured: {
         entries: [],
         grouped: {},
@@ -116,11 +135,12 @@ async function runNvidiaOCRAndStructure(imageBase64: string, mimeType: string): 
       {
         role: "user",
         content: [
-          { type: "text", text: SATTI_PROMPT },
+          // Image first — required ordering for some vision models
           {
             type: "image_url",
             image_url: { url: `data:${mimeType};base64,${imageBase64}` },
           },
+          { type: "text", text: SATTI_PROMPT },
         ],
       },
     ],
@@ -144,6 +164,7 @@ async function runNvidiaOCRAndStructure(imageBase64: string, mimeType: string): 
 
   const data: any = await res.json();
   const rawJson: string = data?.choices?.[0]?.message?.content || "{}";
+  console.log(`[ledger/nvidia] response (first 400 chars): ${rawJson.slice(0, 400)}`);
   return parseAIResponse(rawJson);
 }
 
@@ -296,18 +317,24 @@ ledgerRouter.post(
 
       console.log(`[ledger/upload] received base64 image: ${rawBuf.length}B (mime hint: ${inputMime})`);
 
-      // Re-encode with sharp: always outputs a clean JPEG at ≤800px
-      // This normalises any input format and guarantees NVIDIA can identify the image.
+      // Re-encode with sharp: outputs a clean JPEG optimised for OCR.
+      // Keep resolution high (≤1280px) and quality high (90) to preserve text detail.
+      // Adaptively reduce quality if the output exceeds NVIDIA's ~130 KB raw limit.
       let imageBase64: string;
       const mimeType = "image/jpeg";
       try {
-        const processed = await sharp(rawBuf)
+        const sharpPipeline = sharp(rawBuf)
           .rotate()                        // auto-rotate from EXIF
-          .resize({ width: 800, height: 800, fit: "inside", withoutEnlargement: true })
-          .jpeg({ quality: 80, progressive: false })
-          .toBuffer();
-        imageBase64 = processed.toString("base64");
-        console.log(`[ledger/upload] sharp re-encoded: ${rawBuf.length}B → ${processed.length}B (base64 ${imageBase64.length} chars)`);
+          .resize({ width: 1280, height: 1280, fit: "inside", withoutEnlargement: true });
+
+        let processed: Buffer | null = null;
+        for (const quality of [90, 82, 72, 60]) {
+          const candidate = await sharpPipeline.clone().jpeg({ quality, progressive: false }).toBuffer();
+          processed = candidate;
+          if (candidate.length <= 130 * 1024) break; // fits within NVIDIA's safe zone
+        }
+        imageBase64 = processed!.toString("base64");
+        console.log(`[ledger/upload] sharp re-encoded: ${rawBuf.length}B → ${processed!.length}B (base64 ${imageBase64.length} chars)`);
       } catch (sharpErr: any) {
         console.error("[ledger/upload] sharp failed, using client-provided base64 directly:", sharpErr.message);
         // Fallback: use the client-provided base64 directly (already JPEG from canvas)
@@ -327,9 +354,14 @@ ledgerRouter.post(
         return;
       }
 
-      if (!rawText || rawText.trim().length < 3) {
+      // Accept the result if we have either readable text OR structured entries.
+      // Only reject if the AI found absolutely nothing and no entries were parsed.
+      const hasEntries = Array.isArray(structured.entries) && structured.entries.length > 0;
+      const hasText = rawText && rawText.trim().length >= 3;
+      if (!hasText && !hasEntries) {
+        console.error("[ledger/upload] NVIDIA returned no usable data. rawText:", rawText?.slice(0, 200));
         res.status(422).json({
-          error: "No text could be extracted from the image. Please use a clearer photo with good lighting.",
+          error: "The AI could not extract any data from this image. Please ensure the satti is clearly visible, well-lit, and not blurry.",
         });
         return;
       }
