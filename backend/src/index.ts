@@ -10,6 +10,7 @@ import { ibaraRouter } from "./ibara";
 import { inboxRouter, inboxPublicRouter } from "./inbox";
 import { recruitRouter, recruitPublicRouter } from "./recruit";
 import { trackingPublicRouter, trackingAdminRouter } from "./tracking";
+import { ledgerRouter } from "./ledger";
 import { connectMongo } from "./db";
 import {
   buildBiharSystemPrompt,
@@ -183,6 +184,7 @@ app.use(
 app.use(express.json({ limit: "2mb" }));
 
 app.use("/api/ibara", ibaraRouter);
+app.use("/ledger", ledgerRouter);
 app.use("/inbox", inboxPublicRouter);
 app.use("/inbox", requireFirebaseAuth, inboxRouter);
 app.use("/recruit-public", recruitPublicRouter);

@@ -77,17 +77,25 @@ const steps = [
   { icon: "📊", title: "Get analytics", desc: "See raw entries, grouped totals, and price insights instantly." },
 ];
 
+type ProcessingStage = "idle" | "uploading" | "ocr" | "ai" | "done" | "error";
+
+const BACKEND_URL =
+  typeof window !== "undefined" && window.location.hostname === "localhost"
+    ? "http://localhost:8080"
+    : "";
+
 export default function LedgerDashboard() {
   const { user, loading, signOutFromLedger } = useLedgerAuth();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [stage, setStage] = useState<ProcessingStage>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/ledger/login");
-    }
+    if (!loading && !user) router.replace("/ledger/login");
   }, [user, loading, router]);
 
   if (loading) {
@@ -107,15 +115,54 @@ export default function LedgerDashboard() {
 
   const firstName = user.displayName?.split(" ")[0] ?? user.email?.split("@")[0] ?? "there";
 
-  const handleFileSelect = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    const file = files[0];
+  const processFile = async (file: File) => {
     if (!file.type.startsWith("image/")) {
-      alert("Please upload an image file.");
+      setError("Please upload an image file (JPG, PNG, HEIC, WebP).");
       return;
     }
-    // Phase 3 will wire this to the OCR pipeline
-    alert("Upload ready! OCR pipeline coming in Phase 3.");
+
+    setError(null);
+    setStage("uploading");
+
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+
+    try {
+      setStage("ocr");
+
+      const token = await user.getIdToken();
+      const formData = new FormData();
+      formData.append("satti", file);
+
+      setStage("ai");
+
+      const apiBase = BACKEND_URL || "";
+      const res = await fetch(`${apiBase}/backend/ledger/upload`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Processing failed. Please try again.");
+      }
+
+      sessionStorage.setItem("ledger_session", JSON.stringify(data));
+      setStage("done");
+      setTimeout(() => router.push("/ledger/session"), 400);
+    } catch (err: any) {
+      setStage("error");
+      setError(err.message || "Something went wrong. Please try again.");
+      URL.revokeObjectURL(objectUrl);
+      setPreview(null);
+    }
+  };
+
+  const handleFileSelect = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    processFile(files[0]);
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -124,24 +171,36 @@ export default function LedgerDashboard() {
     handleFileSelect(e.dataTransfer.files);
   };
 
+  const isProcessing = stage === "uploading" || stage === "ocr" || stage === "ai";
+
+  const stageLabel: Record<ProcessingStage, string> = {
+    idle: "",
+    uploading: "Preparing image…",
+    ocr: "Reading your satti with Google Vision…",
+    ai: "Gemini is structuring the entries…",
+    done: "Done! Opening results…",
+    error: "",
+  };
+
+  const stageProgress: Record<ProcessingStage, number> = {
+    idle: 0,
+    uploading: 15,
+    ocr: 45,
+    ai: 80,
+    done: 100,
+    error: 0,
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(16px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
         .anim-fade-up { animation: fadeUp 0.5s ease-out forwards; }
         .anim-fade-up-2 { animation: fadeUp 0.5s ease-out 0.1s forwards; opacity: 0; }
         .anim-fade-up-3 { animation: fadeUp 0.5s ease-out 0.2s forwards; opacity: 0; }
-        .upload-zone {
-          border: 2px dashed #d1fae5;
-          transition: all 0.2s ease;
-        }
-        .upload-zone:hover, .upload-zone.dragging {
-          border-color: #059669;
-          background-color: #f0fdf4;
-        }
+        .upload-zone { border: 2px dashed #d1fae5; transition: all 0.2s ease; }
+        .upload-zone:hover, .upload-zone.dragging { border-color: #059669; background-color: #f0fdf4; }
+        .upload-zone.processing { border-color: #6ee7b7; background-color: #f0fdf4; cursor: not-allowed; }
       `}</style>
 
       {/* Navbar */}
@@ -154,7 +213,6 @@ export default function LedgerDashboard() {
             <span className="font-bold text-[#1d2226] text-sm">Smart Ledger</span>
           </Link>
 
-          {/* Desktop right */}
           <div className="hidden sm:flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -173,16 +231,11 @@ export default function LedgerDashboard() {
             </button>
           </div>
 
-          {/* Mobile menu toggle */}
-          <button
-            className="sm:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
+          <button className="sm:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <XIcon className="h-5 w-5" /> : <MenuIcon className="h-5 w-5" />}
           </button>
         </div>
 
-        {/* Mobile menu */}
         {menuOpen && (
           <div className="sm:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-3">
             <div className="flex items-center gap-2">
@@ -193,18 +246,13 @@ export default function LedgerDashboard() {
               </div>
               <span className="text-sm text-gray-600">{user.email}</span>
             </div>
-            <button
-              onClick={signOutFromLedger}
-              className="flex items-center gap-1.5 text-sm text-red-500 font-medium"
-            >
-              <LogOutIcon className="h-4 w-4" />
-              Sign out
+            <button onClick={signOutFromLedger} className="flex items-center gap-1.5 text-sm text-red-500 font-medium">
+              <LogOutIcon className="h-4 w-4" /> Sign out
             </button>
           </div>
         )}
       </nav>
 
-      {/* Main content */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10">
         {/* Greeting */}
         <div className="anim-fade-up mb-8">
@@ -223,56 +271,93 @@ export default function LedgerDashboard() {
             capture="environment"
             className="hidden"
             onChange={(e) => handleFileSelect(e.target.files)}
+            disabled={isProcessing}
           />
 
           <div
-            className={`upload-zone rounded-3xl bg-white p-8 sm:p-12 text-center cursor-pointer ${dragging ? "dragging" : ""}`}
-            onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+            className={`upload-zone rounded-3xl bg-white p-8 sm:p-12 text-center ${isProcessing ? "processing" : "cursor-pointer"} ${dragging ? "dragging" : ""}`}
+            onClick={() => !isProcessing && fileInputRef.current?.click()}
+            onDragOver={(e) => { e.preventDefault(); if (!isProcessing) setDragging(true); }}
             onDragLeave={() => setDragging(false)}
             onDrop={handleDrop}
           >
-            <div className="flex flex-col items-center gap-4">
-              {/* Icon cluster */}
-              <div className="relative">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                  <UploadIcon className="h-7 w-7 text-emerald-600" />
+            {isProcessing || stage === "done" ? (
+              /* Processing state */
+              <div className="flex flex-col items-center gap-5">
+                {preview && (
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-emerald-200 shadow-sm">
+                    <img src={preview} alt="Uploading" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <div className="w-full max-w-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-[#1d2226]">{stageLabel[stage]}</span>
+                    <span className="text-xs text-emerald-600 font-bold">{stageProgress[stage]}%</span>
+                  </div>
+                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                      style={{ width: `${stageProgress[stage]}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-xl bg-emerald-600 border-2 border-white flex items-center justify-center">
-                  <CameraIcon className="h-3.5 w-3.5 text-white" />
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <div className="w-4 h-4 border-2 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+                  Processing your satti…
                 </div>
               </div>
+            ) : (
+              /* Idle state */
+              <div className="flex flex-col items-center gap-4">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                    <UploadIcon className="h-7 w-7 text-emerald-600" />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-xl bg-emerald-600 border-2 border-white flex items-center justify-center">
+                    <CameraIcon className="h-3.5 w-3.5 text-white" />
+                  </div>
+                </div>
 
-              <div>
-                <p className="text-base font-bold text-[#1d2226] mb-1">
-                  Upload your satti photo
-                </p>
-                <p className="text-sm text-gray-400">
-                  Tap to choose from gallery or{" "}
-                  <span className="text-emerald-600 font-semibold">take a photo</span>
-                </p>
-                <p className="text-xs text-gray-300 mt-1">or drag and drop here</p>
+                <div>
+                  <p className="text-base font-bold text-[#1d2226] mb-1">Upload your satti photo</p>
+                  <p className="text-sm text-gray-400">
+                    Tap to choose from gallery or{" "}
+                    <span className="text-emerald-600 font-semibold">take a photo</span>
+                  </p>
+                  <p className="text-xs text-gray-300 mt-1">or drag and drop here</p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap justify-center">
+                  {["JPG", "PNG", "HEIC", "WebP"].map((fmt) => (
+                    <span key={fmt} className="text-xs font-medium bg-gray-50 border border-gray-100 text-gray-400 px-2.5 py-1 rounded-lg">
+                      {fmt}
+                    </span>
+                  ))}
+                </div>
+
+                <button
+                  onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                  className="mt-2 flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-all hover:-translate-y-0.5 shadow-sm shadow-emerald-100"
+                >
+                  <CameraIcon className="h-4 w-4" />
+                  Upload Satti
+                </button>
               </div>
-
-              {/* Supported formats */}
-              <div className="flex items-center gap-2 flex-wrap justify-center">
-                {["JPG", "PNG", "HEIC", "WebP"].map((fmt) => (
-                  <span key={fmt} className="text-xs font-medium bg-gray-50 border border-gray-100 text-gray-400 px-2.5 py-1 rounded-lg">
-                    {fmt}
-                  </span>
-                ))}
-              </div>
-
-              {/* CTA button */}
-              <button
-                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                className="mt-2 flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-all hover:-translate-y-0.5 shadow-sm shadow-emerald-100"
-              >
-                <CameraIcon className="h-4 w-4" />
-                Upload Satti
-              </button>
-            </div>
+            )}
           </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="mt-3 bg-red-50 border border-red-100 rounded-xl px-4 py-3 flex items-start gap-2">
+              <span className="text-red-400 mt-0.5">⚠</span>
+              <div>
+                <p className="text-sm text-red-600 font-medium">{error}</p>
+                <button onClick={() => { setError(null); setStage("idle"); }} className="text-xs text-red-400 hover:text-red-600 mt-1">
+                  Try again
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Usage counter */}
@@ -294,14 +379,12 @@ export default function LedgerDashboard() {
           </div>
         </div>
 
-        {/* Empty state — recent uploads */}
+        {/* Empty state */}
         <div className="anim-fade-up-3">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-[#1d2226]">Recent uploads</h2>
           </div>
-
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            {/* Empty state */}
             <div className="py-16 px-6 flex flex-col items-center text-center">
               <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
                 <FileImageIcon className="h-6 w-6 text-gray-300" />
@@ -314,7 +397,7 @@ export default function LedgerDashboard() {
           </div>
         </div>
 
-        {/* How it works reminder */}
+        {/* How it works */}
         <div className="mt-10 anim-fade-up-3">
           <div className="flex items-center gap-2 mb-4">
             <SparklesIcon className="h-4 w-4 text-emerald-500" />
