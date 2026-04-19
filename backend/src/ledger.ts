@@ -1,5 +1,7 @@
 import express from "express";
 import multer from "multer";
+import { connectMongo } from "./db";
+import { LedgerSession } from "./models/LedgerSession";
 
 export const ledgerRouter = express.Router();
 
@@ -14,6 +16,10 @@ const upload = multer({
 
 const VISION_KEY = process.env.GOOGLE_VISION_API_KEY || "";
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
+
+function getUid(req: express.Request): string {
+  return (req as any).user?.uid ?? "";
+}
 
 async function runGoogleVisionOCR(imageBase64: string): Promise<string> {
   const url = `https://vision.googleapis.com/v1/images:annotate?key=${VISION_KEY}`;
@@ -154,11 +160,18 @@ ${rawText}
   }
 }
 
+/* ── Upload & Process ── */
 ledgerRouter.post(
   "/upload",
   upload.single("satti"),
   async (req: express.Request, res: express.Response): Promise<void> => {
     try {
+      const uid = getUid(req);
+      if (!uid) {
+        res.status(401).json({ error: "Unauthorized" });
+        return;
+      }
+
       if (!req.file) {
         res.status(400).json({ error: "No image file provided." });
         return;
@@ -198,15 +211,35 @@ ledgerRouter.post(
         return;
       }
 
+      const meta = {
+        processedAt: new Date().toISOString(),
+        fileSizeKb: Math.round(req.file.size / 1024),
+        mimeType: req.file.mimetype,
+      };
+
+      /* Save session to MongoDB */
+      let sessionId: string | undefined;
+      try {
+        await connectMongo();
+        const saved = await LedgerSession.create({
+          uid,
+          rawText,
+          entries: structured.entries || [],
+          grouped: structured.grouped || {},
+          summary: structured.summary || {},
+          meta,
+        });
+        sessionId = String(saved._id);
+      } catch (err) {
+        console.error("[ledger/upload] MongoDB save failed:", err);
+      }
+
       res.json({
         success: true,
+        sessionId,
         rawText,
         ...structured,
-        meta: {
-          processedAt: new Date().toISOString(),
-          fileSizeKb: Math.round(req.file.size / 1024),
-          mimeType: req.file.mimetype,
-        },
+        meta,
       });
     } catch (err: any) {
       console.error("[ledger/upload]", err);
@@ -214,3 +247,84 @@ ledgerRouter.post(
     }
   }
 );
+
+/* ── List sessions ── */
+ledgerRouter.get("/sessions", async (req: express.Request, res: express.Response): Promise<void> => {
+  try {
+    const uid = getUid(req);
+    if (!uid) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+    await connectMongo();
+
+    const { q, from, to } = req.query as { q?: string; from?: string; to?: string };
+
+    const filter: Record<string, any> = { uid };
+    if (from || to) {
+      filter.createdAt = {};
+      if (from) filter.createdAt.$gte = new Date(from);
+      if (to) filter.createdAt.$lte = new Date(to + "T23:59:59.999Z");
+    }
+
+    let sessions = await LedgerSession.find(filter)
+      .select("_id summary meta createdAt")
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean();
+
+    /* Client-side commodity search */
+    if (q) {
+      const lower = q.toLowerCase();
+      sessions = sessions.filter((s) =>
+        (s.summary?.topCommodity || "").toLowerCase().includes(lower)
+      );
+    }
+
+    res.json({ sessions });
+  } catch (err: any) {
+    console.error("[ledger/sessions GET]", err);
+    res.status(500).json({ error: err.message || "Unexpected error." });
+  }
+});
+
+/* ── Get single session ── */
+ledgerRouter.get("/sessions/:id", async (req: express.Request, res: express.Response): Promise<void> => {
+  try {
+    const uid = getUid(req);
+    if (!uid) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+    await connectMongo();
+
+    const session = await LedgerSession.findOne({ _id: req.params.id, uid }).lean();
+    if (!session) { res.status(404).json({ error: "Session not found." }); return; }
+
+    res.json({
+      sessionId: String(session._id),
+      rawText: session.rawText,
+      entries: session.entries,
+      grouped: session.grouped,
+      summary: session.summary,
+      meta: session.meta,
+    });
+  } catch (err: any) {
+    console.error("[ledger/sessions/:id GET]", err);
+    res.status(500).json({ error: err.message || "Unexpected error." });
+  }
+});
+
+/* ── Delete session ── */
+ledgerRouter.delete("/sessions/:id", async (req: express.Request, res: express.Response): Promise<void> => {
+  try {
+    const uid = getUid(req);
+    if (!uid) { res.status(401).json({ error: "Unauthorized" }); return; }
+
+    await connectMongo();
+
+    const deleted = await LedgerSession.findOneAndDelete({ _id: req.params.id, uid });
+    if (!deleted) { res.status(404).json({ error: "Session not found." }); return; }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[ledger/sessions/:id DELETE]", err);
+    res.status(500).json({ error: err.message || "Unexpected error." });
+  }
+});

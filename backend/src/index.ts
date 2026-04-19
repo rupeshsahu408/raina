@@ -184,7 +184,7 @@ app.use(
 app.use(express.json({ limit: "2mb" }));
 
 app.use("/api/ibara", ibaraRouter);
-app.use("/ledger", ledgerRouter);
+app.use("/ledger", requireFirebaseAuth, ledgerRouter);
 app.use("/inbox", inboxPublicRouter);
 app.use("/inbox", requireFirebaseAuth, inboxRouter);
 app.use("/recruit-public", recruitPublicRouter);
