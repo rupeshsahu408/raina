@@ -1,0 +1,92 @@
+Here's the complete updated roadmap with all decisions baked in:
+
+AI Satti to Smart Ledger — Full Phase Roadmap
+Phase 1 — Product Shell & Landing Page
+What gets built:
+
+Dedicated route at /ledger
+Product landing page with its own brand identity (separate from Evara/IBARA)
+Hero section, how-it-works (3 steps), feature highlights, CTA
+Navbar with Login / Get Started
+Footer
+100% mobile-first, clean white UI
+APIs needed: None
+Goal: Product looks real and professional before a single line of logic is written
+
+Phase 2 — Auth & Dashboard Shell
+What gets built:
+
+Dedicated auth pages for Ledger (/ledger/login, /ledger/signup)
+Protected dashboard at /ledger/dashboard
+Empty state UI — "Upload your first satti to get started"
+Upload button visible and ready (not yet functional)
+Firebase Auth (same project, separate context like Recruit AI)
+APIs needed: Firebase (already configured)
+Goal: Users can sign up, log in, and land on their dashboard
+
+Phase 3 — Upload System & Google Vision OCR
+What gets built:
+
+Image upload UI — file picker + camera capture button (mobile)
+Backend route: POST /ledger/upload
+Image sent to Google Vision API for handwritten text extraction
+Raw OCR text returned and stored
+Raw Transparency View displayed — exactly what Vision extracted, same order, no changes
+Uncertain/low-confidence entries highlighted in amber
+Hindi numeral → English conversion (२४ → 24)
+APIs needed: Google Vision API key
+Goal: User uploads a photo, sees exactly what was extracted
+
+Phase 4 — Gemini Intelligence Layer
+What gets built:
+
+Raw OCR text sent to Gemini 1.5 Flash
+Gemini structures it into: commodity, rate, quantity, amount
+Normalizes commodity names (Gehu = Wheat, Chawal = Rice, etc.)
+Grouped Analytics View — entries grouped by commodity, rate × qty = amount shown step by step, subtotals per group
+Inline editable entries — fix any OCR mistake, recalculates instantly
+All calculation steps always visible, nothing hidden
+APIs needed: Gemini API key
+Goal: Raw text becomes fully structured, grouped, transparent accounting data
+
+Phase 5 — Summary Intelligence & Analytics
+What gets built:
+
+Summary Intelligence View — total qty, total amount, commodity-wise distribution
+Price range per commodity: min / max / average rate
+Probability distribution: "70% of Gehu purchased at ₹24, 30% at ₹25"
+Visual charts: commodity distribution (donut), price trend (bar)
+Recharts library for all visualisations
+Fully mobile-responsive analytics layout
+APIs needed: Gemini (already set up in Phase 4)
+Goal: A grain trader gets real business intelligence from a single photo
+
+Phase 6 — Session History & Persistence
+What gets built:
+
+Every upload session saved to MongoDB (linked to user)
+Sessions list with date, commodity count, total value
+Re-open any past session with all 3 views preserved
+Delete / archive sessions
+Search/filter by date or commodity
+APIs needed: MongoDB (already connected)
+Goal: Traders can track every day's satti going back as far as they want
+
+Phase 7 — Export & Share
+What gets built:
+
+Download summary as clean PDF (printable format)
+Share via WhatsApp (pre-formatted message with totals)
+Export raw data as Excel/CSV (for accountants)
+APIs needed: None (PDF via browser print / jsPDF)
+Goal: Data flows out of the system as easily as it flows in
+
+Phase 8 — SaaS & Monetisation Layer
+What gets built:
+
+Subscription tiers: Free (10 uploads/month), Pro (unlimited + history + export)
+Usage tracking per user
+Upgrade/billing flow
+Admin dashboard: uploads, active users, conversion stats
+APIs needed: Stripe or Razorpay (India-first)
+Goal: Product generates revenue
