@@ -1,11 +1,16 @@
 const DEFAULT_BACKEND_URL = "https://raina-1.onrender.com";
 const FRONTEND_HOSTS = new Set(["plyndrox.app", "www.plyndrox.app"]);
 
+function defaultApiBaseUrl(): string {
+  if (process.env.NODE_ENV === "production") return DEFAULT_BACKEND_URL;
+  return typeof window === "undefined" ? "http://localhost:8080" : "/backend";
+}
+
 function normalizeApiBaseUrl(value?: string): string {
   const raw = (value || "").trim().replace(/\/$/, "");
-  if (!raw) return process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : "/backend";
+  if (!raw) return defaultApiBaseUrl();
 
-  if (raw.startsWith("/")) return process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : raw;
+  if (raw.startsWith("/")) return process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : defaultApiBaseUrl();
 
   try {
     const url = new URL(raw);
@@ -14,7 +19,7 @@ function normalizeApiBaseUrl(value?: string): string {
       return process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : "/backend";
     }
   } catch {
-    return process.env.NODE_ENV === "production" ? DEFAULT_BACKEND_URL : "/backend";
+    return defaultApiBaseUrl();
   }
 
   return raw;

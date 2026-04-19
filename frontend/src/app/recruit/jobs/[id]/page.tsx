@@ -7,6 +7,7 @@ import { getFirebaseAuth } from "@/lib/firebaseClient";
 import Link from "next/link";
 import { trackEvent } from "@/lib/trackEvent";
 import { apiUrl, readApiJson } from "@/lib/api";
+import { formatJobDescription } from "@/lib/jobDescription";
 
 const FRONTEND_URL = "https://www.plyndrox.app";
 
@@ -1284,7 +1285,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ id: string
 
         {activeTab === "jd" && (
           <div className="rounded-3xl border border-white/[0.07] bg-white/[0.02] p-6 sm:p-8">
-            <p className="text-sm text-zinc-300 leading-8 whitespace-pre-wrap">{job.generatedJD}</p>
+            <p className="text-sm text-zinc-300 leading-8 whitespace-pre-wrap">{formatJobDescription(job.generatedJD)}</p>
           </div>
         )}
 
@@ -1314,6 +1315,7 @@ function PostToBoardsTab({ job }: { job: Job }) {
   const [copiedBoard, setCopiedBoard] = useState<string | null>(null);
   const [linkCopiedPost, setLinkCopiedPost] = useState(false);
   const plyndroxUrl = `${FRONTEND_URL}/recruit/opportunities/${job._id}`;
+  const jobDescription = formatJobDescription(job.generatedJD);
 
   const linkedinPost = `🚀 We're Hiring: ${job.title}
 
@@ -1321,7 +1323,7 @@ ${job.seniority ? `Seniority: ${job.seniority}` : ""}
 📍 Location: ${job.location} (${job.workMode})
 ${job.department ? `🏢 Department: ${job.department}` : ""}
 
-${job.generatedJD}
+${jobDescription}
 
 Interested? Apply by clicking the link in our bio or DM us directly.
 
@@ -1329,7 +1331,7 @@ Interested? Apply by clicking the link in our bio or DM us directly.
 
   const indeedPost = `${job.title}
 
-${job.generatedJD}
+${jobDescription}
 
 Job Type: Full-time
 Location: ${job.location}
@@ -1343,7 +1345,7 @@ Work Mode: ${job.workMode}
 Experience Level: ${job.seniority || "Mid-level"}
 ${job.department ? `Department: ${job.department}` : ""}
 
-${job.generatedJD}`;
+${jobDescription}`;
 
   const boards = [
     {

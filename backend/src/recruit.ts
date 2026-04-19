@@ -24,18 +24,21 @@ function getUid(req: express.Request): string {
 }
 
 function safeJson(text: string): any {
+  const normalized = String(text || "").trim();
+  const decoded = decodeEscapedAiText(normalized);
   const attempts = [
-    () => JSON.parse(text),
+    () => JSON.parse(normalized),
+    () => JSON.parse(decoded),
     () => {
-      const m = text.match(/```json\s*([\s\S]*?)```/);
+      const m = decoded.match(/```json\s*([\s\S]*?)```/);
       return m ? JSON.parse(m[1]) : null;
     },
     () => {
-      const m = text.match(/```\s*([\s\S]*?)```/);
+      const m = decoded.match(/```\s*([\s\S]*?)```/);
       return m ? JSON.parse(m[1]) : null;
     },
     () => {
-      const m = text.match(/(\{[\s\S]*\})/);
+      const m = decoded.match(/(\{[\s\S]*\})/);
       return m ? JSON.parse(m[1]) : null;
     },
   ];
@@ -46,6 +49,97 @@ function safeJson(text: string): any {
     } catch { /* try next */ }
   }
   return null;
+}
+
+function decodeEscapedAiText(input: string): string {
+  let value = String(input || "").trim();
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      const parsed = JSON.parse(value);
+      if (typeof parsed === "string") {
+        value = parsed.trim();
+        continue;
+      }
+      break;
+    } catch {
+      break;
+    }
+  }
+  return value
+    .replace(/\\r\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\\t/g, " ")
+    .replace(/\\"/g, '"')
+    .replace(/\\\\/g, "\\")
+    .trim();
+}
+
+function cleanGeneratedJobDescription(value: string): string {
+  const decoded = decodeEscapedAiText(value);
+  const parsed = safeJson(decoded);
+  if (parsed && typeof parsed.jd === "string" && parsed.jd.trim()) {
+    return cleanGeneratedJobDescription(parsed.jd);
+  }
+  const jdMatch = decoded.match(/"jd"\s*:\s*"([\s\S]*?)"\s*,\s*"rubric"/);
+  const extracted = jdMatch ? decodeEscapedAiText(jdMatch[1]) : decoded;
+  return extracted
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/i, "")
+    .replace(/^\s*["'{]+/, "")
+    .replace(/["'}]+\s*$/, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function listFromText(value: string): string {
+  return String(value || "")
+    .split(/[\n,;]+/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 8)
+    .join(", ");
+}
+
+function buildFallbackJobDescription(args: {
+  title: string;
+  department: string;
+  seniority: string;
+  location: string;
+  workMode: string;
+  responsibilities: string;
+  mustHaveSkills: string;
+  niceToHaveSkills: string;
+  salary: string;
+}): string {
+  const responsibilities = listFromText(args.responsibilities) || "own meaningful work, collaborate with the team, and deliver reliable outcomes";
+  const mustHave = listFromText(args.mustHaveSkills) || "relevant experience, strong communication, ownership, and problem-solving";
+  const niceToHave = listFromText(args.niceToHaveSkills) || "experience with similar tools, fast-moving teams, or customer-focused environments";
+  return `About the role
+We are hiring a ${args.seniority || "motivated"} ${args.title} to join the ${args.department || "team"} and contribute to practical, high-impact work. This role is based in ${args.location || "India"} with a ${args.workMode || "flexible"} working model.
+
+What you will do
+- ${responsibilities}
+- Work closely with stakeholders to understand priorities and turn them into clear execution.
+- Maintain quality, communicate progress clearly, and improve the way the team works over time.
+
+What we are looking for
+- Strong ability in ${mustHave}.
+- A dependable, ownership-driven approach to work.
+- Clear written and verbal communication with attention to detail.
+
+Good to have
+- ${niceToHave}.
+
+Compensation and benefits
+${args.salary}. The final offer will depend on skills, experience, and interview performance.`;
+}
+
+function serializeRecruitJob(job: any) {
+  if (!job) return job;
+  return {
+    ...job,
+    generatedJD: cleanGeneratedJobDescription(job.generatedJD || ""),
+  };
 }
 
 function generateToken(): string {
@@ -156,7 +250,7 @@ async function generateJobDescription(args: {
       ? `${args.salaryCurrency} ${args.salaryMin.toLocaleString()} – ${args.salaryMax.toLocaleString()} per year`
       : "Competitive (not disclosed)";
 
-  const prompt = `You are an expert HR professional and talent acquisition specialist. Generate a comprehensive, professional, bias-reduced job description and candidate scoring rubric.
+  const prompt = `You are a senior recruiter and job-description copywriter for an India-first job marketplace. Generate polished, candidate-friendly hiring content.
 
 INPUT:
 - Role Title: ${args.title}
@@ -171,7 +265,7 @@ INPUT:
 
 OUTPUT FORMAT (respond with valid JSON only, no markdown):
 {
-  "jd": "Full job description as a well-formatted string with sections: About the Role, What You'll Do, What We're Looking For, Nice to Have, What We Offer",
+  "jd": "Plain text job description only. Use clear section headings and real paragraph/bullet spacing. Do not include JSON syntax, escaped slashes, quote marks around the whole description, or rubric text inside this field.",
   "rubric": [
     {
       "name": "criterion name (e.g. Core Technical Skills)",
@@ -182,11 +276,14 @@ OUTPUT FORMAT (respond with valid JSON only, no markdown):
 }
 
 Rules for the JD:
-- Write in a welcoming, inclusive tone
-- Avoid gendered language and unnecessary degree requirements
-- Focus on impact and outcomes, not just tasks
-- Make responsibilities specific and actionable
-- Keep total length between 400-600 words
+- Use these exact sections: About the role, What you will do, What we are looking for, Good to have, Compensation and benefits
+- Write in simple, professional English that sounds human and credible
+- Keep it concise: 220-350 words
+- Use short paragraphs and 3-5 bullets under action-heavy sections
+- Do not invent unrealistic benefits, claims, company facts, or requirements
+- Avoid gendered language, age bias, caste/religion references, and unnecessary degree requirements
+- Focus on outcomes, ownership, collaboration, and measurable impact
+- Never return the jd as a nested JSON string
 
 Rules for the rubric:
 - Create 4-6 criteria that together sum to 100 weight points
@@ -202,9 +299,11 @@ Rules for the rubric:
   });
 
   const parsed = safeJson(raw);
+  const fallbackJd = buildFallbackJobDescription({ ...args, salary });
   if (!parsed || !parsed.jd || !Array.isArray(parsed.rubric)) {
+    const cleanedRaw = cleanGeneratedJobDescription(raw);
     return {
-      jd: raw,
+      jd: cleanedRaw && !cleanedRaw.includes('"rubric"') ? cleanedRaw : fallbackJd,
       rubric: [
         { name: "Core Skills", weight: 40, description: "Proficiency in the must-have technical skills listed for this role." },
         { name: "Relevant Experience", weight: 30, description: "Years and quality of experience directly relevant to this role." },
@@ -213,7 +312,20 @@ Rules for the rubric:
       ],
     };
   }
-  return { jd: parsed.jd, rubric: parsed.rubric };
+  const cleanedJd = cleanGeneratedJobDescription(parsed.jd) || fallbackJd;
+  const rubric = parsed.rubric
+    .map((item: any) => ({
+      name: String(item?.name || "Role Fit").slice(0, 80),
+      weight: Number(item?.weight) || 0,
+      description: String(item?.description || "Relevant evidence for this hiring criterion.").slice(0, 300),
+    }))
+    .filter((item: any) => item.name && item.weight > 0);
+  return { jd: cleanedJd, rubric: rubric.length ? rubric : [
+    { name: "Core Skills", weight: 40, description: "Proficiency in the must-have technical skills listed for this role." },
+    { name: "Relevant Experience", weight: 30, description: "Years and quality of experience directly relevant to this role." },
+    { name: "Communication & Culture Fit", weight: 20, description: "Clarity of expression, professionalism, and alignment with team values." },
+    { name: "Growth & Initiative", weight: 10, description: "Evidence of self-driven learning, side projects, or career progression." },
+  ] };
 }
 
 function extractNameFromResume(text: string): string {
@@ -724,7 +836,7 @@ recruitRouter.get("/jobs", async (req, res) => {
     await connectMongo();
     const uid = getUid(req);
     const jobs = await RecruitJob.find({ uid }).sort({ createdAt: -1 }).lean();
-    return res.json({ jobs });
+    return res.json({ jobs: jobs.map(serializeRecruitJob) });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
@@ -736,7 +848,7 @@ recruitRouter.get("/jobs/:jobId", async (req, res) => {
     const uid = getUid(req);
     const job = await RecruitJob.findOne({ _id: req.params.jobId, uid }).lean();
     if (!job) return res.status(404).json({ error: "Job not found." });
-    return res.json({ job });
+    return res.json({ job: serializeRecruitJob(job) });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
@@ -760,7 +872,7 @@ recruitRouter.patch("/jobs/:jobId", async (req, res) => {
     update.verifiedCompany = (companyProfileForPatch as any)?.verificationStatus === "verified";
     const job = await RecruitJob.findOneAndUpdate({ _id: req.params.jobId, uid }, update, { new: true }).lean();
     if (!job) return res.status(404).json({ error: "Job not found." });
-    return res.json({ job });
+    return res.json({ job: serializeRecruitJob(job) });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });
   }
@@ -775,7 +887,7 @@ recruitPublicRouter.get("/jobs", async (req, res) => {
       .sort({ verifiedCompany: -1, createdAt: -1 })
       .limit(80)
       .lean();
-    return res.json({ jobs });
+    return res.json({ jobs: jobs.map(serializeRecruitJob) });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || "Failed to load jobs." });
   }
@@ -790,7 +902,7 @@ recruitPublicRouter.get("/jobs/:jobId", async (req, res) => {
       publicVisibility: { $ne: false },
     }).lean();
     if (!job) return res.status(404).json({ error: "Job not found." });
-    return res.json({ job });
+    return res.json({ job: serializeRecruitJob(job) });
   } catch (err: any) {
     return res.status(500).json({ error: err.message || "Failed to load job." });
   }

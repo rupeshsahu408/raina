@@ -12,6 +12,7 @@ import QualityBreakdown from "./QualityBreakdown";
 import { computeJobQuality } from "@/lib/jobQuality";
 import PageTracker from "@/components/PageTracker";
 import { apiUrl, readApiJson } from "@/lib/api";
+import { formatJobDescription } from "@/lib/jobDescription";
 
 type Job = {
   _id: string;
@@ -108,6 +109,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   const mustHave = splitLines(job.mustHaveSkills);
   const niceToHave = splitLines(job.niceToHaveSkills);
   const quality = computeJobQuality(job);
+  const roleOverview = formatJobDescription(job.generatedJD);
 
   const tags = [
     { label: salary(job), color: "bg-slate-100 text-slate-700" },
@@ -188,7 +190,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
           <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
             <h2 className="text-base font-bold text-slate-900 mb-3">Role overview</h2>
             <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed whitespace-pre-wrap">
-              {job.generatedJD || "The recruiter has not published a full job description yet."}
+              {roleOverview || "The recruiter has not published a full job description yet."}
             </div>
           </div>
 
