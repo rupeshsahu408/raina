@@ -73,7 +73,7 @@ interface InvoiceFlag {
 
 interface Invoice {
   _id: string;
-  source: "upload" | "gmail";
+  source: "upload" | "gmail" | "supplier_link";
   status: string;
   vendor?: string;
   vendorEmail?: string;
@@ -985,7 +985,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
               <dl className="space-y-3">
                 <div>
                   <dt className="text-xs text-gray-400">Source</dt>
-                  <dd className="text-sm font-semibold text-[#1d2226] capitalize">{invoice.source === "gmail" ? "Gmail import" : "Manual upload"}</dd>
+                  <dd className="text-sm font-semibold text-[#1d2226] capitalize">{invoice.source === "gmail" ? "Gmail import" : invoice.source === "supplier_link" ? "Supplier upload link" : "Manual upload"}</dd>
                 </div>
                 {invoice.originalFileName && (
                   <div>

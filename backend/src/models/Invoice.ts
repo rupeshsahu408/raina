@@ -17,7 +17,7 @@ export interface BankDetails {
 
 export interface InvoiceDoc extends Document {
   uid: string;
-  source: "upload" | "gmail";
+  source: "upload" | "gmail" | "supplier_link";
   status: "processing" | "extracted" | "pending_approval" | "approved" | "rejected" | "paid";
   originalFileName?: string;
   originalMimeType?: string;
@@ -125,7 +125,7 @@ const BankDetailsSchema = new Schema(
 const InvoiceSchema = new Schema<InvoiceDoc>(
   {
     uid: { type: String, required: true, index: true },
-    source: { type: String, enum: ["upload", "gmail"], required: true },
+    source: { type: String, enum: ["upload", "gmail", "supplier_link"], required: true },
     status: {
       type: String,
       enum: ["processing", "extracted", "pending_approval", "approved", "rejected", "paid"],

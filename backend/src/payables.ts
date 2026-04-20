@@ -30,6 +30,7 @@ const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? "";
 const GOOGLE_REDIRECT_URI =
   process.env.GOOGLE_REDIRECT_URI ?? "https://raina-1.onrender.com/inbox/callback";
 const OAUTH_STATE_SECRET = process.env.OAUTH_STATE_SECRET || GOOGLE_CLIENT_SECRET || "payables-dev-oauth-state";
+const FRONTEND_URL = process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_APP_URL || "https://www.plyndrox.app";
 
 const PayablesCompanyProfile =
   mongoose.models.PayablesCompanyProfile ||
@@ -77,6 +78,26 @@ const PayablesCompanyProfile =
         financeContactEmail: String,
         approvalHierarchy: { type: String, default: "flat" },
         personalizationDone: { type: Boolean, default: false },
+        supplierPortalToken: { type: String, index: true },
+        supplierPortalEnabled: { type: Boolean, default: true },
+      },
+      { timestamps: true }
+    )
+  );
+
+const PayablesSupplierLead =
+  mongoose.models.PayablesSupplierLead ||
+  mongoose.model(
+    "PayablesSupplierLead",
+    new Schema(
+      {
+        uid: { type: String, required: true, index: true },
+        supplierName: String,
+        supplierEmail: String,
+        supplierPhone: String,
+        message: String,
+        sourceToken: String,
+        status: { type: String, default: "new" },
       },
       { timestamps: true }
     )
@@ -226,6 +247,14 @@ function ensureCanApprove(actor: { role?: string; email?: string }, invoice: any
   if (canApproveInvoice(actor, invoice)) return true;
   res.status(403).json({ error: "Only an admin or assigned approver can perform this action" });
   return false;
+}
+
+function makeSupplierPortalToken() {
+  return `sup_${randomUUID().replace(/-/g, "")}`;
+}
+
+function supplierPortalUrl(token: string) {
+  return `${FRONTEND_URL.replace(/\/$/, "")}/payables/supplier/${encodeURIComponent(token)}`;
 }
 
 function sanitizeInvoice(invoice: any) {
@@ -872,15 +901,147 @@ function sendCsv(res: express.Response, filename: string, headers: string[], row
   res.send(csv);
 }
 
+payablesPublicRouter.get("/supplier-portal/:token", async (req, res) => {
+  try {
+    await connectMongo();
+    const company = await PayablesCompanyProfile.findOne({
+      supplierPortalToken: req.params.token,
+      supplierPortalEnabled: { $ne: false },
+    }).lean() as any;
+    if (!company) return res.status(404).json({ error: "Supplier upload link not found" });
+    res.json({
+      companyName: company.companyName ?? "",
+      brandName: company.brandName ?? company.companyName ?? "",
+      brandDescription: company.brandDescription ?? "",
+      logoBase64: company.logoBase64 ?? "",
+      logoMimeType: company.logoMimeType ?? "",
+      companyAddress: company.companyAddress ?? "",
+      gstNumber: company.gstNumber ?? "",
+      websiteUrl: company.websiteUrl ?? "",
+      supportEmail: company.supportEmail ?? company.financeContactEmail ?? company.notificationEmail ?? "",
+      businessCity: company.businessCity ?? "",
+      businessType: company.businessType ?? "",
+    });
+  } catch (err) {
+    console.error("Supplier portal fetch error:", err);
+    res.status(500).json({ error: "Failed to load supplier upload page" });
+  }
+});
+
+payablesPublicRouter.post("/supplier-portal/:token/upload", upload.single("invoice"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No file provided" });
+    await connectMongo();
+    const company = await PayablesCompanyProfile.findOne({
+      supplierPortalToken: req.params.token,
+      supplierPortalEnabled: { $ne: false },
+    }).lean() as any;
+    if (!company) return res.status(404).json({ error: "Supplier upload link not found" });
+    const supplierName = String(req.body.supplierName ?? "").trim();
+    const supplierEmail = String(req.body.supplierEmail ?? "").trim().toLowerCase();
+    const invoice = new Invoice({
+      uid: company.uid,
+      source: "supplier_link",
+      status: "processing",
+      vendor: supplierName || undefined,
+      vendorEmail: supplierEmail || undefined,
+      originalFileName: req.file.originalname,
+      originalMimeType: req.file.mimetype,
+      originalFileData: req.file.buffer.toString("base64"),
+      notes: supplierName || supplierEmail ? `Submitted by supplier portal${supplierName ? `: ${supplierName}` : ""}${supplierEmail ? ` <${supplierEmail}>` : ""}` : "Submitted by supplier portal",
+    }) as any;
+    await invoice.save();
+    await audit(company.uid, invoice._id.toString(), "supplier_invoice_uploaded", { uid: "supplier-link", email: supplierEmail || undefined }, { fileName: req.file.originalname, supplierName, supplierEmail });
+    await notify(company.uid, {
+      invoiceId: invoice._id.toString(),
+      key: `supplier:${invoice._id.toString()}`,
+      type: "new_supplier_invoice",
+      title: "Supplier uploaded an invoice",
+      message: `${supplierName || "A supplier"} uploaded ${req.file.originalname}. AI extraction has started.`,
+      severity: "info",
+    });
+    setImmediate(async () => {
+      try {
+        await extractAndApplyInvoice(invoice);
+        await analyzeInvoice(invoice._id.toString(), company.uid);
+      } catch (err) {
+        console.error("Supplier invoice processing error:", err);
+        invoice.status = "extracted";
+        await invoice.save();
+      }
+    });
+    res.json({ success: true, invoiceId: invoice._id.toString() });
+  } catch (err) {
+    console.error("Supplier portal upload error:", err);
+    res.status(500).json({ error: "Upload failed" });
+  }
+});
+
+payablesPublicRouter.post("/supplier-portal/:token/interest", async (req, res) => {
+  try {
+    await connectMongo();
+    const company = await PayablesCompanyProfile.findOne({
+      supplierPortalToken: req.params.token,
+      supplierPortalEnabled: { $ne: false },
+    }).lean() as any;
+    if (!company) return res.status(404).json({ error: "Supplier upload link not found" });
+    const supplierName = String(req.body.supplierName ?? "").trim();
+    const supplierEmail = String(req.body.supplierEmail ?? "").trim().toLowerCase();
+    const supplierPhone = String(req.body.supplierPhone ?? "").trim();
+    const message = String(req.body.message ?? "").trim();
+    if (!supplierName && !supplierEmail && !supplierPhone) return res.status(400).json({ error: "Please share at least one contact detail" });
+    await PayablesSupplierLead.create({ uid: company.uid, supplierName, supplierEmail, supplierPhone, message, sourceToken: req.params.token });
+    await notify(company.uid, {
+      key: `supplier-lead:${req.params.token}:${Date.now()}`,
+      type: "supplier_interest",
+      title: "Supplier wants to connect",
+      message: `${supplierName || supplierEmail || supplierPhone} submitted interest from your supplier upload page.`,
+      severity: "success",
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Supplier interest error:", err);
+    res.status(500).json({ error: "Failed to submit interest" });
+  }
+});
+
 payablesRouter.get("/company", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
-    const profile = await PayablesCompanyProfile.findOne({ uid: actor.uid }).lean();
-    res.json(profile ?? { uid: actor.uid, onboarded: false, companyName: "", industry: "", monthlyInvoices: "", gmailAutoImportEnabled: true });
+    const profile = await PayablesCompanyProfile.findOne({ uid: actor.uid }).lean() as any;
+    res.json(profile ? {
+      ...profile,
+      supplierPortalUrl: profile.supplierPortalToken ? supplierPortalUrl(profile.supplierPortalToken) : "",
+    } : { uid: actor.uid, onboarded: false, companyName: "", industry: "", monthlyInvoices: "", gmailAutoImportEnabled: true, supplierPortalUrl: "" });
   } catch {
     res.status(500).json({ error: "Failed to fetch company profile" });
+  }
+});
+
+payablesRouter.get("/supplier-link", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  try {
+    await connectMongo();
+    let company = await PayablesCompanyProfile.findOne({ uid: actor.uid }) as any;
+    if (!company) return res.status(404).json({ error: "Complete Payables onboarding before creating a supplier link." });
+    if (!company.supplierPortalToken) {
+      company.supplierPortalToken = makeSupplierPortalToken();
+      company.supplierPortalEnabled = true;
+      await company.save();
+      await audit(actor.uid, undefined, "supplier_portal_link_created", actor, { supplierPortalToken: company.supplierPortalToken });
+    }
+    res.json({
+      token: company.supplierPortalToken,
+      url: supplierPortalUrl(company.supplierPortalToken),
+      enabled: company.supplierPortalEnabled !== false,
+    });
+  } catch (err) {
+    console.error("Supplier link error:", err);
+    res.status(500).json({ error: "Failed to create supplier link" });
   }
 });
 

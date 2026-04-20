@@ -108,7 +108,7 @@ const CreditCard = (p: React.SVGProps<SVGSVGElement>) => (
 /* ─── Types ─── */
 interface Invoice {
   _id: string;
-  source: "upload" | "gmail";
+  source: "upload" | "gmail" | "supplier_link";
   status: string;
   vendor?: string;
   invoiceNumber?: string;
@@ -141,6 +141,8 @@ interface CompanyProfile {
   industry?: string;
   monthlyInvoices?: string;
   onboarded?: boolean;
+  supplierPortalToken?: string;
+  supplierPortalUrl?: string;
 }
 
 interface PersonalizationProfile {
@@ -222,6 +224,8 @@ export default function PayablesDashboard() {
   const [bulkLoading, setBulkLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("csv");
+  const [supplierLinkLoading, setSupplierLinkLoading] = useState(false);
+  const [supplierLinkCopied, setSupplierLinkCopied] = useState(false);
   const [processingNotice, setProcessingNotice] = useState<string | null>(null);
   const previousProcessingCount = useRef(0);
 
@@ -368,6 +372,30 @@ export default function PayablesDashboard() {
       setGmailMsg({ text: "Could not disconnect Gmail. Please try again.", type: "error" });
     } finally {
       setDisconnectingGmail(false);
+    }
+  };
+
+  const createOrCopySupplierLink = async () => {
+    if (!user) return;
+    setSupplierLinkLoading(true);
+    setSupplierLinkCopied(false);
+    try {
+      let url = companyData.supplierPortalUrl;
+      if (!url) {
+        const res = await fetch(`${BACKEND}/payables/supplier-link`, { headers: payablesHeaders(user) });
+        const data = await res.json();
+        if (!res.ok || !data.url) throw new Error(data.error ?? "Could not create supplier link.");
+        url = data.url;
+        setCompanyData((prev) => ({ ...prev, supplierPortalToken: data.token, supplierPortalUrl: data.url }));
+      }
+      await navigator.clipboard.writeText(url);
+      setSupplierLinkCopied(true);
+      window.setTimeout(() => setSupplierLinkCopied(false), 2500);
+    } catch (err) {
+      console.error("Supplier link error", err);
+      alert(err instanceof Error ? err.message : "Could not create supplier link.");
+    } finally {
+      setSupplierLinkLoading(false);
     }
   };
 
@@ -774,7 +802,7 @@ export default function PayablesDashboard() {
                 </p>
                 <p className="mt-2 text-sm text-gray-400">
                   {activeFilter === "all" && !search
-                    ? "Upload your first invoice or connect Gmail to get started."
+                    ? "Upload your first invoice, connect Gmail, or share your supplier upload link."
                     : `Try a different filter or clear your search.`}
                 </p>
                 {activeFilter === "all" && !search && (
@@ -812,8 +840,8 @@ export default function PayablesDashboard() {
                         onChange={(e) => { e.preventDefault(); toggleSelected(inv._id); }}
                         className="h-4 w-4 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                       />
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${inv.source === "gmail" ? "bg-violet-50" : "bg-indigo-50"}`}>
-                        {inv.source === "gmail" ? <MailIcon className="h-5 w-5 text-violet-500" /> : <UploadIcon className="h-5 w-5 text-indigo-500" />}
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${inv.source === "gmail" ? "bg-violet-50" : inv.source === "supplier_link" ? "bg-emerald-50" : "bg-indigo-50"}`}>
+                      {inv.source === "gmail" ? <MailIcon className="h-5 w-5 text-violet-500" /> : <UploadIcon className={`h-5 w-5 ${inv.source === "supplier_link" ? "text-emerald-500" : "text-indigo-500"}`} />}
                       </div>
 
                       <div className="min-w-0 flex-1">
@@ -922,6 +950,42 @@ export default function PayablesDashboard() {
                   </button>
                 </div>
               )}
+            </div>
+
+            <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm">
+              <h3 className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-emerald-600">
+                <UploadIcon className="h-3.5 w-3.5" />
+                Supplier upload link
+              </h3>
+              <p className="text-sm font-bold text-[#1d2226]">Let suppliers submit invoices directly</p>
+              <p className="mt-2 text-xs leading-5 text-gray-500">
+                Share your permanent branded link with vendors. Their invoices appear here automatically and AI starts extraction in the background.
+              </p>
+              {companyData.supplierPortalUrl && (
+                <div className="mt-3 rounded-xl border border-emerald-100 bg-white px-3 py-2 text-xs text-gray-500">
+                  <p className="truncate">{companyData.supplierPortalUrl}</p>
+                </div>
+              )}
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={createOrCopySupplierLink}
+                  disabled={supplierLinkLoading}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  {supplierLinkLoading ? <Spinner /> : <UploadIcon className="h-3.5 w-3.5" />}
+                  {companyData.supplierPortalUrl ? supplierLinkCopied ? "Copied!" : "Copy link" : "Create link"}
+                </button>
+                {companyData.supplierPortalUrl && (
+                  <a
+                    href={companyData.supplierPortalUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-50"
+                  >
+                    Open
+                  </a>
+                )}
+              </div>
             </div>
 
             {/* Quick actions */}
