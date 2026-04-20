@@ -147,10 +147,12 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string;
   paid:             { label: "Paid",              color: "text-teal-700",    dot: "bg-teal-500",    bg: "bg-teal-50 border-teal-100" },
 };
 
-function fmt(n?: number, currency = "USD") {
+function fmt(n?: number, currency?: string) {
   if (n == null) return "—";
-  try { return new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
-  catch { return `${currency} ${n.toLocaleString()}`; }
+  const code = currency?.trim().toUpperCase();
+  if (!code) return new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
+  try { return new Intl.NumberFormat("en-US", { style: "currency", currency: code, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
+  catch { return `${code} ${n.toLocaleString()}`; }
 }
 function fmtDate(d?: string) {
   if (!d) return "—";

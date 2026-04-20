@@ -276,18 +276,40 @@ async function extractInvoiceDataFromImage(imageBase64: string, mimeType: string
   "notes": "string - any payment terms or notes",
   "confidence": number between 0 and 1
 }
+Currency rules:
+- Return ISO 4217 currency codes only.
+- Use INR for ₹, Rs, Rs., INR, rupee, rupees, or amounts labelled "(Rs.)".
+- Use USD for $, US$, dollar, dollars; EUR for €, euro; GBP for £, pound; AED for dirham; SGD for S$; AUD/CAD only when explicitly shown.
+- Never default to USD. If the document does not show a currency, return null.
+Amount rules:
+- Return numeric values only, with currency symbols, commas, and Indian grouping removed.
+- For Indian formatted amounts like 1,74,500.00, return 174500.
+- Prefer "Total Due", "Grand Total", or "Amount Due" for total.
+- Treat GST/tax rows as tax, not as red flags.
+Validation rules:
+- A normal invoice with vendor, invoice number, dates, line items, GST/tax, bank details, and total due is valid even if it is a new vendor.
+- Do not invent fraud/risk issues. Only extract the fields.
 Return ONLY the JSON. No markdown. No explanation.`;
 
   try {
     const response = await callNvidiaChatCompletions({
       apiKey: NVIDIA_API_KEY,
       model: mimeType.startsWith("image/") ? "meta/llama-3.2-11b-vision-instruct" : "nvidia/llama-3.1-nemotron-70b-instruct",
-      messages: [{ role: "user", content: `${prompt}\n\n[DOCUMENT DATA:${mimeType}:base64]${imageBase64}` }],
+      messages: [{
+        role: "user",
+        content: mimeType.startsWith("image/")
+          ? [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: `data:${mimeType};base64,${imageBase64}` } },
+            ]
+          : `${prompt}\n\n[DOCUMENT DATA:${mimeType}:base64]${imageBase64}`,
+      }],
       max_tokens: 1500,
     });
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return {};
-    return JSON.parse(jsonMatch[0]);
+    const parsed = JSON.parse(jsonMatch[0]);
+    return normalizeExtractedData(parsed, response);
   } catch {
     return {};
   }
@@ -316,6 +338,8 @@ async function extractInvoiceDataFromText(text: string): Promise<Record<string, 
   "notes": "string - any payment terms or notes",
   "confidence": number between 0 and 1
 }
+Currency rules: return ISO 4217 codes only. Use INR for ₹/Rs/rupees, USD for $, EUR for €, GBP for £. Never default to USD when currency is not shown; use null.
+Amount rules: return numbers only. Remove currency symbols and commas, including Indian grouping such as 1,74,500.00 => 174500.
 
 EMAIL/TEXT TO EXTRACT FROM:
 ${text.slice(0, 4000)}
@@ -327,13 +351,79 @@ Return ONLY the JSON. No markdown. No explanation.`,
     });
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return {};
-    return JSON.parse(jsonMatch[0]);
+    const parsed = JSON.parse(jsonMatch[0]);
+    return normalizeExtractedData(parsed, `${response}\n${text}`);
   } catch {
     return {};
   }
 }
 
+function parseAmount(value: unknown) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value !== "string") return undefined;
+  const cleaned = value.replace(/[^\d.-]/g, "");
+  if (!cleaned || cleaned === "-" || cleaned === ".") return undefined;
+  const parsed = Number(cleaned);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function normalizeCurrency(value: unknown, context = "") {
+  const raw = String(value ?? "").trim();
+  const text = `${raw} ${context}`.toLowerCase();
+  const upper = raw.toUpperCase();
+  const validCodes = new Set(["INR", "USD", "EUR", "GBP", "AED", "SGD", "AUD", "CAD", "JPY", "CNY"]);
+  if (validCodes.has(upper)) return upper;
+  if (/[₹]|(?:^|[^a-z])rs\.?(?:[^a-z]|$)|\binr\b|\brupees?\b|\bamount\s*\(rs\.?\)/i.test(text)) return "INR";
+  if (/€|\beur\b|\beuros?\b/i.test(text)) return "EUR";
+  if (/£|\bgbp\b|\bpounds?\b/i.test(text)) return "GBP";
+  if (/\baed\b|\bdirhams?\b/i.test(text)) return "AED";
+  if (/\bsgd\b|s\$/i.test(text)) return "SGD";
+  if (/\baud\b/i.test(text)) return "AUD";
+  if (/\bcad\b/i.test(text)) return "CAD";
+  if (/\busd\b|us\$|\$\s*\d|\bdollars?\b/i.test(text)) return "USD";
+  return undefined;
+}
+
+function normalizeDateValue(value: unknown) {
+  if (!value) return undefined;
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) return trimmed;
+  return parsed.toISOString().slice(0, 10);
+}
+
+function normalizeExtractedData(data: Record<string, unknown>, context = "") {
+  const normalized: Record<string, unknown> = { ...data };
+  const combinedContext = `${context}\n${JSON.stringify(data)}`;
+  const currency = normalizeCurrency(data.currency, combinedContext);
+  if (currency) normalized.currency = currency;
+  else delete normalized.currency;
+  for (const key of ["subtotal", "tax", "total"]) {
+    const amount = parseAmount(data[key]);
+    if (amount !== undefined) normalized[key] = amount;
+  }
+  normalized.invoiceDate = normalizeDateValue(data.invoiceDate);
+  normalized.dueDate = normalizeDateValue(data.dueDate);
+  if (Array.isArray(data.lineItems)) {
+    normalized.lineItems = data.lineItems.map((item) => {
+      const row = typeof item === "object" && item !== null ? item as Record<string, unknown> : {};
+      return {
+        description: String(row.description ?? "").trim(),
+        quantity: parseAmount(row.quantity),
+        unitPrice: parseAmount(row.unitPrice),
+        amount: parseAmount(row.amount),
+      };
+    }).filter((item) => item.description || item.amount !== undefined);
+  }
+  const confidence = parseAmount(data.confidence);
+  if (confidence !== undefined) normalized.confidence = Math.max(0, Math.min(1, confidence > 1 ? confidence / 100 : confidence));
+  return normalized;
+}
+
 function applyExtracted(invoice: InstanceType<typeof Invoice>, data: Record<string, unknown>) {
+  data = normalizeExtractedData(data);
   if (data.vendor) (invoice as any).vendor = data.vendor;
   if (data.vendorEmail) (invoice as any).vendorEmail = data.vendorEmail;
   if (data.invoiceNumber) (invoice as any).invoiceNumber = data.invoiceNumber;
@@ -346,6 +436,19 @@ function applyExtracted(invoice: InstanceType<typeof Invoice>, data: Record<stri
   if (Array.isArray(data.lineItems)) (invoice as any).lineItems = data.lineItems;
   if (data.notes) (invoice as any).notes = data.notes;
   if (typeof data.confidence === "number") (invoice as any).confidence = data.confidence;
+}
+
+async function extractAndApplyInvoice(invoice: any) {
+  let extracted: Record<string, unknown> = {};
+  if (invoice.originalFileData && invoice.originalMimeType) {
+    extracted = await extractInvoiceDataFromImage(invoice.originalFileData, invoice.originalMimeType);
+  } else if (invoice.rawText) {
+    extracted = await extractInvoiceDataFromText(invoice.rawText);
+  }
+  applyExtracted(invoice, extracted);
+  invoice.status = "extracted";
+  await invoice.save();
+  return extracted;
 }
 
 async function applyApprovalRules(invoice: any, uid: string) {
@@ -383,7 +486,6 @@ async function analyzeInvoice(invoiceId: string, uid: string): Promise<void> {
     const missing: string[] = [];
     if (!invoice.vendor) missing.push("vendor name");
     if (!invoice.total) missing.push("total amount");
-    if (!invoice.dueDate) missing.push("due date");
     if (!invoice.invoiceNumber) missing.push("invoice number");
     if (missing.length > 0) {
       flags.push({
@@ -409,11 +511,6 @@ async function analyzeInvoice(invoiceId: string, uid: string): Promise<void> {
       const previousCount = await Invoice.countDocuments({ uid, vendor: invoice.vendor, _id: { $ne: invoice._id } });
       if (previousCount === 0) {
         invoice.isNewVendor = true;
-        flags.push({
-          type: "new_vendor",
-          severity: "info",
-          message: `"${invoice.vendor}" is a new vendor — this is their first invoice in your system. Verify their identity before approving.`,
-        });
       } else {
         invoice.isNewVendor = false;
       }
@@ -805,10 +902,7 @@ payablesRouter.post("/upload", upload.single("invoice"), async (req, res) => {
 
     setImmediate(async () => {
       try {
-        const extracted = await extractInvoiceDataFromImage(invoice.originalFileData, req.file!.mimetype);
-        applyExtracted(invoice, extracted);
-        invoice.status = "extracted";
-        await invoice.save();
+        await extractAndApplyInvoice(invoice);
         await analyzeInvoice(invoice._id.toString(), actor.uid);
       } catch {
         invoice.status = "extracted";
@@ -894,10 +988,7 @@ payablesRouter.post("/fetch-gmail", async (req, res) => {
 
       setImmediate(async () => {
         try {
-          const extracted = attachmentData ? await extractInvoiceDataFromImage(attachmentData, attachmentMime) : await extractInvoiceDataFromText(rawText);
-          applyExtracted(invoice, extracted);
-          invoice.status = "extracted";
-          await invoice.save();
+          await extractAndApplyInvoice(invoice);
           await analyzeInvoice(invoice._id.toString(), actor.uid);
         } catch {
           invoice.status = "extracted";
@@ -933,6 +1024,7 @@ payablesRouter.post("/invoices/bulk-action", async (req, res) => {
         if (action === "approve") { invoice.status = "approved"; invoice.approvedAt = new Date(); invoice.approvedBy = actor.email ?? actor.uid; }
         if (action === "reject") { invoice.status = "rejected"; invoice.rejectedAt = new Date(); invoice.rejectionReason = req.body.reason ?? "Bulk rejected"; }
         if (action === "paid") { invoice.status = "paid"; invoice.paidAt = new Date(); invoice.paymentAmount = invoice.total; }
+        if (action === "analyze") await extractAndApplyInvoice(invoice);
         await invoice.save();
         if (action === "analyze") await analyzeInvoice(invoice._id.toString(), actor.uid);
         await audit(actor.uid, invoice._id.toString(), `bulk_${action}`, actor, { reason: req.body.reason });
@@ -1038,11 +1130,12 @@ payablesRouter.patch("/invoices/:id", async (req, res) => {
     if (req.body.status === "approved" || req.body.status === "rejected") { if (!ensureCanApprove(actor, invoice, res)) return; }
     else if (req.body.status === "paid") { if (!ensureManageWorkspace(actor, res)) return; }
     else if (!canManageWorkspace(actor) && (actor.role ?? "") !== "approver") return res.status(403).json({ error: "Only admins and approvers can edit invoices" });
+    const body = normalizeExtractedData(req.body ?? {}, JSON.stringify(req.body ?? {}));
     const allowed = ["vendor", "vendorEmail", "invoiceNumber", "invoiceDate", "dueDate", "currency", "subtotal", "tax", "total", "lineItems", "notes", "status", "assignedApproverEmail", "assignedApproverName"];
-    for (const key of allowed) if (req.body[key] !== undefined) (invoice as any)[key] = req.body[key];
-    if (req.body.status === "approved") { (invoice as any).approvedAt = new Date(); (invoice as any).approvedBy = actor.email ?? actor.uid; }
-    if (req.body.status === "rejected") { (invoice as any).rejectedAt = new Date(); if (req.body.rejectionReason) (invoice as any).rejectionReason = req.body.rejectionReason; }
-    if (req.body.status === "paid") (invoice as any).paidAt = new Date();
+    for (const key of allowed) if (body[key] !== undefined) (invoice as any)[key] = body[key];
+    if (body.status === "approved") { (invoice as any).approvedAt = new Date(); (invoice as any).approvedBy = actor.email ?? actor.uid; }
+    if (body.status === "rejected") { (invoice as any).rejectedAt = new Date(); if (req.body.rejectionReason) (invoice as any).rejectionReason = req.body.rejectionReason; }
+    if (body.status === "paid") (invoice as any).paidAt = new Date();
     await invoice.save();
     await audit(actor.uid, req.params.id, "invoice_updated", actor, { fields: Object.keys(req.body ?? {}) });
     res.json(sanitizeInvoice(invoice));
@@ -1149,6 +1242,7 @@ payablesRouter.post("/invoices/:id/analyze", async (req, res) => {
     await connectMongo();
     const invoice = await Invoice.findOne({ _id: req.params.id, uid: actor.uid });
     if (!invoice) return res.status(404).json({ error: "Invoice not found" });
+    await extractAndApplyInvoice(invoice);
     await analyzeInvoice(req.params.id, actor.uid);
     await audit(actor.uid, req.params.id, "invoice_analyzed", actor);
     const updated = await Invoice.findOne({ _id: req.params.id, uid: actor.uid }).lean();

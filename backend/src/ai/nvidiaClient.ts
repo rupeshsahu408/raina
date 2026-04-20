@@ -2,7 +2,7 @@ export type ChatRole = "system" | "user" | "assistant";
 
 export type ChatMessage = {
   role: ChatRole;
-  content: string;
+  content: string | Array<Record<string, unknown>>;
 };
 
 export async function callNvidiaChatCompletions(args: {

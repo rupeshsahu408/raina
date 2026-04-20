@@ -76,9 +76,15 @@ const statusConfig: Record<string, { label: string; color: string; Icon: React.E
   paid:             { label: "Paid",             color: "bg-emerald-50 text-emerald-700", Icon: CheckCircle2 },
 };
 
-function formatCurrency(val?: number, currency = "USD") {
+function formatCurrency(val?: number, currency?: string) {
   if (!val) return "—";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "USD", maximumFractionDigits: 0 }).format(val);
+  const code = currency?.trim().toUpperCase();
+  if (!code) return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(val);
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, maximumFractionDigits: 0 }).format(val);
+  } catch {
+    return `${code} ${val.toLocaleString()}`;
+  }
 }
 function formatDate(d?: string) {
   if (!d) return "—";

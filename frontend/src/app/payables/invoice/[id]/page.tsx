@@ -96,9 +96,15 @@ const FLAG_CONFIG = {
   overdue_risk:    { label: "Overdue Risk",         icon: "⏰", bg: "bg-red-50 border-red-200",      text: "text-red-800",   badge: "bg-red-100 text-red-700" },
 };
 
-function fmt(n?: number, currency = "USD") {
+function fmt(n?: number, currency?: string) {
   if (n == null) return "—";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 2 }).format(n);
+  const code = currency?.trim().toUpperCase();
+  if (!code) return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, minimumFractionDigits: 2 }).format(n);
+  } catch {
+    return `${code} ${n.toLocaleString()}`;
+  }
 }
 function fmtDate(d?: string) {
   if (!d) return "—";
@@ -751,7 +757,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
             <h3 className="text-lg font-black text-[#1d2226]">Mark as Paid</h3>
             <p className="mt-1 text-sm text-gray-500">Confirm the payment amount to mark this invoice as paid.</p>
             <div className="mt-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400">Payment Amount ({invoice.currency ?? "USD"})</label>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400">Payment Amount ({invoice.currency ?? "currency not detected"})</label>
               <input
                 type="number"
                 value={paymentAmount}

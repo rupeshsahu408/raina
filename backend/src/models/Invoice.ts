@@ -89,7 +89,7 @@ const InvoiceSchema = new Schema<InvoiceDoc>(
     invoiceNumber: String,
     invoiceDate: String,
     dueDate: String,
-    currency: { type: String, default: "USD" },
+    currency: String,
     subtotal: Number,
     tax: Number,
     total: Number,

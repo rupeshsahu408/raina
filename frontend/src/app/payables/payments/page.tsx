@@ -17,8 +17,15 @@ type ForecastData = { buckets: Record<string, ForecastBucket> };
 type AnalyticsData = { byVendor: Array<{ vendor?: string; amount: number; count: number }>; byMonth: Array<{ _id: string; amount: number; count: number }>; byStatus: Array<{ _id: string; amount: number; count: number }> };
 type Provider = { provider: "quickbooks" | "xero"; status: string; externalCompanyName?: string; lastSyncAt?: string; lastSyncCount?: number };
 
-function money(value?: number, currency = "USD") {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "USD", maximumFractionDigits: 0 }).format(value ?? 0);
+function money(value?: number, currency?: string) {
+  const amount = value ?? 0;
+  const code = currency?.trim().toUpperCase();
+  if (!code) return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(amount);
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, maximumFractionDigits: 0 }).format(amount);
+  } catch {
+    return `${code} ${amount.toLocaleString()}`;
+  }
 }
 
 function dateLabel(value?: string) {

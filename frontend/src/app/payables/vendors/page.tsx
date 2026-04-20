@@ -90,9 +90,15 @@ interface VendorStat {
   isNewVendor?: boolean;
 }
 
-function formatCurrency(val: number, currency = "USD") {
+function formatCurrency(val: number, currency?: string) {
   if (!val) return "—";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: currency || "USD", maximumFractionDigits: 0 }).format(val);
+  const code = currency?.trim().toUpperCase();
+  if (!code) return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(val);
+  try {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, maximumFractionDigits: 0 }).format(val);
+  } catch {
+    return `${code} ${val.toLocaleString()}`;
+  }
 }
 function timeAgo(dateStr: string) {
   const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
