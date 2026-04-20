@@ -83,7 +83,7 @@ Return ONLY the JSON. No markdown. No explanation.`;
       max_tokens: 1500,
     });
 
-    const text = response?.choices?.[0]?.message?.content ?? "";
+    const text = response;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return {};
     return JSON.parse(jsonMatch[0]);
@@ -124,7 +124,7 @@ Return ONLY the JSON. No markdown. No explanation.`,
       ],
       max_tokens: 1000,
     });
-    const content = response?.choices?.[0]?.message?.content ?? "";
+    const content = response;
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return {};
     return JSON.parse(jsonMatch[0]);
@@ -368,7 +368,7 @@ payablesRouter.post("/fetch-gmail", async (req, res) => {
       const from = headers.find((h) => h.name === "From")?.value ?? "";
 
       let bodyText = "";
-      function extractText(parts: typeof payload.parts) {
+      function extractText(parts: any[] | undefined) {
         if (!parts) return;
         for (const part of parts) {
           if (part.mimeType === "text/plain" && part.body?.data) {
@@ -671,7 +671,7 @@ payablesRouter.get("/vendors", async (req, res) => {
     await connectMongo();
 
     const vendors = await Invoice.aggregate([
-      { $match: { uid, vendor: { $exists: true, $ne: null, $ne: "" } } },
+      { $match: { uid, vendor: { $exists: true, $nin: [null, ""] } } },
       {
         $group: {
           _id: "$vendor",

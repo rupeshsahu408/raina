@@ -1,0 +1,33 @@
+2026-04-20T06:27:26.327163368Z ==> Downloading cache...
+2026-04-20T06:27:26.36340589Z ==> Cloning from https://github.com/rupeshsahu408/raina
+2026-04-20T06:27:32.444381816Z ==> Checking out commit 008c65dcb0168a978bf0f3f620e87273ab10508b in branch main
+2026-04-20T06:27:36.933819542Z ==> Downloaded 159MB in 7s. Extraction took 3s.
+2026-04-20T06:27:42.567268405Z ==> Requesting Node.js version >=20.0.0
+2026-04-20T06:27:42.797725203Z ==> Using Node.js version 25.9.0 via /opt/render/project/src/backend/package.json
+2026-04-20T06:27:42.822154773Z ==> Docs on specifying a Node.js version: https://render.com/docs/node-version
+2026-04-20T06:27:42.936588775Z ==> Running build command 'npm install && npm run build'...
+2026-04-20T06:27:43.917100595Z 
+2026-04-20T06:27:43.917127116Z up to date, audited 294 packages in 907ms
+2026-04-20T06:27:43.917137316Z 
+2026-04-20T06:27:43.917199888Z 53 packages are looking for funding
+2026-04-20T06:27:43.91728989Z   run `npm fund` for details
+2026-04-20T06:27:43.924865167Z 
+2026-04-20T06:27:43.924876977Z 9 vulnerabilities (8 low, 1 critical)
+2026-04-20T06:27:43.924879717Z 
+2026-04-20T06:27:43.924883758Z To address issues that do not require attention, run:
+2026-04-20T06:27:43.924887947Z   npm audit fix
+2026-04-20T06:27:43.924891958Z 
+2026-04-20T06:27:43.924895848Z To address all issues (including breaking changes), run:
+2026-04-20T06:27:43.924900758Z   npm audit fix --force
+2026-04-20T06:27:43.924904398Z 
+2026-04-20T06:27:43.924909418Z Run `npm audit` for details.
+2026-04-20T06:27:44.081952072Z 
+2026-04-20T06:27:44.081973933Z > backend@1.0.0 build
+2026-04-20T06:27:44.081977743Z > tsc -p tsconfig.json
+2026-04-20T06:27:44.081980333Z 
+2026-04-20T06:27:53.322116428Z src/payables.ts(86,28): error TS2339: Property 'choices' does not exist on type 'string'.
+2026-04-20T06:27:53.322272462Z src/payables.ts(127,31): error TS2339: Property 'choices' does not exist on type 'string'.
+2026-04-20T06:27:53.322279191Z src/payables.ts(371,42): error TS18048: 'payload' is possibly 'undefined'.
+2026-04-20T06:27:53.322345413Z src/payables.ts(674,60): error TS1117: An object literal cannot have multiple properties with the same name.
+2026-04-20T06:27:53.530574499Z ==> Build failed 😞
+2026-04-20T06:27:53.53059291Z ==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
