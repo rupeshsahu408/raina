@@ -95,6 +95,8 @@ interface Stats {
   completed: number;
 }
 
+const AUTO_SCAN_INTERVAL_HOURS = 2;
+
 interface Toast {
   id: string;
   type: "success" | "error" | "info";
@@ -165,6 +167,7 @@ export default function EmailInboxPage() {
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [scanResult, setScanResult] = useState<{ discovered: number; message: string } | null>(null);
+  const [lastAutoScan, setLastAutoScan] = useState<string | null>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   function toast(type: Toast["type"], message: string) {
@@ -184,6 +187,7 @@ export default function EmailInboxPage() {
       const data = await res.json();
       setEmails(data.emails ?? []);
       setStats(data.stats ?? { total: 0, pending: 0, processing: 0, completed: 0 });
+      if (data.lastAutoScan) setLastAutoScan(data.lastAutoScan);
     } catch {
       if (!silent) toast("error", "Failed to load emails");
     } finally {
@@ -342,8 +346,23 @@ export default function EmailInboxPage() {
               <p className="mt-1 text-sm text-gray-500">
                 AI scans your Gmail for supplier invoices. Review each one and let AI extract the data automatically.
               </p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-400">
+                <span className="flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                  Auto-scan runs every {AUTO_SCAN_INTERVAL_HOURS}h
+                </span>
+                {lastAutoScan ? (
+                  <span className="flex items-center gap-1">
+                    Last auto-scan: <span className="text-gray-600 font-medium">{formatDate(lastAutoScan)}</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1">
+                    First auto-scan runs 30s after server boot
+                  </span>
+                )}
+              </div>
               {scanResult && (
-                <div className="mt-3 flex items-center gap-2 text-sm text-violet-700 font-medium">
+                <div className="mt-2 flex items-center gap-2 text-sm text-violet-700 font-medium">
                   <CheckCircleIcon className="h-4 w-4 text-green-500" />
                   {scanResult.message}
                 </div>

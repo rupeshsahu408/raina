@@ -11,7 +11,7 @@ import { inboxRouter, inboxPublicRouter } from "./inbox";
 import { recruitRouter, recruitPublicRouter } from "./recruit";
 import { trackingPublicRouter, trackingAdminRouter } from "./tracking";
 import { ledgerRouter } from "./ledger";
-import { payablesPublicRouter, payablesRouter } from "./payables";
+import { payablesPublicRouter, payablesRouter, startPayablesAutoScan } from "./payables";
 import { connectMongo } from "./db";
 import {
   buildBiharSystemPrompt,
@@ -2814,6 +2814,9 @@ const port = Number(process.env.PORT || 8080);
 
 const server = app.listen(port, () => {
   console.log(`[evara-backend] listening on port ${port}`);
+  startPayablesAutoScan(2 * 60 * 60 * 1000).catch((err) =>
+    console.warn("[payables-autoscan] failed to start:", err instanceof Error ? err.message : err)
+  );
 });
 
 server.on("error", (err) => {

@@ -2442,10 +2442,97 @@ function parseEmailAddress(raw: string): { name: string; email: string } {
   return { name: raw.trim(), email: raw.trim() };
 }
 
-async function isInvoiceEmail(subject: string, snippet: string): Promise<boolean> {
+function isInvoiceEmail(subject: string, snippet: string): boolean {
   const combined = `${subject} ${snippet}`.toLowerCase();
   const keywords = ["invoice", "bill", "payment due", "receipt", "proforma", "purchase order", "statement", "overdue", "amount due", "tax invoice", "credit note", "debit note", "quotation", "payable"];
   return keywords.some((k) => combined.includes(k));
+}
+
+const autoScanLastRun = new Map<string, Date>();
+
+async function scanGmailInboxForUser(uid: string): Promise<{ discovered: number; skipped: number }> {
+  await connectMongo();
+  let auth: Awaited<ReturnType<typeof getGmailClient>>;
+  try {
+    auth = await getGmailClient(uid);
+  } catch {
+    return { discovered: 0, skipped: 0 };
+  }
+
+  const gmail = google.gmail({ version: "v1", auth });
+  let listRes: any;
+  try {
+    listRes = await gmail.users.messages.list({ userId: "me", q: "-in:sent newer_than:60d", maxResults: 50 });
+  } catch {
+    return { discovered: 0, skipped: 0 };
+  }
+
+  const messages = listRes.data.messages ?? [];
+  let discovered = 0;
+  let skipped = 0;
+
+  for (const msg of messages) {
+    if (!msg.id) continue;
+    const existing = await GmailEmail.findOne({ uid, gmailMessageId: msg.id }).lean();
+    if (existing) { skipped++; continue; }
+
+    try {
+      const full = await gmail.users.messages.get({ userId: "me", id: msg.id, format: "metadata", metadataHeaders: ["Subject", "From", "Date"] });
+      const payload = full.data.payload;
+      const headers = payload?.headers ?? [];
+      const subject = headers.find((h: any) => h.name === "Subject")?.value ?? "";
+      const fromRaw = headers.find((h: any) => h.name === "From")?.value ?? "";
+      const dateHeader = headers.find((h: any) => h.name === "Date")?.value;
+      const snippet = full.data.snippet ?? "";
+
+      if (!isInvoiceEmail(subject, snippet)) { skipped++; continue; }
+
+      const { name: fromName, email: fromEmail } = parseEmailAddress(fromRaw);
+      const receivedAt = dateHeader ? new Date(dateHeader) : new Date(Number(full.data.internalDate));
+
+      const parts = collectParts(payload);
+      const attachmentPart = parts.find((p: any) => ["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(p.mimeType) && (p.body?.attachmentId || p.body?.data));
+      const hasAttachment = !!attachmentPart;
+      const attachmentName = attachmentPart?.filename || "";
+      const attachmentMime = attachmentPart?.mimeType || "";
+
+      await GmailEmail.create({ uid, gmailMessageId: msg.id, subject, from: fromName || fromEmail, fromEmail, snippet, receivedAt, hasAttachment, attachmentName, attachmentMime, status: "pending" });
+      discovered++;
+    } catch {
+      skipped++;
+    }
+  }
+
+  autoScanLastRun.set(uid, new Date());
+  return { discovered, skipped };
+}
+
+export async function startPayablesAutoScan(intervalMs = 2 * 60 * 60 * 1000) {
+  await connectMongo();
+  const runScan = async () => {
+    try {
+      const tokens = await InboxToken.find({}).select("uid").lean();
+      for (const t of tokens) {
+        const uid = (t as any).uid;
+        if (!uid) continue;
+        const profile = await PayablesCompanyProfile.findOne({ uid }).lean();
+        if (!profile) continue;
+        try {
+          const { discovered } = await scanGmailInboxForUser(uid);
+          if (discovered > 0) console.log(`[payables-autoscan] uid=${uid} discovered=${discovered} new invoice emails`);
+        } catch (err) {
+          console.warn(`[payables-autoscan] uid=${uid} error:`, err instanceof Error ? err.message : err);
+        }
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    } catch (err) {
+      console.warn("[payables-autoscan] scan error:", err instanceof Error ? err.message : err);
+    }
+  };
+
+  setTimeout(runScan, 30_000);
+  setInterval(runScan, intervalMs);
+  console.log(`[payables-autoscan] Auto-scan started — runs every ${Math.round(intervalMs / 60000)} minutes`);
 }
 
 payablesRouter.get("/email-inbox", async (req, res) => {
@@ -2470,7 +2557,8 @@ payablesRouter.get("/email-inbox", async (req, res) => {
     const pending = await GmailEmail.countDocuments({ uid: actor.uid, status: "pending" });
     const processing = await GmailEmail.countDocuments({ uid: actor.uid, status: "processing" });
     const completed = await GmailEmail.countDocuments({ uid: actor.uid, status: "completed" });
-    res.json({ emails, stats: { total, pending, processing, completed } });
+    const lastAutoScan = autoScanLastRun.get(actor.uid) ?? null;
+    res.json({ emails, stats: { total, pending, processing, completed }, lastAutoScan });
   } catch (err) {
     res.status(500).json({ error: "Failed to load email inbox" });
   }
@@ -2481,70 +2569,9 @@ payablesRouter.post("/email-inbox/scan", async (req, res) => {
   if (!actor) return;
   if (!ensureManageWorkspace(actor, res)) return;
   try {
-    await connectMongo();
-    let auth: Awaited<ReturnType<typeof getGmailClient>>;
-    try {
-      auth = await getGmailClient(actor.uid);
-    } catch {
-      return res.status(400).json({ error: "Gmail not connected. Please connect your Gmail in the Payables setup." });
-    }
-
-    const gmail = google.gmail({ version: "v1", auth });
-    const listRes = await gmail.users.messages.list({
-      userId: "me",
-      q: "-in:sent newer_than:60d",
-      maxResults: 50,
-    });
-
-    const messages = listRes.data.messages ?? [];
-    let discovered = 0;
-    let skipped = 0;
-
-    for (const msg of messages) {
-      if (!msg.id) continue;
-      const existing = await GmailEmail.findOne({ uid: actor.uid, gmailMessageId: msg.id }).lean();
-      if (existing) { skipped++; continue; }
-
-      try {
-        const full = await gmail.users.messages.get({ userId: "me", id: msg.id, format: "metadata", metadataHeaders: ["Subject", "From", "Date"] });
-        const payload = full.data.payload;
-        const headers = payload?.headers ?? [];
-        const subject = headers.find((h) => h.name === "Subject")?.value ?? "";
-        const fromRaw = headers.find((h) => h.name === "From")?.value ?? "";
-        const dateHeader = headers.find((h) => h.name === "Date")?.value;
-        const snippet = full.data.snippet ?? "";
-
-        const isInvoice = await isInvoiceEmail(subject, snippet);
-        if (!isInvoice) { skipped++; continue; }
-
-        const { name: fromName, email: fromEmail } = parseEmailAddress(fromRaw);
-        const receivedAt = dateHeader ? new Date(dateHeader) : new Date(Number(full.data.internalDate));
-
-        const parts = collectParts(payload);
-        const attachmentPart = parts.find((p: any) => ["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(p.mimeType) && (p.body?.attachmentId || p.body?.data));
-        const hasAttachment = !!attachmentPart;
-        const attachmentName = attachmentPart?.filename || "";
-        const attachmentMime = attachmentPart?.mimeType || "";
-
-        await GmailEmail.create({
-          uid: actor.uid,
-          gmailMessageId: msg.id,
-          subject,
-          from: fromName || fromEmail,
-          fromEmail,
-          snippet,
-          receivedAt,
-          hasAttachment,
-          attachmentName,
-          attachmentMime,
-          status: "pending",
-        });
-        discovered++;
-      } catch {
-        skipped++;
-      }
-    }
-
+    const token = await InboxToken.findOne({ uid: actor.uid }).lean();
+    if (!token) return res.status(400).json({ error: "Gmail not connected. Please connect your Gmail in the Payables setup." });
+    const { discovered, skipped } = await scanGmailInboxForUser(actor.uid);
     res.json({ success: true, discovered, skipped, message: `Scan complete. Found ${discovered} new invoice email${discovered !== 1 ? "s" : ""}.` });
   } catch (err) {
     console.error("[payables] email-inbox scan error:", err);
