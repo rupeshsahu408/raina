@@ -7,6 +7,14 @@ export interface InvoiceFlag {
   relatedInvoiceId?: string;
 }
 
+export interface BankDetails {
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountHolderName?: string;
+  accountType?: string;
+}
+
 export interface InvoiceDoc extends Document {
   uid: string;
   source: "upload" | "gmail";
@@ -20,15 +28,33 @@ export interface InvoiceDoc extends Document {
 
   vendor?: string;
   vendorEmail?: string;
+  vendorAddress?: string;
+  supplierGstin?: string;
+
+  buyerName?: string;
+  buyerEmail?: string;
+  buyerAddress?: string;
+  buyerGstin?: string;
+
   invoiceNumber?: string;
+  poNumber?: string;
   invoiceDate?: string;
   dueDate?: string;
   currency?: string;
   subtotal?: number;
   tax?: number;
   total?: number;
-  lineItems?: Array<{ description: string; quantity?: number; unitPrice?: number; amount?: number }>;
+  discount?: number;
+  lineItems?: Array<{
+    description: string;
+    hsnCode?: string;
+    quantity?: number;
+    unitPrice?: number;
+    gstPercent?: number;
+    amount?: number;
+  }>;
   notes?: string;
+  bankDetails?: BankDetails;
   confidence?: number;
 
   flags?: InvoiceFlag[];
@@ -64,7 +90,25 @@ const FlagSchema = new Schema<InvoiceFlag>(
 );
 
 const LineItemSchema = new Schema(
-  { description: String, quantity: Number, unitPrice: Number, amount: Number },
+  {
+    description: String,
+    hsnCode: String,
+    quantity: Number,
+    unitPrice: Number,
+    gstPercent: Number,
+    amount: Number,
+  },
+  { _id: false }
+);
+
+const BankDetailsSchema = new Schema(
+  {
+    bankName: String,
+    accountNumber: String,
+    ifscCode: String,
+    accountHolderName: String,
+    accountType: String,
+  },
   { _id: false }
 );
 
@@ -86,15 +130,26 @@ const InvoiceSchema = new Schema<InvoiceDoc>(
 
     vendor: String,
     vendorEmail: String,
+    vendorAddress: String,
+    supplierGstin: String,
+
+    buyerName: String,
+    buyerEmail: String,
+    buyerAddress: String,
+    buyerGstin: String,
+
     invoiceNumber: String,
+    poNumber: String,
     invoiceDate: String,
     dueDate: String,
     currency: String,
     subtotal: Number,
     tax: Number,
     total: Number,
+    discount: Number,
     lineItems: [LineItemSchema],
     notes: String,
+    bankDetails: BankDetailsSchema,
     confidence: Number,
 
     flags: [FlagSchema],

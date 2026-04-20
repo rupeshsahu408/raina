@@ -32,7 +32,22 @@ function DollarIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
 }
 
-interface LineItem { description: string; quantity?: number; unitPrice?: number; amount?: number; }
+interface LineItem {
+  description: string;
+  hsnCode?: string;
+  quantity?: number;
+  unitPrice?: number;
+  gstPercent?: number;
+  amount?: number;
+}
+
+interface BankDetails {
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  accountHolderName?: string;
+  accountType?: string;
+}
 
 interface InvoiceFlag {
   type: "duplicate" | "new_vendor" | "amount_anomaly" | "missing_fields" | "overdue_risk";
@@ -47,15 +62,24 @@ interface Invoice {
   status: string;
   vendor?: string;
   vendorEmail?: string;
+  vendorAddress?: string;
+  supplierGstin?: string;
+  buyerName?: string;
+  buyerEmail?: string;
+  buyerAddress?: string;
+  buyerGstin?: string;
   invoiceNumber?: string;
+  poNumber?: string;
   invoiceDate?: string;
   dueDate?: string;
   currency?: string;
   subtotal?: number;
   tax?: number;
   total?: number;
+  discount?: number;
   lineItems?: LineItem[];
   notes?: string;
+  bankDetails?: BankDetails;
   confidence?: number;
   originalFileName?: string;
   approvedAt?: string;
@@ -477,29 +501,79 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
               <h2 className="mb-5 text-sm font-black uppercase tracking-wider text-gray-400">Invoice Details</h2>
               {editing ? (
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {editField("Vendor", "vendor")}
+                  {editField("Vendor (Supplier)", "vendor")}
                   {editField("Vendor Email", "vendorEmail")}
                   {editField("Invoice Number", "invoiceNumber")}
+                  {editField("PO Number", "poNumber")}
                   {editField("Invoice Date", "invoiceDate", "date")}
                   {editField("Due Date", "dueDate", "date")}
                   {editField("Currency", "currency")}
                   {editField("Subtotal", "subtotal", "number")}
-                  {editField("Tax", "tax", "number")}
+                  {editField("Tax / GST", "tax", "number")}
                   {editField("Total", "total", "number")}
                 </div>
               ) : (
-                <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                  {field("Vendor", invoice.vendor)}
-                  {field("Vendor Email", invoice.vendorEmail)}
-                  {field("Invoice Number", invoice.invoiceNumber)}
-                  {field("Invoice Date", fmtDate(invoice.invoiceDate))}
-                  {field("Due Date", fmtDate(invoice.dueDate))}
-                  {field("Currency", invoice.currency)}
-                  {field("Subtotal", fmt(invoice.subtotal, invoice.currency))}
-                  {field("Tax", fmt(invoice.tax, invoice.currency))}
-                  {field("Total", fmt(invoice.total, invoice.currency))}
-                  {field("Approver", invoice.assignedApproverName || invoice.assignedApproverEmail)}
-                  {field("Approval Rule", invoice.approvalRuleName)}
+                <div className="space-y-6">
+                  {/* Supplier section */}
+                  {(invoice.vendor || invoice.supplierGstin || invoice.vendorEmail || invoice.vendorAddress) && (
+                    <div>
+                      <p className="mb-3 text-xs font-bold uppercase tracking-wider text-violet-500">Supplier (Vendor)</p>
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {field("Company Name", invoice.vendor)}
+                        {field("Email", invoice.vendorEmail)}
+                        {field("GSTIN", invoice.supplierGstin)}
+                        {invoice.vendorAddress && (
+                          <div className="sm:col-span-2">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Address</p>
+                            <p className="mt-1 text-sm font-semibold text-[#1d2226]">{invoice.vendorAddress}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Buyer section */}
+                  {(invoice.buyerName || invoice.buyerGstin || invoice.buyerEmail || invoice.buyerAddress) && (
+                    <div className="border-t border-gray-100 pt-5">
+                      <p className="mb-3 text-xs font-bold uppercase tracking-wider text-blue-500">Bill To (Buyer)</p>
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {field("Company Name", invoice.buyerName)}
+                        {field("Email", invoice.buyerEmail)}
+                        {field("GSTIN", invoice.buyerGstin)}
+                        {invoice.buyerAddress && (
+                          <div className="sm:col-span-2">
+                            <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Address</p>
+                            <p className="mt-1 text-sm font-semibold text-[#1d2226]">{invoice.buyerAddress}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Invoice info */}
+                  <div className="border-t border-gray-100 pt-5">
+                    <p className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">Invoice Info</p>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {field("Invoice Number", invoice.invoiceNumber)}
+                      {field("PO Number", invoice.poNumber)}
+                      {field("Invoice Date", fmtDate(invoice.invoiceDate))}
+                      {field("Due Date", fmtDate(invoice.dueDate))}
+                      {field("Currency", invoice.currency)}
+                      {field("Approver", invoice.assignedApproverName || invoice.assignedApproverEmail)}
+                      {field("Approval Rule", invoice.approvalRuleName)}
+                    </div>
+                  </div>
+
+                  {/* Financials */}
+                  <div className="border-t border-gray-100 pt-5">
+                    <p className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">Financials</p>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      {field("Subtotal", fmt(invoice.subtotal, invoice.currency))}
+                      {field("Tax / GST", fmt(invoice.tax, invoice.currency))}
+                      {invoice.discount != null && invoice.discount > 0 && field("Discount", fmt(invoice.discount, invoice.currency))}
+                      {field("Total Due", fmt(invoice.total, invoice.currency))}
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -543,28 +617,46 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
                     <thead>
                       <tr className="border-b border-gray-100 text-xs font-semibold uppercase tracking-wider text-gray-400">
                         <th className="pb-3 text-left">Description</th>
+                        <th className="pb-3 text-center">HSN</th>
                         <th className="pb-3 text-right">Qty</th>
                         <th className="pb-3 text-right">Unit Price</th>
+                        <th className="pb-3 text-center">GST %</th>
                         <th className="pb-3 text-right">Amount</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                       {invoice.lineItems.map((item, i) => (
                         <tr key={i}>
-                          <td className="py-3 text-[#1d2226]">{item.description}</td>
+                          <td className="py-3 pr-4 text-[#1d2226]">{item.description}</td>
+                          <td className="py-3 text-center text-xs font-mono text-gray-500">{item.hsnCode ?? "—"}</td>
                           <td className="py-3 text-right text-gray-500">{item.quantity ?? "—"}</td>
                           <td className="py-3 text-right text-gray-500">{fmt(item.unitPrice, invoice.currency)}</td>
+                          <td className="py-3 text-center text-gray-500">{item.gstPercent != null ? `${item.gstPercent}%` : "—"}</td>
                           <td className="py-3 text-right font-semibold text-[#1d2226]">{fmt(item.amount, invoice.currency)}</td>
                         </tr>
                       ))}
                     </tbody>
                     <tfoot>
                       <tr className="border-t border-gray-200">
-                        <td colSpan={3} className="pt-3 text-right text-xs font-bold uppercase tracking-wider text-gray-400">Total</td>
+                        <td colSpan={5} className="pt-3 text-right text-xs font-bold uppercase tracking-wider text-gray-400">Total Due</td>
                         <td className="pt-3 text-right text-base font-black text-[#1d2226]">{fmt(invoice.total, invoice.currency)}</td>
                       </tr>
                     </tfoot>
                   </table>
+                </div>
+              </div>
+            )}
+
+            {/* Bank details */}
+            {invoice.bankDetails && (invoice.bankDetails.bankName || invoice.bankDetails.accountNumber || invoice.bankDetails.ifscCode) && (
+              <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <h2 className="mb-4 text-sm font-black uppercase tracking-wider text-gray-400">Bank Details</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {invoice.bankDetails.bankName && field("Bank Name", invoice.bankDetails.bankName)}
+                  {invoice.bankDetails.accountHolderName && field("Account Holder", invoice.bankDetails.accountHolderName)}
+                  {invoice.bankDetails.accountNumber && field("Account Number", invoice.bankDetails.accountNumber)}
+                  {invoice.bankDetails.ifscCode && field("IFSC Code", invoice.bankDetails.ifscCode)}
+                  {invoice.bankDetails.accountType && field("Account Type", invoice.bankDetails.accountType)}
                 </div>
               </div>
             )}

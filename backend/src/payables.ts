@@ -264,19 +264,48 @@ async function getGmailClient(uid: string) {
 
 const INVOICE_EXTRACTION_PROMPT = `You are an expert accounts payable AI. Extract all invoice data from this document and return ONLY a valid JSON object with these exact fields (use null for missing fields):
 {
-  "vendor": "string - company or sender name",
-  "vendorEmail": "string - vendor email if present",
-  "invoiceNumber": "string",
-  "invoiceDate": "string - ISO date YYYY-MM-DD",
-  "dueDate": "string - ISO date YYYY-MM-DD",
-  "currency": "string - 3-letter ISO code like USD, INR, EUR",
+  "vendor": "string — the SUPPLIER/SELLER company name (the one who issued this invoice and is receiving payment). This is usually at the TOP of the invoice, in a header or 'From:' section.",
+  "vendorEmail": "string — supplier/seller email address",
+  "vendorAddress": "string — supplier/seller full address",
+  "supplierGstin": "string — GSTIN of the supplier/seller (e.g. 27AABCT1332L1ZN)",
+  "buyerName": "string — the BUYER/CLIENT company name in the 'Bill To' or 'Billed To' section. This is the company PAYING the invoice, NOT the vendor.",
+  "buyerEmail": "string — buyer email if present",
+  "buyerAddress": "string — buyer full address",
+  "buyerGstin": "string — GSTIN of the buyer (e.g. 09AABCI2231K1ZP)",
+  "invoiceNumber": "string — invoice number, may be labelled Invoice No., Invoice #, Inv No., Bill No., etc.",
+  "poNumber": "string — Purchase Order number, may be labelled PO No., PO Number, Purchase Order, etc.",
+  "invoiceDate": "string — ISO date YYYY-MM-DD",
+  "dueDate": "string — ISO date YYYY-MM-DD",
+  "currency": "string — 3-letter ISO code like USD, INR, EUR",
   "subtotal": number,
   "tax": number,
+  "discount": number,
   "total": number,
-  "lineItems": [{"description": "string", "quantity": number, "unitPrice": number, "amount": number}],
-  "notes": "string - payment terms or notes",
+  "lineItems": [
+    {
+      "description": "string",
+      "hsnCode": "string — HSN/SAC code for this line item",
+      "quantity": number,
+      "unitPrice": number,
+      "gstPercent": number,
+      "amount": number
+    }
+  ],
+  "notes": "string — payment terms, conditions, or any notes",
+  "bankDetails": {
+    "bankName": "string",
+    "accountNumber": "string",
+    "ifscCode": "string",
+    "accountHolderName": "string",
+    "accountType": "string"
+  },
   "confidence": number between 0 and 1
 }
+CRITICAL RULES — Vendor vs Buyer:
+- The VENDOR (supplier) is the company that SENT the invoice and is RECEIVING payment. It is usually displayed prominently at the TOP of the invoice with a logo, address, and GSTIN.
+- The BUYER (client) is the company that RECEIVES the invoice and MAKES payment. It appears in the "Bill To" / "Billed To" section.
+- NEVER put the "Bill To" company name in the vendor field. They are always different companies.
+- Example: If the invoice header says "TechSupply Co." and "Bill To: InvoFlow Technologies Pvt. Ltd.", then vendor="TechSupply Co." and buyerName="InvoFlow Technologies Pvt. Ltd."
 Currency rules:
 - Return ISO 4217 codes only.
 - Use INR for ₹, Rs, Rs., INR, rupee, rupees, or amounts labelled "(Rs.)".
@@ -285,12 +314,8 @@ Currency rules:
 Amount rules:
 - Return numeric values only — remove currency symbols and commas including Indian grouping (e.g. 1,74,500.00 → 174500).
 - Prefer "Total Due", "Grand Total", or "Amount Due" for the total field.
-- Treat GST/IGST/CGST/SGST rows as tax, not as additional items.
-Extraction rules:
-- Look carefully throughout the entire document for the vendor/company name, invoice number, and total amount.
-- The vendor name is typically at the top of the invoice or in a "From:" / "Bill From:" section.
-- The invoice number may be labelled "Invoice No.", "Invoice #", "Inv No.", "Bill No.", etc.
-- A valid invoice with vendor, invoice number, dates, line items, taxes, and a total is completely normal — do not flag it.
+- GST/IGST/CGST/SGST amounts should be summed into the tax field.
+- Extract GST % per line item into gstPercent as a number (e.g. 18% → 18).
 Return ONLY the JSON object. No markdown, no code blocks, no explanation.`;
 
 function extractJsonFromResponse(response: string): Record<string, unknown> | null {
@@ -429,7 +454,7 @@ function normalizeExtractedData(data: Record<string, unknown>, context = "") {
   const currency = normalizeCurrency(data.currency, combinedContext);
   if (currency) normalized.currency = currency;
   else delete normalized.currency;
-  for (const key of ["subtotal", "tax", "total"]) {
+  for (const key of ["subtotal", "tax", "total", "discount"]) {
     const amount = parseAmount(data[key]);
     if (amount !== undefined) normalized[key] = amount;
   }
@@ -438,13 +463,26 @@ function normalizeExtractedData(data: Record<string, unknown>, context = "") {
   if (Array.isArray(data.lineItems)) {
     normalized.lineItems = data.lineItems.map((item) => {
       const row = typeof item === "object" && item !== null ? item as Record<string, unknown> : {};
+      const gstPct = parseAmount(row.gstPercent);
       return {
         description: String(row.description ?? "").trim(),
+        hsnCode: row.hsnCode ? String(row.hsnCode).trim() : undefined,
         quantity: parseAmount(row.quantity),
         unitPrice: parseAmount(row.unitPrice),
+        gstPercent: gstPct !== undefined ? Math.max(0, Math.min(100, gstPct)) : undefined,
         amount: parseAmount(row.amount),
       };
     }).filter((item) => item.description || item.amount !== undefined);
+  }
+  if (data.bankDetails && typeof data.bankDetails === "object") {
+    const bd = data.bankDetails as Record<string, unknown>;
+    normalized.bankDetails = {
+      bankName: bd.bankName ? String(bd.bankName).trim() : undefined,
+      accountNumber: bd.accountNumber ? String(bd.accountNumber).trim() : undefined,
+      ifscCode: bd.ifscCode ? String(bd.ifscCode).trim().toUpperCase() : undefined,
+      accountHolderName: bd.accountHolderName ? String(bd.accountHolderName).trim() : undefined,
+      accountType: bd.accountType ? String(bd.accountType).trim() : undefined,
+    };
   }
   const confidence = parseAmount(data.confidence);
   if (confidence !== undefined) normalized.confidence = Math.max(0, Math.min(1, confidence > 1 ? confidence / 100 : confidence));
@@ -455,15 +493,24 @@ function applyExtracted(invoice: InstanceType<typeof Invoice>, data: Record<stri
   data = normalizeExtractedData(data);
   if (data.vendor) (invoice as any).vendor = data.vendor;
   if (data.vendorEmail) (invoice as any).vendorEmail = data.vendorEmail;
+  if (data.vendorAddress) (invoice as any).vendorAddress = data.vendorAddress;
+  if (data.supplierGstin) (invoice as any).supplierGstin = data.supplierGstin;
+  if (data.buyerName) (invoice as any).buyerName = data.buyerName;
+  if (data.buyerEmail) (invoice as any).buyerEmail = data.buyerEmail;
+  if (data.buyerAddress) (invoice as any).buyerAddress = data.buyerAddress;
+  if (data.buyerGstin) (invoice as any).buyerGstin = data.buyerGstin;
   if (data.invoiceNumber) (invoice as any).invoiceNumber = data.invoiceNumber;
+  if (data.poNumber) (invoice as any).poNumber = data.poNumber;
   if (data.invoiceDate) (invoice as any).invoiceDate = data.invoiceDate;
   if (data.dueDate) (invoice as any).dueDate = data.dueDate;
   if (data.currency) (invoice as any).currency = data.currency;
   if (typeof data.subtotal === "number") (invoice as any).subtotal = data.subtotal;
   if (typeof data.tax === "number") (invoice as any).tax = data.tax;
   if (typeof data.total === "number") (invoice as any).total = data.total;
+  if (typeof data.discount === "number") (invoice as any).discount = data.discount;
   if (Array.isArray(data.lineItems)) (invoice as any).lineItems = data.lineItems;
   if (data.notes) (invoice as any).notes = data.notes;
+  if (data.bankDetails && typeof data.bankDetails === "object") (invoice as any).bankDetails = data.bankDetails;
   if (typeof data.confidence === "number") (invoice as any).confidence = data.confidence;
 }
 
@@ -1160,7 +1207,14 @@ payablesRouter.patch("/invoices/:id", async (req, res) => {
     else if (req.body.status === "paid") { if (!ensureManageWorkspace(actor, res)) return; }
     else if (!canManageWorkspace(actor) && (actor.role ?? "") !== "approver") return res.status(403).json({ error: "Only admins and approvers can edit invoices" });
     const body = normalizeExtractedData(req.body ?? {}, JSON.stringify(req.body ?? {}));
-    const allowed = ["vendor", "vendorEmail", "invoiceNumber", "invoiceDate", "dueDate", "currency", "subtotal", "tax", "total", "lineItems", "notes", "status", "assignedApproverEmail", "assignedApproverName"];
+    const allowed = [
+      "vendor", "vendorEmail", "vendorAddress", "supplierGstin",
+      "buyerName", "buyerEmail", "buyerAddress", "buyerGstin",
+      "invoiceNumber", "poNumber", "invoiceDate", "dueDate",
+      "currency", "subtotal", "tax", "discount", "total",
+      "lineItems", "notes", "bankDetails",
+      "status", "assignedApproverEmail", "assignedApproverName",
+    ];
     for (const key of allowed) if (body[key] !== undefined) (invoice as any)[key] = body[key];
     if (body.status === "approved") { (invoice as any).approvedAt = new Date(); (invoice as any).approvedBy = actor.email ?? actor.uid; }
     if (body.status === "rejected") { (invoice as any).rejectedAt = new Date(); if (req.body.rejectionReason) (invoice as any).rejectionReason = req.body.rejectionReason; }
