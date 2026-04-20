@@ -200,6 +200,292 @@ function Spinner() {
 }
 
 /* ─── Component ─── */
+/* ─────────────────────── CLOCK WIDGET ─────────────────────── */
+function ClockWidget() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+  const ampm = now.getHours() >= 12 ? "PM" : "AM";
+  const h12 = now.getHours() % 12 || 12;
+  const dayName = days[now.getDay()];
+  const dateStr = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  const secondPct = (now.getSeconds() / 60) * 100;
+  const minutePct = ((now.getMinutes() * 60 + now.getSeconds()) / 3600) * 100;
+  const hourPct = (((now.getHours() % 12) * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 43200) * 100;
+
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <h3 className="mb-4 text-xs font-black uppercase tracking-wider text-gray-400">Clock</h3>
+      <div className="flex items-center gap-4">
+        {/* Analog ring */}
+        <div className="relative h-16 w-16 shrink-0">
+          <svg className="h-16 w-16 -rotate-90" viewBox="0 0 64 64">
+            <circle cx="32" cy="32" r="28" fill="none" stroke="#f1f5f9" strokeWidth="4" />
+            <circle cx="32" cy="32" r="28" fill="none" stroke="#e9d5ff" strokeWidth="4"
+              strokeDasharray={`${hourPct * 1.759} 175.9`} strokeLinecap="round" />
+            <circle cx="32" cy="32" r="22" fill="none" stroke="#f1f5f9" strokeWidth="3" />
+            <circle cx="32" cy="32" r="22" fill="none" stroke="#c4b5fd" strokeWidth="3"
+              strokeDasharray={`${minutePct * 1.382} 138.2`} strokeLinecap="round" />
+            <circle cx="32" cy="32" r="16" fill="none" stroke="#f1f5f9" strokeWidth="2.5" />
+            <circle cx="32" cy="32" r="16" fill="none" stroke="#7c3aed" strokeWidth="2.5"
+              strokeDasharray={`${secondPct * 1.005} 100.5`} strokeLinecap="round" />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="h-1.5 w-1.5 rounded-full bg-violet-600" />
+          </div>
+        </div>
+        {/* Digital */}
+        <div className="flex-1">
+          <div className="flex items-baseline gap-1">
+            <span className="text-3xl font-black tabular-nums leading-none text-[#1d2226]">
+              {String(h12).padStart(2, "0")}:{mm}
+            </span>
+            <span className="text-lg font-black tabular-nums text-violet-600">{ss}</span>
+            <span className="ml-1 text-xs font-bold text-gray-400">{ampm}</span>
+          </div>
+          <p className="mt-1 text-xs font-semibold text-gray-400">{dayName}</p>
+          <p className="text-xs text-gray-300">{dateStr}</p>
+        </div>
+      </div>
+      {/* Time bars */}
+      <div className="mt-4 space-y-1.5">
+        {[
+          { label: "H", pct: hourPct, color: "bg-violet-200" },
+          { label: "M", pct: minutePct, color: "bg-violet-400" },
+          { label: "S", pct: secondPct, color: "bg-violet-600" },
+        ].map(({ label, pct, color }) => (
+          <div key={label} className="flex items-center gap-2">
+            <span className="w-3 text-[10px] font-bold text-gray-300">{label}</span>
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-gray-100">
+              <div className={`h-full rounded-full transition-all duration-1000 ${color}`} style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────── CALCULATOR WIDGET ─────────────────────── */
+function CalculatorWidget() {
+  const [display, setDisplay] = useState("0");
+  const [prev, setPrev] = useState<string | null>(null);
+  const [op, setOp] = useState<string | null>(null);
+  const [freshEntry, setFreshEntry] = useState(true);
+  const [history, setHistory] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
+
+  function inputDigit(d: string) {
+    if (freshEntry) { setDisplay(d === "." ? "0." : d); setFreshEntry(false); }
+    else {
+      if (d === "." && display.includes(".")) return;
+      setDisplay(display === "0" && d !== "." ? d : display + d);
+    }
+  }
+
+  function setOperator(nextOp: string) {
+    if (op && !freshEntry) calculate(nextOp);
+    else { setPrev(display); setOp(nextOp); setFreshEntry(true); }
+  }
+
+  function calculate(nextOp?: string) {
+    if (!op || prev === null) return;
+    const a = parseFloat(prev), b = parseFloat(display);
+    let result = 0;
+    if (op === "+") result = a + b;
+    else if (op === "−") result = a - b;
+    else if (op === "×") result = a * b;
+    else if (op === "÷") result = b !== 0 ? a / b : 0;
+    const r = parseFloat(result.toFixed(10)).toString();
+    setHistory((h) => [`${prev} ${op} ${display} = ${r}`, ...h].slice(0, 5));
+    setDisplay(r);
+    setPrev(r);
+    setOp(nextOp ?? null);
+    setFreshEntry(true);
+  }
+
+  function clear() { setDisplay("0"); setPrev(null); setOp(null); setFreshEntry(true); }
+  function toggleSign() { setDisplay((parseFloat(display) * -1).toString()); }
+  function percent() { setDisplay((parseFloat(display) / 100).toString()); }
+  function backspace() {
+    if (freshEntry) return;
+    const next = display.length > 1 ? display.slice(0, -1) : "0";
+    setDisplay(next);
+    if (next === "0") setFreshEntry(true);
+  }
+
+  const btnBase = "flex h-11 items-center justify-center rounded-xl text-sm font-bold transition active:scale-95 select-none cursor-pointer";
+  const rows = [
+    ["C", "+/−", "%", "÷"],
+    ["7", "8", "9", "×"],
+    ["4", "5", "6", "−"],
+    ["1", "2", "3", "+"],
+    ["⌫", "0", ".", "="],
+  ];
+
+  function btnStyle(v: string) {
+    if (["÷", "×", "−", "+", "="].includes(v))
+      return `${btnBase} bg-gradient-to-br from-violet-600 to-indigo-600 text-white shadow-sm hover:opacity-90`;
+    if (["C", "+/−", "%"].includes(v))
+      return `${btnBase} bg-gray-100 text-gray-600 hover:bg-gray-200`;
+    if (v === "⌫")
+      return `${btnBase} bg-rose-50 text-rose-500 hover:bg-rose-100`;
+    return `${btnBase} bg-white border border-gray-100 text-[#1d2226] shadow-sm hover:bg-gray-50`;
+  }
+
+  function press(v: string) {
+    if (v === "C") clear();
+    else if (v === "+/−") toggleSign();
+    else if (v === "%") percent();
+    else if (v === "⌫") backspace();
+    else if (["÷", "×", "−", "+"].includes(v)) setOperator(v);
+    else if (v === "=") calculate();
+    else inputDigit(v);
+  }
+
+  const displayNum = display.length > 12 ? parseFloat(display).toExponential(4) : display;
+
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between px-5 py-4 hover:bg-gray-50 transition"
+      >
+        <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">Calculator</h3>
+        <svg className={`h-3.5 w-3.5 text-gray-300 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100 px-4 pb-4 pt-3">
+          {/* Display */}
+          <div className="mb-3 rounded-xl bg-gradient-to-br from-[#1d2226] to-[#2d3748] p-4">
+            {op && prev !== null && (
+              <p className="mb-0.5 text-right text-[10px] font-semibold text-gray-400 tabular-nums">
+                {prev} {op}
+              </p>
+            )}
+            <p className="text-right text-2xl font-black tabular-nums text-white leading-none break-all">{displayNum}</p>
+          </div>
+          {/* History */}
+          {history.length > 0 && (
+            <div className="mb-3 space-y-0.5">
+              {history.slice(0, 3).map((h, i) => (
+                <p key={i} className="text-right text-[10px] text-gray-300 tabular-nums">{h}</p>
+              ))}
+            </div>
+          )}
+          {/* Buttons */}
+          <div className="grid grid-cols-4 gap-2">
+            {rows.flat().map((v, i) => (
+              <button key={i} className={btnStyle(v)} onClick={() => press(v)}>{v}</button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────── NOTES WIDGET ─────────────────────── */
+const NOTES_KEY = "payables_dashboard_notes";
+
+function NotesWidget() {
+  const [open, setOpen] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [saved, setSaved] = useState(true);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    try { setNotes(localStorage.getItem(NOTES_KEY) ?? ""); } catch {}
+  }, []);
+
+  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const val = e.target.value;
+    setNotes(val);
+    setSaved(false);
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      try { localStorage.setItem(NOTES_KEY, val); setSaved(true); } catch {}
+    }, 800);
+  }
+
+  function clearNotes() {
+    setNotes("");
+    try { localStorage.removeItem(NOTES_KEY); } catch {}
+    setSaved(true);
+  }
+
+  const wordCount = notes.trim() ? notes.trim().split(/\s+/).length : 0;
+  const charCount = notes.length;
+
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between px-5 py-4 hover:bg-gray-50 transition"
+      >
+        <div className="flex items-center gap-2">
+          <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">Notes</h3>
+          {notes && (
+            <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold text-violet-600">{wordCount}w</span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {!saved && <span className="h-1.5 w-1.5 rounded-full bg-amber-400" title="Unsaved changes" />}
+          {saved && notes && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" title="Saved" />}
+          <svg className={`h-3.5 w-3.5 text-gray-300 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+        </div>
+      </button>
+
+      {open && (
+        <div className="border-t border-gray-100 px-4 pb-4 pt-3">
+          <textarea
+            value={notes}
+            onChange={handleChange}
+            placeholder="Jot down anything — vendor notes, payment reminders, follow-ups…"
+            rows={6}
+            className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 p-3 text-xs leading-relaxed text-[#1d2226] placeholder-gray-300 outline-none transition focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100"
+          />
+          <div className="mt-2 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[10px] text-gray-300">
+              {saved ? (
+                <span className="flex items-center gap-1 text-emerald-500">
+                  <svg className="h-2.5 w-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  Saved
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-amber-500">
+                  <svg className="h-2.5 w-2.5 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+                  Saving…
+                </span>
+              )}
+              <span>·</span>
+              <span>{charCount} chars</span>
+            </div>
+            {notes && (
+              <button
+                onClick={clearNotes}
+                className="rounded-lg px-2 py-1 text-[10px] font-semibold text-gray-300 transition hover:bg-rose-50 hover:text-rose-400"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function PayablesDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<{ uid: string; token: string } | null>(null);
@@ -1260,6 +1546,17 @@ export default function PayablesDashboard() {
                 <p className="mt-1 text-xs text-violet-500">{stats.pendingCount + stats.approvedCount} invoices pending payment</p>
               </div>
             )}
+
+            {/* ── Workspace Tools ── */}
+            <div>
+              <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-gray-300">Workspace Tools</p>
+              <div className="space-y-3">
+                <ClockWidget />
+                <CalculatorWidget />
+                <NotesWidget />
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
