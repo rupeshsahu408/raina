@@ -818,6 +818,60 @@ function csvEscape(value: unknown) {
   return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
 }
 
+function xmlEscape(value: unknown) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function accountingAmount(value: unknown) {
+  const num = Number(value ?? 0);
+  return Number.isFinite(num) ? Number(num.toFixed(2)) : 0;
+}
+
+function invoiceExportRows(invoices: any[]) {
+  return invoices.map((inv) => {
+    const total = accountingAmount(inv.total);
+    const tax = accountingAmount(inv.tax);
+    const subtotal = accountingAmount(inv.subtotal ?? Math.max(total - tax, 0));
+    return {
+      invoiceNumber: inv.invoiceNumber ?? "",
+      vendor: inv.vendor ?? "Unknown Vendor",
+      vendorEmail: inv.vendorEmail ?? "",
+      supplierGstin: inv.supplierGstin ?? "",
+      vendorAddress: inv.vendorAddress ?? "",
+      buyerName: inv.buyerName ?? "",
+      buyerGstin: inv.buyerGstin ?? "",
+      invoiceDate: inv.invoiceDate ?? "",
+      dueDate: inv.dueDate ?? "",
+      status: inv.status ?? "",
+      currency: inv.currency ?? "INR",
+      subtotal,
+      tax,
+      discount: accountingAmount(inv.discount),
+      total,
+      poNumber: inv.poNumber ?? "",
+      bankName: inv.bankDetails?.bankName ?? "",
+      accountNumber: inv.bankDetails?.accountNumber ?? "",
+      ifscCode: inv.bankDetails?.ifscCode ?? "",
+      hsnCodes: (inv.lineItems ?? []).map((item: any) => item.hsnCode).filter(Boolean).join("; "),
+      lineItems: (inv.lineItems ?? []).map((item: any) => `${item.description ?? "Item"} ${item.quantity ?? ""} ${item.amount ?? ""}`.trim()).join("; "),
+      source: inv.source ?? "",
+      createdAt: inv.createdAt ? new Date(inv.createdAt).toLocaleDateString("en-IN") : "",
+    };
+  });
+}
+
+function sendCsv(res: express.Response, filename: string, headers: string[], rows: unknown[][]) {
+  const csv = "\ufeff" + [headers.map(csvEscape).join(","), ...rows.map((row) => row.map(csvEscape).join(","))].join("\n");
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  res.send(csv);
+}
+
 payablesRouter.get("/company", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;
@@ -1861,38 +1915,81 @@ payablesRouter.get("/invoices/export", async (req, res) => {
   try {
     await connectMongo();
     const { status } = req.query;
+    const format = String(req.query.format ?? "csv").toLowerCase();
     const filter: Record<string, unknown> = { uid: actor.uid };
     if (status && status !== "all") filter.status = status;
     const invoices = await Invoice.find(filter).select("-originalFileData -rawText").sort({ createdAt: -1 }).lean() as any[];
+    const rows = invoiceExportRows(invoices);
+    const date = new Date().toISOString().split("T")[0];
 
-    const esc = (v: unknown) => {
-      if (v == null) return "";
-      const s = String(v);
-      if (s.includes(",") || s.includes('"') || s.includes("\n")) return `"${s.replace(/"/g, '""')}"`;
-      return s;
-    };
+    if (format === "tally") {
+      const voucherXml = rows.map((row, index) => {
+        const voucherDate = row.invoiceDate ? String(row.invoiceDate).replace(/-/g, "") : date.replace(/-/g, "");
+        const voucherNumber = row.invoiceNumber || `PLY-${index + 1}`;
+        const purchaseLedger = "Purchase Accounts";
+        const taxLedger = row.tax > 0 ? "Input GST" : "";
+        return `
+        <TALLYMESSAGE xmlns:UDF="TallyUDF">
+          <VOUCHER VCHTYPE="Purchase" ACTION="Create" OBJVIEW="Invoice Voucher View">
+            <DATE>${xmlEscape(voucherDate)}</DATE>
+            <VOUCHERTYPENAME>Purchase</VOUCHERTYPENAME>
+            <VOUCHERNUMBER>${xmlEscape(voucherNumber)}</VOUCHERNUMBER>
+            <REFERENCE>${xmlEscape(row.invoiceNumber)}</REFERENCE>
+            <REFERENCEDATE>${xmlEscape(voucherDate)}</REFERENCEDATE>
+            <PARTYLEDGERNAME>${xmlEscape(row.vendor)}</PARTYLEDGERNAME>
+            <PERSISTEDVIEW>Invoice Voucher View</PERSISTEDVIEW>
+            <NARRATION>${xmlEscape(`Imported from Plyndrox Payables. Vendor GSTIN: ${row.supplierGstin || "N/A"}. PO: ${row.poNumber || "N/A"}`)}</NARRATION>
+            <BASICBUYERNAME>${xmlEscape(row.buyerName)}</BASICBUYERNAME>
+            <PARTYGSTIN>${xmlEscape(row.supplierGstin)}</PARTYGSTIN>
+            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>${xmlEscape(row.vendor)}</LEDGERNAME>
+              <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+              <AMOUNT>${row.total.toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>
+            <ALLLEDGERENTRIES.LIST>
+              <LEDGERNAME>${xmlEscape(purchaseLedger)}</LEDGERNAME>
+              <ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE>
+              <AMOUNT>-${row.subtotal.toFixed(2)}</AMOUNT>
+            </ALLLEDGERENTRIES.LIST>
+            ${row.tax > 0 ? `<ALLLEDGERENTRIES.LIST><LEDGERNAME>${xmlEscape(taxLedger)}</LEDGERNAME><ISDEEMEDPOSITIVE>Yes</ISDEEMEDPOSITIVE><AMOUNT>-${row.tax.toFixed(2)}</AMOUNT></ALLLEDGERENTRIES.LIST>` : ""}
+          </VOUCHER>
+        </TALLYMESSAGE>`;
+      }).join("");
+      const xml = `<?xml version="1.0" encoding="UTF-8"?><ENVELOPE><HEADER><TALLYREQUEST>Import Data</TALLYREQUEST></HEADER><BODY><IMPORTDATA><REQUESTDESC><REPORTNAME>Vouchers</REPORTNAME><STATICVARIABLES><SVCURRENTCOMPANY></SVCURRENTCOMPANY></STATICVARIABLES></REQUESTDESC><REQUESTDATA>${voucherXml}</REQUESTDATA></IMPORTDATA></BODY></ENVELOPE>`;
+      res.setHeader("Content-Type", "application/xml; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="plyndrox-tally-import-${date}.xml"`);
+      res.send(xml);
+      return;
+    }
 
-    const headers = ["Invoice Number", "Vendor", "Vendor Email", "Vendor GSTIN", "Invoice Date", "Due Date", "Status", "Currency", "Subtotal", "Tax", "Discount", "Total", "Buyer Name", "PO Number", "Bank Name", "Account Number", "IFSC", "Flags", "AI Confidence", "Approved By", "Paid At", "Payment Amount", "Paid Note", "Created At"];
-    const rows = invoices.map(inv => [
-      esc(inv.invoiceNumber), esc(inv.vendor), esc(inv.vendorEmail), esc(inv.supplierGstin),
-      esc(inv.invoiceDate), esc(inv.dueDate), esc(inv.status),
-      esc(inv.currency), esc(inv.subtotal), esc(inv.tax), esc(inv.discount), esc(inv.total),
-      esc(inv.buyerName), esc(inv.poNumber),
-      esc(inv.bankDetails?.bankName), esc(inv.bankDetails?.accountNumber), esc(inv.bankDetails?.ifscCode),
-      esc(inv.flags?.map((f: any) => `${f.type}:${f.severity}`).join("; ")),
-      esc(inv.confidence != null ? `${Math.round(inv.confidence * 100)}%` : null),
-      esc(inv.approvedBy),
-      esc(inv.paidAt ? new Date(inv.paidAt).toLocaleDateString("en-IN") : null),
-      esc(inv.paymentAmount),
-      esc(inv.paidNote),
-      esc(new Date(inv.createdAt).toLocaleDateString("en-IN")),
-    ].join(","));
+    if (format === "quickbooks") {
+      sendCsv(res, `plyndrox-quickbooks-import-${date}.csv`, ["Bill No", "Supplier", "Supplier Email", "Bill Date", "Due Date", "Expense Account", "Description", "Amount", "GST/Tax", "Total", "Currency", "Memo"], rows.map((row) => [
+        row.invoiceNumber, row.vendor, row.vendorEmail, row.invoiceDate, row.dueDate, "Purchases", row.lineItems || "Invoice import", row.subtotal, row.tax, row.total, row.currency, `GSTIN: ${row.supplierGstin} PO: ${row.poNumber}`.trim(),
+      ]));
+      return;
+    }
 
-    const csv = [headers.join(","), ...rows].join("\n");
-    const filename = `plyndrox-payables-${new Date().toISOString().split("T")[0]}.csv`;
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.send(csv);
+    if (format === "zoho") {
+      sendCsv(res, `plyndrox-zoho-bills-${date}.csv`, ["Bill Number", "Vendor Name", "Vendor Email", "GST Treatment", "GSTIN", "Bill Date", "Due Date", "Currency Code", "Sub Total", "Tax Amount", "Total", "Purchase Order", "Notes"], rows.map((row) => [
+        row.invoiceNumber, row.vendor, row.vendorEmail, row.supplierGstin ? "business_gst" : "unregistered", row.supplierGstin, row.invoiceDate, row.dueDate, row.currency, row.subtotal, row.tax, row.total, row.poNumber, row.lineItems,
+      ]));
+      return;
+    }
+
+    if (format === "excel") {
+      const headers = ["Invoice Number", "Vendor", "Vendor Email", "Vendor GSTIN", "Invoice Date", "Due Date", "Status", "Currency", "Subtotal", "Tax", "Discount", "Total", "Buyer Name", "Buyer GSTIN", "PO Number", "Bank Name", "Account Number", "IFSC", "HSN Codes", "Line Items", "Source", "Created At"];
+      const htmlRows = rows.map((row) => [row.invoiceNumber, row.vendor, row.vendorEmail, row.supplierGstin, row.invoiceDate, row.dueDate, row.status, row.currency, row.subtotal, row.tax, row.discount, row.total, row.buyerName, row.buyerGstin, row.poNumber, row.bankName, row.accountNumber, row.ifscCode, row.hsnCodes, row.lineItems, row.source, row.createdAt].map((cell) => `<td>${xmlEscape(cell)}</td>`).join(""));
+      const html = `<!doctype html><html><head><meta charset="utf-8"></head><body><table><thead><tr>${headers.map((h) => `<th>${xmlEscape(h)}</th>`).join("")}</tr></thead><tbody>${htmlRows.map((r) => `<tr>${r}</tr>`).join("")}</tbody></table></body></html>`;
+      res.setHeader("Content-Type", "application/vnd.ms-excel; charset=utf-8");
+      res.setHeader("Content-Disposition", `attachment; filename="plyndrox-invoices-${date}.xls"`);
+      res.send(html);
+      return;
+    }
+
+    const headers = ["Invoice Number", "Vendor", "Vendor Email", "Vendor GSTIN", "Vendor Address", "Invoice Date", "Due Date", "Status", "Currency", "Subtotal", "Tax", "Discount", "Total", "Buyer Name", "Buyer GSTIN", "PO Number", "Bank Name", "Account Number", "IFSC", "HSN Codes", "Line Items", "Source", "Created At"];
+    sendCsv(res, `plyndrox-payables-${date}.csv`, headers, rows.map((row) => [
+      row.invoiceNumber, row.vendor, row.vendorEmail, row.supplierGstin, row.vendorAddress, row.invoiceDate, row.dueDate, row.status, row.currency, row.subtotal, row.tax, row.discount, row.total, row.buyerName, row.buyerGstin, row.poNumber, row.bankName, row.accountNumber, row.ifscCode, row.hsnCodes, row.lineItems, row.source, row.createdAt,
+    ]));
   } catch (err) {
     console.error("Export error:", err);
     res.status(500).json({ error: "Failed to export" });

@@ -161,6 +161,8 @@ interface NotificationItem {
   createdAt: string;
 }
 
+type ExportFormat = "csv" | "excel" | "tally" | "zoho" | "quickbooks";
+
 /* ─── Helpers ─── */
 const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string; bg: string }> = {
   processing:       { label: "Processing",       color: "text-amber-700",   dot: "bg-amber-400",   bg: "bg-amber-50 border-amber-100" },
@@ -219,6 +221,7 @@ export default function PayablesDashboard() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("csv");
   const [processingNotice, setProcessingNotice] = useState<string | null>(null);
   const previousProcessingCount = useRef(0);
 
@@ -392,18 +395,21 @@ export default function PayablesDashboard() {
     }
   };
 
-  const exportCsv = async () => {
+  const exportInvoices = async () => {
     if (!user) return;
     setExporting(true);
     try {
-      const statusParam = activeFilter !== "all" && activeFilter !== "flagged" ? `?status=${activeFilter}` : "";
-      const res = await fetch(`${BACKEND}/payables/invoices/export${statusParam}`, { headers: payablesHeaders(user) });
+      const params = new URLSearchParams({ format: exportFormat });
+      if (activeFilter !== "all" && activeFilter !== "flagged") params.set("status", activeFilter);
+      const res = await fetch(`${BACKEND}/payables/invoices/export?${params.toString()}`, { headers: payablesHeaders(user) });
       if (!res.ok) throw new Error("Export failed");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
+      const disposition = res.headers.get("Content-Disposition") || "";
+      const match = disposition.match(/filename="([^"]+)"/);
       a.href = url;
-      a.download = `plyndrox-payables-${new Date().toISOString().split("T")[0]}.csv`;
+      a.download = match?.[1] ?? `plyndrox-payables-${new Date().toISOString().split("T")[0]}.${exportFormat === "tally" ? "xml" : exportFormat === "excel" ? "xls" : "csv"}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -710,14 +716,26 @@ export default function PayablesDashboard() {
                 <option value="due_soon">Due date: soonest</option>
               </select>
               <button
-                onClick={exportCsv}
+                onClick={exportInvoices}
                 disabled={exporting}
-                title="Export invoices as CSV"
+                title="Download structured invoice data"
                 className="flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-600 shadow-sm transition hover:border-gray-300 hover:text-[#1d2226] disabled:opacity-50"
               >
                 {exporting ? <Spinner /> : <DownloadIcon className="h-3.5 w-3.5" />}
-                <span className="hidden sm:inline">Export CSV</span>
+                <span className="hidden sm:inline">Download</span>
               </button>
+              <select
+                value={exportFormat}
+                onChange={(e) => setExportFormat(e.target.value as ExportFormat)}
+                className="shrink-0 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-600 shadow-sm outline-none transition focus:border-violet-300"
+                title="Choose accounting export format"
+              >
+                <option value="csv">Excel / CSV</option>
+                <option value="excel">Excel workbook</option>
+                <option value="tally">Tally Prime XML</option>
+                <option value="zoho">Zoho Books CSV</option>
+                <option value="quickbooks">QuickBooks CSV</option>
+              </select>
             </div>
 
             {/* Filter tabs */}
