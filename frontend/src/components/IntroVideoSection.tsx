@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 const WIDTH = 1280;
 const HEIGHT = 720;
@@ -176,14 +176,13 @@ function drawFrame(ctx: CanvasRenderingContext2D, seconds: number) {
     ctx.globalAlpha = ease(local);
     ctx.fillStyle = "#ffffff";
     ctx.font = "900 38px Inter, Arial, sans-serif";
-    ctx.fillText("Fast-loading. Frontend-only. Downloadable.", 96, 628);
+    ctx.fillText("Fast-loading. Frontend-only. Built for attention.", 96, 628);
     ctx.globalAlpha = 1;
   }
 }
 
 export function IntroVideoSection() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isRecording, setIsRecording] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -200,36 +199,11 @@ export function IntroVideoSection() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  async function downloadVideo() {
-    const canvas = canvasRef.current;
-    if (!canvas || isRecording || !("MediaRecorder" in window)) return;
-    setIsRecording(true);
-    const stream = canvas.captureStream(30);
-    const chunks: BlobPart[] = [];
-    const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9") ? "video/webm;codecs=vp9" : "video/webm";
-    const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 2200000 });
-    recorder.ondataavailable = (event) => {
-      if (event.data.size) chunks.push(event.data);
-    };
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: "video/webm" });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = "plyndrox-ai-intro-video.webm";
-      anchor.click();
-      URL.revokeObjectURL(url);
-      setIsRecording(false);
-    };
-    recorder.start();
-    window.setTimeout(() => recorder.stop(), DURATION * 1000);
-  }
-
   return (
     <section className="relative overflow-hidden border-t border-zinc-900 bg-zinc-950 py-24">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.22),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(236,72,153,0.16),transparent_38%)]" />
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+        <div className="mb-12">
           <div>
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-300">
               <span className="h-2 w-2 rounded-full bg-indigo-400" />
@@ -240,23 +214,9 @@ export function IntroVideoSection() {
               A lightweight visual overview of the Plyndrox AI suite, designed to load fast on the landing page and run entirely in the browser.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={downloadVideo}
-            disabled={isRecording}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-bold text-zinc-950 shadow-lg shadow-indigo-950/20 transition hover:-translate-y-0.5 hover:bg-indigo-50 disabled:cursor-wait disabled:opacity-70"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" x2="12" y1="15" y2="3" /></svg>
-            {isRecording ? "Preparing download..." : "Download video"}
-          </button>
         </div>
         <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-zinc-900 shadow-2xl shadow-black/40">
           <canvas ref={canvasRef} width={WIDTH} height={HEIGHT} className="block aspect-video h-auto w-full" aria-label="Plyndrox AI intro advertisement video" />
-          {isRecording && (
-            <div className="absolute inset-x-4 bottom-4 rounded-2xl border border-white/10 bg-black/60 px-4 py-3 text-center text-sm font-semibold text-white backdrop-blur-md">
-              Recording the full 36-second video for download. Please keep this tab open.
-            </div>
-          )}
         </div>
       </div>
     </section>
