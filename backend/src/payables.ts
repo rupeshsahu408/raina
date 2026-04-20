@@ -1352,6 +1352,121 @@ Rules:
   }
 });
 
+payablesRouter.get("/scheduler", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    await connectMongo();
+    const now = new Date();
+    const todayStr = now.toISOString().split("T")[0];
+
+    const invoices = await Invoice.find({
+      uid: actor.uid,
+      status: { $in: ["approved", "pending_approval", "extracted"] },
+    }).lean() as any[];
+
+    const fmtAmt = (n: number, c = "INR") => {
+      const sym = c === "USD" ? "$" : c === "EUR" ? "€" : c === "GBP" ? "£" : "₹";
+      if (n >= 100000) return `${sym}${(n / 100000).toFixed(1)}L`;
+      if (n >= 1000) return `${sym}${(n / 1000).toFixed(0)}K`;
+      return `${sym}${n.toLocaleString()}`;
+    };
+
+    type Bucket = { key: string; label: string; color: string; urgency: number; invoices: any[]; total: number };
+    const buckets: Record<string, Bucket> = {
+      overdue: { key: "overdue", label: "Overdue", color: "red", urgency: 0, invoices: [], total: 0 },
+      today: { key: "today", label: "Due Today", color: "orange", urgency: 1, invoices: [], total: 0 },
+      this_week: { key: "this_week", label: "Due This Week (1–7 days)", color: "yellow", urgency: 2, invoices: [], total: 0 },
+      next_week: { key: "next_week", label: "Due Next Week (8–14 days)", color: "blue", urgency: 3, invoices: [], total: 0 },
+      later: { key: "later", label: "Due Later (15+ days)", color: "green", urgency: 4, invoices: [], total: 0 },
+      no_due: { key: "no_due", label: "No Due Date Set", color: "gray", urgency: 5, invoices: [], total: 0 },
+    };
+
+    for (const inv of invoices) {
+      const row = {
+        id: inv._id.toString(),
+        vendor: inv.vendor ?? "Unknown Vendor",
+        invoiceNumber: inv.invoiceNumber ?? "N/A",
+        total: inv.total ?? 0,
+        currency: inv.currency ?? "INR",
+        dueDate: inv.dueDate ?? null,
+        status: inv.status,
+        hasCriticalFlag: inv.flags?.some((f: any) => f.severity === "critical") ?? false,
+        bankDetails: inv.bankDetails ?? null,
+      };
+      if (!inv.dueDate) { buckets.no_due.invoices.push(row); buckets.no_due.total += row.total; continue; }
+      const due = new Date(inv.dueDate);
+      const dueDateStr = due.toISOString().split("T")[0];
+      const daysUntil = Math.ceil((due.getTime() - now.setHours(0,0,0,0)) / 86400000);
+      if (daysUntil < 0) { buckets.overdue.invoices.push(row); buckets.overdue.total += row.total; }
+      else if (dueDateStr === todayStr) { buckets.today.invoices.push(row); buckets.today.total += row.total; }
+      else if (daysUntil <= 7) { buckets.this_week.invoices.push(row); buckets.this_week.total += row.total; }
+      else if (daysUntil <= 14) { buckets.next_week.invoices.push(row); buckets.next_week.total += row.total; }
+      else { buckets.later.invoices.push(row); buckets.later.total += row.total; }
+    }
+
+    const sortedBuckets = Object.values(buckets)
+      .filter(b => b.invoices.length > 0)
+      .sort((a, b) => a.urgency - b.urgency);
+
+    const totalScheduled = invoices.reduce((s, i) => s + (i.total ?? 0), 0);
+
+    // Build AI prompt
+    const vendorGroupMap: Record<string, { count: number; total: number; bucket: string }> = {};
+    for (const b of sortedBuckets) {
+      for (const inv of b.invoices) {
+        if (!vendorGroupMap[inv.vendor]) vendorGroupMap[inv.vendor] = { count: 0, total: 0, bucket: b.key };
+        vendorGroupMap[inv.vendor].count++;
+        vendorGroupMap[inv.vendor].total += inv.total;
+      }
+    }
+    const multiInvoiceVendors = Object.entries(vendorGroupMap).filter(([, v]) => v.count > 1);
+    const summary = [
+      `Total unpaid invoices: ${invoices.length} worth ${fmtAmt(totalScheduled)}.`,
+      buckets.overdue.invoices.length > 0 ? `OVERDUE: ${buckets.overdue.invoices.length} invoices totaling ${fmtAmt(buckets.overdue.total)} — immediate risk.` : null,
+      buckets.today.invoices.length > 0 ? `DUE TODAY: ${buckets.today.invoices.length} invoices totaling ${fmtAmt(buckets.today.total)}.` : null,
+      buckets.this_week.invoices.length > 0 ? `THIS WEEK: ${buckets.this_week.invoices.length} invoices totaling ${fmtAmt(buckets.this_week.total)}.` : null,
+      buckets.next_week.invoices.length > 0 ? `NEXT WEEK: ${buckets.next_week.invoices.length} invoices totaling ${fmtAmt(buckets.next_week.total)}.` : null,
+      multiInvoiceVendors.length > 0 ? `Vendors with multiple invoices (batch candidates): ${multiInvoiceVendors.map(([v, d]) => `${v} (${d.count} invoices, ${fmtAmt(d.total)})`).join(", ")}.` : null,
+    ].filter(Boolean).join(" ");
+
+    let aiRecommendation = "";
+    try {
+      aiRecommendation = await callNvidiaChatCompletions({
+        apiKey: NVIDIA_API_KEY,
+        model: "nvidia/llama-3.1-nemotron-70b-instruct",
+        messages: [{
+          role: "user",
+          content: `You are a concise CFO-level payment advisor for a small business accounts payable system.
+
+AP Schedule Summary: ${summary}
+
+Write a smart payment scheduling recommendation in 3 short sentences:
+1. Start with the most urgent action (overdue or today if any, otherwise this week).
+2. Mention any batching opportunities (vendors with multiple invoices = pay together for fewer transactions).
+3. End with a cash flow tip or sequencing advice for the coming weeks.
+
+Rules: Plain prose only, no bullet points, no markdown, second person ("You have…"), under 70 words total.`,
+        }],
+        temperature: 0.5,
+        max_tokens: 180,
+      });
+      aiRecommendation = aiRecommendation.replace(/^["']|["']$/g, "").trim();
+    } catch {
+      if (buckets.overdue.invoices.length > 0) {
+        aiRecommendation = `You have ${buckets.overdue.invoices.length} overdue invoice${buckets.overdue.invoices.length > 1 ? "s" : ""} — pay these first to stop late fees from accumulating. ${multiInvoiceVendors.length > 0 ? `Batch payments to ${multiInvoiceVendors[0][0]} to save on transaction fees. ` : ""}Then work through this week's schedule to stay ahead of your upcoming obligations.`;
+      } else {
+        aiRecommendation = `Your payment schedule looks clean — no overdue invoices. ${buckets.this_week.invoices.length > 0 ? `Focus on this week's ${buckets.this_week.invoices.length} payment${buckets.this_week.invoices.length > 1 ? "s" : ""} first. ` : ""}${multiInvoiceVendors.length > 0 ? `Consider batching multiple invoices from ${multiInvoiceVendors[0][0]} into a single payment to reduce transaction overhead.` : "Plan next week's payments now to keep your cash flow predictable."}`;
+      }
+    }
+
+    res.json({ buckets: sortedBuckets, totalScheduled, aiRecommendation, generatedAt: new Date().toISOString(), totalInvoices: invoices.length });
+  } catch (err) {
+    console.error("Scheduler error:", err);
+    res.status(500).json({ error: "Failed to generate schedule" });
+  }
+});
+
 payablesRouter.get("/settings/email-preview", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;
@@ -1737,6 +1852,50 @@ payablesRouter.post("/invoices/bulk-action", async (req, res) => {
   }
 });
 
+payablesRouter.get("/invoices/export", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    await connectMongo();
+    const { status } = req.query;
+    const filter: Record<string, unknown> = { uid: actor.uid };
+    if (status && status !== "all") filter.status = status;
+    const invoices = await Invoice.find(filter).select("-originalFileData -rawText").sort({ createdAt: -1 }).lean() as any[];
+
+    const esc = (v: unknown) => {
+      if (v == null) return "";
+      const s = String(v);
+      if (s.includes(",") || s.includes('"') || s.includes("\n")) return `"${s.replace(/"/g, '""')}"`;
+      return s;
+    };
+
+    const headers = ["Invoice Number", "Vendor", "Vendor Email", "Vendor GSTIN", "Invoice Date", "Due Date", "Status", "Currency", "Subtotal", "Tax", "Discount", "Total", "Buyer Name", "PO Number", "Bank Name", "Account Number", "IFSC", "Flags", "AI Confidence", "Approved By", "Paid At", "Payment Amount", "Paid Note", "Created At"];
+    const rows = invoices.map(inv => [
+      esc(inv.invoiceNumber), esc(inv.vendor), esc(inv.vendorEmail), esc(inv.supplierGstin),
+      esc(inv.invoiceDate), esc(inv.dueDate), esc(inv.status),
+      esc(inv.currency), esc(inv.subtotal), esc(inv.tax), esc(inv.discount), esc(inv.total),
+      esc(inv.buyerName), esc(inv.poNumber),
+      esc(inv.bankDetails?.bankName), esc(inv.bankDetails?.accountNumber), esc(inv.bankDetails?.ifscCode),
+      esc(inv.flags?.map((f: any) => `${f.type}:${f.severity}`).join("; ")),
+      esc(inv.confidence != null ? `${Math.round(inv.confidence * 100)}%` : null),
+      esc(inv.approvedBy),
+      esc(inv.paidAt ? new Date(inv.paidAt).toLocaleDateString("en-IN") : null),
+      esc(inv.paymentAmount),
+      esc(inv.paidNote),
+      esc(new Date(inv.createdAt).toLocaleDateString("en-IN")),
+    ].join(","));
+
+    const csv = [headers.join(","), ...rows].join("\n");
+    const filename = `plyndrox-payables-${new Date().toISOString().split("T")[0]}.csv`;
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.send(csv);
+  } catch (err) {
+    console.error("Export error:", err);
+    res.status(500).json({ error: "Failed to export" });
+  }
+});
+
 payablesRouter.get("/invoices", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;
@@ -1841,7 +2000,12 @@ payablesRouter.patch("/invoices/:id", async (req, res) => {
     for (const key of allowed) if (body[key] !== undefined) (invoice as any)[key] = body[key];
     if (body.status === "approved") { (invoice as any).approvedAt = new Date(); (invoice as any).approvedBy = actor.email ?? actor.uid; }
     if (body.status === "rejected") { (invoice as any).rejectedAt = new Date(); if (req.body.rejectionReason) (invoice as any).rejectionReason = req.body.rejectionReason; }
-    if (body.status === "paid") (invoice as any).paidAt = new Date();
+    if (body.status === "paid") {
+      (invoice as any).paidAt = new Date();
+      if (req.body.paymentAmount !== undefined) (invoice as any).paymentAmount = req.body.paymentAmount;
+      if (req.body.paymentDate) (invoice as any).paymentDate = new Date(req.body.paymentDate);
+      if (req.body.paidNote) (invoice as any).paidNote = req.body.paidNote;
+    }
     await invoice.save();
     await audit(actor.uid, req.params.id, "invoice_updated", actor, { fields: Object.keys(req.body ?? {}) });
     res.json(sanitizeInvoice(invoice));

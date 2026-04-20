@@ -40,6 +40,12 @@ function EyeIcon(p: React.SVGProps<SVGSVGElement>) {
 function SettingsIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
 }
+function CopyIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
+}
+function BanknoteIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>;
+}
 
 interface LineItem {
   description: string;
@@ -145,6 +151,119 @@ function fmtDate(d?: string) {
   if (!d) return "—";
   try { return new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); }
   catch { return d; }
+}
+
+/* ─── Bank Details Card ─── */
+function BankDetailsCard({ bankDetails, vendorName, totalDue, currency }: {
+  bankDetails: BankDetails;
+  vendorName?: string;
+  totalDue?: number;
+  currency?: string;
+}) {
+  const [copied, setCopied] = useState<string | null>(null);
+
+  const copy = (text: string, key: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(key);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  };
+
+  const copyAll = () => {
+    const lines = [
+      vendorName ? `Payee: ${vendorName}` : null,
+      bankDetails.bankName ? `Bank: ${bankDetails.bankName}` : null,
+      bankDetails.accountNumber ? `Account No: ${bankDetails.accountNumber}` : null,
+      bankDetails.ifscCode ? `IFSC: ${bankDetails.ifscCode}` : null,
+      bankDetails.accountHolderName ? `Account Holder: ${bankDetails.accountHolderName}` : null,
+      bankDetails.accountType ? `Account Type: ${bankDetails.accountType}` : null,
+      totalDue != null ? `Amount Due: ${fmt(totalDue, currency)}` : null,
+    ].filter(Boolean).join("\n");
+    copy(lines, "all");
+  };
+
+  const CopyBtn = ({ text, k }: { text: string; k: string }) => (
+    <button
+      onClick={() => copy(text, k)}
+      className="ml-2 shrink-0 rounded-lg p-1 text-gray-300 transition hover:bg-violet-50 hover:text-violet-600"
+      title="Copy"
+    >
+      {copied === k ? (
+        <CheckIcon className="h-3.5 w-3.5 text-emerald-500" />
+      ) : (
+        <CopyIcon className="h-3.5 w-3.5" />
+      )}
+    </button>
+  );
+
+  return (
+    <div className="border-t border-gray-100 pt-5">
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <BanknoteIcon className="h-4 w-4 text-violet-500" />
+          <p className="text-xs font-bold uppercase tracking-wider text-violet-600">Bank / Payment Details</p>
+        </div>
+        <button
+          onClick={copyAll}
+          className="flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-[11px] font-bold text-violet-700 transition hover:bg-violet-100"
+        >
+          {copied === "all" ? <CheckIcon className="h-3 w-3 text-emerald-500" /> : <CopyIcon className="h-3 w-3" />}
+          {copied === "all" ? "Copied!" : "Copy All"}
+        </button>
+      </div>
+
+      <div className="rounded-xl border border-violet-100 bg-violet-50/40 p-4">
+        <div className="space-y-3">
+          {bankDetails.bankName && (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Bank Name</p>
+                <p className="text-sm font-semibold text-[#1d2226]">{bankDetails.bankName}</p>
+              </div>
+              <CopyBtn text={bankDetails.bankName} k="bankName" />
+            </div>
+          )}
+          {bankDetails.accountNumber && (
+            <div className="flex items-center justify-between border-t border-violet-100 pt-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Account Number</p>
+                <p className="font-mono text-sm font-bold text-[#1d2226]">{bankDetails.accountNumber}</p>
+              </div>
+              <CopyBtn text={bankDetails.accountNumber} k="accountNumber" />
+            </div>
+          )}
+          {bankDetails.ifscCode && (
+            <div className="flex items-center justify-between border-t border-violet-100 pt-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">IFSC Code</p>
+                <p className="font-mono text-sm font-bold text-[#1d2226]">{bankDetails.ifscCode}</p>
+              </div>
+              <CopyBtn text={bankDetails.ifscCode} k="ifscCode" />
+            </div>
+          )}
+          {bankDetails.accountHolderName && (
+            <div className="flex items-center justify-between border-t border-violet-100 pt-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Account Holder</p>
+                <p className="text-sm font-semibold text-[#1d2226]">{bankDetails.accountHolderName}</p>
+              </div>
+              <CopyBtn text={bankDetails.accountHolderName} k="accountHolder" />
+            </div>
+          )}
+          {bankDetails.accountType && (
+            <div className="flex items-center justify-between border-t border-violet-100 pt-3">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Account Type</p>
+                <p className="text-sm font-semibold text-[#1d2226]">{bankDetails.accountType}</p>
+              </div>
+              <CopyBtn text={bankDetails.accountType} k="accountType" />
+            </div>
+          )}
+        </div>
+        <p className="mt-3 text-center text-[10px] text-violet-300">Tap any field or "Copy All" to copy payment details</p>
+      </div>
+    </div>
+  );
 }
 
 export default function InvoiceDetail({ params }: { params: Promise<{ id: string }> }) {
@@ -693,6 +812,11 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
                       {field("Total Due", fmt(invoice.total, invoice.currency))}
                     </div>
                   </div>
+
+                  {/* Bank Details */}
+                  {invoice.bankDetails && (invoice.bankDetails.accountNumber || invoice.bankDetails.bankName || invoice.bankDetails.ifscCode) && (
+                    <BankDetailsCard bankDetails={invoice.bankDetails} vendorName={invoice.vendor} totalDue={invoice.total} currency={invoice.currency} />
+                  )}
                 </div>
               )}
 
