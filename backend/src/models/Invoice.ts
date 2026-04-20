@@ -1,9 +1,16 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export interface InvoiceFlag {
+  type: "duplicate" | "new_vendor" | "amount_anomaly" | "missing_fields" | "overdue_risk";
+  severity: "info" | "warning" | "critical";
+  message: string;
+  relatedInvoiceId?: string;
+}
+
 export interface InvoiceDoc extends Document {
   uid: string;
   source: "upload" | "gmail";
-  status: "processing" | "extracted" | "pending_approval" | "approved" | "rejected";
+  status: "processing" | "extracted" | "pending_approval" | "approved" | "rejected" | "paid";
   originalFileName?: string;
   gmailMessageId?: string;
   fileUrl?: string;
@@ -22,10 +29,15 @@ export interface InvoiceDoc extends Document {
   notes?: string;
   confidence?: number;
 
+  flags?: InvoiceFlag[];
+  analysedAt?: Date;
+  isNewVendor?: boolean;
+
   approvedAt?: Date;
   approvedBy?: string;
   rejectedAt?: Date;
   rejectionReason?: string;
+  paidAt?: Date;
   paymentAmount?: number;
   paymentDate?: Date;
 
@@ -33,12 +45,20 @@ export interface InvoiceDoc extends Document {
   updatedAt: Date;
 }
 
-const LineItemSchema = new Schema({
-  description: String,
-  quantity: Number,
-  unitPrice: Number,
-  amount: Number,
-}, { _id: false });
+const FlagSchema = new Schema<InvoiceFlag>(
+  {
+    type: { type: String, enum: ["duplicate", "new_vendor", "amount_anomaly", "missing_fields", "overdue_risk"] },
+    severity: { type: String, enum: ["info", "warning", "critical"] },
+    message: String,
+    relatedInvoiceId: String,
+  },
+  { _id: false }
+);
+
+const LineItemSchema = new Schema(
+  { description: String, quantity: Number, unitPrice: Number, amount: Number },
+  { _id: false }
+);
 
 const InvoiceSchema = new Schema<InvoiceDoc>(
   {
@@ -46,7 +66,7 @@ const InvoiceSchema = new Schema<InvoiceDoc>(
     source: { type: String, enum: ["upload", "gmail"], required: true },
     status: {
       type: String,
-      enum: ["processing", "extracted", "pending_approval", "approved", "rejected"],
+      enum: ["processing", "extracted", "pending_approval", "approved", "rejected", "paid"],
       default: "processing",
     },
     originalFileName: String,
@@ -67,10 +87,15 @@ const InvoiceSchema = new Schema<InvoiceDoc>(
     notes: String,
     confidence: Number,
 
+    flags: [FlagSchema],
+    analysedAt: Date,
+    isNewVendor: Boolean,
+
     approvedAt: Date,
     approvedBy: String,
     rejectedAt: Date,
     rejectionReason: String,
+    paidAt: Date,
     paymentAmount: Number,
     paymentDate: Date,
   },
