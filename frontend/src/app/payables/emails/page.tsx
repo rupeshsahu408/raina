@@ -8,15 +8,9 @@ import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { payablesHeaders } from "@/lib/payablesApi";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
+const AUTO_SCAN_INTERVAL_HOURS = 2;
 
 /* ─── Icons ─── */
-function Icon({ d, ...p }: { d: string } & React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
-      <path d={d} />
-    </svg>
-  );
-}
 const MailIcon = (p: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
     <rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
@@ -70,6 +64,27 @@ const AlertIcon = (p: React.SVGProps<SVGSVGElement>) => (
     <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
   </svg>
 );
+const ChevronDownIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </svg>
+);
+const BuildingIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <rect width="16" height="20" x="4" y="2" rx="2" ry="2" /><path d="M9 22v-4h6v4" /><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M8 10h.01M16 10h.01M12 14h.01M8 14h.01M16 14h.01" />
+  </svg>
+);
+const LayersIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" />
+  </svg>
+);
+const ListIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+    <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
+  </svg>
+);
 
 /* ─── Types ─── */
 interface GmailEmail {
@@ -95,7 +110,17 @@ interface Stats {
   completed: number;
 }
 
-const AUTO_SCAN_INTERVAL_HOURS = 2;
+interface SupplierGroup {
+  key: string;
+  name: string;
+  email: string;
+  emails: GmailEmail[];
+  pendingCount: number;
+  processingCount: number;
+  completedCount: number;
+  failedCount: number;
+  latestDate?: string;
+}
 
 interface Toast {
   id: string;
@@ -103,28 +128,7 @@ interface Toast {
   message: string;
 }
 
-/* ─── Status Badge ─── */
-function StatusBadge({ status }: { status: string }) {
-  const cfg: Record<string, { label: string; cls: string; dot?: string }> = {
-    pending:    { label: "Pending",    cls: "bg-amber-50 text-amber-700 border border-amber-200",   dot: "bg-amber-400" },
-    processing: { label: "Processing", cls: "bg-violet-50 text-violet-700 border border-violet-200", dot: "bg-violet-500 animate-pulse" },
-    completed:  { label: "Completed",  cls: "bg-green-50 text-green-700 border border-green-200",   dot: "bg-green-500" },
-    failed:     { label: "Failed",     cls: "bg-red-50 text-red-700 border border-red-200",         dot: "bg-red-500" },
-  };
-  const c = cfg[status] ?? { label: status, cls: "bg-gray-50 text-gray-600 border border-gray-200", dot: "bg-gray-400" };
-  return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.cls}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
-      {c.label}
-    </span>
-  );
-}
-
-/* ─── Spinner ─── */
-function Spinner({ size = "h-4 w-4" }: { size?: string }) {
-  return <svg className={`animate-spin ${size} text-violet-600`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>;
-}
-
+/* ─── Helpers ─── */
 function formatDate(d?: string) {
   if (!d) return "—";
   const date = new Date(d);
@@ -145,11 +149,251 @@ function initials(name?: string) {
 }
 
 function avatarColor(name?: string) {
-  const colors = ["bg-violet-500", "bg-blue-500", "bg-green-500", "bg-amber-500", "bg-red-500", "bg-pink-500", "bg-indigo-500", "bg-teal-500"];
+  const colors = ["bg-violet-500", "bg-blue-500", "bg-emerald-500", "bg-amber-500", "bg-red-500", "bg-pink-500", "bg-indigo-500", "bg-teal-500", "bg-cyan-500", "bg-orange-500"];
   if (!name) return colors[0];
   let h = 0;
   for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % colors.length;
   return colors[h];
+}
+
+function groupBySupplier(emails: GmailEmail[]): SupplierGroup[] {
+  const map = new Map<string, GmailEmail[]>();
+  for (const e of emails) {
+    const key = (e.fromEmail || e.from || "unknown").toLowerCase();
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(e);
+  }
+  const groups: SupplierGroup[] = [];
+  for (const [key, list] of map.entries()) {
+    const sorted = [...list].sort((a, b) => new Date(b.receivedAt || 0).getTime() - new Date(a.receivedAt || 0).getTime());
+    groups.push({
+      key,
+      name: sorted[0].from || sorted[0].fromEmail || "Unknown Sender",
+      email: sorted[0].fromEmail || key,
+      emails: sorted,
+      pendingCount: list.filter((e) => e.status === "pending").length,
+      processingCount: list.filter((e) => e.status === "processing").length,
+      completedCount: list.filter((e) => e.status === "completed").length,
+      failedCount: list.filter((e) => e.status === "failed").length,
+      latestDate: sorted[0].receivedAt,
+    });
+  }
+  return groups.sort((a, b) => {
+    if (b.pendingCount !== a.pendingCount) return b.pendingCount - a.pendingCount;
+    return new Date(b.latestDate || 0).getTime() - new Date(a.latestDate || 0).getTime();
+  });
+}
+
+/* ─── Sub-components ─── */
+function Spinner({ size = "h-4 w-4", color = "text-violet-600" }: { size?: string; color?: string }) {
+  return (
+    <svg className={`animate-spin ${size} ${color}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+    </svg>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const cfg: Record<string, { label: string; cls: string; dot: string }> = {
+    pending:    { label: "Pending",    cls: "bg-amber-50 text-amber-700 border border-amber-200",    dot: "bg-amber-400" },
+    processing: { label: "Processing", cls: "bg-violet-50 text-violet-700 border border-violet-200",  dot: "bg-violet-500 animate-pulse" },
+    completed:  { label: "Completed",  cls: "bg-green-50 text-green-700 border border-green-200",    dot: "bg-green-500" },
+    failed:     { label: "Failed",     cls: "bg-red-50 text-red-700 border border-red-200",          dot: "bg-red-500" },
+  };
+  const c = cfg[status] ?? { label: status, cls: "bg-gray-50 text-gray-600 border border-gray-200", dot: "bg-gray-400" };
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${c.cls}`}>
+      <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
+      {c.label}
+    </span>
+  );
+}
+
+function EmailCard({
+  email, isProcessing, isDeleting, onFetch, onDelete,
+}: {
+  email: GmailEmail;
+  isProcessing: boolean;
+  isDeleting: boolean;
+  onFetch: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className={`flex items-start gap-3 rounded-xl border bg-white p-3.5 transition-all ${
+      email.status === "processing" ? "border-violet-200 bg-violet-50/20"
+      : email.status === "completed" ? "border-green-100"
+      : email.status === "failed" ? "border-red-100"
+      : "border-gray-100"
+    }`}>
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-wrap items-center gap-2">
+          <StatusBadge status={email.status} />
+          {email.hasAttachment && (
+            <span className="flex items-center gap-1 text-xs text-gray-400">
+              <PaperclipIcon className="h-3 w-3" />
+              {email.attachmentName || "Attachment"}
+            </span>
+          )}
+          <span className="ml-auto text-xs text-gray-400 shrink-0">{formatDate(email.receivedAt)}</span>
+        </div>
+        <p className="mt-1 text-sm font-medium text-gray-800 truncate">{email.subject || "(No subject)"}</p>
+        <p className="mt-0.5 text-xs text-gray-500 line-clamp-1">{email.snippet || "No preview"}</p>
+
+        {email.status === "processing" && (
+          <div className="mt-1.5 flex items-center gap-1.5 text-xs text-violet-700">
+            <Spinner size="h-3 w-3" />
+            AI extracting invoice data...
+          </div>
+        )}
+        {email.status === "completed" && email.invoiceId && (
+          <div className="mt-1.5 flex items-center gap-2">
+            <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+              <CheckCircleIcon className="h-3.5 w-3.5" />
+              Extracted
+            </span>
+            <Link href={`/payables/invoice/${email.invoiceId}`} className="flex items-center gap-0.5 text-xs text-violet-600 hover:text-violet-700 font-medium underline underline-offset-2">
+              View Invoice <ExternalLinkIcon className="h-3 w-3" />
+            </Link>
+          </div>
+        )}
+        {email.status === "failed" && email.errorMessage && (
+          <p className="mt-1 text-xs text-red-600">Error: {email.errorMessage}</p>
+        )}
+      </div>
+      <div className="flex shrink-0 items-center gap-1.5">
+        {(email.status === "pending" || email.status === "failed") && (
+          <button
+            onClick={onFetch}
+            disabled={isProcessing || isDeleting}
+            className="flex items-center gap-1 rounded-lg bg-violet-600 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-violet-700 disabled:opacity-50 transition-colors"
+          >
+            {isProcessing ? <Spinner size="h-3 w-3" color="text-white" /> : <ZapIcon className="h-3.5 w-3.5" />}
+            Fetch
+          </button>
+        )}
+        <button
+          onClick={onDelete}
+          disabled={isDeleting || email.status === "processing"}
+          className="rounded-lg border border-gray-200 p-1.5 text-gray-400 hover:border-red-200 hover:bg-red-50 hover:text-red-500 disabled:opacity-40 transition-colors"
+        >
+          {isDeleting ? <Spinner size="h-3.5 w-3.5" /> : <TrashIcon className="h-3.5 w-3.5" />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SupplierCard({
+  group, processingIds, deletingIds, supplierFetchingKeys, onFetchOne, onDelete, onFetchSupplier,
+}: {
+  group: SupplierGroup;
+  processingIds: Set<string>;
+  deletingIds: Set<string>;
+  supplierFetchingKeys: Set<string>;
+  onFetchOne: (id: string) => void;
+  onDelete: (id: string) => void;
+  onFetchSupplier: (group: SupplierGroup) => void;
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const color = avatarColor(group.name);
+  const init = initials(group.name);
+  const isFetchingSupplier = supplierFetchingKeys.has(group.key);
+  const hasActiveProcessing = group.processingCount > 0;
+
+  return (
+    <div className={`rounded-2xl border bg-white shadow-sm overflow-hidden transition-all ${
+      hasActiveProcessing ? "border-violet-200" : group.pendingCount > 0 ? "border-gray-200" : "border-gray-100"
+    }`}>
+      {/* Supplier header */}
+      <div
+        className={`flex items-center gap-4 p-4 cursor-pointer select-none transition-colors ${
+          hasActiveProcessing ? "bg-violet-50/40" : "hover:bg-gray-50"
+        }`}
+        onClick={() => setExpanded((v) => !v)}
+      >
+        {/* Avatar */}
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${color} text-white text-sm font-bold shadow-sm`}>
+          {init}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-bold text-gray-900 text-sm">{group.name}</span>
+            {hasActiveProcessing && (
+              <span className="flex items-center gap-1.5 text-xs text-violet-700 font-medium bg-violet-50 border border-violet-200 rounded-full px-2 py-0.5">
+                <Spinner size="h-2.5 w-2.5" />
+                Processing
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 truncate">{group.email}</p>
+
+          {/* Pill breakdown */}
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+              {group.emails.length} email{group.emails.length !== 1 ? "s" : ""}
+            </span>
+            {group.pendingCount > 0 && (
+              <span className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-xs font-medium text-amber-700">
+                {group.pendingCount} pending
+              </span>
+            )}
+            {group.processingCount > 0 && (
+              <span className="rounded-full bg-violet-50 border border-violet-200 px-2 py-0.5 text-xs font-medium text-violet-700">
+                {group.processingCount} processing
+              </span>
+            )}
+            {group.completedCount > 0 && (
+              <span className="rounded-full bg-green-50 border border-green-200 px-2 py-0.5 text-xs font-medium text-green-700">
+                {group.completedCount} done
+              </span>
+            )}
+            {group.failedCount > 0 && (
+              <span className="rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-xs font-medium text-red-700">
+                {group.failedCount} failed
+              </span>
+            )}
+            <span className="text-xs text-gray-400 ml-1">· Latest {formatDate(group.latestDate)}</span>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
+          {group.pendingCount > 0 && (
+            <button
+              onClick={() => onFetchSupplier(group)}
+              disabled={isFetchingSupplier || hasActiveProcessing}
+              className="flex items-center gap-1.5 rounded-xl bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-violet-700 disabled:opacity-50 transition-colors shadow-sm"
+            >
+              {isFetchingSupplier ? <Spinner size="h-3.5 w-3.5" color="text-white" /> : <ZapIcon className="h-3.5 w-3.5" />}
+              Fetch {group.pendingCount} Invoice{group.pendingCount !== 1 ? "s" : ""}
+            </button>
+          )}
+          <button className={`rounded-lg p-1.5 text-gray-400 hover:text-gray-700 transition-colors`}>
+            <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`} />
+          </button>
+        </div>
+      </div>
+
+      {/* Email list */}
+      {expanded && (
+        <div className="border-t border-gray-100 bg-gray-50/50 p-3 space-y-2">
+          {group.emails.map((email) => (
+            <EmailCard
+              key={email._id}
+              email={email}
+              isProcessing={processingIds.has(email._id) || email.status === "processing"}
+              isDeleting={deletingIds.has(email._id)}
+              onFetch={() => onFetchOne(email._id)}
+              onDelete={() => onDelete(email._id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ─── Main Page ─── */
@@ -163,17 +407,19 @@ export default function EmailInboxPage() {
   const [fetchingAll, setFetchingAll] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [viewMode, setViewMode] = useState<"supplier" | "flat">("supplier");
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [supplierFetchingKeys, setSupplierFetchingKeys] = useState<Set<string>>(new Set());
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [scanResult, setScanResult] = useState<{ discovered: number; message: string } | null>(null);
   const [lastAutoScan, setLastAutoScan] = useState<string | null>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
-  function toast(type: Toast["type"], message: string) {
+  function addToast(type: Toast["type"], message: string) {
     const id = Math.random().toString(36).slice(2);
     setToasts((t) => [...t, { id, type, message }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 4000);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 4500);
   }
 
   const fetchEmails = useCallback(async (u: { uid: string; token: string }, silent = false) => {
@@ -189,7 +435,7 @@ export default function EmailInboxPage() {
       setStats(data.stats ?? { total: 0, pending: 0, processing: 0, completed: 0 });
       if (data.lastAutoScan) setLastAutoScan(data.lastAutoScan);
     } catch {
-      if (!silent) toast("error", "Failed to load emails");
+      if (!silent) addToast("error", "Failed to load emails");
     } finally {
       if (!silent) setLoading(false);
     }
@@ -233,10 +479,10 @@ export default function EmailInboxPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Scan failed");
       setScanResult({ discovered: data.discovered, message: data.message });
-      toast("success", data.message);
+      addToast("success", data.message);
       await fetchEmails(user);
     } catch (err: any) {
-      toast("error", err.message || "Failed to scan inbox");
+      addToast("error", err.message || "Failed to scan inbox");
     } finally {
       setScanning(false);
     }
@@ -249,10 +495,10 @@ export default function EmailInboxPage() {
       const res = await fetch(`${BACKEND}/payables/email-inbox/${emailId}/process`, { method: "POST", headers: payablesHeaders(user) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
-      toast("info", "AI is processing this invoice...");
+      addToast("info", "AI is processing this invoice...");
       await fetchEmails(user, true);
     } catch (err: any) {
-      toast("error", err.message || "Failed to process email");
+      addToast("error", err.message || "Failed to process email");
     } finally {
       setProcessingIds((s) => { const n = new Set(s); n.delete(emailId); return n; });
     }
@@ -265,12 +511,32 @@ export default function EmailInboxPage() {
       const res = await fetch(`${BACKEND}/payables/email-inbox/process-all`, { method: "POST", headers: payablesHeaders(user) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
-      toast("info", data.message || "Processing all invoices sequentially...");
+      addToast("info", data.message || "Processing all invoices sequentially...");
       await fetchEmails(user, true);
     } catch (err: any) {
-      toast("error", err.message || "Failed to start batch processing");
+      addToast("error", err.message || "Failed to start batch processing");
     } finally {
       setFetchingAll(false);
+    }
+  }
+
+  async function handleFetchSupplier(group: SupplierGroup) {
+    if (!user) return;
+    const pendingIds = group.emails.filter((e) => e.status === "pending" || e.status === "failed").map((e) => e._id);
+    if (!pendingIds.length) return;
+    setSupplierFetchingKeys((s) => new Set(s).add(group.key));
+    addToast("info", `Processing ${pendingIds.length} invoice${pendingIds.length !== 1 ? "s" : ""} from ${group.name}...`);
+    try {
+      for (const id of pendingIds) {
+        await fetch(`${BACKEND}/payables/email-inbox/${id}/process`, { method: "POST", headers: payablesHeaders(user) });
+        await new Promise((r) => setTimeout(r, 800));
+      }
+      await fetchEmails(user, true);
+      addToast("success", `All invoices from ${group.name} sent for AI processing`);
+    } catch {
+      addToast("error", `Some invoices from ${group.name} failed to start`);
+    } finally {
+      setSupplierFetchingKeys((s) => { const n = new Set(s); n.delete(group.key); return n; });
     }
   }
 
@@ -281,17 +547,17 @@ export default function EmailInboxPage() {
       const res = await fetch(`${BACKEND}/payables/email-inbox/${emailId}`, { method: "DELETE", headers: payablesHeaders(user) });
       if (!res.ok) throw new Error();
       setEmails((prev) => prev.filter((e) => e._id !== emailId));
-      toast("success", "Email removed from inbox");
+      addToast("success", "Email removed from inbox");
     } catch {
-      toast("error", "Failed to delete email");
+      addToast("error", "Failed to delete email");
     } finally {
       setDeletingIds((s) => { const n = new Set(s); n.delete(emailId); return n; });
     }
   }
 
   const pendingEmails = emails.filter((e) => e.status === "pending");
-  const processingEmails = emails.filter((e) => e.status === "processing");
-  const hasProcessing = stats.processing > 0 || processingEmails.length > 0;
+  const hasProcessing = stats.processing > 0 || emails.some((e) => e.status === "processing");
+  const supplierGroups = groupBySupplier(emails);
 
   if (loading) {
     return (
@@ -325,7 +591,7 @@ export default function EmailInboxPage() {
           <div className="flex items-center gap-2">
             {hasProcessing && (
               <span className="flex items-center gap-1.5 text-xs text-violet-600 font-medium bg-violet-50 border border-violet-200 rounded-full px-2.5 py-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-violet-500 animate-pulse" />
+                <Spinner size="h-3 w-3" />
                 AI processing {stats.processing} invoice{stats.processing !== 1 ? "s" : ""}
               </span>
             )}
@@ -337,32 +603,28 @@ export default function EmailInboxPage() {
         </div>
       </nav>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 space-y-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 space-y-5">
         {/* Hero header */}
-        <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-6">
+        <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h1 className="text-xl font-bold text-gray-900">Email Invoice Inbox</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                AI scans your Gmail for supplier invoices. Review each one and let AI extract the data automatically.
+              <p className="mt-0.5 text-sm text-gray-500">
+                AI scans your Gmail for supplier invoices. Review by supplier or process all at once.
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-gray-400">
+              <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
                 <span className="flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
-                  Auto-scan runs every {AUTO_SCAN_INTERVAL_HOURS}h
+                  Auto-scan every {AUTO_SCAN_INTERVAL_HOURS}h
                 </span>
                 {lastAutoScan ? (
-                  <span className="flex items-center gap-1">
-                    Last auto-scan: <span className="text-gray-600 font-medium">{formatDate(lastAutoScan)}</span>
-                  </span>
+                  <span>Last scan: <span className="text-gray-600 font-medium">{formatDate(lastAutoScan)}</span></span>
                 ) : (
-                  <span className="flex items-center gap-1">
-                    First auto-scan runs 30s after server boot
-                  </span>
+                  <span>First scan runs 30s after server start</span>
                 )}
               </div>
               {scanResult && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-violet-700 font-medium">
+                <div className="mt-2 flex items-center gap-2 text-sm text-green-700 font-medium">
                   <CheckCircleIcon className="h-4 w-4 text-green-500" />
                   {scanResult.message}
                 </div>
@@ -375,15 +637,15 @@ export default function EmailInboxPage() {
                 className="flex items-center gap-2 rounded-xl border border-violet-200 bg-white px-4 py-2 text-sm font-medium text-violet-700 shadow-sm hover:bg-violet-50 disabled:opacity-60 transition-colors"
               >
                 {scanning ? <Spinner /> : <RefreshIcon className="h-4 w-4" />}
-                {scanning ? "Scanning Gmail..." : "Scan Gmail Inbox"}
+                {scanning ? "Scanning..." : "Scan Gmail"}
               </button>
               <button
                 onClick={handleFetchAll}
                 disabled={fetchingAll || pendingEmails.length === 0}
                 className="flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-violet-700 disabled:opacity-50 transition-colors"
               >
-                {fetchingAll ? <Spinner size="h-4 w-4" /> : <ZapIcon className="h-4 w-4" />}
-                {fetchingAll ? "Processing All..." : `Fetch All Now (${pendingEmails.length})`}
+                {fetchingAll ? <Spinner color="text-white" /> : <ZapIcon className="h-4 w-4" />}
+                {fetchingAll ? "Processing..." : `Fetch All Now (${pendingEmails.length})`}
               </button>
             </div>
           </div>
@@ -392,55 +654,76 @@ export default function EmailInboxPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
-            { label: "Total Emails", value: stats.total, color: "text-gray-900", bg: "bg-white" },
-            { label: "Pending",      value: stats.pending, color: "text-amber-700", bg: "bg-amber-50" },
-            { label: "Processing",   value: stats.processing, color: "text-violet-700", bg: "bg-violet-50" },
-            { label: "Completed",    value: stats.completed, color: "text-green-700", bg: "bg-green-50" },
+            { label: "Suppliers",  value: supplierGroups.length, color: "text-blue-700",   bg: "bg-blue-50",   icon: <BuildingIcon className="h-4 w-4 text-blue-400" /> },
+            { label: "Pending",    value: stats.pending,         color: "text-amber-700",  bg: "bg-amber-50",  icon: <MailIcon className="h-4 w-4 text-amber-400" /> },
+            { label: "Processing", value: stats.processing,      color: "text-violet-700", bg: "bg-violet-50", icon: <Spinner size="h-4 w-4" /> },
+            { label: "Completed",  value: stats.completed,       color: "text-green-700",  bg: "bg-green-50",  icon: <CheckCircleIcon className="h-4 w-4 text-green-500" /> },
           ].map((s) => (
-            <div key={s.label} className={`rounded-2xl border border-gray-200 ${s.bg} p-4 text-center`}>
+            <div key={s.label} className={`rounded-2xl border border-gray-200 ${s.bg} p-4`}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs text-gray-500">{s.label}</span>
+                {s.icon}
+              </div>
               <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
-              <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
             </div>
           ))}
         </div>
 
-        {/* Processing progress banner */}
+        {/* Processing banner */}
         {hasProcessing && (
           <div className="flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3">
             <Spinner />
             <div>
               <p className="text-sm font-medium text-violet-800">AI is processing invoices one by one</p>
-              <p className="text-xs text-violet-600">Each invoice is being carefully analyzed and extracted. This page auto-updates every 3 seconds.</p>
+              <p className="text-xs text-violet-600">Each invoice is being carefully analyzed. Page updates every 3 seconds.</p>
             </div>
           </div>
         )}
 
-        {/* Search + filter */}
+        {/* Toolbar: search + filter + view toggle */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by sender, subject, or content..."
+              placeholder="Search by supplier, subject, or content..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-xl border border-gray-200 bg-white pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-100"
             />
           </div>
-          <div className="flex gap-1 rounded-xl border border-gray-200 bg-white p-1 shrink-0">
-            {(["all", "pending", "processing", "completed", "failed"] as const).map((s) => (
+          <div className="flex gap-2 shrink-0">
+            <div className="flex gap-1 rounded-xl border border-gray-200 bg-white p-1">
+              {(["all", "pending", "processing", "completed", "failed"] as const).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`rounded-lg px-2.5 py-1.5 text-xs font-medium capitalize transition-colors ${statusFilter === s ? "bg-violet-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1 rounded-xl border border-gray-200 bg-white p-1">
               <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`rounded-lg px-3 py-1.5 text-xs font-medium capitalize transition-colors ${statusFilter === s ? "bg-violet-600 text-white shadow-sm" : "text-gray-500 hover:text-gray-800"}`}
+                onClick={() => setViewMode("supplier")}
+                title="Group by supplier"
+                className={`rounded-lg p-1.5 transition-colors ${viewMode === "supplier" ? "bg-violet-600 text-white" : "text-gray-400 hover:text-gray-700"}`}
               >
-                {s}
+                <LayersIcon className="h-4 w-4" />
               </button>
-            ))}
+              <button
+                onClick={() => setViewMode("flat")}
+                title="Flat list"
+                className={`rounded-lg p-1.5 transition-colors ${viewMode === "flat" ? "bg-violet-600 text-white" : "text-gray-400 hover:text-gray-700"}`}
+              >
+                <ListIcon className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Email list */}
+        {/* Email content */}
         {emails.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-12 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100">
@@ -450,27 +733,113 @@ export default function EmailInboxPage() {
             <p className="mt-1 text-sm text-gray-500">
               {search || statusFilter !== "all"
                 ? "Try adjusting your search or filter."
-                : "Click \"Scan Gmail Inbox\" to find supplier invoice emails automatically."}
+                : "Click \"Scan Gmail\" to find supplier invoice emails automatically."}
             </p>
             {!search && statusFilter === "all" && (
               <button onClick={handleScan} disabled={scanning} className="mt-4 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60 transition-colors">
-                {scanning ? <Spinner /> : <RefreshIcon className="h-4 w-4" />}
+                {scanning ? <Spinner color="text-white" /> : <RefreshIcon className="h-4 w-4" />}
                 {scanning ? "Scanning..." : "Scan Gmail Inbox"}
               </button>
             )}
           </div>
+        ) : viewMode === "supplier" ? (
+          /* ── SUPPLIER GROUPED VIEW ── */
+          <div className="space-y-3">
+            {supplierGroups.length === 0 ? (
+              <div className="text-center py-8 text-sm text-gray-400">No suppliers match your filter.</div>
+            ) : (
+              supplierGroups.map((group) => (
+                <SupplierCard
+                  key={group.key}
+                  group={group}
+                  processingIds={processingIds}
+                  deletingIds={deletingIds}
+                  supplierFetchingKeys={supplierFetchingKeys}
+                  onFetchOne={handleFetchOne}
+                  onDelete={handleDelete}
+                  onFetchSupplier={handleFetchSupplier}
+                />
+              ))
+            )}
+          </div>
         ) : (
+          /* ── FLAT LIST VIEW ── */
           <div className="space-y-2">
-            {emails.map((email) => (
-              <EmailCard
-                key={email._id}
-                email={email}
-                isProcessing={processingIds.has(email._id) || email.status === "processing"}
-                isDeleting={deletingIds.has(email._id)}
-                onFetch={() => handleFetchOne(email._id)}
-                onDelete={() => handleDelete(email._id)}
-              />
-            ))}
+            {emails.map((email) => {
+              const displayName = email.from || email.fromEmail || "Unknown Sender";
+              const color = avatarColor(displayName);
+              const init = initials(displayName);
+              return (
+                <div key={email._id} className={`group flex items-start gap-4 rounded-2xl border bg-white p-4 shadow-sm transition-all hover:shadow-md ${
+                  email.status === "processing" ? "border-violet-200 bg-violet-50/30"
+                  : email.status === "completed" ? "border-green-200/50"
+                  : email.status === "failed" ? "border-red-200/50"
+                  : "border-gray-200"
+                }`}>
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${color} text-white text-sm font-bold`}>
+                    {init}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-sm text-gray-900 truncate">{displayName}</span>
+                      {email.fromEmail && email.fromEmail !== displayName && (
+                        <span className="text-xs text-gray-400 truncate">&lt;{email.fromEmail}&gt;</span>
+                      )}
+                      <StatusBadge status={email.status} />
+                      {email.hasAttachment && (
+                        <span className="flex items-center gap-1 text-xs text-gray-400">
+                          <PaperclipIcon className="h-3 w-3" />
+                          {email.attachmentName || "Attachment"}
+                        </span>
+                      )}
+                      <span className="ml-auto text-xs text-gray-400 shrink-0">{formatDate(email.receivedAt)}</span>
+                    </div>
+                    <p className="mt-0.5 text-sm font-medium text-gray-800 truncate">{email.subject || "(No subject)"}</p>
+                    <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{email.snippet || "No preview available"}</p>
+                    {email.status === "processing" && (
+                      <div className="mt-2 flex items-center gap-2 text-xs text-violet-700">
+                        <Spinner size="h-3 w-3" />
+                        AI extracting invoice data...
+                      </div>
+                    )}
+                    {email.status === "completed" && email.invoiceId && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                          <CheckCircleIcon className="h-3.5 w-3.5" />
+                          Invoice extracted
+                        </span>
+                        <Link href={`/payables/invoice/${email.invoiceId}`} className="flex items-center gap-1 text-xs text-violet-600 hover:text-violet-700 font-medium underline underline-offset-2">
+                          View Invoice <ExternalLinkIcon className="h-3 w-3" />
+                        </Link>
+                      </div>
+                    )}
+                    {email.status === "failed" && email.errorMessage && (
+                      <p className="mt-2 text-xs text-red-600">Error: {email.errorMessage}</p>
+                    )}
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    {(email.status === "pending" || email.status === "failed") && (
+                      <button
+                        onClick={() => handleFetchOne(email._id)}
+                        disabled={processingIds.has(email._id) || deletingIds.has(email._id)}
+                        className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-700 disabled:opacity-50 transition-colors"
+                      >
+                        {processingIds.has(email._id) ? <Spinner size="h-3 w-3" color="text-white" /> : <ZapIcon className="h-3.5 w-3.5" />}
+                        Fetch Now
+                      </button>
+                    )}
+                    <button
+                      onClick={() => handleDelete(email._id)}
+                      disabled={deletingIds.has(email._id) || email.status === "processing"}
+                      className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-40 transition-colors"
+                    >
+                      {deletingIds.has(email._id) ? <Spinner size="h-3.5 w-3.5" /> : <TrashIcon className="h-3.5 w-3.5" />}
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -480,7 +849,7 @@ export default function EmailInboxPage() {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex items-center gap-2.5 rounded-xl border px-4 py-3 shadow-lg text-sm font-medium transition-all animate-in slide-in-from-right ${
+            className={`pointer-events-auto flex items-center gap-2.5 rounded-xl border px-4 py-3 shadow-lg text-sm font-medium ${
               t.type === "success" ? "bg-green-50 border-green-200 text-green-800"
               : t.type === "error" ? "bg-red-50 border-red-200 text-red-800"
               : "bg-violet-50 border-violet-200 text-violet-800"
@@ -492,121 +861,6 @@ export default function EmailInboxPage() {
             {t.message}
           </div>
         ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Email Card ─── */
-function EmailCard({
-  email,
-  isProcessing,
-  isDeleting,
-  onFetch,
-  onDelete,
-}: {
-  email: GmailEmail;
-  isProcessing: boolean;
-  isDeleting: boolean;
-  onFetch: () => void;
-  onDelete: () => void;
-}) {
-  const displayName = email.from || email.fromEmail || "Unknown Sender";
-  const color = avatarColor(displayName);
-  const init = initials(displayName);
-
-  return (
-    <div className={`group flex items-start gap-4 rounded-2xl border bg-white p-4 shadow-sm transition-all hover:shadow-md ${email.status === "processing" ? "border-violet-200 bg-violet-50/30" : email.status === "completed" ? "border-green-200/50" : email.status === "failed" ? "border-red-200/50" : "border-gray-200"}`}>
-      {/* Avatar */}
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${color} text-white text-sm font-bold`}>
-        {init}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-semibold text-sm text-gray-900 truncate">{displayName}</span>
-          {email.fromEmail && email.fromEmail !== displayName && (
-            <span className="text-xs text-gray-400 truncate">&lt;{email.fromEmail}&gt;</span>
-          )}
-          <StatusBadge status={email.status} />
-          {email.hasAttachment && (
-            <span className="flex items-center gap-1 text-xs text-gray-400">
-              <PaperclipIcon className="h-3 w-3" />
-              {email.attachmentName || "Attachment"}
-            </span>
-          )}
-          <span className="ml-auto text-xs text-gray-400 shrink-0">{formatDate(email.receivedAt)}</span>
-        </div>
-
-        <p className="mt-0.5 text-sm font-medium text-gray-800 truncate">{email.subject || "(No subject)"}</p>
-        <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{email.snippet || "No preview available"}</p>
-
-        {email.status === "processing" && (
-          <div className="mt-2 flex items-center gap-2 text-xs text-violet-700">
-            <svg className="h-3 w-3 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-            </svg>
-            AI is extracting invoice data...
-          </div>
-        )}
-
-        {email.status === "completed" && email.invoiceId && (
-          <div className="mt-2 flex items-center gap-2">
-            <span className="text-xs text-green-600 font-medium flex items-center gap-1">
-              <CheckCircleIcon className="h-3.5 w-3.5" />
-              Invoice extracted successfully
-            </span>
-            <Link
-              href={`/payables/invoice/${email.invoiceId}`}
-              className="flex items-center gap-1 text-xs text-violet-600 hover:text-violet-700 font-medium underline underline-offset-2"
-            >
-              View Invoice
-              <ExternalLinkIcon className="h-3 w-3" />
-            </Link>
-          </div>
-        )}
-
-        {email.status === "failed" && email.errorMessage && (
-          <p className="mt-2 text-xs text-red-600">Error: {email.errorMessage}</p>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="flex shrink-0 items-center gap-2">
-        {(email.status === "pending" || email.status === "failed") && (
-          <button
-            onClick={onFetch}
-            disabled={isProcessing || isDeleting}
-            className="flex items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-700 disabled:opacity-50 transition-colors"
-          >
-            {isProcessing ? (
-              <svg className="h-3 w-3 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-              </svg>
-            ) : (
-              <ZapIcon className="h-3.5 w-3.5" />
-            )}
-            Fetch Now
-          </button>
-        )}
-        <button
-          onClick={onDelete}
-          disabled={isDeleting || email.status === "processing"}
-          className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs text-gray-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600 disabled:opacity-40 transition-colors"
-        >
-          {isDeleting ? (
-            <svg className="h-3.5 w-3.5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-            </svg>
-          ) : (
-            <TrashIcon className="h-3.5 w-3.5" />
-          )}
-          Delete
-        </button>
       </div>
     </div>
   );
