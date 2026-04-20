@@ -116,6 +116,7 @@ All public-facing and product pages use a consistent light design language:
 - `useCookiePreferences` — loads/saves cookie prefs to localStorage, applies analytics/marketing script logic reactively
 
 ## Notes
+- User preference: work in this Replit project should focus on frontend improvements and new frontend ideas. The production frontend is deployed on Vercel at `https://www.plyndrox.app/`, and the backend is already deployed and stable on Render at `https://raina-1.onrender.com/`; do not modify backend code/configuration unless the user explicitly asks.
 - The ThreeBackground 3D animation requires WebGL — it gracefully skips if WebGL is unavailable
 - Backend runs `tsx watch` for hot-reload in dev mode
 - Cookie preferences are stored in localStorage under `evara_cookie_prefs`
