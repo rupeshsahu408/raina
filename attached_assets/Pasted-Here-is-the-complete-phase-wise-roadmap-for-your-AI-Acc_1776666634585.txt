@@ -1,0 +1,105 @@
+Here is the complete phase-wise roadmap for your AI Accounts Payable SaaS:
+
+AI Accounts Payable SaaS — Full Roadmap
+Phase 1 — Foundation & Core Experience
+Goal: Get the core product working. A user can sign up, connect Gmail or upload an invoice, and see it processed on a clean dashboard.
+
+What gets built:
+
+Dedicated landing page for the AP product (its own entry point with its own button)
+User onboarding flow — company setup, connecting Gmail, setting basic preferences
+Invoice ingestion — Gmail connection pulls invoices automatically, plus manual PDF/image upload
+AI invoice reader — reads the document and extracts vendor name, amount, due date, line items, invoice number
+Invoice Inbox — a clean list of all received invoices with their status
+Invoice Detail Page — full view of one invoice: original document + extracted data side by side
+Core Dashboard — shows total invoices, pending review, flagged items, upcoming due dates
+Basic data storage — every invoice saved securely in the database
+What the user feels:
+They connect Gmail, invoices start appearing automatically, AI reads them instantly. First impression is strong — "this is already saving me time."
+
+Phase 2 — Intelligence & Validation
+Goal: Add the AI brain. The system doesn't just read invoices — it checks, validates, and flags them.
+
+What gets built:
+
+Duplicate invoice detection — AI flags if the same invoice is submitted twice
+Vendor verification — checks if the vendor is known or new/unrecognized
+Amount anomaly detection — flags invoices that are unusually high compared to history
+Smart flagging system — every issue explained in plain English, not accounting jargon
+Vendor directory — a clean list of all vendors with their history, average invoice amount, payment track record
+Invoice status tracking — New → Under Review → Approved → Paid, always visible
+Search & filter — find any invoice by vendor, date, amount, or status instantly
+Email notifications — user gets notified when a new invoice arrives or something needs attention
+What the user feels:
+The system catches problems they would have missed. They start trusting it. Confidence grows.
+
+Phase 3 — Approval Workflow
+Goal: Add team collaboration. Multiple people can be involved in approving invoices based on rules.
+
+What gets built:
+
+Team member invitations — add colleagues with defined roles (Admin, Approver, Viewer)
+Approval rules engine — user sets rules like "invoices above $2,000 need CFO approval"
+Approval request notifications — approvers get an email/in-app notification with one-click approve or reject
+Approval history — every invoice shows a full audit trail of who approved what and when
+Comments on invoices — team members can leave notes on any invoice
+Bulk actions — approve or flag multiple invoices at once
+Role-based access — each team member only sees what they're supposed to see
+What the user feels:
+No more WhatsApp back-and-forth for approvals. Everything is tracked, organized, and accountable.
+
+Phase 4 — Payment Queue & Cash Intelligence
+Goal: Help the user decide when and what to pay, without actually making the payment automatically.
+
+What gets built:
+
+Payment Queue — all approved invoices organized by urgency and due date
+Early payment discount alerts — AI highlights invoices where paying early saves money
+Cash flow forecast — simple view of how much is due this week, this month, next month
+Payment status tracking — user marks invoices as paid, system records it
+Accounting software sync — connects to QuickBooks and Xero, auto-posts every invoice and payment
+Spend analytics — charts showing spending by vendor, by category, by month
+Exportable reports — download PDF or Excel reports for accountants or auditors
+What the user feels:
+They never miss a due date. They see opportunities to save money. Their accountant is happy because everything is already organized.
+
+Phase 5 — SaaS Infrastructure & Monetization
+Goal: Turn this into a proper subscription business.
+
+What gets built:
+
+Subscription plans — Free tier (limited invoices/month), Pro, Business, Enterprise
+Billing integration — Stripe-powered subscription management
+Usage limits & upgrade prompts — when a free user hits their limit, smooth upgrade flow
+Multi-company support — one account can manage multiple businesses
+White-label option — agencies can offer this to their clients under their own brand
+Admin panel — internal dashboard to manage users, subscriptions, and platform health
+API access — larger businesses can connect their own systems to the platform
+SOC 2 / data security groundwork — proper encryption, audit logs, compliance readiness
+What the user feels:
+It feels like a real product they're paying for and getting serious value from. Not a tool — a business asset.
+
+Phase 6 — Scale & Advanced AI
+Goal: Make the AI smarter and the product stickier.
+
+What gets built:
+
+Auto-payment execution — connects to bank APIs to pay approved invoices automatically (the feature we're skipping for now, added here when trust is established)
+Vendor portal — vendors get their own link to submit invoices directly, no email needed
+AI-suggested GL codes — automatically categorizes every invoice for accounting
+Fraud detection model — trained specifically on invoice fraud patterns
+Mobile app — native iOS and Android experience
+Advanced analytics — benchmarking against industry averages, spend optimization suggestions
+Integrations marketplace — plug into more accounting tools, ERPs, and banks
+What the user feels:
+The system is running in the background, handling everything. They barely need to touch it.
+
+Build Order Summary
+Phase	Focus	Key Outcome
+Phase 1	Foundation	Product is live, invoices are read automatically
+Phase 2	Intelligence	AI catches problems, users trust the system
+Phase 3	Approvals	Teams collaborate, full audit trail
+Phase 4	Payments & Cash	Never miss a due date, books stay clean
+Phase 5	Monetization	Real SaaS business with paying subscribers
+Phase 6	Scale	Full automation, mobile, advanced AI
+We start with Phase 1 and build forward. Each phase delivers real value on its own — users get benefit immediately, and the product keeps getting better over time.   
