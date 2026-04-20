@@ -2623,12 +2623,81 @@ payablesRouter.get("/payment-queue", async (req, res) => {
     if (!actor) return;
     try {
       await connectMongo();
-      const [byVendor, byMonth, byStatus] = await Promise.all([
-        Invoice.aggregate([{ $match: { uid: actor.uid, total: { $gt: 0 } } }, { $group: { _id: "$vendor", vendor: { $first: "$vendor" }, amount: { $sum: "$total" }, count: { $sum: 1 } } }, { $sort: { amount: -1 } }, { $limit: 12 }]),
-        Invoice.aggregate([{ $match: { uid: actor.uid, total: { $gt: 0 } } }, { $group: { _id: { $substr: ["$invoiceDate", 0, 7] }, amount: { $sum: "$total" }, count: { $sum: 1 } } }, { $sort: { _id: 1 } }]),
-        Invoice.aggregate([{ $match: { uid: actor.uid } }, { $group: { _id: "$status", amount: { $sum: { $ifNull: ["$total", 0] } }, count: { $sum: 1 } } }, { $sort: { count: -1 } }]),
+
+      // Build date range filter from period query param
+      const period = String(req.query.period ?? "all");
+      const now = new Date();
+      let dateFrom: Date | null = null;
+      if (period === "30d") { dateFrom = new Date(now); dateFrom.setDate(dateFrom.getDate() - 30); }
+      else if (period === "3m") { dateFrom = new Date(now); dateFrom.setMonth(dateFrom.getMonth() - 3); }
+      else if (period === "6m") { dateFrom = new Date(now); dateFrom.setMonth(dateFrom.getMonth() - 6); }
+      else if (period === "1y") { dateFrom = new Date(now); dateFrom.setFullYear(dateFrom.getFullYear() - 1); }
+      else if (req.query.from) { dateFrom = new Date(String(req.query.from)); }
+
+      const baseMatch: Record<string, any> = { uid: actor.uid };
+      if (dateFrom) baseMatch.createdAt = { $gte: dateFrom };
+
+      const spendMatch = { ...baseMatch, total: { $gt: 0 } };
+
+      const [byVendor, byMonth, byStatus, bySource, topLineItems, growth] = await Promise.all([
+        // Top vendors by spend
+        Invoice.aggregate([
+          { $match: spendMatch },
+          { $group: { _id: "$vendor", vendor: { $first: "$vendor" }, amount: { $sum: "$total" }, count: { $sum: 1 }, avgAmount: { $avg: "$total" }, paidCount: { $sum: { $cond: [{ $eq: ["$status", "paid"] }, 1, 0] } } } },
+          { $sort: { amount: -1 } },
+          { $limit: 15 },
+        ]),
+        // Monthly spend trend
+        Invoice.aggregate([
+          { $match: spendMatch },
+          { $group: { _id: { $substr: ["$invoiceDate", 0, 7] }, month: { $first: { $substr: ["$invoiceDate", 0, 7] } }, amount: { $sum: "$total" }, count: { $sum: 1 } } },
+          { $sort: { _id: 1 } },
+        ]),
+        // Status breakdown
+        Invoice.aggregate([
+          { $match: { ...baseMatch } },
+          { $group: { _id: "$status", amount: { $sum: { $ifNull: ["$total", 0] } }, count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+        ]),
+        // Source breakdown (upload vs gmail vs supplier_link)
+        Invoice.aggregate([
+          { $match: spendMatch },
+          { $group: { _id: "$source", amount: { $sum: "$total" }, count: { $sum: 1 } } },
+          { $sort: { amount: -1 } },
+        ]),
+        // Top line item descriptions (category proxy)
+        Invoice.aggregate([
+          { $match: spendMatch },
+          { $unwind: { path: "$lineItems", preserveNullAndEmptyArrays: false } },
+          { $match: { "lineItems.description": { $exists: true, $nin: [null, ""] }, "lineItems.amount": { $gt: 0 } } },
+          { $group: { _id: "$lineItems.description", amount: { $sum: "$lineItems.amount" }, count: { $sum: 1 } } },
+          { $sort: { amount: -1 } },
+          { $limit: 10 },
+        ]),
+        // Month-over-month growth: last 2 full months
+        Invoice.aggregate([
+          { $match: { uid: actor.uid, total: { $gt: 0 } } },
+          { $group: { _id: { $substr: ["$invoiceDate", 0, 7] }, amount: { $sum: "$total" } } },
+          { $sort: { _id: -1 } },
+          { $limit: 2 },
+        ]),
       ]);
-      res.json({ byVendor, byMonth, byStatus });
+
+      // Calculate MoM growth
+      let momGrowth: number | null = null;
+      if (growth.length === 2) {
+        const [latest, prev] = growth;
+        if (prev.amount > 0) momGrowth = ((latest.amount - prev.amount) / prev.amount) * 100;
+      }
+
+      // Summary totals
+      const allInvoices = await Invoice.aggregate([
+        { $match: spendMatch },
+        { $group: { _id: null, total: { $sum: "$total" }, count: { $sum: 1 }, avgAmount: { $avg: "$total" } } },
+      ]);
+      const summary = allInvoices[0] ?? { total: 0, count: 0, avgAmount: 0 };
+
+      res.json({ byVendor, byMonth, byStatus, bySource, topLineItems, momGrowth, summary });
     } catch (err) {
       console.error("Payables analytics error:", err);
       res.status(500).json({ error: "Failed to fetch spend analytics" });

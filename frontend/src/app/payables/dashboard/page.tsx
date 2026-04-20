@@ -615,6 +615,13 @@ export default function PayablesDashboard() {
               <span className="hidden sm:inline">Email Inbox</span>
             </Link>
             <Link
+              href="/payables/analytics"
+              className="flex items-center gap-1.5 rounded-full border border-teal-200 bg-teal-50 px-3 py-2 text-xs font-bold text-teal-700 shadow-sm transition hover:bg-teal-100 sm:px-4"
+            >
+              <TrendingUpIcon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Analytics</span>
+            </Link>
+            <Link
               href="/payables/analyze"
               className="flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 shadow-sm transition hover:bg-violet-100 sm:px-4"
             >
