@@ -117,6 +117,7 @@ All public-facing and product pages use a consistent light design language:
 
 ## Notes
 - User preference: work in this Replit project should focus on frontend improvements and new frontend ideas. The production frontend is deployed on Vercel at `https://www.plyndrox.app/`, and the backend is already deployed and stable on Render at `https://raina-1.onrender.com/`; do not modify backend code/configuration unless the user explicitly asks.
+- Frontend theme update: the website now uses a global `unified-white-theme` applied from the root layout, with shared CSS enforcing `rgb(255, 255, 255)` as the consistent page, section, panel, and neutral surface color across landing, Evara AI, Bihar AI, product pages, and other frontend routes.
 - The ThreeBackground 3D animation requires WebGL — it gracefully skips if WebGL is unavailable
 - Backend runs `tsx watch` for hot-reload in dev mode
 - Cookie preferences are stored in localStorage under `evara_cookie_prefs`

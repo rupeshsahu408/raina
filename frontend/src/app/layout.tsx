@@ -45,7 +45,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/evara-192.svg" />
         <link rel="manifest" href="/manifest.webmanifest" />
       </head>
-      <body className="min-h-screen antialiased bg-white text-[#1d2226]" suppressHydrationWarning>
+      <body className="unified-white-theme min-h-screen antialiased bg-white text-[#1d2226]" suppressHydrationWarning>
         <ThemeProvider>
           <div className="min-h-screen">{children}</div>
         </ThemeProvider>

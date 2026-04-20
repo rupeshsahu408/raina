@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: rgb(255, 255, 255);
   --foreground: #1d2226;
-  --surface: #f8f9fa;
+  --surface: rgb(255, 255, 255);
   --border: #e8e8e8;
   --text-secondary: #666666;
   --accent: #7c3aed;
@@ -17,9 +17,69 @@
 }
 
 body {
-  background: #ffffff;
+  background: rgb(255, 255, 255);
   color: #1d2226;
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+html,
+body,
+.unified-white-theme {
+  background: rgb(255, 255, 255) !important;
+  color: #1d2226;
+}
+
+.unified-white-theme main,
+.unified-white-theme section,
+.unified-white-theme article,
+.unified-white-theme header,
+.unified-white-theme footer,
+.unified-white-theme nav,
+.unified-white-theme aside,
+.unified-white-theme [class*="bg-gray-"],
+.unified-white-theme [class*="bg-slate-"],
+.unified-white-theme [class*="bg-zinc-"],
+.unified-white-theme [class*="bg-neutral-"],
+.unified-white-theme [class*="bg-stone-"],
+.unified-white-theme [class*="bg-black"],
+.unified-white-theme [class*="bg-[#"],
+.unified-white-theme [class*="bg-white/"],
+.unified-white-theme [class*="bg-gradient-to-"] {
+  background-color: rgb(255, 255, 255) !important;
+  background-image: none !important;
+}
+
+.unified-white-theme [class*="from-"],
+.unified-white-theme [class*="via-"],
+.unified-white-theme [class*="to-"] {
+  --tw-gradient-from: rgb(255, 255, 255) !important;
+  --tw-gradient-via: rgb(255, 255, 255) !important;
+  --tw-gradient-to: rgb(255, 255, 255) !important;
+}
+
+.unified-white-theme .text-white,
+.unified-white-theme .text-transparent,
+.unified-white-theme [class*="text-gray-"],
+.unified-white-theme [class*="text-slate-"],
+.unified-white-theme [class*="text-zinc-"],
+.unified-white-theme [class*="text-neutral-"],
+.unified-white-theme [class*="text-stone-"] {
+  color: #1d2226 !important;
+}
+
+.unified-white-theme [class*="border-gray-"],
+.unified-white-theme [class*="border-slate-"],
+.unified-white-theme [class*="border-zinc-"],
+.unified-white-theme [class*="border-neutral-"],
+.unified-white-theme [class*="border-stone-"],
+.unified-white-theme [class*="border-white/"] {
+  border-color: #e8e8e8 !important;
+}
+
+.unified-white-theme .premium-grid,
+.unified-white-theme [class*="blur-2xl"],
+.unified-white-theme [class*="blur-3xl"] {
+  background-image: none !important;
 }
 
 /* ── Custom scrollbar ── */
@@ -204,5 +264,5 @@ body {
   border-right: 1px solid #e8e8e8;
 }
 .bihar-chat-bg {
-  background: #f8f9fa;
+  background: rgb(255, 255, 255);
 }
