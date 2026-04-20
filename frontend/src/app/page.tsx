@@ -3,6 +3,7 @@ import Link from "next/link";
 import { DemoChatWidget } from "@/components/DemoChatWidget";
 import { IntroVideoSection } from "@/components/IntroVideoSection";
 import { FeedbackReportSection } from "@/components/FeedbackReportSection";
+import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -164,6 +165,7 @@ export default function Home() {
             <Link href="/bihar-ai" className="transition hover:text-zinc-950">Regional</Link>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggleButton />
             <Link href="/login" className="hidden text-sm font-semibold text-zinc-600 transition hover:text-zinc-950 sm:block">
               Log in
             </Link>

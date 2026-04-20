@@ -136,19 +136,21 @@ const iosSteps = [
 
 export default function AppPage() {
   return (
-    <div className="relative min-h-screen bg-white text-[#1d2226] ">
+    <div className="relative min-h-screen bg-[#09090b] text-white">
       {/* Background */}
       <div className="pointer-events-none fixed inset-0 z-0" />
 
       {/* Navigation */}
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-gray-50 backdrop-blur-xl">
+      <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#09090b]/80 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
-            <span className="text-sm font-bold uppercase tracking-widest text-[#1d2226]">Plyndrox</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 shrink-0">
+              <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-9 w-9 object-contain plyndrox-logo-img" />
+            </div>
+            <span className="text-sm font-bold uppercase tracking-widest text-white">Plyndrox</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="hidden text-sm font-medium text-gray-500 transition hover:text-white sm:block">Sign In</Link>
+            <Link href="/login" className="hidden text-sm font-medium text-zinc-400 transition hover:text-white sm:block">Sign In</Link>
             <Link href="/signup" className="rounded-full bg-white px-4 py-2 text-xs font-bold text-black transition hover:scale-105 hover:bg-zinc-200">
               Get Started
             </Link>

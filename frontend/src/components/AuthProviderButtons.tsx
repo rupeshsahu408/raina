@@ -163,8 +163,11 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
   return (
     <div className="mt-6">
       <div className="relative mb-4">
-        <div className="h-px bg-zinc-800" />
-        <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white px-3 text-[10px] uppercase tracking-[0.25em] text-gray-400">
+        <div className="h-px" style={{ background: "var(--border)" }} />
+        <span
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full px-3 text-[10px] uppercase tracking-[0.25em]"
+          style={{ background: "var(--surface)", color: "var(--text-muted)" }}
+        >
           or
         </span>
       </div>
@@ -184,11 +187,14 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
               animationDelay: `${index * 80}ms`,
               opacity: 0,
               transform: "translateY(6px)",
+              border: "1px solid var(--border)",
+              background: "var(--surface)",
+              color: "var(--foreground)",
             }}
-            className="group relative flex h-11 w-full items-center justify-center overflow-hidden rounded-2xl border border-zinc-800 bg-gray-50 text-sm font-medium text-[#1d2226] transition duration-300 hover:-translate-y-0.5 hover:border-zinc-600 hover:bg-gray-50 disabled:opacity-60"
+            className="group relative flex h-11 w-full items-center justify-center overflow-hidden rounded-2xl text-sm font-medium transition duration-300 hover:-translate-y-0.5 disabled:opacity-60"
           >
-            <span className="absolute inset-0 -z-0 bg-gradient-to-r from-pink-500/0 via-purple-500/20 to-sky-500/0 opacity-0 transition group-hover:opacity-100" />
-            <span className="absolute left-4 text-gray-600">
+            <span className="absolute inset-0 -z-0 bg-gradient-to-r from-pink-500/0 via-purple-500/10 to-sky-500/0 opacity-0 transition group-hover:opacity-100" />
+            <span className="absolute left-4" style={{ color: "var(--text-secondary)" }}>
               {item.id === "google" ? (
                 <GoogleIcon />
               ) : item.id === "apple" ? (
@@ -203,24 +209,26 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
       </div>
 
       {error ? (
-        <div className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+        <div className="mt-3 rounded-2xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
           {error}
         </div>
       ) : null}
 
       {showPhoneModal ? (
         <div
-          className="fixed inset-0 z-50 flex items-end bg-white/70 p-4 sm:items-center sm:justify-center"
+          className="fixed inset-0 z-50 flex items-end p-4 sm:items-center sm:justify-center"
+          style={{ background: "rgba(0,0,0,0.4)" }}
           onClick={() => setShowPhoneModal(false)}
         >
           <div
-            className="w-full max-w-md rounded-3xl border border-zinc-800 bg-gray-50 p-4"
+            className="w-full max-w-md rounded-3xl p-4"
+            style={{ border: "1px solid var(--border)", background: "var(--surface)" }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-base font-semibold text-[#1d2226]">
+            <h3 className="text-base font-semibold" style={{ color: "var(--foreground)" }}>
               Verify phone number
             </h3>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs" style={{ color: "var(--text-secondary)" }}>
               Enter your phone in E.164 format (example: +919876543210).
             </p>
 
@@ -230,7 +238,8 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-zinc-800 bg-gray-50 px-3 text-sm outline-none focus:border-zinc-500"
+                  className="h-11 w-full rounded-xl px-3 text-sm outline-none"
+                  style={{ border: "1px solid var(--border)", background: "var(--surface-muted)", color: "var(--foreground)" }}
                   placeholder="+919876543210"
                 />
                 <div id={recaptchaId} />
@@ -238,7 +247,7 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
                   type="button"
                   disabled={sendingCode || phoneNumber.trim().length < 8}
                   onClick={sendCode}
-                  className="h-11 w-full rounded-2xl bg-zinc-100 text-sm font-semibold text-black disabled:opacity-60"
+                  className="h-11 w-full rounded-2xl bg-[#1d2226] text-sm font-semibold text-white disabled:opacity-60"
                 >
                   {sendingCode ? "Sending code..." : "Send OTP"}
                 </button>
@@ -249,14 +258,15 @@ export function AuthProviderButtons({ mode, onSuccess }: Props) {
                   type="text"
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
-                  className="h-11 w-full rounded-xl border border-zinc-800 bg-gray-50 px-3 text-sm outline-none focus:border-zinc-500"
+                  className="h-11 w-full rounded-xl px-3 text-sm outline-none"
+                  style={{ border: "1px solid var(--border)", background: "var(--surface-muted)", color: "var(--foreground)" }}
                   placeholder="Enter OTP"
                 />
                 <button
                   type="button"
                   disabled={verifyingCode || otpCode.trim().length < 4}
                   onClick={verifyCode}
-                  className="h-11 w-full rounded-2xl bg-zinc-100 text-sm font-semibold text-black disabled:opacity-60"
+                  className="h-11 w-full rounded-2xl bg-[#1d2226] text-sm font-semibold text-white disabled:opacity-60"
                 >
                   {verifyingCode ? "Verifying..." : "Verify & Continue"}
                 </button>

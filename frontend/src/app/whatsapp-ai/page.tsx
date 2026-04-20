@@ -2,19 +2,22 @@
 
 export default function WhatsAppAILandingPage() {
   return (
-    <main className="relative min-h-screen bg-white text-[#1d2226]">
+    <main className="relative min-h-screen" style={{ background: "var(--background)", color: "var(--foreground)" }}>
       <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top,rgba(52,211,153,0.08),transparent_60%),radial-gradient(ellipse_at_bottom-right,rgba(16,185,129,0.06),transparent_50%)]" />
 
       <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-0 pt-6 sm:px-6 lg:px-10">
-        <header className="flex items-center justify-between rounded-full border border-gray-200 bg-white/90 px-5 py-4 shadow-sm backdrop-blur-xl">
+        <header className="flex items-center justify-between rounded-full px-5 py-4 shadow-sm backdrop-blur-xl" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
           <a href="/" className="flex items-center gap-3">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 shrink-0">
+              <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-9 w-9 object-contain plyndrox-logo-img" draggable={false} />
+            </div>
             <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Plyndrox Business</span>
           </a>
           <div className="flex items-center gap-3">
             <a
               href="/login?next=/whatsapp-ai/dashboard"
-              className="text-sm font-medium text-gray-600 transition hover:text-[#1d2226]"
+              className="text-sm font-medium transition"
+              style={{ color: "var(--text-secondary)" }}
             >
               Log in
             </a>
@@ -31,10 +34,10 @@ export default function WhatsAppAILandingPage() {
           <p className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
             Next Generation Plyndrox WhatsApp AI
           </p>
-          <h1 className="mt-8 max-w-4xl text-balance text-5xl font-semibold leading-tight text-[#1d2226] sm:text-7xl">
+          <h1 className="mt-8 max-w-4xl text-balance text-5xl font-semibold leading-tight sm:text-7xl" style={{ color: "var(--foreground)" }}>
             Customer support that never sleeps.
           </h1>
-          <p className="mt-6 max-w-2xl text-balance text-base leading-relaxed text-gray-500 sm:text-lg">
+          <p className="mt-6 max-w-2xl text-balance text-base leading-relaxed sm:text-lg" style={{ color: "var(--text-secondary)" }}>
             Connect your WhatsApp Cloud API to Plyndrox&apos;s multilingual intelligence. 
             Automate inquiries, bookings, and support instantly with a deeply 
             human touch.
@@ -49,7 +52,7 @@ export default function WhatsAppAILandingPage() {
             </a>
             <a
               href="/login?next=/whatsapp-ai/dashboard"
-              className="rounded-full border border-gray-200 bg-white px-8 py-3.5 text-sm font-bold text-[#1d2226] shadow-sm transition hover:bg-gray-50"
+              className="rounded-full border border-gray-200 bg-white px-8 py-3.5 text-sm font-bold shadow-sm transition hover:bg-gray-50" style={{ color: "var(--foreground)" }}
             >
               Dashboard Login
             </a>
@@ -71,24 +74,26 @@ export default function WhatsAppAILandingPage() {
               desc: "Trained entirely on your custom business knowledge book.",
             },
           ].map((feature, i) => (
-            <div key={i} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition">
+            <div key={i} className="rounded-2xl p-6 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
               <h3 className="text-lg font-semibold text-emerald-700">{feature.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-gray-500">{feature.desc}</p>
+              <p className="mt-2 text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>{feature.desc}</p>
             </div>
           ))}
         </div>
 
-        <footer className="mt-20 border-t border-gray-200 py-14">
+        <footer className="mt-20 py-14" style={{ borderTop: "1px solid var(--border)" }}>
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <div className="flex items-center gap-3">
-                <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 shrink-0">
+                  <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-9 w-9 object-contain plyndrox-logo-img" draggable={false} />
+                </div>
                 <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Plyndrox AI</span>
               </div>
-              <p className="mt-4 text-sm leading-relaxed text-gray-500">
+              <p className="mt-4 text-sm leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                 Empowering businesses with intelligent WhatsApp automation. Built in India, serving the world.
               </p>
-              <div className="mt-4 space-y-1 text-xs text-gray-400">
+              <div className="mt-4 space-y-1 text-xs" style={{ color: "var(--text-muted)" }}>
                 <p>Co-founders: <span className="text-gray-600">Riley Parker</span> &amp; <span className="text-gray-600">Rupesh Sahu</span></p>
               </div>
             </div>
