@@ -174,6 +174,33 @@ function buildCorsOrigin(): string | string[] | boolean {
 }
 
 const corsOrigin = buildCorsOrigin();
+const publicSubmissionAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function isValidEmail(value: unknown): value is string {
+  return typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+function checkPublicSubmissionLimit(req: express.Request): boolean {
+  const key = req.ip || req.socket.remoteAddress || "unknown";
+  const now = Date.now();
+  const current = publicSubmissionAttempts.get(key);
+  if (!current || current.resetAt < now) {
+    publicSubmissionAttempts.set(key, { count: 1, resetAt: now + 60 * 60 * 1000 });
+    return true;
+  }
+  if (current.count >= 8) return false;
+  current.count += 1;
+  return true;
+}
 
 app.use(
   cors({
@@ -201,6 +228,125 @@ app.get("/health", (_req, res) => {
 
 app.get("/api/health", (_req, res) => {
   res.status(200).send("OK");
+});
+
+app.post("/support/submit", async (req, res) => {
+  try {
+    if (!checkPublicSubmissionLimit(req)) {
+      return res.status(429).json({ error: "Too many submissions. Please try again later." });
+    }
+
+    const {
+      type,
+      name,
+      email,
+      title,
+      message,
+      productArea,
+      category,
+      page,
+      errorKind,
+      severity,
+      steps,
+      expected,
+      actual,
+      browserInfo,
+      currentUrl,
+    } = req.body as Record<string, string>;
+
+    const submissionType = type === "report" ? "report" : type === "feedback" ? "feedback" : "";
+    if (!submissionType) {
+      return res.status(400).json({ error: "Submission type is required." });
+    }
+    if (!isValidEmail(email)) {
+      return res.status(400).json({ error: "A valid email address is required." });
+    }
+    if (!title?.trim() || !message?.trim()) {
+      return res.status(400).json({ error: "Title and details are required." });
+    }
+    if (title.length > 140 || message.length > 4000) {
+      return res.status(400).json({ error: "Please keep your submission shorter." });
+    }
+    if (submissionType === "report" && (!page?.trim() || !errorKind?.trim())) {
+      return res.status(400).json({ error: "Page and error type are required for reports." });
+    }
+
+    const smtpUser = process.env.SMTP_USER ?? "";
+    const smtpPass = process.env.SMTP_PASS ?? "";
+    const smtpHost = process.env.SMTP_HOST ?? "smtp.gmail.com";
+    const ownerEmail = process.env.OWNER_EMAIL || process.env.SUPPORT_EMAIL || smtpUser;
+
+    if (!smtpUser || !smtpPass || !ownerEmail) {
+      return res.status(500).json({ error: "Email service is not configured." });
+    }
+
+    const nodemailer = await import("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: Number(process.env.SMTP_PORT || 465),
+      secure: (process.env.SMTP_SECURE || "true") !== "false",
+      auth: { user: smtpUser, pass: smtpPass },
+    });
+
+    const submittedAt = new Date().toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      dateStyle: "full",
+      timeStyle: "short",
+    });
+    const label = submissionType === "report" ? "Error Report" : "Product Feedback";
+    const accent = submissionType === "report" ? "#ef4444" : "#4f46e5";
+    const safeName = escapeHtml(name || "Anonymous user");
+    const safeEmail = escapeHtml(email.trim());
+    const fields = [
+      ["Name", safeName],
+      ["Email", safeEmail],
+      ["Product area", escapeHtml(productArea || "Not specified")],
+      ["Category", escapeHtml(category || "Not specified")],
+      ["Page", escapeHtml(page || "Not specified")],
+      ["Error type", escapeHtml(errorKind || "Not specified")],
+      ["Severity", escapeHtml(severity || "Not specified")],
+      ["Current URL", escapeHtml(currentUrl || "Not captured")],
+      ["Browser/device", escapeHtml(browserInfo || "Not captured")],
+    ];
+
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+body{font-family:Inter,Segoe UI,Arial,sans-serif;background:#f8fafc;margin:0;padding:0;color:#111827;}
+.wrap{max-width:680px;margin:28px auto;background:#fff;border:1px solid #e5e7eb;border-radius:22px;overflow:hidden;box-shadow:0 18px 50px rgba(15,23,42,.08);}
+.head{background:linear-gradient(135deg,${accent},#111827);padding:30px;color:#fff;}
+.badge{display:inline-block;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.14);border-radius:999px;padding:6px 12px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
+h1{margin:14px 0 6px;font-size:24px;line-height:1.2;}
+.time{margin:0;color:rgba(255,255,255,.78);font-size:13px;}
+.body{padding:28px 30px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.field{border:1px solid #e5e7eb;background:#f9fafb;border-radius:14px;padding:12px;}
+.label{font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#6b7280;margin-bottom:5px;}
+.value{font-size:14px;font-weight:700;color:#111827;word-break:break-word;}
+.block{margin-top:16px;border:1px solid #e5e7eb;border-radius:16px;padding:16px;background:#fff;}
+.text{white-space:pre-wrap;font-size:15px;line-height:1.65;color:#374151;}
+.footer{padding:18px 30px;border-top:1px solid #e5e7eb;background:#f9fafb;font-size:12px;color:#6b7280;}
+@media(max-width:640px){.grid{grid-template-columns:1fr}.wrap{margin:0;border-radius:0}}
+</style></head><body><div class="wrap">
+<div class="head"><span class="badge">New ${label}</span><h1>${escapeHtml(title)}</h1><p class="time">Submitted ${submittedAt} IST from plyndrox.app</p></div>
+<div class="body">
+<div class="grid">${fields.map(([labelText, value]) => `<div class="field"><div class="label">${labelText}</div><div class="value">${value}</div></div>`).join("")}</div>
+<div class="block"><div class="label">User details</div><div class="text">${escapeHtml(message)}</div></div>
+${steps ? `<div class="block"><div class="label">Steps to reproduce</div><div class="text">${escapeHtml(steps)}</div></div>` : ""}
+${expected || actual ? `<div class="block"><div class="label">Expected vs actual</div><div class="text"><strong>Expected:</strong> ${escapeHtml(expected || "Not provided")}<br><br><strong>Actual:</strong> ${escapeHtml(actual || "Not provided")}</div></div>` : ""}
+</div><div class="footer">Reply directly to this email to contact ${safeName}.</div></div></body></html>`;
+
+    await transporter.sendMail({
+      from: `"Plyndrox ${label}" <${smtpUser}>`,
+      to: ownerEmail,
+      subject: `[${label}] ${title.trim()} — ${email.trim()}`,
+      html,
+      replyTo: email.trim(),
+    });
+
+    return res.json({ success: true, message: "Thanks. Your submission was sent successfully." });
+  } catch (err) {
+    console.error("[support] submission failed:", err);
+    return res.status(500).json({ error: "Failed to send your submission. Please try again." });
+  }
 });
 
 // ── Voice transcription via NVIDIA Whisper ─────────────────────────────────

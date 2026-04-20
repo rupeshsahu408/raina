@@ -2,6 +2,7 @@ import { AuthRedirect } from "@/components/AuthRedirect";
 import Link from "next/link";
 import { DemoChatWidget } from "@/components/DemoChatWidget";
 import { IntroVideoSection } from "@/components/IntroVideoSection";
+import { FeedbackReportSection } from "@/components/FeedbackReportSection";
 
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -207,6 +208,15 @@ export default function Home() {
                 </Link>
               </div>
 
+              <div className="animate-fade-in-up delay-300 mt-5 flex flex-wrap items-center justify-center gap-3 text-sm font-semibold">
+                <Link href="#feedback-report" className="rounded-full border border-indigo-100 bg-white/80 px-4 py-2 text-indigo-700 shadow-sm transition hover:border-indigo-200 hover:bg-indigo-50">
+                  Give feedback
+                </Link>
+                <Link href="#feedback-report" className="rounded-full border border-rose-100 bg-white/80 px-4 py-2 text-rose-700 shadow-sm transition hover:border-rose-200 hover:bg-rose-50">
+                  Report an error
+                </Link>
+              </div>
+
               <div className="mt-16 animate-fade-in delay-300 border-t border-zinc-100 pt-10">
                 <div className="mx-auto grid max-w-3xl gap-3 text-left sm:grid-cols-3">
                   {[
@@ -224,6 +234,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <FeedbackReportSection />
 
         <IntroVideoSection />
 
