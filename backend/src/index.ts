@@ -11,6 +11,7 @@ import { inboxRouter, inboxPublicRouter } from "./inbox";
 import { recruitRouter, recruitPublicRouter } from "./recruit";
 import { trackingPublicRouter, trackingAdminRouter } from "./tracking";
 import { ledgerRouter } from "./ledger";
+import { payablesRouter } from "./payables";
 import { connectMongo } from "./db";
 import {
   buildBiharSystemPrompt,
@@ -191,6 +192,7 @@ app.use("/recruit-public", recruitPublicRouter);
 app.use("/recruit", requireFirebaseAuth, recruitRouter);
 app.use("/track", trackingPublicRouter);
 app.use("/admin/tracking", requireFirebaseAuth, trackingAdminRouter);
+app.use("/payables", requireFirebaseAuth, payablesRouter);
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, service: "evara-backend" });

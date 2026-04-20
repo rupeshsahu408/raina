@@ -11,6 +11,16 @@ A multi-platform AI suite with four AI systems:
 - **Frontend** (`frontend/`) — Next.js 16 PWA, port 5000
 - **Backend** (`backend/`) — Express API, port 8080
 
+## Payables AI (Separate SaaS Product — Phase 1 Complete)
+- Route: `/payables`, `/payables/dashboard`, `/payables/upload`, `/payables/invoice/[id]`
+- AI-powered Accounts Payable automation for small businesses
+- Features: Invoice upload (PDF/JPG/PNG), Gmail auto-import, AI data extraction (vendor, amount, due date, line items), approval/rejection workflow, dashboard with stats
+- Backend: `backend/src/payables.ts` — routes at `/payables/*`, uses NVIDIA vision API for OCR
+- Database model: `backend/src/models/Invoice.ts`
+- Frontend pages: `frontend/src/app/payables/` directory
+- Nav entry added to homepage and product cards grid
+- Phase 1 scope: No auto-payment; user reviews and pays manually. Gmail connection reuses existing InboxToken setup.
+
 ## Smart Ledger (Separate SaaS Product)
 - Route: `/ledger`
 - AI-powered accounting system for grain traders (satti digitization)

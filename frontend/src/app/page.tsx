@@ -139,6 +139,7 @@ export default function Home() {
             <Link href="/bihar-ai" className="transition hover:text-[#1d2226]">Bihar AI</Link>
             <Link href="/business-ai" className="transition hover:text-[#1d2226]">Business</Link>
             <Link href="/inbox" className="transition hover:text-[#1d2226]">Inbox AI</Link>
+            <Link href="/payables" className="font-semibold text-violet-600 transition hover:text-violet-700">Payables AI</Link>
             <Link href="/blog" className="transition hover:text-[#1d2226]">Blog</Link>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -256,13 +257,14 @@ export default function Home() {
           <div className="mx-auto max-w-6xl">
             <div className="mb-10 text-center">
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-violet-600">Everything you need</p>
-              <h2 className="mt-3 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl">Three intelligent tools, one platform</h2>
+              <h2 className="mt-3 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl">Four intelligent tools, one platform</h2>
             </div>
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { title: "Personal AI", body: "A gentle daily companion that adapts to your emotional state and remembers what matters.", href: "/chat", accent: "violet", dot: "bg-violet-500" },
                 { title: "Bihar AI", body: "Regional intelligence with cultural context for education, jobs, news, and local knowledge.", href: "/bihar-ai", accent: "sky", dot: "bg-sky-500" },
                 { title: "Business AI", body: "Customer support automation for WhatsApp and website chatbots — pick the tools that fit your business.", href: "/business-ai", accent: "emerald", dot: "bg-emerald-500" },
+                { title: "Payables AI", body: "AI reads your invoices automatically, extracts all data, and organizes everything in one calm dashboard. You review and pay.", href: "/payables", accent: "indigo", dot: "bg-indigo-500" },
               ].map(({ title, body, href, dot }) => (
                 <Link key={title} href={href} className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-gray-300 hover:shadow-md">
                   <div className={`mb-4 h-1.5 w-10 rounded-full ${dot} transition-all group-hover:w-16`} />
