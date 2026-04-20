@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { payablesHeaders } from "@/lib/payablesApi";
 import { onAuthStateChanged } from "firebase/auth";
+import PayablesShell from "@/components/payables/PayablesShell";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
@@ -185,31 +186,17 @@ export default function VendorsPage() {
   const trustedVendors = vendors.filter((v) => trustScore(v).score >= 2).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <button onClick={() => router.push("/payables/dashboard")} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <h1 className="font-semibold text-gray-900 text-sm sm:text-base">Vendor Directory</h1>
-                <p className="text-xs text-gray-500 hidden sm:block">All your suppliers in one place</p>
-              </div>
-            </div>
-          </div>
-          <button onClick={() => user && fetchVendors(user)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Refresh</span>
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+    <PayablesShell
+      pageTitle="Vendor Directory"
+      pageSubtitle="All your suppliers in one place"
+      headerActions={
+        <button onClick={() => user && fetchVendors(user)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span className="hidden sm:inline">Refresh</span>
+        </button>
+      }
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Summary stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
           {[
@@ -350,7 +337,7 @@ export default function VendorsPage() {
             ))}
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </PayablesShell>
   );
 }

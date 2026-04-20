@@ -5,6 +5,7 @@ import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { payablesHeaders } from "@/lib/payablesApi";
+import PayablesShell from "@/components/payables/PayablesShell";
 
 function ArrowLeftIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>;
@@ -29,6 +30,12 @@ function EyeIcon(p: React.SVGProps<SVGSVGElement>) {
 }
 function SpinnerIcon() {
   return <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>;
+}
+function UploadIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
+}
+function LinkIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>;
 }
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
@@ -132,6 +139,14 @@ export default function PayablesSettings() {
   const [previewSubject, setPreviewSubject] = useState<string | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
+  const [gmailEmail, setGmailEmail] = useState<string | null>(null);
+  const [fetchingGmail, setFetchingGmail] = useState(false);
+  const [disconnectingGmail, setDisconnectingGmail] = useState(false);
+  const [gmailMsg, setGmailMsg] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
+  const [supplierPortalUrl, setSupplierPortalUrl] = useState<string | null>(null);
+  const [supplierLinkLoading, setSupplierLinkLoading] = useState(false);
+  const [supplierLinkCopied, setSupplierLinkCopied] = useState(false);
 
   useEffect(() => {
     try {
@@ -171,6 +186,81 @@ export default function PayablesSettings() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch(`${BACKEND}/payables/gmail/status`, { headers: payablesHeaders(user) })
+      .then((r) => r.json())
+      .then((d) => { setGmailConnected(d.connected); setGmailEmail(d.email ?? null); })
+      .catch(() => setGmailConnected(false));
+    fetch(`${BACKEND}/payables/company`, { headers: payablesHeaders(user) })
+      .then((r) => r.json())
+      .then((d) => setSupplierPortalUrl(d.supplierPortalUrl ?? null))
+      .catch(() => {});
+  }, [user]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const result = new URLSearchParams(window.location.search).get("gmail");
+    if (result === "connected") {
+      setGmailConnected(true);
+      setGmailMsg({ text: "Gmail connected successfully. Invoice emails will be auto-imported.", type: "success" });
+      window.history.replaceState({}, "", "/payables/settings");
+    }
+  }, []);
+
+  const connectGmail = async () => {
+    if (!user) return;
+    setFetchingGmail(true);
+    try {
+      const res = await fetch(`${BACKEND}/payables/gmail/auth-url?returnTo=${encodeURIComponent("/payables/settings?gmail=connected")}`, {
+        headers: payablesHeaders(user),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error ?? "Could not start Gmail connection.");
+      window.location.href = data.url;
+    } catch (err) {
+      setGmailMsg({ text: err instanceof Error ? err.message : "Could not start Gmail connection.", type: "error" });
+      setFetchingGmail(false);
+    }
+  };
+
+  const disconnectGmail = async () => {
+    if (!user || !confirm("Disconnect Gmail? You can reconnect at any time.")) return;
+    setDisconnectingGmail(true);
+    try {
+      const res = await fetch(`${BACKEND}/payables/gmail/disconnect`, {
+        method: "DELETE", headers: payablesHeaders(user),
+      });
+      if (res.ok) { setGmailConnected(false); setGmailEmail(null); setGmailMsg({ text: "Gmail disconnected.", type: "info" }); }
+    } catch {
+      setGmailMsg({ text: "Could not disconnect Gmail. Please try again.", type: "error" });
+    } finally {
+      setDisconnectingGmail(false);
+    }
+  };
+
+  const createOrCopySupplierLink = async () => {
+    if (!user) return;
+    setSupplierLinkLoading(true);
+    try {
+      let url = supplierPortalUrl;
+      if (!url) {
+        const res = await fetch(`${BACKEND}/payables/supplier-link`, { headers: payablesHeaders(user) });
+        const data = await res.json();
+        if (!res.ok || !data.url) throw new Error(data.error ?? "Could not create supplier link.");
+        url = data.url;
+        setSupplierPortalUrl(url);
+      }
+      await navigator.clipboard.writeText(url!);
+      setSupplierLinkCopied(true);
+      setTimeout(() => setSupplierLinkCopied(false), 2500);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Could not create supplier link.");
+    } finally {
+      setSupplierLinkLoading(false);
+    }
+  };
 
   const set = <K extends keyof Settings>(key: K, val: Settings[K]) =>
     setSettings((s) => ({ ...s, [key]: val }));
@@ -221,33 +311,27 @@ export default function PayablesSettings() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f8fa]">
-      {/* Top bar */}
-      <div className="sticky top-0 z-10 border-b border-gray-100 bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-4xl items-center gap-4 px-4 py-3 sm:px-6">
-          <Link href="/payables/dashboard" className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 transition hover:text-[#1d2226]">
-            <ArrowLeftIcon className="h-4 w-4" /> Dashboard
-          </Link>
-          <div className="h-4 w-px bg-gray-200" />
-          <h1 className="text-sm font-black text-[#1d2226]">Payables Settings</h1>
-          <div className="ml-auto flex items-center gap-2">
-            {saved && (
-              <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-700">
-                <CheckIcon className="h-3 w-3" /> Saved
-              </span>
-            )}
-            <button
-              onClick={save}
-              disabled={saving}
-              className="flex items-center gap-2 rounded-full bg-[#1d2226] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#2d3238] disabled:opacity-60"
-            >
-              {saving ? <SpinnerIcon /> : null}
-              {saving ? "Saving…" : "Save all changes"}
-            </button>
-          </div>
+    <PayablesShell
+      pageTitle="Settings"
+      pageSubtitle="Workspace, email automation, and integrations"
+      headerActions={
+        <div className="flex items-center gap-2">
+          {saved && (
+            <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-700">
+              <CheckIcon className="h-3 w-3" /> Saved
+            </span>
+          )}
+          <button
+            onClick={save}
+            disabled={saving}
+            className="flex items-center gap-2 rounded-full bg-[#1d2226] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#2d3238] disabled:opacity-60"
+          >
+            {saving ? <SpinnerIcon /> : null}
+            {saving ? "Saving…" : "Save all changes"}
+          </button>
         </div>
-      </div>
-
+      }
+    >
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6">
         {error && (
           <div className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
@@ -401,6 +485,106 @@ export default function PayablesSettings() {
           </p>
         </SectionCard>
 
+        {/* Gmail Integration */}
+        <SectionCard
+          icon={<MailIcon className="h-5 w-5 text-violet-600" />}
+          title="Gmail Integration"
+          subtitle="Connect your Gmail to auto-import invoice emails from your inbox"
+        >
+          {gmailMsg && (
+            <div className={`rounded-xl border px-4 py-3 text-sm flex items-center gap-2 ${gmailMsg.type === "success" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : gmailMsg.type === "error" ? "border-rose-100 bg-rose-50 text-rose-700" : "border-violet-100 bg-violet-50 text-violet-700"}`}>
+              <span className="flex-1">{gmailMsg.text}</span>
+              <button onClick={() => setGmailMsg(null)} className="text-xs opacity-60 hover:opacity-100">✕</button>
+            </div>
+          )}
+          <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+            <div>
+              <p className="text-sm font-semibold text-[#1d2226]">Connection status</p>
+              {gmailConnected && gmailEmail && <p className="text-xs text-gray-400 mt-0.5">{gmailEmail}</p>}
+            </div>
+            {gmailConnected === null ? (
+              <div className="h-6 w-24 animate-pulse rounded-full bg-gray-200" />
+            ) : gmailConnected ? (
+              <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Connected
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 rounded-full bg-gray-200 px-3 py-1 text-xs font-bold text-gray-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-gray-400" /> Not connected
+              </span>
+            )}
+          </div>
+          {gmailConnected === false && (
+            <button
+              onClick={connectGmail}
+              disabled={fetchingGmail}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1d2226] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#2d3238] disabled:opacity-50"
+            >
+              {fetchingGmail ? <SpinnerIcon /> : <MailIcon className="h-4 w-4" />}
+              Connect Gmail
+            </button>
+          )}
+          {gmailConnected === true && (
+            <button
+              onClick={disconnectGmail}
+              disabled={disconnectingGmail}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-rose-100 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 disabled:opacity-50"
+            >
+              {disconnectingGmail ? <SpinnerIcon /> : null}
+              Disconnect Gmail
+            </button>
+          )}
+          <div className="rounded-xl border border-violet-100 bg-violet-50 p-4">
+            <p className="text-xs text-violet-700 leading-relaxed">
+              <strong>How it works:</strong> Connecting Gmail allows Plyndrox to automatically detect invoice emails in your inbox and import them for AI extraction. Emails are scanned, not stored. You can disconnect at any time.
+            </p>
+          </div>
+        </SectionCard>
+
+        {/* Supplier Portal */}
+        <SectionCard
+          icon={<LinkIcon className="h-5 w-5 text-violet-600" />}
+          title="Supplier Portal"
+          subtitle="Let suppliers submit invoices directly via a permanent branded link"
+        >
+          <div>
+            <p className="text-sm font-semibold text-[#1d2226]">Your supplier upload link</p>
+            <p className="mt-1 text-xs leading-5 text-gray-500">
+              Share this permanent link with your vendors. Their invoices appear in your dashboard automatically and AI begins extracting data immediately in the background.
+            </p>
+          </div>
+          {supplierPortalUrl && (
+            <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
+              <p className="truncate text-xs font-mono text-gray-500">{supplierPortalUrl}</p>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={createOrCopySupplierLink}
+              disabled={supplierLinkLoading}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+            >
+              {supplierLinkLoading ? <SpinnerIcon /> : <UploadIcon className="h-4 w-4" />}
+              {supplierPortalUrl ? (supplierLinkCopied ? "Copied!" : "Copy link") : "Create link"}
+            </button>
+            {supplierPortalUrl && (
+              <a
+                href={supplierPortalUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-xl border border-emerald-100 bg-white px-4 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"
+              >
+                Open
+              </a>
+            )}
+          </div>
+          <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+            <p className="text-xs text-emerald-700 leading-relaxed">
+              <strong>Tip:</strong> The supplier portal link is permanent. You can share it with all your vendors and they can use it to upload invoices at any time — no account needed on their end.
+            </p>
+          </div>
+        </SectionCard>
+
         {/* Save button at bottom too */}
         <div className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-sm">
           <div>
@@ -444,6 +628,6 @@ export default function PayablesSettings() {
           </div>
         </div>
       )}
-    </div>
+  </PayablesShell>
   );
 }

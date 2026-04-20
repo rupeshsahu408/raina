@@ -10,6 +10,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
+import PayablesShell from "@/components/payables/PayablesShell";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
@@ -288,29 +289,11 @@ export default function AnalyticsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f7f8fc]">
-      {/* ── Nav ── */}
-      <nav className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-100 bg-white/90 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/payables/dashboard"
-            className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-500 shadow-sm transition hover:border-gray-300 hover:text-[#1d2226]"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Dashboard
-          </Link>
-          <div className="h-4 w-px bg-gray-200" />
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600">
-              <BarChart2 className="h-4 w-4 text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-black text-[#1d2226]">Spend Analytics</p>
-              <p className="text-[10px] text-gray-400 leading-none">Real-time spend intelligence</p>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+    <PayablesShell
+      pageTitle="Spend Analytics"
+      pageSubtitle="Supplier-wise, category-wise, and monthly spend"
+      headerActions={
+        <>
           <button
             onClick={() => fetchData(period, true)}
             disabled={refreshing}
@@ -325,11 +308,11 @@ export default function AnalyticsPage() {
             className="flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-700 shadow-sm transition hover:bg-violet-100 disabled:opacity-40"
           >
             <Download className="h-3.5 w-3.5" />
-            Export CSV
+            <span className="hidden sm:inline">Export CSV</span>
           </button>
-        </div>
-      </nav>
-
+        </>
+      }
+    >
       <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
         {/* ── Header ── */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -664,7 +647,7 @@ export default function AnalyticsPage() {
           Analytics are computed in real-time from your invoice data · Plyndrox Spend Intelligence
         </p>
       </div>
-    </div>
+    </PayablesShell>
   );
 }
 

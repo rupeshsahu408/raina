@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { payablesHeaders } from "@/lib/payablesApi";
+import PayablesShell from "@/components/payables/PayablesShell";
 
 function ArrowLeftIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>;
@@ -535,53 +536,45 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Link href="/payables/dashboard" className="flex items-center gap-1.5 text-sm text-gray-400 transition hover:text-[#1d2226]">
-              <ArrowLeftIcon className="h-4 w-4" /> Dashboard
-            </Link>
-            <span className="text-gray-300">/</span>
-            <span className="text-sm font-black text-[#1d2226]">Invoice</span>
-          </div>
-          <div className="flex items-center gap-2">
+    <PayablesShell
+      pageTitle={invoice.vendor ?? invoice.originalFileName ?? "Invoice"}
+      pageSubtitle={invoice.invoiceNumber ? `Invoice #${invoice.invoiceNumber}` : undefined}
+      headerActions={
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => { setShowEmailModal(true); setEmailMsg(null); setPreviewHtml(null); setEmailOverrideTo(invoice.vendorEmail ?? ""); }}
+            className="flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 shadow-sm transition hover:bg-violet-100"
+          >
+            <MailIcon className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Email supplier</span>
+          </button>
+          <button
+            onClick={reAnalyze}
+            disabled={analysing}
+            title="Re-run AI analysis"
+            className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm transition hover:border-gray-300 disabled:opacity-50"
+          >
+            <RefreshIcon className={`h-3.5 w-3.5 ${analysing ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">{analysing ? "Analysing…" : "Re-analyze"}</span>
+          </button>
+          {!editing && (
             <button
-              onClick={() => { setShowEmailModal(true); setEmailMsg(null); setPreviewHtml(null); setEmailOverrideTo(invoice.vendorEmail ?? ""); }}
-              className="flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 shadow-sm transition hover:bg-violet-100"
+              onClick={() => { setEditing(true); setEditData(invoice); }}
+              className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm transition hover:border-gray-300"
             >
-              <MailIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Email supplier</span>
+              <EditIcon className="h-3.5 w-3.5" /> Edit
             </button>
-            <button
-              onClick={reAnalyze}
-              disabled={analysing}
-              title="Re-run AI analysis"
-              className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm transition hover:border-gray-300 disabled:opacity-50"
-            >
-              <RefreshIcon className={`h-3.5 w-3.5 ${analysing ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">{analysing ? "Analysing…" : "Re-analyze"}</span>
-            </button>
-            {!editing && (
-              <button
-                onClick={() => { setEditing(true); setEditData(invoice); }}
-                className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm transition hover:border-gray-300"
-              >
-                <EditIcon className="h-3.5 w-3.5" /> Edit
-              </button>
-            )}
-            <button
-              onClick={deleteInvoice}
-              className="flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 shadow-sm transition hover:bg-rose-100"
-            >
-              <TrashIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Delete</span>
-            </button>
-          </div>
+          )}
+          <button
+            onClick={deleteInvoice}
+            className="flex items-center gap-1.5 rounded-full border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 shadow-sm transition hover:bg-rose-100"
+          >
+            <TrashIcon className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Delete</span>
+          </button>
         </div>
-      </nav>
-
+      }
+    >
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
         {emailMsg && (
           <div className={`mb-5 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium ${emailMsg.ok ? "border border-emerald-100 bg-emerald-50 text-emerald-700" : "border border-rose-100 bg-rose-50 text-rose-700"}`}>
@@ -1251,6 +1244,6 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
           </div>
         </div>
       )}
-    </div>
+  </PayablesShell>
   );
 }
