@@ -165,6 +165,9 @@ export default function AnalyzePage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AnalyzeData | null>(null);
   const [error, setError] = useState("");
+  const [briefing, setBriefing] = useState<string | null>(null);
+  const [briefingLoading, setBriefingLoading] = useState(false);
+  const [briefingTs, setBriefingTs] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -175,6 +178,20 @@ export default function AnalyzePage() {
       });
       return unsub;
     } catch { setUser(null); setLoading(false); return undefined; }
+  }, []);
+
+  const loadBriefing = useCallback(async (u: { uid: string; token: string }) => {
+    setBriefingLoading(true);
+    setBriefing(null);
+    try {
+      const res = await fetch(`${BACKEND}/payables/analyze/action-plan`, { headers: payablesHeaders(u) });
+      if (res.ok) {
+        const d = await res.json();
+        setBriefing(d.briefing ?? null);
+        setBriefingTs(d.generatedAt ?? null);
+      }
+    } catch { }
+    finally { setBriefingLoading(false); }
   }, []);
 
   const load = useCallback(async () => {
@@ -189,6 +206,7 @@ export default function AnalyzePage() {
   }, [user]);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => { if (user) loadBriefing(user); }, [user, loadBriefing]);
 
   if (!user && !loading) return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-white px-4 text-center">
@@ -279,6 +297,53 @@ export default function AnalyzePage() {
             <p className="mt-4 text-right text-[10px] text-violet-300">
               Last analyzed: {new Date(data.generatedAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
             </p>
+          </div>
+
+          {/* ── Today's Action Plan ── */}
+          <div className="overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-violet-50 bg-gradient-to-r from-violet-50 to-indigo-50 px-5 py-3.5">
+              <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600">
+                  <Sparkles className="h-3.5 w-3.5 text-white" />
+                </div>
+                <span className="text-sm font-black text-[#1d2226]">Today's Action Plan</span>
+                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-700">AI Generated</span>
+              </div>
+              <button
+                onClick={() => user && loadBriefing(user)}
+                disabled={briefingLoading}
+                className="rounded-full p-1.5 text-gray-400 transition hover:bg-violet-100 hover:text-violet-600 disabled:opacity-40"
+                title="Regenerate"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${briefingLoading ? "animate-spin" : ""}`} />
+              </button>
+            </div>
+            <div className="px-5 py-4">
+              {briefingLoading ? (
+                <div className="space-y-2">
+                  <div className="h-4 w-full animate-pulse rounded-lg bg-violet-50" />
+                  <div className="h-4 w-5/6 animate-pulse rounded-lg bg-violet-50" />
+                  <div className="h-4 w-4/6 animate-pulse rounded-lg bg-violet-50" />
+                  <p className="mt-2 flex items-center gap-1.5 text-xs text-violet-400">
+                    <Sparkles className="h-3 w-3 animate-pulse" />
+                    AI is reading your invoices and writing your plan…
+                  </p>
+                </div>
+              ) : briefing ? (
+                <div>
+                  <p className="text-[15px] leading-relaxed text-[#1d2226]">{briefing}</p>
+                  {briefingTs && (
+                    <p className="mt-3 text-right text-[10px] text-gray-300">
+                      Generated {new Date(briefingTs).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2 py-2 text-center">
+                  <p className="text-sm text-gray-400">Could not load action plan. Tap refresh to try again.</p>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* ── Priority Actions ── */}

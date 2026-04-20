@@ -1256,6 +1256,102 @@ payablesRouter.get("/analyze", async (req, res) => {
   }
 });
 
+payablesRouter.get("/analyze/action-plan", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    await connectMongo();
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    const [allInvoices, company] = await Promise.all([
+      Invoice.find({ uid: actor.uid }).lean(),
+      PayablesCompanyProfile.findOne({ uid: actor.uid }).lean() as any,
+    ]);
+
+    const currency = company?.defaultCurrency ?? "INR";
+    const brandName = company?.brandName ?? company?.companyName ?? "your business";
+    const ownerName = company?.ownerName ?? null;
+    const unpaid = allInvoices.filter((inv: any) => !["paid", "rejected"].includes(inv.status));
+    const overdue = unpaid.filter((inv: any) => inv.dueDate && new Date(inv.dueDate) < now);
+    const dueSoon = unpaid.filter((inv: any) => {
+      if (!inv.dueDate) return false;
+      const days = Math.ceil((new Date(inv.dueDate).getTime() - now.getTime()) / 86400000);
+      return days >= 0 && days <= 5;
+    });
+    const criticalFlags = allInvoices.filter((inv: any) => !["rejected"].includes(inv.status) && inv.flags?.some((f: any) => f.severity === "critical"));
+    const pendingApproval = unpaid.filter((inv: any) => inv.status === "pending_approval");
+    const thisMonthTotal = allInvoices.filter((inv: any) => new Date(inv.createdAt) >= startOfMonth).reduce((s: number, i: any) => s + (i.total ?? 0), 0);
+    const lastMonthTotal = allInvoices.filter((inv: any) => { const d = new Date(inv.createdAt); return d >= startOfLastMonth && d <= endOfLastMonth; }).reduce((s: number, i: any) => s + (i.total ?? 0), 0);
+    const d7Amount = unpaid.filter((inv: any) => { if (!inv.dueDate) return false; const d = Math.ceil((new Date(inv.dueDate).getTime() - now.getTime()) / 86400000); return d >= 0 && d <= 7; }).reduce((s: number, i: any) => s + (i.total ?? 0), 0);
+
+    let healthScore = 100;
+    healthScore -= Math.min(overdue.length * 8, 32);
+    healthScore -= Math.min(criticalFlags.length * 12, 24);
+    healthScore -= Math.min(pendingApproval.length * 2, 12);
+    healthScore = Math.max(healthScore, 0);
+
+    const today = now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+    const fmtAmt = (n: number) => { if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`; if (n >= 1000) return `₹${(n / 1000).toFixed(0)}K`; return `₹${n.toLocaleString()}`; };
+
+    const summaryLines = [
+      `Today is ${today}.`,
+      `Business: ${brandName}${ownerName ? `, Contact: ${ownerName}` : ""}.`,
+      `AP Health Score: ${healthScore}/100.`,
+      overdue.length > 0 ? `Overdue invoices: ${overdue.length} (${fmtAmt(overdue.reduce((s: number, i: any) => s + (i.total ?? 0), 0))} total overdue).` : "No overdue invoices.",
+      dueSoon.length > 0 ? `Due in next 5 days: ${dueSoon.length} invoice${dueSoon.length > 1 ? "s" : ""}.` : "",
+      criticalFlags.length > 0 ? `Critical flags: ${criticalFlags.length} invoice${criticalFlags.length > 1 ? "s" : ""} flagged as suspicious.` : "No critical flags.",
+      pendingApproval.length > 0 ? `Pending approval: ${pendingApproval.length} invoice${pendingApproval.length > 1 ? "s" : ""} waiting.` : "",
+      d7Amount > 0 ? `Cash due in next 7 days: ${fmtAmt(d7Amount)}.` : "No payments due in next 7 days.",
+      thisMonthTotal > 0 ? `This month spend so far: ${fmtAmt(thisMonthTotal)}${lastMonthTotal > 0 ? ` (last month: ${fmtAmt(lastMonthTotal)})` : ""}.` : "",
+    ].filter(Boolean).join(" ");
+
+    const prompt = `You are a concise, professional AI finance assistant for a small business accounts payable system called Plyndrox.
+
+Here is today's AP summary for ${brandName}:
+${summaryLines}
+
+Write a "Today's Action Plan" — a sharp, motivating 2-3 sentence briefing that:
+1. Acknowledges the most urgent issue first (overdue invoices, critical flags, or upcoming payments).
+2. Tells the user specifically what they should do today to protect their business.
+3. Ends with one forward-looking note (e.g. cash position, trend, or next priority after today's tasks).
+
+Rules:
+- Write in second person ("You have...", "Your...", "Start by...").
+- Do NOT use bullet points, headers, or markdown. Plain prose only.
+- Keep it under 80 words total.
+- Sound like a trusted CFO advisor, not a robot.
+- If everything looks healthy, acknowledge it warmly and suggest a proactive action.`;
+
+    let briefing = "";
+    try {
+      briefing = await callNvidiaChatCompletions({
+        apiKey: NVIDIA_API_KEY,
+        model: "nvidia/llama-3.1-nemotron-70b-instruct",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.6,
+        max_tokens: 200,
+      });
+      briefing = briefing.replace(/^["']|["']$/g, "").trim();
+    } catch {
+      if (overdue.length > 0) {
+        briefing = `You have ${overdue.length} overdue invoice${overdue.length > 1 ? "s" : ""} that need immediate attention. Start by reviewing and paying the most critical ones to avoid late penalties. Your ${dueSoon.length > 0 ? `${dueSoon.length} upcoming due date${dueSoon.length > 1 ? "s" : ""} in the next 5 days should be your next priority` : "pending approvals should be cleared next"}.`;
+      } else if (criticalFlags.length > 0) {
+        briefing = `Your AP health looks mostly good, but ${criticalFlags.length} invoice${criticalFlags.length > 1 ? "s have" : " has"} been flagged as suspicious. Review these before approving any payments today. Once cleared, focus on processing your pending approvals to keep the workflow moving.`;
+      } else {
+        briefing = `Your accounts payable is in great shape today — no overdue invoices and no critical flags. Take a moment to review any pending approvals and confirm your upcoming payment schedule. Staying proactive now will protect your cash flow for the weeks ahead.`;
+      }
+    }
+
+    res.json({ briefing, generatedAt: now.toISOString(), healthScore });
+  } catch (err) {
+    console.error("Action plan error:", err);
+    res.status(500).json({ error: "Failed to generate action plan" });
+  }
+});
+
 payablesRouter.get("/settings/email-preview", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;
