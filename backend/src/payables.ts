@@ -985,6 +985,277 @@ payablesRouter.put("/personalization", async (req, res) => {
   }
 });
 
+payablesRouter.get("/analyze", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    await connectMongo();
+    const now = new Date();
+    const startOf30 = new Date(now); startOf30.setDate(now.getDate() - 30);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    const [allInvoices, company] = await Promise.all([
+      Invoice.find({ uid: actor.uid }).lean(),
+      PayablesCompanyProfile.findOne({ uid: actor.uid }).lean() as any,
+    ]);
+
+    const active = allInvoices.filter((inv: any) => !["rejected"].includes(inv.status));
+    const unpaid = allInvoices.filter((inv: any) => !["paid", "rejected"].includes(inv.status));
+    const currency = company?.defaultCurrency ?? "INR";
+
+    // ── AP HEALTH SCORE ──────────────────────────────────────────────
+    let score = 100;
+    const overdue = unpaid.filter((inv: any) => inv.dueDate && new Date(inv.dueDate) < now);
+    const criticalFlags = active.filter((inv: any) => inv.flags?.some((f: any) => f.severity === "critical"));
+    const warningFlags = active.filter((inv: any) => inv.flags?.some((f: any) => f.severity === "warning"));
+    const processingCount = allInvoices.filter((inv: any) => inv.status === "processing").length;
+    score -= Math.min(overdue.length * 8, 32);
+    score -= Math.min(criticalFlags.length * 12, 24);
+    score -= Math.min(warningFlags.length * 4, 16);
+    score -= Math.min(processingCount * 3, 12);
+    if (score > 90 && overdue.length === 0 && criticalFlags.length === 0) score = Math.min(score, 98);
+    score = Math.max(score, 0);
+
+    let healthLabel = "Excellent";
+    let healthColor = "green";
+    if (score < 50) { healthLabel = "Critical"; healthColor = "red"; }
+    else if (score < 70) { healthLabel = "Needs Attention"; healthColor = "amber"; }
+    else if (score < 85) { healthLabel = "Good"; healthColor = "blue"; }
+
+    // ── PRIORITY ACTIONS ─────────────────────────────────────────────
+    const priorityActions: Array<{ id: string; type: string; severity: string; title: string; description: string; invoiceId?: string; amount?: number; currency?: string; vendor?: string }> = [];
+
+    overdue.slice(0, 5).forEach((inv: any) => {
+      const daysLate = Math.ceil((now.getTime() - new Date(inv.dueDate).getTime()) / 86400000);
+      priorityActions.push({
+        id: `overdue-${inv._id}`,
+        type: "overdue",
+        severity: daysLate > 7 ? "critical" : "warning",
+        title: `Overdue by ${daysLate} day${daysLate !== 1 ? "s" : ""}`,
+        description: `Invoice from ${inv.vendor ?? "Unknown Vendor"} was due on ${new Date(inv.dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`,
+        invoiceId: inv._id.toString(),
+        amount: inv.total,
+        currency: inv.currency ?? currency,
+        vendor: inv.vendor,
+      });
+    });
+
+    const dueSoon = unpaid.filter((inv: any) => {
+      if (!inv.dueDate) return false;
+      const daysLeft = Math.ceil((new Date(inv.dueDate).getTime() - now.getTime()) / 86400000);
+      return daysLeft >= 0 && daysLeft <= 5;
+    });
+    dueSoon.slice(0, 3).forEach((inv: any) => {
+      const daysLeft = Math.ceil((new Date(inv.dueDate).getTime() - now.getTime()) / 86400000);
+      priorityActions.push({
+        id: `due-soon-${inv._id}`,
+        type: "due_soon",
+        severity: daysLeft <= 2 ? "warning" : "info",
+        title: `Due in ${daysLeft === 0 ? "today" : `${daysLeft} day${daysLeft !== 1 ? "s" : ""}`}`,
+        description: `Invoice from ${inv.vendor ?? "Unknown Vendor"} — act before the deadline`,
+        invoiceId: inv._id.toString(),
+        amount: inv.total,
+        currency: inv.currency ?? currency,
+        vendor: inv.vendor,
+      });
+    });
+
+    criticalFlags.slice(0, 3).forEach((inv: any) => {
+      const flag = inv.flags.find((f: any) => f.severity === "critical");
+      priorityActions.push({
+        id: `flag-${inv._id}`,
+        type: "flag",
+        severity: "critical",
+        title: "AI flagged this invoice",
+        description: flag?.message ?? `Suspicious activity detected on invoice from ${inv.vendor ?? "Unknown"}`,
+        invoiceId: inv._id.toString(),
+        amount: inv.total,
+        currency: inv.currency ?? currency,
+        vendor: inv.vendor,
+      });
+    });
+
+    const pendingApproval = unpaid.filter((inv: any) => inv.status === "pending_approval");
+    if (pendingApproval.length > 3) {
+      priorityActions.push({
+        id: "approval-backlog",
+        type: "backlog",
+        severity: "warning",
+        title: `${pendingApproval.length} invoices awaiting approval`,
+        description: "Your approval queue is building up. Review and approve or reject them.",
+      });
+    }
+
+    // ── DUPLICATE DETECTION ──────────────────────────────────────────
+    const duplicates: Array<{ invoiceId: string; matchId: string; vendor: string; amount: number; currency: string; reason: string; confidence: string }> = [];
+    const seen: Map<string, any> = new Map();
+    const extracted = active.filter((inv: any) => inv.status !== "processing" && inv.vendor && inv.total);
+    for (const inv of extracted) {
+      const vendor = (inv.vendor ?? "").toLowerCase().trim();
+      const amount = Math.round((inv.total ?? 0) * 100) / 100;
+      const dateStr = inv.invoiceDate ? new Date(inv.invoiceDate).toDateString() : "";
+      const exactKey = `${vendor}:${amount}:${inv.invoiceNumber ?? ""}`;
+      const approxKey = `${vendor}:${amount}`;
+
+      if (inv.invoiceNumber && seen.has(exactKey)) {
+        const prev = seen.get(exactKey);
+        duplicates.push({ invoiceId: inv._id.toString(), matchId: prev._id.toString(), vendor: inv.vendor, amount, currency: inv.currency ?? currency, reason: "Same vendor, same amount, same invoice number", confidence: "High" });
+      } else if (seen.has(approxKey)) {
+        const prev = seen.get(approxKey);
+        const daysDiff = Math.abs((new Date(inv.createdAt).getTime() - new Date(prev.createdAt).getTime()) / 86400000);
+        if (daysDiff <= 14) {
+          duplicates.push({ invoiceId: inv._id.toString(), matchId: prev._id.toString(), vendor: inv.vendor, amount, currency: inv.currency ?? currency, reason: `Same vendor and amount, ${Math.round(daysDiff)} day${daysDiff !== 1 ? "s" : ""} apart`, confidence: daysDiff <= 3 ? "High" : "Medium" });
+        }
+      }
+      if (!seen.has(exactKey)) seen.set(exactKey, inv);
+      if (!seen.has(approxKey)) seen.set(approxKey, inv);
+    }
+
+    // ── FRAUD / ANOMALY SIGNALS ──────────────────────────────────────
+    const fraudSignals: Array<{ invoiceId: string; vendor: string; type: string; description: string; severity: string }> = [];
+    const vendorBankMap: Map<string, string> = new Map();
+    const vendorGstinMap: Map<string, string> = new Map();
+    const vendorAmounts: Map<string, number[]> = new Map();
+
+    const sortedByDate = [...active].sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    for (const inv of sortedByDate) {
+      const vendor = (inv.vendor ?? "").toLowerCase().trim();
+      if (!vendor) continue;
+      const acct = inv.bankDetails?.accountNumber ?? "";
+      const gstin = inv.supplierGstin ?? "";
+      const amt = inv.total ?? 0;
+
+      if (acct && vendorBankMap.has(vendor) && vendorBankMap.get(vendor) !== acct) {
+        fraudSignals.push({ invoiceId: inv._id.toString(), vendor: inv.vendor, type: "bank_change", description: `Bank account changed from previous invoice — verify with ${inv.vendor} before paying`, severity: "critical" });
+      }
+      if (gstin && vendorGstinMap.has(vendor) && vendorGstinMap.get(vendor) !== gstin) {
+        fraudSignals.push({ invoiceId: inv._id.toString(), vendor: inv.vendor, type: "gstin_mismatch", description: `GSTIN changed from previous invoice — possible fraud indicator`, severity: "critical" });
+      }
+      if (amt > 0 && vendorAmounts.has(vendor)) {
+        const prevAmounts = vendorAmounts.get(vendor)!;
+        const avg = prevAmounts.reduce((s, x) => s + x, 0) / prevAmounts.length;
+        if (avg > 0 && amt > avg * 2.5) {
+          fraudSignals.push({ invoiceId: inv._id.toString(), vendor: inv.vendor, type: "amount_spike", description: `Amount is ${Math.round(amt / avg)}× higher than this vendor's average — review carefully`, severity: "warning" });
+        }
+      }
+
+      if (acct && !vendorBankMap.has(vendor)) vendorBankMap.set(vendor, acct);
+      if (gstin && !vendorGstinMap.has(vendor)) vendorGstinMap.set(vendor, gstin);
+      if (!vendorAmounts.has(vendor)) vendorAmounts.set(vendor, []);
+      vendorAmounts.get(vendor)!.push(amt);
+    }
+
+    // ── CASH FORECAST ─────────────────────────────────────────────────
+    const forecastBuckets = { d7: 0, d14: 0, d30: 0, d7Count: 0, d14Count: 0, d30Count: 0 };
+    unpaid.forEach((inv: any) => {
+      if (!inv.dueDate || !inv.total) return;
+      const days = Math.ceil((new Date(inv.dueDate).getTime() - now.getTime()) / 86400000);
+      if (days >= 0 && days <= 7) { forecastBuckets.d7 += inv.total; forecastBuckets.d7Count++; }
+      if (days >= 0 && days <= 14) { forecastBuckets.d14 += inv.total; forecastBuckets.d14Count++; }
+      if (days >= 0 && days <= 30) { forecastBuckets.d30 += inv.total; forecastBuckets.d30Count++; }
+    });
+
+    // Daily breakdown for sparkline (next 14 days)
+    const dailyForecast: Array<{ day: string; amount: number }> = [];
+    for (let i = 0; i <= 13; i++) {
+      const d = new Date(now); d.setDate(now.getDate() + i);
+      const dayStr = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      const amount = unpaid
+        .filter((inv: any) => inv.dueDate && Math.ceil((new Date(inv.dueDate).getTime() - now.getTime()) / 86400000) === i && inv.total)
+        .reduce((s: number, inv: any) => s + (inv.total ?? 0), 0);
+      dailyForecast.push({ day: dayStr, amount });
+    }
+
+    // ── VENDOR INTELLIGENCE ───────────────────────────────────────────
+    const vendorMap: Map<string, { count: number; total: number; currency: string; lastSeen: Date; isNew: boolean }> = new Map();
+    active.forEach((inv: any) => {
+      const vname = inv.vendor ?? "Unknown";
+      const existing = vendorMap.get(vname);
+      const invDate = new Date(inv.createdAt);
+      const isNew = invDate >= startOf30;
+      if (existing) {
+        existing.count++;
+        existing.total += inv.total ?? 0;
+        if (invDate > existing.lastSeen) existing.lastSeen = invDate;
+      } else {
+        vendorMap.set(vname, { count: 1, total: inv.total ?? 0, currency: inv.currency ?? currency, lastSeen: invDate, isNew });
+      }
+    });
+    const topVendors = [...vendorMap.entries()]
+      .sort((a, b) => b[1].total - a[1].total)
+      .slice(0, 6)
+      .map(([name, data]) => ({ name, ...data, lastSeen: data.lastSeen.toISOString() }));
+    const newVendors = [...vendorMap.entries()]
+      .filter(([, d]) => d.isNew && d.count <= 2)
+      .slice(0, 5)
+      .map(([name, data]) => ({ name, ...data, lastSeen: data.lastSeen.toISOString() }));
+    const totalVendors = vendorMap.size;
+
+    // ── EXCEPTION REPORT ─────────────────────────────────────────────
+    const exceptions: Array<{ invoiceId: string; vendor: string; amount: number; currency: string; reasons: string[]; severity: string }> = [];
+    unpaid.filter((inv: any) => inv.status !== "processing").forEach((inv: any) => {
+      const reasons: string[] = [];
+      if (!inv.dueDate) reasons.push("No due date — payment timeline unknown");
+      if (!inv.invoiceNumber) reasons.push("Missing invoice number");
+      if (!inv.total || inv.total === 0) reasons.push("Zero or missing amount");
+      if (inv.confidence != null && inv.confidence < 0.6) reasons.push(`Low AI confidence (${Math.round((inv.confidence ?? 0) * 100)}%) — manual review needed`);
+      if (inv.isNewVendor) reasons.push("First invoice from this vendor");
+      if (inv.flags?.some((f: any) => f.severity === "critical")) {
+        inv.flags.filter((f: any) => f.severity === "critical").forEach((f: any) => reasons.push(f.message));
+      }
+      if (reasons.length > 0) {
+        const hasCritical = inv.flags?.some((f: any) => f.severity === "critical") || !inv.total;
+        exceptions.push({ invoiceId: inv._id.toString(), vendor: inv.vendor ?? "Unknown", amount: inv.total ?? 0, currency: inv.currency ?? currency, reasons, severity: hasCritical ? "critical" : "warning" });
+      }
+    });
+
+    // ── MONTH-OVER-MONTH ──────────────────────────────────────────────
+    const thisMonthInvs = allInvoices.filter((inv: any) => new Date(inv.createdAt) >= startOfMonth);
+    const lastMonthInvs = allInvoices.filter((inv: any) => {
+      const d = new Date(inv.createdAt);
+      return d >= startOfLastMonth && d <= endOfLastMonth;
+    });
+    const momThis = { count: thisMonthInvs.length, total: thisMonthInvs.reduce((s: number, i: any) => s + (i.total ?? 0), 0) };
+    const momLast = { count: lastMonthInvs.length, total: lastMonthInvs.reduce((s: number, i: any) => s + (i.total ?? 0), 0) };
+    const momCountChange = momLast.count > 0 ? Math.round(((momThis.count - momLast.count) / momLast.count) * 100) : null;
+    const momSpendChange = momLast.total > 0 ? Math.round(((momThis.total - momLast.total) / momLast.total) * 100) : null;
+    const approvedThis = thisMonthInvs.filter((i: any) => i.approvedAt).length;
+    const avgApprovalDays = approvedThis > 0
+      ? Math.round(thisMonthInvs.filter((i: any) => i.approvedAt).reduce((s: number, i: any) => s + Math.abs((new Date(i.approvedAt).getTime() - new Date(i.createdAt).getTime()) / 86400000), 0) / approvedThis)
+      : null;
+
+    res.json({
+      generatedAt: now.toISOString(),
+      currency,
+      healthScore: score,
+      healthLabel,
+      healthColor,
+      priorityActions,
+      duplicates,
+      fraudSignals,
+      cashForecast: { ...forecastBuckets, dailyForecast },
+      vendorIntelligence: { topVendors, newVendors, totalVendors },
+      exceptions,
+      monthOverMonth: { thisMonth: momThis, lastMonth: momLast, countChange: momCountChange, spendChange: momSpendChange, avgApprovalDays },
+      summary: {
+        totalActive: active.length,
+        overdueCount: overdue.length,
+        overdueAmount: overdue.reduce((s: number, i: any) => s + (i.total ?? 0), 0),
+        pendingApprovalCount: pendingApproval.length,
+        flaggedCount: criticalFlags.length + warningFlags.length,
+        duplicateCount: duplicates.length,
+        fraudCount: fraudSignals.length,
+        exceptionCount: exceptions.length,
+      },
+    });
+  } catch (err) {
+    console.error("Analyze error:", err);
+    res.status(500).json({ error: "Failed to generate analysis" });
+  }
+});
+
 payablesRouter.get("/settings/email-preview", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;
