@@ -52,6 +52,28 @@ const nextConfig: NextConfig = {
         async headers() {
           return [
             {
+              // Long-lived cache for immutable Next.js static chunks
+              source: "/_next/static/:path*",
+              headers: [
+                { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+              ],
+            },
+            {
+              // Long-lived cache for public static assets (SVG, fonts, icons)
+              source: "/:path((?!_next).*)\\.(?:svg|png|jpg|jpeg|webp|avif|ico|woff|woff2|ttf|otf|eot)$",
+              headers: [
+                { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+              ],
+            },
+            {
+              // Medium cache for HTML (allow revalidation)
+              source: "/(.*)",
+              headers: [
+                { key: "X-Content-Type-Options", value: "nosniff" },
+                { key: "X-Frame-Options", value: "SAMEORIGIN" },
+              ],
+            },
+            {
               // Allow any website to call the Plyndrox Web API (needed for the embedded widget)
               source: "/api/ibara/:path*",
               headers: [
