@@ -1,6 +1,7 @@
 import { AuthRedirect } from "@/components/AuthRedirect";
 import Link from "next/link";
 import { DemoChatWidget } from "@/components/DemoChatWidget";
+import { IntroVideoSection } from "@/components/IntroVideoSection";
 
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -223,6 +224,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <IntroVideoSection />
 
         {/* Core Product Suite - Bento Grid */}
         <section className="py-24 bg-white relative">
