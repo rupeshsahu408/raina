@@ -3,7 +3,8 @@
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { getFirebaseAuth } from "@/lib/firebaseClient";
 
 function ArrowLeftIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -112,17 +113,23 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      if (u) {
-        const token = await u.getIdToken();
-        setUser({ uid: u.uid, token });
-      } else {
-        setUser(null);
-        setLoading(false);
-      }
-    });
-    return unsub;
+    try {
+      const auth = getFirebaseAuth();
+      const unsub = onAuthStateChanged(auth, async (u) => {
+        if (u) {
+          const token = await u.getIdToken();
+          setUser({ uid: u.uid, token });
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
+      });
+      return unsub;
+    } catch {
+      setUser(null);
+      setLoading(false);
+      return undefined;
+    }
   }, []);
 
   useEffect(() => {

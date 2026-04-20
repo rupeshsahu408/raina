@@ -12,13 +12,16 @@ A multi-platform AI suite with four AI systems:
 - **Backend** (`backend/`) — Express API, port 8080
 
 ## Payables AI (Separate SaaS Product — Phase 1 Complete)
-- Route: `/payables`, `/payables/dashboard`, `/payables/upload`, `/payables/invoice/[id]`
+- Route: `/payables`, `/payables/onboarding`, `/payables/dashboard`, `/payables/upload`, `/payables/invoice/[id]`
 - AI-powered Accounts Payable automation for small businesses
-- Features: Invoice upload (PDF/JPG/PNG), Gmail auto-import, AI data extraction (vendor, amount, due date, line items), approval/rejection workflow, dashboard with stats
+- **Landing page** (`/payables`): Full redesign — hero with mock dashboard preview, stats bar, "How it works" 4-step section, features grid, testimonials, transparent roadmap ("What's included"), CTA section
+- **Onboarding** (`/payables/onboarding`): 3-step wizard — Company info (name, industry, monthly invoice volume) → Gmail connect check → Completion. Stores completion state in localStorage.
+- **Dashboard** (`/payables/dashboard`): Stats cards (total, pending, approved, processing), upcoming due dates sidebar, overdue alert banners, quick actions sidebar, Gmail fetch, filter tabs (all/ready/pending/approved/rejected/processing), invoice list with status badges and overdue highlighting
+- **Upload** (`/payables/upload`): Drag-and-drop redesign — clear idle/file-selected/uploading/success states, file type badges, tips panel
+- **Invoice detail** (`/payables/invoice/[id]`): Full view, AI confidence meter, edit/approve/reject workflow, line items table, rejection modal with reason
 - Backend: `backend/src/payables.ts` — routes at `/payables/*`, uses NVIDIA vision API for OCR
 - Database model: `backend/src/models/Invoice.ts`
-- Frontend pages: `frontend/src/app/payables/` directory
-- Nav entry added to homepage and product cards grid
+- All pages use `getFirebaseAuth()` from `@/lib/firebaseClient` (not raw `getAuth()`) to prevent initialization errors
 - Phase 1 scope: No auto-payment; user reviews and pays manually. Gmail connection reuses existing InboxToken setup.
 
 ## Smart Ledger (Separate SaaS Product)
