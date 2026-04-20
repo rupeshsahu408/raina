@@ -1745,7 +1745,7 @@ payablesRouter.get("/settings/email-preview", async (req, res) => {
   }
 });
 
-payablesRouter.get("/team/invite-info", async (req, res) => {
+payablesPublicRouter.get("/team/invite-info", async (req, res) => {
   const token = String(req.query.token ?? "").trim();
   if (!token) return res.status(400).json({ error: "Token is required" });
   await connectMongo();
