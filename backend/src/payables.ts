@@ -55,6 +55,28 @@ const PayablesCompanyProfile =
         autoEmailOnApprove: { type: Boolean, default: true },
         autoEmailOnReject: { type: Boolean, default: true },
         autoEmailOnFlag: { type: Boolean, default: false },
+        // Personalization fields
+        logoBase64: String,
+        logoMimeType: String,
+        brandDescription: String,
+        ownerName: String,
+        teamSize: String,
+        gstNumber: String,
+        businessType: String,
+        businessCity: String,
+        websiteUrl: String,
+        preferredPaymentMethod: String,
+        autoApprovalThreshold: Number,
+        fiscalYear: { type: String, default: "april-march" },
+        expenseCategories: [String],
+        vendorCountRange: String,
+        hasInternationalInvoices: { type: Boolean, default: false },
+        preferredLanguage: { type: String, default: "english" },
+        aiTone: { type: String, default: "professional" },
+        alertMode: { type: String, default: "realtime" },
+        financeContactEmail: String,
+        approvalHierarchy: { type: String, default: "flat" },
+        personalizationDone: { type: Boolean, default: false },
       },
       { timestamps: true }
     )
@@ -888,6 +910,78 @@ payablesRouter.patch("/settings", async (req, res) => {
     res.json({ success: true });
   } catch {
     res.status(500).json({ error: "Failed to save settings" });
+  }
+});
+
+payablesRouter.get("/personalization", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    await connectMongo();
+    const company = await PayablesCompanyProfile.findOne({ uid: actor.uid }).lean() as any;
+    if (!company) return res.json({ personalizationDone: false });
+    res.json({
+      personalizationDone: company.personalizationDone ?? false,
+      brandName: company.brandName ?? "",
+      brandDescription: company.brandDescription ?? "",
+      ownerName: company.ownerName ?? "",
+      teamSize: company.teamSize ?? "",
+      logoBase64: company.logoBase64 ?? "",
+      logoMimeType: company.logoMimeType ?? "",
+      gstNumber: company.gstNumber ?? "",
+      businessType: company.businessType ?? "",
+      businessCity: company.businessCity ?? "",
+      websiteUrl: company.websiteUrl ?? "",
+      preferredPaymentMethod: company.preferredPaymentMethod ?? "",
+      autoApprovalThreshold: company.autoApprovalThreshold ?? null,
+      fiscalYear: company.fiscalYear ?? "april-march",
+      expenseCategories: company.expenseCategories ?? [],
+      vendorCountRange: company.vendorCountRange ?? "",
+      hasInternationalInvoices: company.hasInternationalInvoices ?? false,
+      preferredLanguage: company.preferredLanguage ?? "english",
+      aiTone: company.aiTone ?? "professional",
+      alertMode: company.alertMode ?? "realtime",
+      financeContactEmail: company.financeContactEmail ?? "",
+      approvalHierarchy: company.approvalHierarchy ?? "flat",
+      defaultCurrency: company.defaultCurrency ?? "INR",
+      industry: company.industry ?? "",
+      companyName: company.companyName ?? "",
+    });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch personalization" });
+  }
+});
+
+payablesRouter.put("/personalization", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  try {
+    await connectMongo();
+    const existing = await PayablesCompanyProfile.findOne({ uid: actor.uid }).lean() as any;
+    if (!existing) return res.status(404).json({ error: "Company profile not found. Complete onboarding first." });
+    const allowed = [
+      "brandName", "brandDescription", "ownerName", "teamSize",
+      "logoBase64", "logoMimeType",
+      "gstNumber", "businessType", "businessCity", "websiteUrl",
+      "preferredPaymentMethod", "autoApprovalThreshold", "fiscalYear",
+      "expenseCategories", "vendorCountRange", "hasInternationalInvoices",
+      "preferredLanguage", "aiTone", "alertMode",
+      "financeContactEmail", "approvalHierarchy", "defaultCurrency",
+    ];
+    const update: Record<string, unknown> = { personalizationDone: true };
+    for (const key of allowed) {
+      if (Object.prototype.hasOwnProperty.call(req.body, key)) update[key] = req.body[key];
+    }
+    await PayablesCompanyProfile.findOneAndUpdate(
+      { uid: actor.uid },
+      { $set: update },
+      { new: true }
+    );
+    await audit(actor.uid, undefined, "personalization_saved", actor, { fields: Object.keys(update) });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: "Failed to save personalization" });
   }
 });
 

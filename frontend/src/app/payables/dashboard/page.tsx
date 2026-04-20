@@ -133,6 +133,14 @@ interface CompanyProfile {
   onboarded?: boolean;
 }
 
+interface PersonalizationProfile {
+  brandName?: string;
+  logoBase64?: string;
+  logoMimeType?: string;
+  ownerName?: string;
+  personalizationDone?: boolean;
+}
+
 interface NotificationItem {
   _id: string;
   title: string;
@@ -195,6 +203,7 @@ export default function PayablesDashboard() {
   const [searchInput, setSearchInput] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "amount_high" | "amount_low" | "due_soon">("newest");
   const [companyData, setCompanyData] = useState<CompanyProfile>({});
+  const [personalization, setPersonalization] = useState<PersonalizationProfile>({});
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -221,13 +230,14 @@ export default function PayablesDashboard() {
       const headers = payablesHeaders(user);
       const filterParam = activeFilter === "flagged" ? "all&flagged=true" : `status=${activeFilter}`;
       const searchParam = search.trim() ? `&q=${encodeURIComponent(search.trim())}` : "";
-      const [invRes, allInvRes, statsRes, gmailRes, companyRes, notificationRes] = await Promise.all([
+      const [invRes, allInvRes, statsRes, gmailRes, companyRes, notificationRes, personRes] = await Promise.all([
         fetch(`${BACKEND}/payables/invoices?${filterParam}${searchParam}&limit=50`, { headers }),
         fetch(`${BACKEND}/payables/invoices?status=all&limit=100`, { headers }),
         fetch(`${BACKEND}/payables/invoices/stats`, { headers }),
         fetch(`${BACKEND}/payables/gmail/status`, { headers }),
         fetch(`${BACKEND}/payables/company`, { headers }),
         fetch(`${BACKEND}/payables/notifications`, { headers }),
+        fetch(`${BACKEND}/payables/personalization`, { headers }),
       ]);
       if (invRes.ok) { const d = await invRes.json(); setInvoices(d.invoices ?? []); }
       if (allInvRes.ok) { const d = await allInvRes.json(); setAllInvoices(d.invoices ?? []); }
@@ -239,6 +249,7 @@ export default function PayablesDashboard() {
         setNotifications(d.notifications ?? []);
         setUnreadCount(d.unreadCount ?? 0);
       }
+      if (personRes.ok) setPersonalization(await personRes.json());
     } catch (e) { console.error(e); }
     finally { if (!silent) setLoading(false); }
   }, [user, activeFilter, search]);
@@ -431,9 +442,18 @@ export default function PayablesDashboard() {
       <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
+            {personalization.logoBase64 ? (
+              <img
+                src={`data:${personalization.logoMimeType ?? "image/png"};base64,${personalization.logoBase64}`}
+                alt="brand logo"
+                className="h-7 w-7 rounded-lg object-contain"
+              />
+            ) : null}
             <Link href="/payables" className="flex items-center gap-1.5 text-sm text-gray-400 transition hover:text-[#1d2226]">
-              <ArrowLeftIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Payables AI</span>
+              <ArrowLeftIcon className={`h-4 w-4 ${personalization.logoBase64 ? "hidden sm:block" : ""}`} />
+              <span className={`hidden sm:inline ${personalization.brandName ? "font-semibold text-[#1d2226]" : ""}`}>
+                {personalization.brandName || "Payables AI"}
+              </span>
             </Link>
             <span className="text-gray-300">/</span>
             <span className="text-sm font-black text-[#1d2226]">Dashboard</span>
@@ -455,6 +475,13 @@ export default function PayablesDashboard() {
               <UploadIcon className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Upload</span>
             </Link>
+            <Link
+              href="/payables/setup"
+              className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white p-2 text-gray-400 shadow-sm transition hover:border-violet-300 hover:text-violet-600"
+              title="Workspace Setup & Personalization"
+            >
+              <SettingsIcon className="h-4 w-4" />
+            </Link>
             <button onClick={() => fetchData()} className="rounded-full border border-gray-200 bg-white p-2 text-gray-400 shadow-sm transition hover:border-gray-300 hover:text-[#1d2226]" title="Refresh">
               <RefreshIcon className="h-4 w-4" />
             </button>
@@ -467,9 +494,17 @@ export default function PayablesDashboard() {
         <div className="mb-7 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-[#1d2226] sm:text-3xl">
-              {companyData.companyName ? `${companyData.companyName}'s Invoices` : "Invoice Dashboard"}
+              {personalization.brandName
+                ? `${personalization.brandName}'s Invoices`
+                : companyData.companyName
+                ? `${companyData.companyName}'s Invoices`
+                : "Invoice Dashboard"}
             </h1>
-            <p className="mt-1 text-sm text-gray-400">Your invoices, checked by AI for issues before you act.</p>
+            <p className="mt-1 text-sm text-gray-400">
+              {personalization.ownerName
+                ? `Welcome back, ${personalization.ownerName}. Your invoices are checked by AI before you act.`
+                : "Your invoices, checked by AI for issues before you act."}
+            </p>
           </div>
           {!loading && stats && stats.total === 0 && (
             <Link href="/payables/onboarding" className="text-xs font-semibold text-violet-600 underline hover:no-underline">
