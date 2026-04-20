@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
@@ -199,6 +199,8 @@ export default function PayablesDashboard() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [processingNotice, setProcessingNotice] = useState<string | null>(null);
+  const previousProcessingCount = useRef(0);
 
   useEffect(() => {
     try {
@@ -211,9 +213,10 @@ export default function PayablesDashboard() {
     } catch { setUser(null); setLoading(false); return undefined; }
   }, []);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (options?: { silent?: boolean }) => {
     if (!user) return;
-    setLoading(true);
+    const silent = options?.silent ?? false;
+    if (!silent) setLoading(true);
     try {
       const headers = payablesHeaders(user);
       const filterParam = activeFilter === "flagged" ? "all&flagged=true" : `status=${activeFilter}`;
@@ -237,10 +240,27 @@ export default function PayablesDashboard() {
         setUnreadCount(d.unreadCount ?? 0);
       }
     } catch (e) { console.error(e); }
-    finally { setLoading(false); }
+    finally { if (!silent) setLoading(false); }
   }, [user, activeFilter, search]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  useEffect(() => {
+    const processingCount = allInvoices.filter((inv) => inv.status === "processing").length;
+    if (previousProcessingCount.current > 0 && processingCount === 0) {
+      setProcessingNotice("AI processing finished. The latest invoice data is ready for review.");
+    }
+    if (processingCount > 0) setProcessingNotice(null);
+    previousProcessingCount.current = processingCount;
+  }, [allInvoices]);
+
+  useEffect(() => {
+    if (!user || !allInvoices.some((inv) => inv.status === "processing")) return;
+    const timer = window.setInterval(() => {
+      fetchData({ silent: true });
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [user, allInvoices, fetchData]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -280,6 +300,7 @@ export default function PayablesDashboard() {
           : (data.message ?? "No new invoice emails found."),
         type: data.fetched > 0 ? "success" : "info",
       });
+      if (data.fetched > 0) setProcessingNotice(null);
       setTimeout(fetchData, 3000);
     } catch (err: unknown) {
       setGmailMsg({ text: err instanceof Error ? err.message : "Failed to fetch from Gmail", type: "error" });
@@ -470,6 +491,14 @@ export default function PayablesDashboard() {
           </div>
         )}
 
+        {processingNotice && (
+          <div className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0" />
+            <span className="flex-1">{processingNotice}</span>
+            <button onClick={() => setProcessingNotice(null)} className="ml-auto text-xs opacity-60 hover:opacity-100">✕</button>
+          </div>
+        )}
+
 
         {/* Overdue alert */}
         {!loading && overdueInvoices.length > 0 && (
@@ -514,7 +543,7 @@ export default function PayablesDashboard() {
               { label: "Total invoices", value: stats.total, sub: "all time", icon: ZapIcon, iconBg: "bg-violet-100 text-violet-600", valueColor: "text-[#1d2226]" },
               { label: "Pending", value: stats.pendingCount, sub: fmt(stats.pendingAmount), icon: ClockIcon, iconBg: "bg-amber-100 text-amber-600", valueColor: "text-amber-600" },
               { label: "Approved", value: stats.approvedCount, sub: fmt(stats.approvedAmount), icon: CheckCircleIcon, iconBg: "bg-emerald-100 text-emerald-600", valueColor: "text-emerald-600" },
-              { label: "Processing", value: stats.processingCount, sub: "AI extracting", icon: TrendingUpIcon, iconBg: "bg-blue-100 text-blue-600", valueColor: "text-blue-600" },
+              { label: "Processing", value: stats.processingCount, sub: stats.processingCount > 0 ? "AI extracting" : "none active", icon: TrendingUpIcon, iconBg: "bg-blue-100 text-blue-600", valueColor: "text-blue-600" },
               { label: "AI Flagged", value: stats.flaggedCount ?? 0, sub: "need attention", icon: FlagIcon, iconBg: "bg-orange-100 text-orange-600", valueColor: stats.flaggedCount ? "text-orange-600" : "text-gray-400" },
             ].map(({ label, value, sub, icon: Icon, iconBg, valueColor }) => (
               <div key={label} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">

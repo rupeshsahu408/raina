@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
@@ -174,6 +174,8 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [previewSubject, setPreviewSubject] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [processingCompleteMsg, setProcessingCompleteMsg] = useState(false);
+  const sawProcessingRef = useRef(false);
 
   useEffect(() => {
     try {
@@ -186,8 +188,9 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     } catch { setUser(null); setLoading(false); return undefined; }
   }, []);
 
-  const fetchInvoice = async () => {
+  const fetchInvoice = useCallback(async (options?: { silent?: boolean }) => {
     if (!user) return;
+    const silent = options?.silent ?? false;
     try {
       const res = await fetch(`${BACKEND}/payables/invoices/${id}`, {
         headers: payablesHeaders(user),
@@ -196,11 +199,33 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
       const data = await res.json();
       setInvoice(data);
       setEditData(data);
-    } catch { router.push("/payables/dashboard"); }
-    finally { setLoading(false); }
-  };
+    } catch {
+      if (!silent) router.push("/payables/dashboard");
+    }
+    finally { if (!silent) setLoading(false); }
+  }, [user, id, router]);
 
-  useEffect(() => { if (user) fetchInvoice(); }, [user, id]); // eslint-disable-line
+  useEffect(() => { if (user) fetchInvoice(); }, [user, fetchInvoice]);
+
+  useEffect(() => {
+    if (invoice?.status === "processing") {
+      sawProcessingRef.current = true;
+      setProcessingCompleteMsg(false);
+      return;
+    }
+    if (invoice && sawProcessingRef.current) {
+      sawProcessingRef.current = false;
+      setProcessingCompleteMsg(true);
+    }
+  }, [invoice]);
+
+  useEffect(() => {
+    if (!user || invoice?.status !== "processing") return;
+    const timer = window.setInterval(() => {
+      fetchInvoice({ silent: true });
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [user, invoice?.status, fetchInvoice]);
 
   useEffect(() => {
     if (!user || !invoice?.hasDocument) return;
@@ -444,6 +469,21 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
             {emailMsg.ok ? <CheckIcon className="h-4 w-4 shrink-0" /> : "⚠"}
             <span className="flex-1">{emailMsg.text}</span>
             <button onClick={() => setEmailMsg(null)} className="ml-auto opacity-60 hover:opacity-100">✕</button>
+          </div>
+        )}
+
+        {invoice.status === "processing" && (
+          <div className="mb-5 flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
+            <RefreshIcon className="h-4 w-4 shrink-0 animate-spin" />
+            <span className="flex-1">AI is processing this invoice. This page will update automatically when the data is ready.</span>
+          </div>
+        )}
+
+        {processingCompleteMsg && invoice.status !== "processing" && (
+          <div className="mb-5 flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+            <CheckIcon className="h-4 w-4 shrink-0" />
+            <span className="flex-1">AI processing is complete. The extracted invoice data is ready for review.</span>
+            <button onClick={() => setProcessingCompleteMsg(false)} className="ml-auto opacity-60 hover:opacity-100">✕</button>
           </div>
         )}
 

@@ -1,14 +1,23 @@
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
+const allowedDevOrigins = new Set([
+  "*.replit.dev",
+  "*.kirk.replit.dev",
+  "*.picard.replit.dev",
+  "*.riker.replit.dev",
+  "*.janeway.replit.dev",
+  "*.replit.app",
+]);
+if (process.env.REPLIT_DEV_DOMAIN) allowedDevOrigins.add(process.env.REPLIT_DEV_DOMAIN.replace(/^https?:\/\//, ""));
+if (process.env.REPLIT_DOMAINS) {
+  for (const domain of process.env.REPLIT_DOMAINS.split(",")) {
+    const normalized = domain.trim().replace(/^https?:\/\//, "");
+    if (normalized) allowedDevOrigins.add(normalized);
+  }
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: [
-    "*.replit.dev",
-    "*.kirk.replit.dev",
-    "*.picard.replit.dev",
-    "*.riker.replit.dev",
-    "*.replit.app",
-  ],
+  allowedDevOrigins: Array.from(allowedDevOrigins),
   async rewrites() {
     return [
       { source: "/api/ibara/:path*", destination: `${BACKEND_URL}/api/ibara/:path*` },

@@ -1318,7 +1318,7 @@ payablesRouter.get("/invoices/stats", async (req, res) => {
           pendingCount: { $sum: { $cond: [{ $eq: ["$status", "pending_approval"] }, 1, 0] } },
           approvedCount: { $sum: { $cond: [{ $eq: ["$status", "approved"] }, 1, 0] } },
           paidCount: { $sum: { $cond: [{ $eq: ["$status", "paid"] }, 1, 0] } },
-          processingCount: { $sum: { $cond: [{ $in: ["$status", ["processing", "extracted"]] }, 1, 0] } },
+          processingCount: { $sum: { $cond: [{ $eq: ["$status", "processing"] }, 1, 0] } },
           flaggedCount: { $sum: { $cond: [{ $gt: [{ $size: { $ifNull: ["$flags", []] } }, 0] }, 1, 0] } },
           pendingAmount: { $sum: { $cond: [{ $eq: ["$status", "pending_approval"] }, { $ifNull: ["$total", 0] }, 0] } },
           approvedAmount: { $sum: { $cond: [{ $eq: ["$status", "approved"] }, { $ifNull: ["$total", 0] }, 0] } },

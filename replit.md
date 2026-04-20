@@ -28,6 +28,7 @@ A multi-platform AI suite with four AI systems:
 - All pages use `getFirebaseAuth()` from `@/lib/firebaseClient` (not raw `getAuth()`) to prevent initialization errors
 - Payables workspaces now support owner/admin/approver/viewer access controls using the authenticated Firebase user plus a workspace header, preserving client/server separation for team collaboration.
 - Payables invoice extraction now normalizes real-world currency/amount formats from uploads and Gmail imports: ₹/Rs/rupees map to INR, $, €, £ and other explicit currency markers map to ISO codes, Indian comma-grouped amounts like `1,74,500.00` parse correctly, and new vendors no longer create invoice warning flags by themselves.
+- Payables dashboard and invoice detail pages now auto-refresh active `processing` invoices every few seconds and show a completion message when AI extraction finishes; the backend processing stats count now includes only invoices still in the actual `processing` state.
 - Phase 1 scope: No auto-payment; user reviews and pays manually. Gmail connection reuses existing InboxToken setup with Payables-specific OAuth state so team workspaces connect the correct Gmail account.
 
 ## Smart Ledger (Separate SaaS Product)
