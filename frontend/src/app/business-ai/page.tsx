@@ -69,7 +69,7 @@ const products = [
     badge: "Live",
     badgeColor: "text-emerald-700 bg-emerald-50 border-emerald-200",
     badgeDot: "bg-emerald-500",
-    title: "WhatsApp AI",
+    title: "Plyndrox WhatsApp AI",
     description: "Automate customer support, bookings, and inquiries directly on WhatsApp. Connect your Cloud API and let AI handle the conversations — 24/7, in multiple languages.",
     features: ["Multilingual support", "Instant replies", "Custom knowledge", "Cloud API ready"],
     featureDot: "bg-emerald-500",
@@ -85,7 +85,7 @@ const products = [
     badge: "New",
     badgeColor: "text-violet-700 bg-violet-50 border-violet-200",
     badgeDot: null,
-    title: "Website AI",
+    title: "Plyndrox Web AI",
     description: "Embed an intelligent AI chatbot on any website — WordPress, Shopify, Wix, or custom. Train it on your business and go live in minutes. No code required.",
     features: ["No code needed", "DNS verified", "Custom training", "Any platform"],
     featureDot: "bg-violet-500",
@@ -101,7 +101,7 @@ const products = [
     badge: "Beta",
     badgeColor: "text-fuchsia-700 bg-fuchsia-50 border-fuchsia-200",
     badgeDot: "bg-fuchsia-500",
-    title: "Inbox AI",
+    title: "Plyndrox Inbox AI",
     description: "Connect Gmail and let AI summarize every email, detect intent, and generate perfect replies in your tone — Formal, Casual, Sales, or Short.",
     features: ["Intent detection", "Smart replies", "AI summaries", "Auto-reply rules"],
     featureDot: "bg-fuchsia-500",
@@ -117,7 +117,7 @@ const products = [
     badge: "New",
     badgeColor: "text-indigo-700 bg-indigo-50 border-indigo-200",
     badgeDot: null,
-    title: "Recruit AI",
+    title: "Plyndrox Recruit AI",
     description: "AI-powered hiring from job description to final decision. Score resumes, send smart assessments, and get AI hiring recommendations — all in one pipeline.",
     features: ["AI resume scoring", "Smart assessments", "Hiring decisions", "Candidate pipeline"],
     featureDot: "bg-indigo-500",
@@ -151,8 +151,8 @@ export default function BusinessAIPage() {
       <nav className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara</span>
+            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-[#1d2226] transition px-3 py-2 rounded-full hover:bg-gray-100">
@@ -171,7 +171,7 @@ export default function BusinessAIPage() {
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-5 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Business AI Suite
+            Plyndrox Business AI Suite
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#1d2226] leading-[1.05] mb-5">
             AI tools built for<br />
@@ -224,7 +224,7 @@ export default function BusinessAIPage() {
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">Not sure which to pick?</p>
           <h3 className="text-xl font-black text-[#1d2226] mb-3">Use both together</h3>
           <p className="text-gray-500 text-sm leading-7 max-w-lg mx-auto">
-            Many businesses run WhatsApp AI for customer conversations and Website AI for their site visitors. They work independently and complement each other perfectly.
+            Many businesses run Plyndrox WhatsApp AI for customer conversations and Plyndrox Web AI for their site visitors. They work independently and complement each other perfectly.
           </p>
         </div>
       </main>
@@ -232,10 +232,10 @@ export default function BusinessAIPage() {
       <footer className="border-t border-gray-200 bg-white py-7 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 text-gray-400 hover:text-[#1d2226] transition">
-            <img src="/evara-logo.png" alt="Evara" className="h-5 w-5 object-contain opacity-60" />
-            <span className="text-xs font-bold uppercase tracking-[0.18em]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain opacity-60" />
+            <span className="text-xs font-bold uppercase tracking-[0.18em]">Plyndrox AI</span>
           </Link>
-          <p className="text-xs text-gray-400">© {new Date().getFullYear()} Evara AI. All rights reserved.</p>
+          <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</p>
           <div className="flex gap-5 text-xs text-gray-400">
             <Link href="/privacy-policy" className="hover:text-[#1d2226] transition">Privacy</Link>
             <Link href="/terms" className="hover:text-[#1d2226] transition">Terms</Link>

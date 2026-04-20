@@ -90,7 +90,7 @@ export default function RecruitLandingPage() {
           <Link href="/recruit" className="flex items-center gap-2.5 shrink-0">
             <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a66c2] text-sm font-black text-white">R</span>
             <span>
-              <span className="block text-sm font-bold leading-tight">Recruit AI</span>
+              <span className="block text-sm font-bold leading-tight">Plyndrox Recruit AI</span>
               <span className="block text-[11px] text-slate-500 leading-tight">Plyndrox Jobs Network</span>
             </span>
           </Link>
@@ -392,7 +392,7 @@ export default function RecruitLandingPage() {
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
           <h2 className="text-2xl font-bold sm:text-3xl">Ready to find your next role?</h2>
           <p className="mt-3 text-blue-100 text-sm sm:text-base">
-            Join thousands of Indian professionals finding better jobs through Recruit AI.
+            Join thousands of Indian professionals finding better jobs through Plyndrox Recruit AI.
           </p>
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Link href="/recruit/opportunities" className="rounded-full bg-white px-8 py-3.5 text-sm font-bold text-[#0a66c2] hover:bg-blue-50 transition shadow">

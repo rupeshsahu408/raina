@@ -124,14 +124,14 @@ const androidSteps = [
   { icon: <GlobeIcon className="h-5 w-5" />, title: "Open in Chrome", desc: "Visit evara.app in Google Chrome on your Android phone." },
   { icon: <span className="text-base font-bold">⋮</span>, title: "Tap the Menu", desc: "Tap the three-dot menu in the top-right corner of Chrome." },
   { icon: <DownloadIcon className="h-5 w-5" />, title: 'Select "Install App"', desc: 'Tap "Install App" or "Add to Home Screen" from the menu.' },
-  { icon: <SmartphoneIcon className="h-5 w-5" />, title: "Launch Like Native", desc: "Find the Evara icon in your app drawer and open it anytime." },
+  { icon: <SmartphoneIcon className="h-5 w-5" />, title: "Launch Like Native", desc: "Find the Plyndrox icon in your app drawer and open it anytime." },
 ];
 
 const iosSteps = [
   { icon: <GlobeIcon className="h-5 w-5" />, title: "Open in Safari", desc: "Visit evara.app in Apple Safari — this only works in Safari." },
   { icon: <ShareIcon className="h-5 w-5" />, title: "Tap Share", desc: 'Tap the Share icon (box with an arrow) at the bottom of the screen.' },
   { icon: <PlusCircleIcon className="h-5 w-5" />, title: "Add to Home Screen", desc: 'Scroll down and tap "Add to Home Screen" from the share sheet.' },
-  { icon: <SmartphoneIcon className="h-5 w-5" />, title: "Tap Add & Launch", desc: "Confirm by tapping Add — Evara will appear on your home screen." },
+  { icon: <SmartphoneIcon className="h-5 w-5" />, title: "Tap Add & Launch", desc: "Confirm by tapping Add — Plyndrox will appear on your home screen." },
 ];
 
 export default function AppPage() {
@@ -144,8 +144,8 @@ export default function AppPage() {
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-gray-50 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-bold uppercase tracking-widest text-[#1d2226]">Evara</span>
+            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-bold uppercase tracking-widest text-[#1d2226]">Plyndrox</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/login" className="hidden text-sm font-medium text-gray-500 transition hover:text-white sm:block">Sign In</Link>
@@ -170,7 +170,7 @@ export default function AppPage() {
                 <span>Available on Android, iOS & Web</span>
               </div>
               <h1 className="mt-8 text-5xl font-medium tracking-tight text-white sm:text-6xl lg:text-7xl text-balance">
-                Evara AI{" "}
+                Plyndrox AI{" "}
                 <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-sky-400 bg-clip-text text-transparent">
                   App
                 </span>
@@ -218,8 +218,8 @@ export default function AppPage() {
                   <div className="flex flex-col bg-gray-50 px-4 pb-6">
                     {/* App header */}
                     <div className="flex items-center gap-2 py-3 border-b border-gray-100">
-                      <img src="/evara-logo.png" alt="Evara" className="h-6 w-6 object-contain" />
-                      <span className="text-xs font-bold tracking-widest uppercase text-white">Evara AI</span>
+                      <img src="/evara-logo.png" alt="Plyndrox" className="h-6 w-6 object-contain" />
+                      <span className="text-xs font-bold tracking-widest uppercase text-white">Plyndrox AI</span>
                     </div>
                     {/* Chat bubbles */}
                     <div className="mt-4 space-y-3">
@@ -323,7 +323,7 @@ export default function AppPage() {
                   Install on Android in seconds.
                 </h2>
                 <p className="mt-6 text-base leading-relaxed text-gray-500">
-                  Evara AI is available as a Progressive Web App (PWA) on Android. It installs like a native app — no Play Store needed, no large download, no wait.
+                  Plyndrox AI is available as a Progressive Web App (PWA) on Android. It installs like a native app — no Play Store needed, no large download, no wait.
                 </p>
                 <div className="mt-10 space-y-4">
                   {androidSteps.map((step, i) => (
@@ -377,9 +377,9 @@ export default function AppPage() {
                       {/* Install banner */}
                       <div className="mt-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3">
                         <div className="flex items-center gap-2">
-                          <img src="/evara-logo.png" alt="Evara" className="h-7 w-7 object-contain rounded-xl" />
+                          <img src="/evara-logo.png" alt="Plyndrox" className="h-7 w-7 object-contain rounded-xl" />
                           <div>
-                            <p className="text-[10px] font-bold text-white">Evara AI</p>
+                            <p className="text-[10px] font-bold text-white">Plyndrox AI</p>
                             <p className="text-[9px] text-gray-500">Add to Home Screen</p>
                           </div>
                           <button className="ml-auto rounded-full bg-emerald-400 px-2.5 py-1 text-[9px] font-bold text-black">Install</button>
@@ -482,7 +482,7 @@ export default function AppPage() {
                   Add to your Home Screen on iOS.
                 </h2>
                 <p className="mt-6 text-base leading-relaxed text-gray-500">
-                  iPhone and iPad users can add Evara AI directly to their Home Screen using Safari. It opens full-screen with no browser bar — exactly like a native iOS app.
+                  iPhone and iPad users can add Plyndrox AI directly to their Home Screen using Safari. It opens full-screen with no browser bar — exactly like a native iOS app.
                 </p>
                 <div className="mt-10 space-y-4">
                   {iosSteps.map((step, i) => (
@@ -520,12 +520,12 @@ export default function AppPage() {
                 More than a website.
               </h2>
               <p className="mt-6 text-base leading-relaxed text-gray-500">
-                Installing Evara AI gives you a richer, faster, native-feeling experience compared to opening it in a browser tab every time.
+                Installing Plyndrox AI gives you a richer, faster, native-feeling experience compared to opening it in a browser tab every time.
               </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {[
-                { icon: <ZapIcon className="h-5 w-5" />, color: "text-amber-400 bg-amber-500/10", title: "Instant Access", desc: "Open Evara from your home screen in one tap — no browser, no URL bar, no delay." },
+                { icon: <ZapIcon className="h-5 w-5" />, color: "text-amber-400 bg-amber-500/10", title: "Instant Access", desc: "Open Plyndrox from your home screen in one tap — no browser, no URL bar, no delay." },
                 { icon: <SmartphoneIcon className="h-5 w-5" />, color: "text-purple-400 bg-purple-500/10", title: "App-Like Experience", desc: "Full-screen layout, smooth animations, and native-style navigation across all devices." },
                 { icon: <DownloadIcon className="h-5 w-5" />, color: "text-emerald-400 bg-emerald-500/10", title: "No Store Required", desc: "Install directly from your browser — no App Store or Play Store account needed." },
                 { icon: <GlobeIcon className="h-5 w-5" />, color: "text-sky-400 bg-sky-500/10", title: "Works on All Devices", desc: "Android, iPhone, iPad, and desktop — one install works everywhere you need it." },
@@ -560,7 +560,7 @@ export default function AppPage() {
                   gradient: "from-pink-500/20 via-purple-500/10",
                   text: "text-purple-400",
                   bg: "bg-purple-500/15",
-                  title: "Evara AI Chat",
+                  title: "Plyndrox AI Chat",
                   desc: "Emotional companion with dual personalities, persistent memory, and 5 conversation modes.",
                   badge: "Personal",
                 },
@@ -612,7 +612,7 @@ export default function AppPage() {
               Your AI, always in your pocket.
             </h2>
             <p className="mt-6 text-lg leading-relaxed text-gray-500">
-              Install the Evara AI app in seconds and get instant access to personal AI, business automation, and regional intelligence — all from your home screen.
+              Install the Plyndrox AI app in seconds and get instant access to personal AI, business automation, and regional intelligence — all from your home screen.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <InstallPrompt
@@ -638,10 +638,10 @@ export default function AppPage() {
               <div className="space-y-6">
                 <Link href="/" className="group inline-flex items-center gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white/10 shadow-lg shadow-purple-500/10 transition group-hover:scale-105 group-hover:border-purple-300/50">
-                    <img src="/evara-logo.png" alt="Evara AI" className="h-7 w-7 object-contain" />
+                    <img src="/evara-logo.png" alt="Plyndrox AI" className="h-7 w-7 object-contain" />
                   </span>
                   <span>
-                    <span className="block text-base font-bold uppercase tracking-[0.22em] text-white">Evara AI</span>
+                    <span className="block text-base font-bold uppercase tracking-[0.22em] text-white">Plyndrox AI</span>
                     <span className="mt-1 block text-xs font-medium text-violet-700">Smart AI Automation Platform</span>
                   </span>
                 </Link>
@@ -699,7 +699,7 @@ export default function AppPage() {
               </div>
             </div>
             <div className="mt-10 flex flex-col gap-4 border-t border-gray-200 pt-6 text-sm text-gray-400 sm:flex-row sm:items-center sm:justify-between">
-              <p>© 2026 Evara AI</p>
+              <p>© 2026 Plyndrox AI</p>
               <p>Built by <span className="font-semibold text-gray-600">Riley Parker &amp; Rupesh Sahu</span></p>
             </div>
           </div>

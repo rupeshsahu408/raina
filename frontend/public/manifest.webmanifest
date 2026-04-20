@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Evara AI",
-  "short_name": "Evara",
-  "description": "Evara AI is your calm, emotionally intelligent AI companion.",
+  "name": "Plyndrox AI",
+  "short_name": "Plyndrox",
+  "description": "Plyndrox AI is your calm, emotionally intelligent AI companion.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

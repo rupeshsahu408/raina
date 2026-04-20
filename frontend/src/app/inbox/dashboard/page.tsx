@@ -1569,7 +1569,7 @@ export default function InboxDashboard() {
             </div>
             <div className="min-w-0">
               <p className="text-sm font-black tracking-tight text-white leading-none">Plyndrox</p>
-              <p className="text-[10px] leading-none mt-0.5 text-violet-400/60">Inbox AI</p>
+              <p className="text-[10px] leading-none mt-0.5 text-violet-400/60">Plyndrox Inbox AI</p>
             </div>
           </Link>
         </div>

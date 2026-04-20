@@ -199,7 +199,7 @@ function PreviewContent() {
                   <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
                     style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}>🤖</div>
                   <div className="flex-1">
-                    <p className="text-sm font-bold">{bot.businessName ? `${bot.businessName} AI` : "IBARA Assistant"}</p>
+                    <p className="text-sm font-bold">{bot.businessName ? `${bot.businessName} AI` : "Plyndrox Web Assistant"}</p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                       <span className="text-[11px] text-white/35">Online · {bot.language} · {bot.tone}</span>

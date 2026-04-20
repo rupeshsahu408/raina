@@ -157,7 +157,7 @@ export function DemoChatWidget() {
       <div className="mt-3 max-h-56 min-h-40 overflow-y-auto rounded-[1.35rem] border border-white/8 bg-white/25 p-2.5">
         {messages.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-white/[0.035] p-4 text-[11px] leading-5 text-gray-500">
-            Send one thought—Evara will respond gently.
+            Send one thought—Plyndrox will respond gently.
           </div>
         ) : (
           <div className="space-y-2">

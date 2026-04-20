@@ -1,4 +1,4 @@
-package com.evara.ai;
+package com.plyndrox.ai;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -99,8 +99,8 @@ export default function InboxLandingPage() {
       <nav className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 items-center justify-between px-4 max-w-7xl sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara</span>
+            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm text-gray-500">
             <a href="#features" className="hover:text-[#1d2226] transition">Features</a>
@@ -132,7 +132,7 @@ export default function InboxLandingPage() {
           </h1>
 
           <p className="max-w-2xl mx-auto text-base sm:text-lg leading-8 text-gray-500 mb-9">
-            Connect your Gmail in one click. Inbox AI reads, summarizes, labels every email by intent, and generates perfect replies in your tone — all without you having to think.
+            Connect your Gmail in one click. Plyndrox Inbox AI reads, summarizes, labels every email by intent, and generates perfect replies in your tone — all without you having to think.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-5">
@@ -341,7 +341,7 @@ export default function InboxLandingPage() {
             Zero email stress.<br />Starting now.
           </h2>
           <p className="text-gray-500 text-base mb-8 max-w-lg mx-auto leading-7">
-            Connect Gmail in one click and let Inbox AI handle the repetitive parts forever.
+            Connect Gmail in one click and let Plyndrox Inbox AI handle the repetitive parts forever.
           </p>
           <Link
             href="/inbox/connect"
@@ -363,8 +363,8 @@ export default function InboxLandingPage() {
       <footer className="border-t border-gray-200 bg-white py-7 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 text-gray-400 hover:text-[#1d2226] transition">
-            <img src="/evara-logo.png" alt="Evara" className="h-5 w-5 object-contain opacity-60" />
-            <span className="text-xs font-bold uppercase tracking-[0.18em]">Plyndrox · Inbox AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain opacity-60" />
+            <span className="text-xs font-bold uppercase tracking-[0.18em]">Plyndrox · Plyndrox Inbox AI</span>
           </Link>
           <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox. All rights reserved.</p>
           <div className="flex gap-5 text-xs text-gray-400">

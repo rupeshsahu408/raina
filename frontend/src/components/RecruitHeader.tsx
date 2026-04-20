@@ -71,10 +71,10 @@ export default function RecruitHeader() {
         <Link href="/recruit" className="flex items-center gap-2.5 shrink-0">
           <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a66c2] text-sm font-black text-white">R</span>
           <span className="hidden sm:block">
-            <span className="block text-sm font-bold leading-tight">Recruit AI</span>
+            <span className="block text-sm font-bold leading-tight">Plyndrox Recruit AI</span>
             <span className="block text-[11px] text-slate-500 leading-tight">India Jobs Network</span>
           </span>
-          <span className="block sm:hidden text-sm font-bold">Recruit AI</span>
+          <span className="block sm:hidden text-sm font-bold">Plyndrox Recruit AI</span>
         </Link>
 
         {isLoggedIn && navLinks.length > 0 && (

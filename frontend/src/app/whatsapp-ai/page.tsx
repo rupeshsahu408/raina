@@ -8,8 +8,8 @@ export default function WhatsAppAILandingPage() {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-0 pt-6 sm:px-6 lg:px-10">
         <header className="flex items-center justify-between rounded-full border border-gray-200 bg-white/90 px-5 py-4 shadow-sm backdrop-blur-xl">
           <a href="/" className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" draggable={false} />
-            <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Evara Business</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" draggable={false} />
+            <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Plyndrox Business</span>
           </a>
           <div className="flex items-center gap-3">
             <a
@@ -29,13 +29,13 @@ export default function WhatsAppAILandingPage() {
 
         <div className="mt-24 flex flex-1 flex-col items-center justify-center text-center">
           <p className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
-            Next Generation WhatsApp AI
+            Next Generation Plyndrox WhatsApp AI
           </p>
           <h1 className="mt-8 max-w-4xl text-balance text-5xl font-semibold leading-tight text-[#1d2226] sm:text-7xl">
             Customer support that never sleeps.
           </h1>
           <p className="mt-6 max-w-2xl text-balance text-base leading-relaxed text-gray-500 sm:text-lg">
-            Connect your WhatsApp Cloud API to Evara&apos;s multilingual intelligence. 
+            Connect your WhatsApp Cloud API to Plyndrox&apos;s multilingual intelligence. 
             Automate inquiries, bookings, and support instantly with a deeply 
             human touch.
           </p>
@@ -82,8 +82,8 @@ export default function WhatsAppAILandingPage() {
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <div className="flex items-center gap-3">
-                <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" draggable={false} />
-                <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Evara AI</span>
+                <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" draggable={false} />
+                <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Plyndrox AI</span>
               </div>
               <p className="mt-4 text-sm leading-relaxed text-gray-500">
                 Empowering businesses with intelligent WhatsApp automation. Built in India, serving the world.
@@ -96,7 +96,7 @@ export default function WhatsAppAILandingPage() {
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-widest text-gray-500">Product</h4>
               <ul className="mt-4 space-y-2.5">
-                <li><a href="/whatsapp-ai" className="text-sm text-gray-500 transition hover:text-emerald-700">WhatsApp AI</a></li>
+                <li><a href="/whatsapp-ai" className="text-sm text-gray-500 transition hover:text-emerald-700">Plyndrox WhatsApp AI</a></li>
                 <li><a href="/whatsapp-ai/dashboard" className="text-sm text-gray-500 transition hover:text-emerald-700">Dashboard</a></li>
                 <li><a href="/signup?next=/whatsapp-ai/dashboard" className="text-sm text-gray-500 transition hover:text-emerald-700">Get Started</a></li>
                 <li><a href="/login?next=/whatsapp-ai/dashboard" className="text-sm text-gray-500 transition hover:text-emerald-700">Log In</a></li>
@@ -142,7 +142,7 @@ export default function WhatsAppAILandingPage() {
 
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-8 sm:flex-row">
             <p className="text-xs text-gray-400">
-              © {new Date().getFullYear()} Evara AI. All rights reserved.
+              © {new Date().getFullYear()} Plyndrox AI. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <a href="/privacy-policy" className="text-xs text-gray-400 transition hover:text-emerald-700">Privacy Policy</a>

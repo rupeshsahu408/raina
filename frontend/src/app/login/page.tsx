@@ -22,8 +22,8 @@ function LoginForm() {
       {/* Left panel — branding */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gray-50 border-r border-gray-200 p-10">
         <Link href="/" className="flex items-center gap-2.5">
-          <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-          <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+          <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+          <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
         </Link>
         <div>
           <blockquote className="text-2xl font-bold text-[#1d2226] leading-snug max-w-sm">
@@ -33,15 +33,15 @@ function LoginForm() {
             Personal conversations, regional knowledge, and business automation — all in one place.
           </p>
         </div>
-        <p className="text-xs text-gray-400">© {new Date().getFullYear()} Evara AI</p>
+        <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox AI</p>
       </div>
 
       {/* Right panel — form */}
       <div className="flex flex-1 flex-col px-6 py-8 sm:px-12">
         <div className="flex items-center justify-between mb-8 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-7 w-7 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.2em] text-[#1d2226]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-7 w-7 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.2em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <Link href={`/signup?next=${encodeURIComponent(nextPath)}`} className="text-xs text-gray-500 hover:text-[#1d2226] transition">
             Need an account?
@@ -50,7 +50,7 @@ function LoginForm() {
 
         <div className="flex flex-1 flex-col justify-center max-w-sm mx-auto w-full">
           <h1 className="text-2xl font-black text-[#1d2226]">Welcome back</h1>
-          <p className="mt-1.5 text-sm text-gray-500">Sign in to continue to Evara AI.</p>
+          <p className="mt-1.5 text-sm text-gray-500">Sign in to continue to Plyndrox AI.</p>
 
           {error && (
             <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">

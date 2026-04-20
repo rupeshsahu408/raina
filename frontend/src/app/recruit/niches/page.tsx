@@ -65,7 +65,7 @@ const NICHES = [
 ];
 
 export const metadata = {
-  title: "Browse by Niche | Recruit AI – India Jobs Network",
+  title: "Browse by Niche | Plyndrox Recruit AI – India Jobs Network",
   description: "Explore India's most focused job board by industry niche. From AI & Tech to Healthcare, Sales, Finance, and more.",
 };
 

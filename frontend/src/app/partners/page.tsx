@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Partners — Evara AI",
+  title: "Partners — Plyndrox AI",
   description:
-    "Discover the trusted partnerships that power Evara AI — including Sendora.me — and learn how we collaborate to build scalable, reliable AI infrastructure.",
+    "Discover the trusted partnerships that power Plyndrox AI — including Sendora.me — and learn how we collaborate to build scalable, reliable AI infrastructure.",
 };
 
 function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -125,42 +125,42 @@ const partnerBenefits = [
   {
     icon: <ShieldIcon className="h-6 w-6" />,
     title: "Stronger Infrastructure",
-    description: "Strategic partnerships allow Evara AI to build on proven, battle-tested infrastructure that ensures reliability, redundancy, and enterprise-grade performance at every layer of the platform.",
+    description: "Strategic partnerships allow Plyndrox AI to build on proven, battle-tested infrastructure that ensures reliability, redundancy, and enterprise-grade performance at every layer of the platform.",
     color: "text-emerald-300",
     bg: "bg-emerald-400/10 border-emerald-400/20",
   },
   {
     icon: <ZapIcon className="h-6 w-6" />,
     title: "Better Performance",
-    description: "By partnering with specialized technology providers, Evara AI can consistently deliver faster response times, lower latency, higher throughput, and improved resource efficiency across all platform features.",
+    description: "By partnering with specialized technology providers, Plyndrox AI can consistently deliver faster response times, lower latency, higher throughput, and improved resource efficiency across all platform features.",
     color: "text-yellow-300",
     bg: "bg-yellow-400/10 border-yellow-400/20",
   },
   {
     icon: <LayersIcon className="h-6 w-6" />,
     title: "Scalable Solutions",
-    description: "Partners contribute critical scalability capabilities that allow the Evara AI platform to grow seamlessly alongside user demand — from early adopters to large enterprise deployments — without compromising quality.",
+    description: "Partners contribute critical scalability capabilities that allow the Plyndrox AI platform to grow seamlessly alongside user demand — from early adopters to large enterprise deployments — without compromising quality.",
     color: "text-violet-600",
     bg: "bg-purple-400/10 border-purple-400/20",
   },
   {
     icon: <RocketIcon className="h-6 w-6" />,
     title: "Faster Innovation",
-    description: "Collaborative partnerships accelerate the pace of product innovation by giving Evara AI access to cutting-edge technologies, specialized expertise, and complementary capabilities that would take significantly longer to build independently.",
+    description: "Collaborative partnerships accelerate the pace of product innovation by giving Plyndrox AI access to cutting-edge technologies, specialized expertise, and complementary capabilities that would take significantly longer to build independently.",
     color: "text-fuchsia-600",
     bg: "bg-pink-400/10 border-pink-400/20",
   },
   {
     icon: <SparklesIcon className="h-6 w-6" />,
     title: "Improved User Experience",
-    description: "When infrastructure, services, and APIs work seamlessly together through well-established partnerships, the end result is a smoother, more reliable, and more capable experience for every Evara AI user.",
+    description: "When infrastructure, services, and APIs work seamlessly together through well-established partnerships, the end result is a smoother, more reliable, and more capable experience for every Plyndrox AI user.",
     color: "text-sky-300",
     bg: "bg-sky-400/10 border-sky-400/20",
   },
   {
     icon: <GlobeIcon className="h-6 w-6" />,
     title: "Expanded Global Reach",
-    description: "Technology and service partnerships enable Evara AI to extend its platform reach into new geographies, support more languages and regions, and serve a more diverse global user base than would be possible independently.",
+    description: "Technology and service partnerships enable Plyndrox AI to extend its platform reach into new geographies, support more languages and regions, and serve a more diverse global user base than would be possible independently.",
     color: "text-amber-300",
     bg: "bg-amber-400/10 border-amber-400/20",
   },
@@ -169,25 +169,25 @@ const partnerBenefits = [
 const collaborationAreas = [
   {
     title: "Technology Integration",
-    description: "We partner with technology providers to integrate specialized capabilities directly into the Evara AI platform. These integrations expand what our products can do and ensure that users benefit from the best available tools — without needing to manage multiple separate platforms.",
+    description: "We partner with technology providers to integrate specialized capabilities directly into the Plyndrox AI platform. These integrations expand what our products can do and ensure that users benefit from the best available tools — without needing to manage multiple separate platforms.",
     icon: <LayersIcon className="h-5 w-5 text-violet-600" />,
     items: ["API and SDK integration", "Platform capability extension", "Shared development resources", "Joint technical roadmaps"],
   },
   {
     title: "API and Automation Support",
-    description: "Evara AI relies on partner APIs and automation infrastructure to power key platform functions including communication delivery, authentication, messaging, and business process automation. Our partners ensure these services are available, reliable, and performant.",
+    description: "Plyndrox AI relies on partner APIs and automation infrastructure to power key platform functions including communication delivery, authentication, messaging, and business process automation. Our partners ensure these services are available, reliable, and performant.",
     icon: <ZapIcon className="h-5 w-5 text-yellow-300" />,
     items: ["RESTful and webhook integrations", "Automated workflow support", "Communication delivery infrastructure", "Real-time data exchange"],
   },
   {
     title: "AI Development and Scaling",
-    description: "As the AI capabilities of the Evara AI platform grow, partners contribute the compute resources, model infrastructure, and technical expertise necessary to scale AI services reliably and cost-effectively — ensuring that Evara AI and WhatsApp AI continue to perform as demand grows.",
+    description: "As the AI capabilities of the Plyndrox AI platform grow, partners contribute the compute resources, model infrastructure, and technical expertise necessary to scale AI services reliably and cost-effectively — ensuring that Plyndrox AI and Plyndrox WhatsApp AI continue to perform as demand grows.",
     icon: <BrainIcon className="h-5 w-5 text-fuchsia-600" />,
     items: ["Model infrastructure support", "Compute and storage resources", "AI performance optimization", "Safety and reliability systems"],
   },
   {
     title: "Business Growth and Expansion",
-    description: "Strategic business partnerships help Evara AI enter new markets, build credibility with enterprise customers, and accelerate growth through shared networks, referral relationships, co-marketing efforts, and joint go-to-market initiatives.",
+    description: "Strategic business partnerships help Plyndrox AI enter new markets, build credibility with enterprise customers, and accelerate growth through shared networks, referral relationships, co-marketing efforts, and joint go-to-market initiatives.",
     icon: <RocketIcon className="h-5 w-5 text-sky-300" />,
     items: ["Co-marketing and joint campaigns", "Referral and reseller programs", "Market expansion collaboration", "Enterprise customer introductions"],
   },
@@ -213,8 +213,8 @@ export default function PartnersPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226] transition group-hover:text-white">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226] transition group-hover:text-white">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/about" className="hidden text-sm text-gray-400 transition hover:text-gray-600 sm:block">About</Link>
@@ -246,7 +246,7 @@ export default function PartnersPage() {
               Collaborating with innovative companies to build the future of AI — reliably, scalably, and with purpose.
             </p>
             <p className="mx-auto mt-4 max-w-xl text-base leading-8 text-gray-400">
-              Evara AI is built on a foundation of trusted partnerships. Every collaboration is chosen with care, aligned to our values, and oriented toward delivering the best possible experience for our users.
+              Plyndrox AI is built on a foundation of trusted partnerships. Every collaboration is chosen with care, aligned to our values, and oriented toward delivering the best possible experience for our users.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Link href="/contact" className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-black transition hover:scale-105 hover:bg-zinc-100">
@@ -292,10 +292,10 @@ export default function PartnersPage() {
                     Great AI platforms are never built in isolation. Behind every reliable, high-performance, and genuinely useful AI product is a network of trusted partners, technology providers, and collaborative relationships that contribute the infrastructure, services, and capabilities necessary to deliver on ambitious promises.
                   </p>
                   <p>
-                    At Evara AI, partnerships are not transactions — they are long-term relationships built on shared values, mutual trust, technical complementarity, and a common commitment to building technology that actually improves people's lives. Every partner we work with is chosen deliberately and evaluated continuously against the standard of how they contribute to the quality, reliability, and growth of the Evara AI platform.
+                    At Plyndrox AI, partnerships are not transactions — they are long-term relationships built on shared values, mutual trust, technical complementarity, and a common commitment to building technology that actually improves people's lives. Every partner we work with is chosen deliberately and evaluated continuously against the standard of how they contribute to the quality, reliability, and growth of the Plyndrox AI platform.
                   </p>
                   <p>
-                    Through these partnerships, we are able to deliver infrastructure that is more resilient, services that are more reliable, capabilities that are more advanced, and an overall platform experience that is more polished and capable than any single team could build alone. Our partners are not vendors — they are an extension of the Evara AI team, aligned to our mission and invested in our users' success.
+                    Through these partnerships, we are able to deliver infrastructure that is more resilient, services that are more reliable, capabilities that are more advanced, and an overall platform experience that is more polished and capable than any single team could build alone. Our partners are not vendors — they are an extension of the Plyndrox AI team, aligned to our mission and invested in our users' success.
                   </p>
                 </div>
               </div>
@@ -332,7 +332,7 @@ export default function PartnersPage() {
               </span>
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-gray-500">
-              We are proud to work with an exceptional partner who has been instrumental in shaping the Evara AI platform.
+              We are proud to work with an exceptional partner who has been instrumental in shaping the Plyndrox AI platform.
             </p>
           </div>
 
@@ -372,17 +372,17 @@ export default function PartnersPage() {
                     <span>Partnership Overview</span>
                   </div>
                   <h3 className="text-2xl font-semibold text-white sm:text-3xl">
-                    The Infrastructure Behind Evara AI
+                    The Infrastructure Behind Plyndrox AI
                   </h3>
                   <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                     <p>
-                      Sendora.me is a premier technology and communication platform that serves as one of the most critical infrastructure partners supporting the Evara AI ecosystem. Since the earliest stages of the platform's development, Sendora.me has been instrumental in providing the reliable, scalable, and performance-optimized services that allow Evara AI to serve its users with consistency and quality.
+                      Sendora.me is a premier technology and communication platform that serves as one of the most critical infrastructure partners supporting the Plyndrox AI ecosystem. Since the earliest stages of the platform's development, Sendora.me has been instrumental in providing the reliable, scalable, and performance-optimized services that allow Plyndrox AI to serve its users with consistency and quality.
                     </p>
                     <p>
-                      The partnership between Evara AI and Sendora.me is built on a shared commitment to technological excellence, operational reliability, and the belief that the best products are built through focused collaboration rather than isolated effort. Sendora.me brings deep technical expertise, a proven track record of platform reliability, and a forward-thinking product philosophy that aligns closely with Evara AI's mission and values.
+                      The partnership between Plyndrox AI and Sendora.me is built on a shared commitment to technological excellence, operational reliability, and the belief that the best products are built through focused collaboration rather than isolated effort. Sendora.me brings deep technical expertise, a proven track record of platform reliability, and a forward-thinking product philosophy that aligns closely with Plyndrox AI's mission and values.
                     </p>
                     <p>
-                      Through this strategic partnership, Evara AI benefits from Sendora.me's robust communication infrastructure, which plays a key role in powering essential platform features including transactional messaging, support routing, notification delivery, and business communication capabilities. This infrastructure layer allows Evara AI to focus its core development efforts on building outstanding AI products, knowing that the critical communication backbone of the platform is in trusted, capable hands.
+                      Through this strategic partnership, Plyndrox AI benefits from Sendora.me's robust communication infrastructure, which plays a key role in powering essential platform features including transactional messaging, support routing, notification delivery, and business communication capabilities. This infrastructure layer allows Plyndrox AI to focus its core development efforts on building outstanding AI products, knowing that the critical communication backbone of the platform is in trusted, capable hands.
                     </p>
                     <p>
                       Beyond infrastructure, the Sendora.me partnership represents a long-term vision for what collaborative AI platform development can look like — two teams aligned on quality, invested in each other's success, and moving in the same direction. We are proud to call Sendora.me a partner and look forward to a continued, growing relationship as both platforms evolve.
@@ -396,7 +396,7 @@ export default function PartnersPage() {
                       "Deep technical alignment and integration quality",
                       "Shared commitment to user privacy and data security",
                       "Long-term vision and collaborative product planning",
-                      "Scalable solutions supporting Evara AI's growth trajectory",
+                      "Scalable solutions supporting Plyndrox AI's growth trajectory",
                     ].map((item) => (
                       <div key={item} className="flex items-start gap-2.5 text-sm text-gray-500">
                         <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
@@ -436,7 +436,7 @@ export default function PartnersPage() {
                 </span>
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-gray-500">
-                Every partnership within the Evara AI ecosystem delivers concrete, measurable benefits — not just for the platform, but for every user who depends on it.
+                Every partnership within the Plyndrox AI ecosystem delivers concrete, measurable benefits — not just for the platform, but for every user who depends on it.
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -469,7 +469,7 @@ export default function PartnersPage() {
               </span>
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-gray-500">
-              Our partnerships span four core collaboration areas, each contributing directly to the quality and capability of the Evara AI platform.
+              Our partnerships span four core collaboration areas, each contributing directly to the quality and capability of the Plyndrox AI platform.
             </p>
           </div>
           <div className="grid gap-6 lg:grid-cols-2">
@@ -508,33 +508,33 @@ export default function PartnersPage() {
               <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
                 Partners Power the{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400">
-                  Evara Ecosystem
+                  Plyndrox Ecosystem
                 </span>
               </h2>
               <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-gray-500">
-                Every Evara AI product benefits from the contributions of our partner ecosystem. Here is how partnerships directly enhance each service.
+                Every Plyndrox AI product benefits from the contributions of our partner ecosystem. Here is how partnerships directly enhance each service.
               </p>
             </div>
             <div className="grid gap-6 lg:grid-cols-3">
               {[
                 {
                   icon: <BrainIcon className="h-7 w-7" />,
-                  name: "Evara AI",
+                  name: "Plyndrox AI",
                   tagline: "Web / App AI Assistant",
                   color: "text-violet-600",
                   border: "border-purple-500/25",
                   bg: "bg-purple-500/[0.07]",
                   iconBg: "bg-purple-500/15 border-purple-500/20",
                   points: [
-                    "AI model infrastructure from specialist providers ensures Evara AI responses are fast, contextually accurate, and reliably available at all times.",
+                    "AI model infrastructure from specialist providers ensures Plyndrox AI responses are fast, contextually accurate, and reliably available at all times.",
                     "Authentication and identity partner services secure user accounts and sessions, protecting every conversation and user interaction.",
-                    "Hosting and CDN partnerships ensure that the Evara AI interface loads quickly and performs smoothly for users across every geography.",
-                    "Communication partners power transactional notifications, password resets, account alerts, and support routing for Evara AI users.",
+                    "Hosting and CDN partnerships ensure that the Plyndrox AI interface loads quickly and performs smoothly for users across every geography.",
+                    "Communication partners power transactional notifications, password resets, account alerts, and support routing for Plyndrox AI users.",
                   ],
                 },
                 {
                   icon: <MessageIcon className="h-7 w-7" />,
-                  name: "WhatsApp AI",
+                  name: "Plyndrox WhatsApp AI",
                   tagline: "Business Automation",
                   color: "text-emerald-300",
                   border: "border-emerald-500/25",
@@ -544,7 +544,7 @@ export default function PartnersPage() {
                     "WhatsApp Business API infrastructure from Meta enables message delivery, webhook processing, and automation at business scale.",
                     "Partner communication infrastructure supports the email and notification systems used by business dashboard administrators.",
                     "Cloud and storage partners provide the secure, scalable backend necessary to handle high-volume business message processing.",
-                    "Security and compliance partners help ensure that WhatsApp AI operates within required data protection and privacy standards.",
+                    "Security and compliance partners help ensure that Plyndrox WhatsApp AI operates within required data protection and privacy standards.",
                   ],
                 },
                 {
@@ -557,7 +557,7 @@ export default function PartnersPage() {
                   iconBg: "bg-sky-500/15 border-sky-500/20",
                   points: [
                     "Sendora.me and other infrastructure partners provide the communication backbone and delivery systems that keep the platform running reliably.",
-                    "Monitoring and observability partners give the Evara AI team real-time visibility into platform health, performance, and reliability metrics.",
+                    "Monitoring and observability partners give the Plyndrox AI team real-time visibility into platform health, performance, and reliability metrics.",
                     "Database and storage partners ensure that user data, business configurations, and conversation history are stored securely and durably.",
                     "Deployment and DevOps partners enable rapid, safe, and consistent platform updates across all environments without user disruption.",
                   ],
@@ -600,13 +600,13 @@ export default function PartnersPage() {
               </h2>
               <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                 <p>
-                  We are continuously looking to collaborate with innovative companies to expand the Evara AI ecosystem. As the platform grows and its products mature, new partnership opportunities emerge across infrastructure, AI capabilities, vertical markets, geographic expansion, and complementary technology domains.
+                  We are continuously looking to collaborate with innovative companies to expand the Plyndrox AI ecosystem. As the platform grows and its products mature, new partnership opportunities emerge across infrastructure, AI capabilities, vertical markets, geographic expansion, and complementary technology domains.
                 </p>
                 <p>
-                  Whether you are a technology company with infrastructure or API capabilities relevant to AI platforms, a regional business with local market expertise, or a startup building complementary tools, we would love to explore how a partnership with Evara AI could be mutually beneficial and contribute to our shared mission of making AI genuinely useful for everyone.
+                  Whether you are a technology company with infrastructure or API capabilities relevant to AI platforms, a regional business with local market expertise, or a startup building complementary tools, we would love to explore how a partnership with Plyndrox AI could be mutually beneficial and contribute to our shared mission of making AI genuinely useful for everyone.
                 </p>
                 <p>
-                  Evara AI evaluates partnership opportunities on the basis of technical complementarity, alignment with our values, reliability track record, and long-term strategic fit. We are selective by design — because the quality of our partnerships directly determines the quality of our platform.
+                  Plyndrox AI evaluates partnership opportunities on the basis of technical complementarity, alignment with our values, reliability track record, and long-term strategic fit. We are selective by design — because the quality of our partnerships directly determines the quality of our platform.
                 </p>
               </div>
               <div className="mt-8 flex flex-wrap gap-3">
@@ -618,10 +618,10 @@ export default function PartnersPage() {
             </div>
             <div className="space-y-4">
               {[
-                { title: "Technology Partners", desc: "Companies providing infrastructure, APIs, or specialized technical capabilities that complement the Evara AI platform." },
-                { title: "Integration Partners", desc: "Businesses with popular tools or platforms whose integration would add significant value to Evara AI users." },
-                { title: "Regional Partners", desc: "Organizations with deep expertise in specific geographies, languages, or markets where Evara AI is expanding." },
-                { title: "Strategic Alliances", desc: "Established companies interested in co-building, co-marketing, or co-distributing AI-powered products with Evara AI." },
+                { title: "Technology Partners", desc: "Companies providing infrastructure, APIs, or specialized technical capabilities that complement the Plyndrox AI platform." },
+                { title: "Integration Partners", desc: "Businesses with popular tools or platforms whose integration would add significant value to Plyndrox AI users." },
+                { title: "Regional Partners", desc: "Organizations with deep expertise in specific geographies, languages, or markets where Plyndrox AI is expanding." },
+                { title: "Strategic Alliances", desc: "Established companies interested in co-building, co-marketing, or co-distributing AI-powered products with Plyndrox AI." },
               ].map((item, i) => (
                 <div key={item.title} className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-5 backdrop-blur-xl">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-xs font-bold text-white">
@@ -645,7 +645,7 @@ export default function PartnersPage() {
                 Trust & Credibility
               </p>
               <h2 className="mt-5 text-3xl font-semibold text-white sm:text-4xl">
-                Why Businesses Trust Evara AI
+                Why Businesses Trust Plyndrox AI
               </h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
@@ -653,17 +653,17 @@ export default function PartnersPage() {
                 {
                   icon: <UsersIcon className="h-6 w-6 text-violet-600" />,
                   title: "Trusted by Growing Businesses",
-                  desc: "Evara AI is used by thousands of individuals and businesses who rely on the platform for critical communication, AI automation, and productivity workflows.",
+                  desc: "Plyndrox AI is used by thousands of individuals and businesses who rely on the platform for critical communication, AI automation, and productivity workflows.",
                 },
                 {
                   icon: <ShieldIcon className="h-6 w-6 text-emerald-300" />,
                   title: "Reliable and Secure Platform",
-                  desc: "Backed by trusted partner infrastructure, Evara AI maintains high availability, encrypted data handling, and enterprise-grade security practices across all services.",
+                  desc: "Backed by trusted partner infrastructure, Plyndrox AI maintains high availability, encrypted data handling, and enterprise-grade security practices across all services.",
                 },
                 {
                   icon: <LayersIcon className="h-6 w-6 text-sky-300" />,
                   title: "Built for Scalability",
-                  desc: "Every layer of the Evara AI platform is designed to scale — from individual users to large enterprise deployments — without sacrificing quality, speed, or reliability.",
+                  desc: "Every layer of the Plyndrox AI platform is designed to scale — from individual users to large enterprise deployments — without sacrificing quality, speed, or reliability.",
                 },
               ].map((item) => (
                 <div key={item.title} className="rounded-[1.5rem] border border-gray-200 bg-white p-7 backdrop-blur-xl text-center">
@@ -707,7 +707,7 @@ export default function PartnersPage() {
                 href="/about"
                 className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-8 py-4 text-sm font-semibold text-white transition hover:bg-white/10"
               >
-                Learn About Evara AI
+                Learn About Plyndrox AI
               </Link>
             </div>
           </div>
@@ -716,7 +716,7 @@ export default function PartnersPage() {
 
       <footer className="relative z-10 border-t border-gray-100 bg-gray-50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Plyndrox AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/about" className="transition hover:text-gray-500">About</Link>
             <Link href="/contact" className="transition hover:text-gray-500">Contact</Link>

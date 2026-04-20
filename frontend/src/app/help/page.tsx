@@ -154,8 +154,8 @@ const helpCategories = [
     border: "border-purple-500/25",
     dot: "bg-purple-400",
     count: 8,
-    description: "New to Evara AI? Start here for a smooth onboarding experience.",
-    articles: ["Creating your Evara AI account", "Navigating the dashboard", "Setting up your first AI product", "Understanding your plan limits", "Connecting your business profile"],
+    description: "New to Plyndrox AI? Start here for a smooth onboarding experience.",
+    articles: ["Creating your Plyndrox AI account", "Navigating the dashboard", "Setting up your first AI product", "Understanding your plan limits", "Connecting your business profile"],
   },
   {
     id: "account-setup",
@@ -170,20 +170,20 @@ const helpCategories = [
     articles: ["Updating your profile information", "Changing your password", "Two-factor authentication setup", "Managing team members", "Email notification preferences"],
   },
   {
-    id: "ivana-ai",
-    label: "Evara AI",
+    id: "plyndrox-ai",
+    label: "Plyndrox AI",
     icon: <BrainIcon className="h-6 w-6" />,
     color: "text-fuchsia-600",
     bg: "bg-pink-500/10",
     border: "border-pink-500/25",
     dot: "bg-pink-400",
     count: 12,
-    description: "Help with your Evara AI web and app chat assistant.",
-    articles: ["Starting your first conversation", "How to write effective prompts", "Managing conversation history", "Evara AI response quality", "Using Evara AI for documents"],
+    description: "Help with your Plyndrox AI web and app chat assistant.",
+    articles: ["Starting your first conversation", "How to write effective prompts", "Managing conversation history", "Plyndrox AI response quality", "Using Plyndrox AI for documents"],
   },
   {
     id: "whatsapp-ai",
-    label: "WhatsApp AI",
+    label: "Plyndrox WhatsApp AI",
     icon: <MessageIcon className="h-6 w-6" />,
     color: "text-emerald-300",
     bg: "bg-emerald-500/10",
@@ -203,7 +203,7 @@ const helpCategories = [
     dot: "bg-amber-400",
     count: 5,
     description: "Plans, payments, invoices and subscription management.",
-    articles: ["Understanding Evara AI plans", "Upgrading or downgrading your plan", "Viewing and downloading invoices", "Cancelling your subscription", "Payment method management"],
+    articles: ["Understanding Plyndrox AI plans", "Upgrading or downgrading your plan", "Viewing and downloading invoices", "Cancelling your subscription", "Payment method management"],
   },
   {
     id: "technical",
@@ -215,7 +215,7 @@ const helpCategories = [
     dot: "bg-red-400",
     count: 9,
     description: "Troubleshoot errors, performance issues, and platform problems.",
-    articles: ["WhatsApp webhook not receiving messages", "Evara AI not responding correctly", "Account login problems", "Slow response times", "Data not syncing in dashboard"],
+    articles: ["WhatsApp webhook not receiving messages", "Plyndrox AI not responding correctly", "Account login problems", "Slow response times", "Data not syncing in dashboard"],
   },
   {
     id: "api",
@@ -235,79 +235,79 @@ const faqs = [
   {
     id: "faq-1",
     category: "Getting Started",
-    question: "How do I create an Evara AI account?",
-    answer: "Creating an Evara AI account is simple. Visit rainajet.com and click 'Sign Up'. Enter your email address, create a secure password, and follow the verification steps. Once verified, you will be taken to your dashboard where you can set up Evara AI or WhatsApp AI based on your plan.",
+    question: "How do I create a Plyndrox AI account?",
+    answer: "Creating a Plyndrox AI account is simple. Visit plyndrox.app and click 'Sign Up'. Enter your email address, create a secure password, and follow the verification steps. Once verified, you will be taken to your dashboard where you can set up Plyndrox AI or Plyndrox WhatsApp AI based on your plan.",
     tags: ["account", "signup", "getting started"],
   },
   {
     id: "faq-2",
-    category: "WhatsApp AI",
-    question: "How do I connect my WhatsApp Business number to Evara AI?",
-    answer: "To connect WhatsApp, you need a verified Meta Business account and WhatsApp Business Platform access. In your Evara AI dashboard, navigate to WhatsApp AI → Connect Integration. Enter your Phone Number ID and access token from the Meta Developer Portal. Evara AI will generate a webhook URL — paste this into your Meta app's webhook configuration and verify it. The connection is live within minutes.",
+    category: "Plyndrox WhatsApp AI",
+    question: "How do I connect my WhatsApp Business number to Plyndrox AI?",
+    answer: "To connect WhatsApp, you need a verified Meta Business account and WhatsApp Business Platform access. In your Plyndrox AI dashboard, navigate to Plyndrox WhatsApp AI → Connect Integration. Enter your Phone Number ID and access token from the Meta Developer Portal. Plyndrox AI will generate a webhook URL — paste this into your Meta app's webhook configuration and verify it. The connection is live within minutes.",
     tags: ["whatsapp", "setup", "meta", "api"],
   },
   {
     id: "faq-3",
-    category: "Evara AI",
-    question: "Why is Evara AI giving me inaccurate or unexpected responses?",
-    answer: "Evara AI's response quality depends heavily on how your questions are framed. For best results: (1) Provide clear context about your situation, (2) Specify the format you want the response in, (3) Be precise about what you need. If a response is off, ask Ivana to try again with more specific instructions. For persistent issues, contact support@evara.ai.",
-    tags: ["ivana", "accuracy", "quality", "troubleshoot"],
+    category: "Plyndrox AI",
+    question: "Why is Plyndrox AI giving me inaccurate or unexpected responses?",
+    answer: "Plyndrox AI's response quality depends heavily on how your questions are framed. For best results: (1) Provide clear context about your situation, (2) Specify the format you want the response in, (3) Be precise about what you need. If a response is off, ask Plyndrox AI to try again with more specific instructions. For persistent issues, contact support@plyndrox.app.",
+    tags: ["plyndrox", "accuracy", "quality", "troubleshoot"],
   },
   {
     id: "faq-4",
-    category: "WhatsApp AI",
-    question: "My WhatsApp AI is not responding to customer messages — what should I check?",
-    answer: "First, verify that your webhook is correctly configured in the Meta Developer Portal and is pointing to the Evara AI webhook URL. Second, confirm that your access token has not expired — Meta access tokens can expire if not refreshed. Third, check that the WhatsApp number is verified and active. Fourth, review the conversation logs in your Evara AI dashboard to see if messages are being received but not matched to your knowledge base.",
+    category: "Plyndrox WhatsApp AI",
+    question: "My Plyndrox WhatsApp AI is not responding to customer messages — what should I check?",
+    answer: "First, verify that your webhook is correctly configured in the Meta Developer Portal and is pointing to the Plyndrox AI webhook URL. Second, confirm that your access token has not expired — Meta access tokens can expire if not refreshed. Third, check that the WhatsApp number is verified and active. Fourth, review the conversation logs in your Plyndrox AI dashboard to see if messages are being received but not matched to your knowledge base.",
     tags: ["whatsapp", "not working", "webhook", "troubleshoot"],
   },
   {
     id: "faq-5",
     category: "Billing",
     question: "Can I switch plans or cancel at any time?",
-    answer: "Yes, you can upgrade, downgrade, or cancel your Evara AI subscription at any time from your account settings. Upgrades take effect immediately. Downgrades and cancellations take effect at the end of your current billing period — you retain full access until then. We do not charge cancellation fees.",
+    answer: "Yes, you can upgrade, downgrade, or cancel your Plyndrox AI subscription at any time from your account settings. Upgrades take effect immediately. Downgrades and cancellations take effect at the end of your current billing period — you retain full access until then. We do not charge cancellation fees.",
     tags: ["billing", "cancel", "plan", "subscription"],
   },
   {
     id: "faq-6",
-    category: "Evara AI",
-    question: "How do I save and revisit my Evara AI conversations?",
-    answer: "Evara AI automatically saves your conversation history when you are logged in. Access past conversations from the 'History' panel on the left side of the Evara AI interface. You can also search through conversation history, rename chats for easy reference, and delete conversations you no longer need from the same panel.",
-    tags: ["ivana", "history", "conversations", "save"],
+    category: "Plyndrox AI",
+    question: "How do I save and revisit my Plyndrox AI conversations?",
+    answer: "Plyndrox AI automatically saves your conversation history when you are logged in. Access past conversations from the 'History' panel on the left side of the Plyndrox AI interface. You can also search through conversation history, rename chats for easy reference, and delete conversations you no longer need from the same panel.",
+    tags: ["plyndrox", "history", "conversations", "save"],
   },
   {
     id: "faq-7",
-    category: "WhatsApp AI",
-    question: "How do I add business information to my WhatsApp AI knowledge base?",
-    answer: "In your Evara AI dashboard, navigate to WhatsApp AI → Knowledge Base. Here you can add your business information in sections: Business Details (name, hours, location), Products & Services, FAQs, and custom topics. The more detailed and accurate your knowledge base, the better your AI will respond to customers. You can update it at any time and changes take effect immediately.",
+    category: "Plyndrox WhatsApp AI",
+    question: "How do I add business information to my Plyndrox WhatsApp AI knowledge base?",
+    answer: "In your Plyndrox AI dashboard, navigate to Plyndrox WhatsApp AI → Knowledge Base. Here you can add your business information in sections: Business Details (name, hours, location), Products & Services, FAQs, and custom topics. The more detailed and accurate your knowledge base, the better your AI will respond to customers. You can update it at any time and changes take effect immediately.",
     tags: ["whatsapp", "knowledge base", "setup", "configuration"],
   },
   {
     id: "faq-8",
     category: "Account",
-    question: "How do I add team members to my Evara AI account?",
+    question: "How do I add team members to my Plyndrox AI account?",
     answer: "Team member access is available on Business plans. Navigate to Settings → Team Members and click 'Invite Member'. Enter the team member's email address and assign a role (Admin, Manager, or Viewer). They will receive an invitation email with setup instructions. You can adjust permissions or remove team members at any time.",
     tags: ["account", "team", "invite", "members"],
   },
   {
     id: "faq-9",
     category: "API",
-    question: "Where do I find my Evara AI API key?",
+    question: "Where do I find my Plyndrox AI API key?",
     answer: "API keys are available to users on Pro and Business plans. Navigate to Settings → API Keys and click 'Generate New Key'. Copy the key immediately — for security, it will only be shown once in full. If you lose a key, you can revoke it and generate a new one. Keep your API keys secure and never share them publicly or commit them to version control.",
     tags: ["api", "key", "integration", "developer"],
   },
   {
     id: "faq-10",
     category: "Technical",
-    question: "What should I do if my Evara AI dashboard is not loading?",
-    answer: "Try these steps in order: (1) Hard refresh your browser (Ctrl+Shift+R or Cmd+Shift+R), (2) Clear your browser cache and cookies, (3) Try a different browser, (4) Check your internet connection, (5) Disable browser extensions that might interfere with the page. If the issue persists, contact support at support.evara.ai@sendora.me with a description of the problem and your browser/device information.",
+    question: "What should I do if my Plyndrox AI dashboard is not loading?",
+    answer: "Try these steps in order: (1) Hard refresh your browser (Ctrl+Shift+R or Cmd+Shift+R), (2) Clear your browser cache and cookies, (3) Try a different browser, (4) Check your internet connection, (5) Disable browser extensions that might interfere with the page. If the issue persists, contact support at support@plyndrox.app with a description of the problem and your browser/device information.",
     tags: ["technical", "dashboard", "loading", "browser"],
   },
 ];
 
-const ivanaTips = [
+const plyndroxTips = [
   {
     title: "Starting a conversation",
-    desc: "Type your question or request in the chat input and press Enter or click Send. Evara AI will respond within seconds.",
+    desc: "Type your question or request in the chat input and press Enter or click Send. Plyndrox AI will respond within seconds.",
   },
   {
     title: "Getting better responses",
@@ -318,8 +318,8 @@ const ivanaTips = [
     desc: "If the first response is close but not perfect, refine it: 'Make this shorter', 'Use a more formal tone', 'Add more detail about X'. Iteration is expected and encouraged.",
   },
   {
-    title: "Using Ivana for documents",
-    desc: "Paste document content directly into the chat and ask Ivana to summarize, rewrite, analyze, or improve it. Works for emails, reports, product descriptions, and more.",
+    title: "Using Plyndrox AI for documents",
+    desc: "Paste document content directly into the chat and ask Plyndrox AI to summarize, rewrite, analyze, or improve it. Works for emails, reports, product descriptions, and more.",
   },
   {
     title: "Conversation history",
@@ -327,14 +327,14 @@ const ivanaTips = [
   },
   {
     title: "Common issues",
-    desc: "If Ivana is generating off-topic responses, try starting a new conversation. If responses are consistently poor, check that you are providing sufficient context in your prompts.",
+    desc: "If Plyndrox AI is generating off-topic responses, try starting a new conversation. If responses are consistently poor, check that you are providing sufficient context in your prompts.",
   },
 ];
 
 const whatsappTips = [
   {
     title: "Connecting the WhatsApp Business API",
-    desc: "You need a Meta Business account and WhatsApp Platform access. Enter your Phone Number ID and access token in the Evara AI dashboard to connect.",
+    desc: "You need a Meta Business account and WhatsApp Platform access. Enter your Phone Number ID and access token in the Plyndrox AI dashboard to connect.",
   },
   {
     title: "Building your knowledge base",
@@ -346,25 +346,25 @@ const whatsappTips = [
   },
   {
     title: "Setting message templates",
-    desc: "Message templates require Meta approval. Submit them from the Evara AI dashboard. Use templates for proactive messages sent outside the 24-hour customer-initiated window.",
+    desc: "Message templates require Meta approval. Submit them from the Plyndrox AI dashboard. Use templates for proactive messages sent outside the 24-hour customer-initiated window.",
   },
   {
     title: "Common error: webhook not verifying",
-    desc: "Ensure the webhook URL from Evara AI is pasted exactly into Meta, and that your verification token matches what you entered in both places.",
+    desc: "Ensure the webhook URL from Plyndrox AI is pasted exactly into Meta, and that your verification token matches what you entered in both places.",
   },
   {
     title: "Common error: access token expired",
-    desc: "Meta access tokens can expire. Generate a new permanent token from your Meta developer app settings and update it in your Evara AI dashboard.",
+    desc: "Meta access tokens can expire. Generate a new permanent token from your Meta developer app settings and update it in your Plyndrox AI dashboard.",
   },
 ];
 
 const popularArticles = [
-  { title: "Complete WhatsApp AI setup guide", category: "WhatsApp AI", time: "9 min" },
-  { title: "How to write effective prompts for Evara AI", category: "Evara AI", time: "5 min" },
-  { title: "Connecting your WhatsApp Business API", category: "WhatsApp AI", time: "6 min" },
-  { title: "Understanding your Evara AI plan limits", category: "Billing", time: "3 min" },
+  { title: "Complete Plyndrox WhatsApp AI setup guide", category: "Plyndrox WhatsApp AI", time: "9 min" },
+  { title: "How to write effective prompts for Plyndrox AI", category: "Plyndrox AI", time: "5 min" },
+  { title: "Connecting your WhatsApp Business API", category: "Plyndrox WhatsApp AI", time: "6 min" },
+  { title: "Understanding your Plyndrox AI plan limits", category: "Billing", time: "3 min" },
   { title: "Troubleshooting WhatsApp webhook errors", category: "Technical", time: "4 min" },
-  { title: "Getting started with your Evara AI dashboard", category: "Getting Started", time: "4 min" },
+  { title: "Getting started with your Plyndrox AI dashboard", category: "Getting Started", time: "4 min" },
 ];
 
 export default function HelpPage() {
@@ -398,8 +398,8 @@ export default function HelpPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/blog" className="hidden text-sm text-gray-400 transition hover:text-gray-600 sm:block">Blog</Link>
@@ -467,7 +467,7 @@ export default function HelpPage() {
             {/* Quick links */}
             {!search && (
               <div className="mt-5 flex flex-wrap justify-center gap-2">
-                {["Setting up WhatsApp AI", "Evara AI prompts", "Cancel subscription", "API key", "Webhook error"].map((q) => (
+                {["Setting up Plyndrox WhatsApp AI", "Plyndrox AI prompts", "Cancel subscription", "API key", "Webhook error"].map((q) => (
                   <button
                     key={q}
                     onClick={() => setSearch(q)}
@@ -655,19 +655,19 @@ export default function HelpPage() {
               </div>
               <div className="grid gap-8 lg:grid-cols-2">
 
-                {/* Evara AI Help */}
+                {/* Plyndrox AI Help */}
                 <div className="rounded-[2rem] border border-pink-500/20 bg-pink-500/[0.05] p-7">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-pink-500/20 bg-pink-500/10 text-fuchsia-600">
                       <BrainIcon className="h-6 w-6" />
                     </div>
                     <div>
-                      <p className="font-semibold text-[#1d2226]">Evara AI</p>
+                      <p className="font-semibold text-[#1d2226]">Plyndrox AI</p>
                       <p className="text-xs text-fuchsia-600">Web & App AI Assistant</p>
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {ivanaTips.map((tip, i) => (
+                    {plyndroxTips.map((tip, i) => (
                       <div key={i} className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                         <p className="text-sm font-semibold text-white mb-1">{tip.title}</p>
                         <p className="text-xs leading-5 text-gray-400">{tip.desc}</p>
@@ -676,20 +676,20 @@ export default function HelpPage() {
                   </div>
                   <div className="mt-6 pt-5 border-t border-gray-100">
                     <Link href="/chat" className="group inline-flex items-center gap-2 rounded-full bg-pink-500 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-pink-400">
-                      Try Evara AI
+                      Try Plyndrox AI
                       <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
                     </Link>
                   </div>
                 </div>
 
-                {/* WhatsApp AI Help */}
+                {/* Plyndrox WhatsApp AI Help */}
                 <div className="rounded-[2rem] border border-emerald-500/20 bg-emerald-500/[0.05] p-7">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-300">
                       <MessageIcon className="h-6 w-6" />
                     </div>
                     <div>
-                      <p className="font-semibold text-[#1d2226]">WhatsApp AI</p>
+                      <p className="font-semibold text-[#1d2226]">Plyndrox WhatsApp AI</p>
                       <p className="text-xs text-emerald-300">Business Automation</p>
                     </div>
                   </div>
@@ -703,7 +703,7 @@ export default function HelpPage() {
                   </div>
                   <div className="mt-6 pt-5 border-t border-gray-100">
                     <Link href="/whatsapp-ai" className="group inline-flex items-center gap-2 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-500">
-                      Explore WhatsApp AI
+                      Explore Plyndrox WhatsApp AI
                       <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
                     </Link>
                   </div>
@@ -727,7 +727,7 @@ export default function HelpPage() {
               <div className="mt-4 flex flex-wrap gap-2 text-xs text-gray-400">
                 <span className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                  support.evara.ai@sendora.me
+                  support@plyndrox.app
                 </span>
                 <span className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />
@@ -779,15 +779,15 @@ export default function HelpPage() {
               Ready to get started?
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-gray-500">
-              You now have everything you need. Launch Evara AI for intelligent conversation, or connect WhatsApp AI to automate your business communication today.
+              You now have everything you need. Launch Plyndrox AI for intelligent conversation, or connect Plyndrox WhatsApp AI to automate your business communication today.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Link href="/chat" className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-sm font-bold text-black transition hover:scale-105 hover:bg-zinc-100 shadow-xl">
-                Try Evara AI Now
+                Try Plyndrox AI Now
                 <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </Link>
               <Link href="/whatsapp-ai" className="group inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-7 py-3.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-400/20">
-                Set Up WhatsApp AI
+                Set Up Plyndrox WhatsApp AI
                 <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </Link>
               <Link href="/signup" className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10">
@@ -800,7 +800,7 @@ export default function HelpPage() {
 
       <footer className="relative z-10 border-t border-gray-100 bg-gray-50 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Plyndrox AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/blog" className="transition hover:text-gray-500">Blog</Link>
             <Link href="/about" className="transition hover:text-gray-500">About</Link>

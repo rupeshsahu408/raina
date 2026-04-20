@@ -3,12 +3,12 @@ import Link from "next/link";
 import { posts, categories, getFeaturedPost, formatDate } from "@/lib/blog";
 
 export const metadata: Metadata = {
-  title: "Blog — Evara AI | AI Guides, WhatsApp Automation & Business Growth",
+  title: "Blog — Plyndrox AI | AI Guides, WhatsApp Automation & Business Growth",
   description:
-    "Explore Evara AI's blog for expert guides on AI automation, WhatsApp Business API, Evara AI tips, regional AI, and strategies to grow your business with artificial intelligence.",
+    "Explore Plyndrox AI's blog for expert guides on AI automation, WhatsApp Business API, Plyndrox AI tips, regional AI, and strategies to grow your business with artificial intelligence.",
   openGraph: {
-    title: "Evara AI Blog — AI Guides, WhatsApp Automation & Business Growth",
-    description: "Expert guides, tutorials, and insights from the Evara AI team to help you get the most from AI automation.",
+    title: "Plyndrox AI Blog — AI Guides, WhatsApp Automation & Business Growth",
+    description: "Expert guides, tutorials, and insights from the Plyndrox AI team to help you get the most from AI automation.",
     type: "website",
   },
 };
@@ -60,8 +60,8 @@ export default function BlogPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/about" className="hidden text-sm text-gray-400 transition hover:text-gray-600 sm:block">About</Link>
@@ -79,7 +79,7 @@ export default function BlogPage() {
         <div className="text-center mb-16">
           <div className="inline-flex items-center gap-2 rounded-full border border-purple-400/20 bg-purple-400/10 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-violet-600 mb-6">
             <SparklesIcon className="h-3.5 w-3.5" />
-            <span>Evara AI Blog</span>
+            <span>Plyndrox AI Blog</span>
           </div>
           <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl">
             Insights on{" "}
@@ -280,10 +280,10 @@ export default function BlogPage() {
               Stay Updated
             </div>
             <h3 className="text-2xl font-semibold text-white sm:text-3xl">
-              Get the latest from Evara AI
+              Get the latest from Plyndrox AI
             </h3>
             <p className="mx-auto mt-4 max-w-lg text-sm leading-7 text-gray-500">
-              New articles on AI automation, WhatsApp AI tips, and product updates — delivered to the people building with Evara AI.
+              New articles on AI automation, Plyndrox WhatsApp AI tips, and product updates — delivered to the people building with Plyndrox AI.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link href="/contact" className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-bold text-black transition hover:scale-105 hover:bg-zinc-100">
@@ -291,7 +291,7 @@ export default function BlogPage() {
                 <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
               </Link>
               <Link href="/signup" className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">
-                Try Evara AI Free
+                Try Plyndrox AI Free
               </Link>
             </div>
           </div>
@@ -300,7 +300,7 @@ export default function BlogPage() {
 
       <footer className="relative z-10 border-t border-gray-100 bg-gray-50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8 mt-10">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Plyndrox AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/about" className="transition hover:text-gray-500">About</Link>
             <Link href="/partners" className="transition hover:text-gray-500">Partners</Link>

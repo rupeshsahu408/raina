@@ -82,7 +82,7 @@ export default function IbaraLanding() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
               <span className="text-[#1d2226] font-bold text-sm">I</span>
             </div>
-            <span className="font-bold text-lg tracking-tight">IBARA AI</span>
+            <span className="font-bold text-lg tracking-tight">Plyndrox Web AI</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
             <a href="#features" className="hover:text-[#1d2226] transition-colors">Features</a>
@@ -119,7 +119,7 @@ export default function IbaraLanding() {
           </h1>
 
           <p className="animate-slide-up-3 text-lg md:text-xl text-white/50 max-w-2xl mx-auto mb-10 leading-relaxed">
-            IBARA AI turns your website into a 24/7 intelligent assistant. Train it on your business, deploy it instantly — no code required.
+            Plyndrox Web AI turns your website into a 24/7 intelligent assistant. Train it on your business, deploy it instantly — no code required.
           </p>
 
           <div className="animate-slide-up-4 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -159,7 +159,7 @@ export default function IbaraLanding() {
                         <div className="w-6 h-6 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center">
                           <span className="text-[#1d2226] text-[9px] font-bold">AI</span>
                         </div>
-                        <span className="text-xs font-semibold text-white/80">IBARA Assistant</span>
+                        <span className="text-xs font-semibold text-white/80">Plyndrox Web Assistant</span>
                         <span className="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                       </div>
                       <p className="text-[10px] text-white/50 leading-relaxed">Hi! How can I help you today? I know everything about this business 👋</p>
@@ -279,7 +279,7 @@ export default function IbaraLanding() {
                 <span className="gradient-text">to your website?</span>
               </h2>
               <p className="text-white/40 mb-8 text-lg">
-                Join businesses using IBARA AI to serve customers smarter.
+                Join businesses using Plyndrox Web AI to serve customers smarter.
               </p>
               <button
                 onClick={() => router.push("/ibara/auth?mode=signup")}
@@ -299,9 +299,9 @@ export default function IbaraLanding() {
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
               <span className="text-[#1d2226] font-bold text-xs">I</span>
             </div>
-            <span className="font-bold text-sm">IBARA AI</span>
+            <span className="font-bold text-sm">Plyndrox Web AI</span>
           </div>
-          <p className="text-white/20 text-xs">© {new Date().getFullYear()} IBARA AI. All rights reserved.</p>
+          <p className="text-white/20 text-xs">© {new Date().getFullYear()} Plyndrox Web AI. All rights reserved.</p>
           <div className="flex gap-6 text-xs text-white/30">
             <a href="/privacy-policy" className="hover:text-[#1d2226]/60 transition-colors">Privacy</a>
             <a href="/terms" className="hover:text-[#1d2226]/60 transition-colors">Terms</a>

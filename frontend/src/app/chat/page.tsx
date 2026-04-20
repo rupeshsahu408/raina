@@ -72,8 +72,8 @@ function formatUnreachableApiHelp(apiBase: string, technical: string, url?: stri
     `"Failed to fetch" means the browser never connected — this is not a database error yet.`,
     "",
     "Do this:",
-    "1. Open a terminal in the evara/backend folder and run: npm run dev",
-    "2. Wait for: [evara-backend] listening on http://localhost:8081",
+    "1. Open a terminal in the project backend folder and run: npm run dev",
+    "2. Wait for: [plyndrox-backend] listening on http://localhost:8081",
     `3. In the browser, open: ${apiBase}/health  (should show {"ok":true,...})`,
     "4. If your API uses another port, set NEXT_PUBLIC_API_BASE_URL in frontend/.env.local and restart the Next.js dev server",
     "",
@@ -148,7 +148,7 @@ function greetingMessage(): ChatMessage {
   return {
     id: "greeting",
     role: "ai",
-    content: "Hi, I'm Evara. Tell me what you need right now—gently.",
+    content: "Hi, I'm Plyndrox. Tell me what you need right now—gently.",
   };
 }
 
@@ -302,11 +302,11 @@ function TypingDots() {
 }
 
 // ── AI Avatar ───────────────────────────────────────────────────────────────
-function EvaraAvatar(_: { personality: Personality }) {
+function PlyndroxAvatar(_: { personality: Personality }) {
   return (
     <img
       src="/evara-logo.png"
-      alt="Evara"
+      alt="Plyndrox"
       className="h-8 w-8 shrink-0 object-contain"
       draggable={false}
     />
@@ -933,8 +933,8 @@ export default function ChatPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-3 pb-3 pt-4">
           <div className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
-            <span className="text-[14px] font-black tracking-tight text-[#1d2226]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
+            <span className="text-[14px] font-black tracking-tight text-[#1d2226]">Plyndrox AI</span>
           </div>
           <button
             type="button"
@@ -1254,7 +1254,7 @@ export default function ChatPage() {
         {loading ? (
           <div className="flex flex-1 items-center justify-center">
             <div className="flex flex-col items-center gap-4">
-              <img src="/evara-logo.png" alt="Evara AI" className="h-12 w-12 object-contain" draggable={false} />
+              <img src="/evara-logo.png" alt="Plyndrox AI" className="h-12 w-12 object-contain" draggable={false} />
               <p className="text-[13px] text-gray-400">
                 {historyLoading ? "Loading chat history…" : "Loading…"}
               </p>
@@ -1266,7 +1266,7 @@ export default function ChatPage() {
               <div className="mx-auto max-w-4xl space-y-6 px-3 py-5 sm:px-6 sm:py-8">
                 {messages.map((m) => (
                   <div key={m.id} className={["msg-in", m.role === "user" ? "flex justify-end" : "flex items-start gap-3"].join(" ")}>
-                    {m.role === "ai" && <EvaraAvatar personality={personality} />}
+                    {m.role === "ai" && <PlyndroxAvatar personality={personality} />}
                     <div className={[
                       "group relative",
                       m.role === "user"
@@ -1316,7 +1316,7 @@ export default function ChatPage() {
                 {/* Typing indicator */}
                 {isTyping && (
                   <div className="msg-in flex items-start gap-3">
-                    <EvaraAvatar personality={personality} />
+                    <PlyndroxAvatar personality={personality} />
                     <div className="rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
                       <TypingDots />
                     </div>
@@ -1392,7 +1392,7 @@ export default function ChatPage() {
                   <p className="mt-1.5 text-center text-[11px] text-red-400">{micError}</p>
                 )}
                 <p className="mt-1 text-center text-[11px] text-zinc-700">
-                  Evara can make mistakes. Verify important information.{" "}
+                  Plyndrox can make mistakes. Verify important information.{" "}
                   <button
                     type="button"
                     onClick={() => setShowCookieModal(true)}

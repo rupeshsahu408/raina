@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Features — Evara AI",
+  title: "Features — Plyndrox AI",
   description:
-    "Explore every capability of the Evara AI platform — emotional personal AI, WhatsApp business automation, Bihar regional intelligence, voice interaction, and more.",
+    "Explore every capability of the Plyndrox AI platform — emotional personal AI, WhatsApp business automation, Bihar regional intelligence, voice interaction, and more.",
 };
 
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -148,8 +148,8 @@ export default function FeaturesPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara</span>
+            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/login" className="hidden text-sm font-medium text-gray-500 transition hover:text-[#1d2226] sm:block">
@@ -175,14 +175,14 @@ export default function FeaturesPage() {
               Built to think, feel, and automate.
             </h1>
             <p className="mt-5 max-w-2xl text-balance text-base leading-relaxed text-gray-500 sm:text-lg">
-              Evara AI combines emotional intelligence, business automation, and regional knowledge into one cohesive platform — available on web, mobile, and WhatsApp.
+              Plyndrox AI combines emotional intelligence, business automation, and regional knowledge into one cohesive platform — available on web, mobile, and WhatsApp.
             </p>
             <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link href="/signup" className="w-full rounded-full bg-[#1d2226] px-8 py-3.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#2d3238] sm:w-auto">
                 Start for Free
               </Link>
               <Link href="/business-ai" className="w-full rounded-full border border-gray-200 bg-white px-8 py-3.5 text-sm font-semibold text-gray-600 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 sm:w-auto">
-                Explore Business AI
+                Explore Plyndrox Business AI
               </Link>
             </div>
           </div>
@@ -200,7 +200,7 @@ export default function FeaturesPage() {
                 {
                   icon: <HeartIcon className="h-6 w-6" />,
                   iconStyle: "text-violet-600 bg-violet-50 border-violet-100",
-                  title: "Evara AI — Personal Companion",
+                  title: "Plyndrox AI — Personal Companion",
                   description: "An emotionally aware AI with two distinct personalities — Simi and Loa. It listens, remembers, and responds in a way that feels genuinely human.",
                   href: "/chat",
                   cta: "Open Chat",
@@ -209,10 +209,10 @@ export default function FeaturesPage() {
                 {
                   icon: <WhatsAppIcon className="h-6 w-6" />,
                   iconStyle: "text-emerald-600 bg-emerald-50 border-emerald-100",
-                  title: "WhatsApp AI — Business Automation",
-                  description: "Plug your WhatsApp Cloud API into Evara's multilingual engine. Automate customer support, inquiries, and bookings — 24/7, without lifting a finger.",
+                  title: "Plyndrox WhatsApp AI — Business Automation",
+                  description: "Plug your WhatsApp Cloud API into Plyndrox's multilingual engine. Automate customer support, inquiries, and bookings — 24/7, without lifting a finger.",
                   href: "/whatsapp-ai",
-                  cta: "Explore Business AI",
+                  cta: "Explore Plyndrox Business AI",
                   ctaStyle: "text-emerald-600 hover:text-emerald-700",
                 },
                 {
@@ -254,7 +254,7 @@ export default function FeaturesPage() {
                   AI that understands how you feel.
                 </h2>
                 <p className="mt-5 text-base leading-relaxed text-gray-500">
-                  Evara AI isn't just a chatbot. It reads the emotional tone behind your words, tracks your state over time, and responds with genuine care — switching between Simi's calm warmth and Loa's confident energy based on what you need.
+                  Plyndrox AI isn't just a chatbot. It reads the emotional tone behind your words, tracks your state over time, and responds with genuine care — switching between Simi's calm warmth and Loa's confident energy based on what you need.
                 </p>
                 <ul className="mt-7 space-y-4">
                   {[
@@ -273,7 +273,7 @@ export default function FeaturesPage() {
                   ))}
                 </ul>
                 <Link href="/chat" className="mt-9 inline-flex items-center gap-2 rounded-full bg-[#1d2226] px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#2d3238]">
-                  Try Evara AI <ArrowRightIcon className="h-4 w-4" />
+                  Try Plyndrox AI <ArrowRightIcon className="h-4 w-4" />
                 </Link>
               </div>
 
@@ -299,7 +299,7 @@ export default function FeaturesPage() {
           </div>
         </section>
 
-        {/* WhatsApp Business AI Deep Dive */}
+        {/* Plyndrox WhatsApp AI Deep Dive */}
         <section className="border-y border-gray-100 bg-gray-50 py-20 sm:py-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-14 lg:grid-cols-2 lg:items-center">
@@ -324,13 +324,13 @@ export default function FeaturesPage() {
 
               <div>
                 <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                  <WhatsAppIcon className="h-3.5 w-3.5" /> WhatsApp Business AI
+                  <WhatsAppIcon className="h-3.5 w-3.5" /> Plyndrox WhatsApp AI
                 </span>
                 <h2 className="mt-5 text-3xl font-black tracking-tight text-[#1d2226] sm:text-5xl text-balance">
                   Customer support that never sleeps.
                 </h2>
                 <p className="mt-5 text-base leading-relaxed text-gray-500">
-                  Connect your WhatsApp Business number to Evara in minutes. Upload your knowledge book, and our AI handles inquiries, bookings, and FAQs — in any language — with responses that feel human, not robotic.
+                  Connect your WhatsApp Business number to Plyndrox in minutes. Upload your knowledge book, and our AI handles inquiries, bookings, and FAQs — in any language — with responses that feel human, not robotic.
                 </p>
                 <ul className="mt-7 space-y-3">
                   {[
@@ -418,14 +418,14 @@ export default function FeaturesPage() {
               Ready to get started?
             </h2>
             <p className="mt-5 text-base text-gray-500 max-w-xl mx-auto leading-7">
-              Join thousands of users using Evara AI for personal support, business automation, and regional intelligence.
+              Join thousands of users using Plyndrox AI for personal support, business automation, and regional intelligence.
             </p>
             <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/signup" className="w-full sm:w-auto rounded-full bg-[#1d2226] px-9 py-4 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#2d3238]">
                 Start free today
               </Link>
               <Link href="/business-ai" className="w-full sm:w-auto rounded-full border border-gray-200 bg-white px-9 py-4 text-sm font-semibold text-gray-600 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300">
-                See Business AI
+                See Plyndrox Business AI
               </Link>
             </div>
           </div>
@@ -435,10 +435,10 @@ export default function FeaturesPage() {
       <footer className="border-t border-gray-200 bg-white py-7 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 text-gray-400 hover:text-[#1d2226] transition">
-            <img src="/evara-logo.png" alt="Evara" className="h-5 w-5 object-contain opacity-60" />
-            <span className="text-xs font-bold uppercase tracking-[0.18em]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain opacity-60" />
+            <span className="text-xs font-bold uppercase tracking-[0.18em]">Plyndrox AI</span>
           </Link>
-          <p className="text-xs text-gray-400">© {new Date().getFullYear()} Evara AI. All rights reserved.</p>
+          <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</p>
           <div className="flex gap-5 text-xs text-gray-400">
             <Link href="/privacy-policy" className="hover:text-[#1d2226] transition">Privacy</Link>
             <Link href="/terms" className="hover:text-[#1d2226] transition">Terms</Link>

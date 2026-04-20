@@ -66,7 +66,7 @@ function SidebarContent({ pathname, onClose }: { pathname: string; onClose?: () 
         </div>
         <div>
           <p className="text-sm font-black text-white leading-none">Plyndrox</p>
-          <p className="text-[10px] font-semibold text-indigo-300 leading-none mt-0.5">Payables AI</p>
+          <p className="text-[10px] font-semibold text-indigo-300 leading-none mt-0.5">Plyndrox Payable AI</p>
         </div>
         {onClose && (
           <button onClick={onClose} className="ml-auto rounded-lg p-1 text-white/50 hover:bg-white/10 hover:text-white">

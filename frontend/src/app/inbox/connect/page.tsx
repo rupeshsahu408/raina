@@ -131,10 +131,10 @@ function ConnectContent() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="m15 18-6-6 6-6" />
           </svg>
-          <span className="text-sm">Inbox AI</span>
+          <span className="text-sm">Plyndrox Inbox AI</span>
         </Link>
         <div className="flex items-center gap-2">
-          <img src="/evara-logo.png" alt="Evara" className="h-7 w-7 object-contain opacity-70" />
+          <img src="/evara-logo.png" alt="Plyndrox" className="h-7 w-7 object-contain opacity-70" />
           <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Plyndrox</span>
         </div>
       </nav>

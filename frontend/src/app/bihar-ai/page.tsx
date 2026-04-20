@@ -188,7 +188,7 @@ function BiharAvatar() {
   return (
     <img
       src="/evara-logo.png"
-      alt="Evara"
+      alt="Plyndrox"
       className="h-8 w-8 shrink-0 object-contain"
       draggable={false}
     />
@@ -470,7 +470,7 @@ export default function BiharAiPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#111111]">
         <div className="flex flex-col items-center gap-4">
-          <img src="/evara-logo.png" alt="Evara AI" className="h-12 w-12 object-contain" draggable={false} />
+          <img src="/evara-logo.png" alt="Plyndrox AI" className="h-12 w-12 object-contain" draggable={false} />
           <p className="text-[13px] text-zinc-500">Loading…</p>
         </div>
       </div>
@@ -581,7 +581,7 @@ export default function BiharAiPage() {
             href="/chat"
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 py-2 text-[12px] text-gray-500 transition hover:bg-gray-100 hover:text-[#1d2226]"
           >
-            ← Evara AI
+            ← Plyndrox AI
           </a>
           <button
             type="button"

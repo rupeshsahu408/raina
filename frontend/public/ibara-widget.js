@@ -14,7 +14,7 @@
   })();
 
   if (!SITE_ID) {
-    console.warn("[IBARA AI] Missing data-site-id attribute on script tag.");
+    console.warn("[Plyndrox Web AI] Missing data-site-id attribute on script tag.");
     return;
   }
 
@@ -28,7 +28,7 @@
     muted: "rgba(240,240,255,0.45)",
   };
 
-  var botName = "IBARA Assistant";
+  var botName = "Plyndrox Web Assistant";
   var botWelcome = "Hi there! How can I help you today?";
   var isOpen = false;
   var isLoading = false;
@@ -195,12 +195,12 @@
     var win = document.createElement("div");
     win.id = "ibara-chat-window";
     win.setAttribute("role", "dialog");
-    win.setAttribute("aria-label", "IBARA AI Chat");
+    win.setAttribute("aria-label", "Plyndrox Web AI Chat");
     win.innerHTML = [
       '<div id="ibara-header">',
       '  <div id="ibara-avatar">🤖</div>',
       '  <div id="ibara-header-info">',
-      '    <div id="ibara-header-name">IBARA Assistant</div>',
+      '    <div id="ibara-header-name">Plyndrox Web Assistant</div>',
       '    <div id="ibara-header-status">',
       '      <div id="ibara-status-dot"></div>',
       '      <span id="ibara-status-text">Online · Always here to help</span>',
@@ -218,7 +218,7 @@
       '      </svg>',
       '    </button>',
       '  </div>',
-      '  <div id="ibara-powered">Powered by <a href="https://ibara.ai" target="_blank" rel="noopener">IBARA AI</a></div>',
+      '  <div id="ibara-powered">Powered by <a href="https://ibara.ai" target="_blank" rel="noopener">Plyndrox Web AI</a></div>',
       '</div>',
     ].join("");
 
@@ -288,7 +288,7 @@
       .then(function (data) {
         var bot = data.bot;
         if (bot) {
-          botName = bot.businessName ? bot.businessName + " AI" : "IBARA Assistant";
+          botName = bot.businessName ? bot.businessName + " AI" : "Plyndrox Web Assistant";
           botWelcome = "Hi! I'm the AI assistant for " + (bot.businessName || "this business") + ". How can I help you today? 😊";
           var nameEl = document.getElementById("ibara-header-name");
           if (nameEl) nameEl.textContent = botName;

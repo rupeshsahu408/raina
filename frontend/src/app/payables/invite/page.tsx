@@ -123,7 +123,7 @@ function InvitePageContent() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/payables" className="inline-flex items-center gap-2 text-sm font-black uppercase tracking-widest text-[#1d2226]">
-            Payables AI
+            Plyndrox Payable AI
           </Link>
         </div>
 

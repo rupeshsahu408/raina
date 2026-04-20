@@ -1,7 +1,7 @@
 const RENDER_BACKEND = "https://raina-1.onrender.com";
 
 /**
- * Returns the correct base URL for IBARA API calls.
+ * Returns the correct base URL for Plyndrox Web API calls.
  *
  * Strategy (in priority order):
  * 1. Runtime hostname check — if NOT on localhost or .replit.dev, call Render directly.

@@ -15,14 +15,14 @@ const geistMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Evara AI — Premium Personal, Business, and Regional AI",
+  title: "Plyndrox AI — Premium Personal, Business, and Regional AI",
   description:
-    "Evara AI is a premium AI platform for emotionally intelligent personal conversations, WhatsApp business automation, and Bihar-focused regional knowledge.",
+    "Plyndrox AI is a premium AI platform for emotionally intelligent personal conversations, WhatsApp business automation, and Bihar-focused regional knowledge.",
   openGraph: {
-    title: "Evara AI — Intelligence with a soul",
+    title: "Plyndrox AI — Intelligence with a soul",
     description:
       "A premium AI platform combining emotional companionship, business automation, and regional intelligence in one mobile-first experience.",
-    siteName: "Evara AI",
+    siteName: "Plyndrox AI",
     type: "website",
   },
 };
@@ -42,7 +42,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#ffffff" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Evara AI" />
+        <meta name="apple-mobile-web-app-title" content="Plyndrox AI" />
         <link rel="apple-touch-icon" href="/icons/evara-192.svg" />
         <link rel="manifest" href="/manifest.webmanifest" />
       </head>

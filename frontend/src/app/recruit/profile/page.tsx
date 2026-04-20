@@ -368,7 +368,7 @@ function RecruitProfileContent() {
             <div className="space-y-5">
               <div>
                 <h2 className="text-base font-bold text-slate-900">Basic Information</h2>
-                <p className="text-sm text-slate-500 mt-0.5">Your professional identity on Recruit AI.</p>
+                <p className="text-sm text-slate-500 mt-0.5">Your professional identity on Plyndrox Recruit AI.</p>
               </div>
 
               <div className="flex items-center gap-5 p-4 rounded-2xl border border-slate-200 bg-slate-50">

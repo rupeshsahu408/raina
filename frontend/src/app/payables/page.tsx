@@ -282,7 +282,7 @@ const features = [
 
 const testimonials = [
   {
-    quote: "We used to spend 4+ hours a week manually entering invoices. Payables AI cut that to near zero.",
+    quote: "We used to spend 4+ hours a week manually entering invoices. Plyndrox Payable AI cut that to near zero.",
     name: "Riya M.",
     role: "Finance Lead, SaaS startup",
   },
@@ -306,10 +306,10 @@ export default function PayablesLanding() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Evara</span>
+              <span className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Plyndrox</span>
             </Link>
             <span className="text-gray-300">/</span>
-            <span className="text-sm font-black tracking-tight text-[#1d2226]">Payables AI</span>
+            <span className="text-sm font-black tracking-tight text-[#1d2226]">Plyndrox Payable AI</span>
           </div>
           <div className="flex items-center gap-3">
             <a href="#api" className="hidden text-sm font-semibold text-gray-500 transition hover:text-[#1d2226] sm:block">
@@ -349,7 +349,7 @@ export default function PayablesLanding() {
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-500 sm:text-xl">
-            Payables AI reads your invoices automatically — from Gmail or uploaded files — extracts all the data, and presents everything in one organized dashboard.
+            Plyndrox Payable AI reads your invoices automatically — from Gmail or uploaded files — extracts all the data, and presents everything in one organized dashboard.
             <strong className="text-[#1d2226]"> You just review and pay.</strong>
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -497,7 +497,7 @@ export default function PayablesLanding() {
           <div className="mb-14 text-center">
             <p className="text-xs font-bold uppercase tracking-[0.22em] text-violet-600">What people say</p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl">
-              Teams love Payables AI
+              Teams love Plyndrox Payable AI
             </h2>
           </div>
           <div className="grid gap-5 sm:grid-cols-3">
@@ -681,9 +681,9 @@ export default function PayablesLanding() {
       <footer className="border-t border-gray-100 px-4 py-8">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
           <div className="flex items-center gap-2">
-            <Link href="/" className="font-bold text-[#1d2226] hover:underline">Evara AI</Link>
+            <Link href="/" className="font-bold text-[#1d2226] hover:underline">Plyndrox AI</Link>
             <span>·</span>
-            <span>Payables AI</span>
+            <span>Plyndrox Payable AI</span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/payables/dashboard" className="hover:text-[#1d2226]">Dashboard</Link>

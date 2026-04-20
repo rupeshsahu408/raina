@@ -29,28 +29,28 @@ export function getPlatformRedirectPath(platform: Platform): string {
 
 export const PLATFORM_META: Record<Platform, { label: string; description: string; color: string; bg: string; border: string }> = {
   evara: {
-    label: "Evara AI",
+    label: "Plyndrox AI",
     description: "Personal AI companion",
     color: "text-violet-300",
     bg: "bg-violet-500/10",
     border: "border-violet-500/20",
   },
   "whatsapp-ai": {
-    label: "WhatsApp AI",
+    label: "Plyndrox WhatsApp AI",
     description: "Business automation",
     color: "text-emerald-300",
     bg: "bg-emerald-500/10",
     border: "border-emerald-500/20",
   },
   ibara: {
-    label: "Website AI",
+    label: "Plyndrox Web AI",
     description: "AI chatbot for your site",
     color: "text-cyan-300",
     bg: "bg-cyan-500/10",
     border: "border-cyan-500/20",
   },
   inbox: {
-    label: "Inbox AI",
+    label: "Plyndrox Inbox AI",
     description: "Smart email assistant",
     color: "text-fuchsia-300",
     bg: "bg-fuchsia-500/10",

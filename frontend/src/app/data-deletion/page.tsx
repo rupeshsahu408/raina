@@ -4,8 +4,8 @@ export default function DataDeletionPage() {
       <header className="border-b border-zinc-100 bg-white px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           <a href="/whatsapp-ai" className="flex items-center gap-2">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-7 w-7 rounded-md bg-white p-0.5 object-contain" draggable={false} />
-            <span className="text-sm font-bold tracking-wide text-zinc-900">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-7 w-7 rounded-md bg-white p-0.5 object-contain" draggable={false} />
+            <span className="text-sm font-bold tracking-wide text-zinc-900">Plyndrox AI</span>
           </a>
           <a href="/whatsapp-ai" className="text-sm text-emerald-700 hover:underline">← Back to Home</a>
         </div>
@@ -16,7 +16,7 @@ export default function DataDeletionPage() {
           <h1 className="text-4xl font-bold text-zinc-900">Data Deletion Request</h1>
           <p className="mt-2 text-sm text-gray-400">Last updated: April 12, 2025</p>
           <p className="mt-4 text-base leading-relaxed text-gray-400">
-            At Evara AI, we respect your right to control your personal data. This page explains how you can request the deletion of your data that we have collected and stored through your use of our WhatsApp AI platform. We are committed to processing all deletion requests promptly and transparently, in accordance with applicable data protection laws and Meta's WhatsApp Business API policies.
+            At Plyndrox AI, we respect your right to control your personal data. This page explains how you can request the deletion of your data that we have collected and stored through your use of our Plyndrox WhatsApp AI platform. We are committed to processing all deletion requests promptly and transparently, in accordance with applicable data protection laws and Meta's WhatsApp Business API policies.
           </p>
         </div>
 
@@ -24,7 +24,7 @@ export default function DataDeletionPage() {
           <section>
             <h2 className="border-b border-zinc-100 pb-3 text-2xl font-bold text-zinc-900">1. What Data We Hold</h2>
             <div className="mt-5 space-y-3 text-base leading-relaxed text-gray-400">
-              <p>When you use the Evara AI platform — either as a business owner connecting your WhatsApp account, or as an end customer interacting with a business through WhatsApp — we may store the following types of data:</p>
+              <p>When you use the Plyndrox AI platform — either as a business owner connecting your WhatsApp account, or as an end customer interacting with a business through WhatsApp — we may store the following types of data:</p>
               <ul className="mt-3 list-disc space-y-2 pl-5">
                 <li><strong>Account information</strong> — your name, email address, and account credentials (stored in encrypted form).</li>
                 <li><strong>Business profile data</strong> — business name, type, working hours, location, services, and knowledge book content you configure on the dashboard.</li>
@@ -49,7 +49,7 @@ export default function DataDeletionPage() {
                   <strong>Include the following information</strong> in your email:
                   <ul className="mt-2 list-disc space-y-1.5 pl-5">
                     <li>Your full name as registered on the platform.</li>
-                    <li>The email address associated with your Evara AI account.</li>
+                    <li>The email address associated with your Plyndrox AI account.</li>
                     <li>Your WhatsApp phone number (if applicable).</li>
                     <li>A brief description of the data you want deleted (e.g., "all account data," "conversation logs only," etc.).</li>
                   </ul>
@@ -110,11 +110,11 @@ export default function DataDeletionPage() {
             <h2 className="border-b border-zinc-100 pb-3 text-2xl font-bold text-zinc-900">6. Meta / WhatsApp Data</h2>
             <div className="mt-5 space-y-3 text-base leading-relaxed text-gray-400">
               <p>
-                If you connected your WhatsApp Business account to Evara AI through the WhatsApp Cloud API provided by Meta Platforms, Inc., please be aware that certain data may also be held directly by Meta. Evara AI can only delete the data held within our own systems. To request deletion of data held by Meta, please refer to{" "}
+                If you connected your WhatsApp Business account to Plyndrox AI through the WhatsApp Cloud API provided by Meta Platforms, Inc., please be aware that certain data may also be held directly by Meta. Plyndrox AI can only delete the data held within our own systems. To request deletion of data held by Meta, please refer to{" "}
                 <a href="https://www.facebook.com/privacy/policy/" target="_blank" rel="noopener noreferrer" className="text-emerald-700 underline">Meta's Privacy Policy</a>{" "}
                 and their data deletion tools.
               </p>
-              <p>This data deletion page specifically covers data held by Evara AI on our own servers and databases.</p>
+              <p>This data deletion page specifically covers data held by Plyndrox AI on our own servers and databases.</p>
             </div>
           </section>
 
@@ -123,7 +123,7 @@ export default function DataDeletionPage() {
             <div className="mt-5 text-base leading-relaxed text-gray-400">
               <p>If you have any questions about the data deletion process or want to submit a request, please reach out to us:</p>
               <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50 p-6">
-                <p className="font-semibold text-zinc-900">Evara AI — Data Privacy Team</p>
+                <p className="font-semibold text-zinc-900">Plyndrox AI — Data Privacy Team</p>
                 <p className="mt-1 text-gray-400">Kaimur, Bihar – 821195, India</p>
                 <p className="mt-3">
                   <span className="font-medium">Email:</span>{" "}
@@ -144,12 +144,12 @@ export default function DataDeletionPage() {
       </main>
 
       <footer className="border-t border-zinc-100 bg-zinc-50 py-8 text-center text-sm text-gray-400">
-        <p>© {new Date().getFullYear()} Evara AI. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</p>
         <div className="mt-2 flex justify-center gap-4">
           <a href="/privacy-policy" className="hover:text-emerald-700">Privacy Policy</a>
           <a href="/terms" className="hover:text-emerald-700">Terms of Service</a>
           <a href="/data-deletion" className="hover:text-emerald-700">Data Deletion</a>
-          <a href="/whatsapp-ai" className="hover:text-emerald-700">WhatsApp AI</a>
+          <a href="/whatsapp-ai" className="hover:text-emerald-700">Plyndrox WhatsApp AI</a>
         </div>
       </footer>
     </div>

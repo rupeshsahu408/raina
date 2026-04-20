@@ -23,15 +23,15 @@ function SignupForm() {
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gray-50 border-r border-gray-200 p-10">
         <Link href="/" className="flex items-center gap-2.5">
-          <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-          <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+          <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+          <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
         </Link>
         <div>
           <div className="flex flex-col gap-4">
             {[
               ["Personal AI", "Emotional support and memory that grows with you."],
               ["Bihar AI", "Regional knowledge for education, jobs & culture."],
-              ["Business AI", "Automate WhatsApp & website support in minutes."],
+              ["Plyndrox Business AI", "Automate WhatsApp & website support in minutes."],
             ].map(([title, desc]) => (
               <div key={title} className="flex items-start gap-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                 <div className="mt-0.5 h-2 w-2 rounded-full bg-violet-500 shrink-0" />
@@ -43,15 +43,15 @@ function SignupForm() {
             ))}
           </div>
         </div>
-        <p className="text-xs text-gray-400">© {new Date().getFullYear()} Evara AI</p>
+        <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox AI</p>
       </div>
 
       {/* Right panel — form */}
       <div className="flex flex-1 flex-col px-6 py-8 sm:px-12">
         <div className="flex items-center justify-between mb-8 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-7 w-7 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.2em] text-[#1d2226]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-7 w-7 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.2em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <Link href={`/login?next=${encodeURIComponent(nextPath)}`} className="text-xs text-gray-500 hover:text-[#1d2226] transition">
             Already have an account?
@@ -60,7 +60,7 @@ function SignupForm() {
 
         <div className="flex flex-1 flex-col justify-center max-w-sm mx-auto w-full">
           <h1 className="text-2xl font-black text-[#1d2226]">Create your account</h1>
-          <p className="mt-1.5 text-sm text-gray-500">Join Evara AI — free to get started.</p>
+          <p className="mt-1.5 text-sm text-gray-500">Join Plyndrox AI — free to get started.</p>
 
           {error && (
             <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">

@@ -52,7 +52,7 @@ const nextConfig: NextConfig = {
         async headers() {
           return [
             {
-              // Allow any website to call the IBARA API (needed for the embedded widget)
+              // Allow any website to call the Plyndrox Web API (needed for the embedded widget)
               source: "/api/ibara/:path*",
               headers: [
                 { key: "Access-Control-Allow-Origin", value: "*" },

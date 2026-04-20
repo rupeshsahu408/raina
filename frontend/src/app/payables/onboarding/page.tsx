@@ -157,7 +157,7 @@ export default function PayablesOnboarding() {
     if (result === "connected") {
       setStep(2);
       setGmailConnected(true);
-      setGmailMessage("Gmail connected successfully. Payables AI can now import invoice emails.");
+      setGmailMessage("Gmail connected successfully. Plyndrox Payable AI can now import invoice emails.");
       window.history.replaceState({}, "", "/payables/onboarding");
     }
     if (result === "oauth_failed") {
@@ -226,9 +226,9 @@ export default function PayablesOnboarding() {
       <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Evara</span>
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">Plyndrox</span>
             <span className="text-gray-300">/</span>
-            <span className="text-sm font-black text-[#1d2226]">Payables AI</span>
+            <span className="text-sm font-black text-[#1d2226]">Plyndrox Payable AI</span>
           </Link>
           <span className="text-xs text-gray-400">Setup · Step {step} of 3</span>
         </div>
@@ -349,7 +349,7 @@ export default function PayablesOnboarding() {
               Connect your Gmail
             </h1>
             <p className="mt-2 text-sm leading-6 text-gray-500">
-              Payables AI will automatically detect invoice emails and extract data — no manual forwarding needed.
+              Plyndrox Payable AI will automatically detect invoice emails and extract data — no manual forwarding needed.
             </p>
             {gmailMessage && (
               <div className="mt-5 rounded-2xl border border-violet-100 bg-violet-50 p-4 text-sm font-semibold text-violet-700">
@@ -380,7 +380,7 @@ export default function PayablesOnboarding() {
                   <div className="rounded-2xl border border-amber-100 bg-amber-50 p-5">
                     <p className="text-sm font-semibold text-amber-800">Gmail not connected yet</p>
                     <p className="mt-1 text-xs text-amber-600">
-                      Connect your Gmail so Payables AI can automatically find and import invoice emails.
+                      Connect your Gmail so Plyndrox Payable AI can automatically find and import invoice emails.
                     </p>
                   </div>
                   <button
@@ -405,7 +405,7 @@ export default function PayablesOnboarding() {
             </div>
 
             <div className="mt-6 rounded-2xl border border-gray-100 bg-gray-50 p-5">
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">What Payables AI reads</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-gray-400">What Plyndrox Payable AI reads</p>
               <ul className="space-y-2">
                 {[
                   "Emails with invoice attachments (PDF/image)",
@@ -450,7 +450,7 @@ export default function PayablesOnboarding() {
               You're all set, {companyName || "there"}!
             </h1>
             <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-gray-500">
-              Your Payables AI workspace is ready. Upload your first invoice or fetch from Gmail to see the AI in action.
+              Your Plyndrox Payable AI workspace is ready. Upload your first invoice or fetch from Gmail to see the AI in action.
             </p>
 
             <div className="mx-auto mt-8 max-w-sm space-y-3">

@@ -286,7 +286,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const niche = NICHES[slug];
   if (!niche) return {};
   return {
-    title: `${niche.emoji} ${niche.label} Jobs in India | Recruit AI`,
+    title: `${niche.emoji} ${niche.label} Jobs in India | Plyndrox Recruit AI`,
     description: niche.intro,
   };
 }
@@ -320,7 +320,7 @@ export default async function NicheLandingPage({ params }: { params: Promise<{ s
           <div className="max-w-3xl">
             <div className="mb-4 flex flex-wrap items-center gap-2">
               <Link href="/recruit" className="text-xs font-semibold text-slate-500 hover:text-slate-700 transition">
-                Recruit AI
+                Plyndrox Recruit AI
               </Link>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-400"><path d="m9 18 6-6-6-6" /></svg>
               <span className="text-xs font-semibold text-slate-500">Niches</span>

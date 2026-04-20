@@ -186,7 +186,7 @@ function RecruitDashboardContent() {
               <img src="/evara-logo.png" alt="Plyndrox" className="h-4.5 w-4.5 object-contain brightness-0 invert" draggable={false} />
             </span>
             <span>
-              <span className="block text-sm font-bold text-slate-900 leading-none">Recruit AI</span>
+              <span className="block text-sm font-bold text-slate-900 leading-none">Plyndrox Recruit AI</span>
               <span className="block text-[10px] text-slate-400 mt-0.5">Dashboard</span>
             </span>
           </Link>

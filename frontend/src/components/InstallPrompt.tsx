@@ -106,11 +106,11 @@ export function InstallPrompt({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-zinc-50">
-                  Install Evara AI
+                  Install Plyndrox AI
                 </p>
                 <p className="mt-1 text-xs text-gray-500">
                   {isIos
-                    ? "Use Safari to add Evara to your Home Screen."
+                    ? "Use Safari to add Plyndrox to your Home Screen."
                     : "Install directly from Chrome to get the app-like experience."}
                 </p>
               </div>
@@ -128,19 +128,19 @@ export function InstallPrompt({
                 <li>1. Open this website in <b>Safari</b>.</li>
                 <li>2. Tap the <b>Share</b> icon.</li>
                 <li>3. Select <b>Add to Home Screen</b>.</li>
-                <li>4. Tap <b>Add</b> and launch Evara from your home screen.</li>
+                <li>4. Tap <b>Add</b> and launch Plyndrox from your home screen.</li>
               </ol>
             ) : (
               <ol className="mt-4 space-y-2 rounded-2xl bg-gray-50/60 p-3 text-xs text-[#1d2226]">
                 <li>1. Open this website in <b>Chrome</b>.</li>
                 <li>2. Tap menu <b>(⋮)</b>.</li>
                 <li>3. Tap <b>Install app</b> or <b>Add to Home screen</b>.</li>
-                <li>4. Launch Evara from your app drawer/home screen.</li>
+                <li>4. Launch Plyndrox from your app drawer/home screen.</li>
               </ol>
             )}
 
             <div className="mt-3 rounded-2xl border border-zinc-800 bg-white/30 p-3 text-[11px] text-gray-500">
-              After installation, Evara opens in standalone full-screen style
+              After installation, Plyndrox opens in standalone full-screen style
               (no browser bar) for a real app feel.
             </div>
           </div>

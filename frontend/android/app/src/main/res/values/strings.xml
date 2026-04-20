@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Evara AI</string>
-    <string name="title_activity_main">Evara AI</string>
-    <string name="package_name">com.evara.ai</string>
-    <string name="custom_url_scheme">com.evara.ai</string>
+    <string name="app_name">Plyndrox AI</string>
+    <string name="title_activity_main">Plyndrox AI</string>
+    <string name="package_name">com.plyndrox.app</string>
+    <string name="custom_url_scheme">com.plyndrox.app</string>
 </resources>

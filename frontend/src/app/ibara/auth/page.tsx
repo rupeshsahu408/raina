@@ -110,7 +110,7 @@ function AuthForm() {
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
             <span className="text-[#1d2226] font-bold text-xs">I</span>
           </div>
-          <span className="font-bold text-sm">IBARA AI</span>
+          <span className="font-bold text-sm">Plyndrox Web AI</span>
         </button>
         <button
           onClick={() => setMode(mode === "login" ? "signup" : "login")}

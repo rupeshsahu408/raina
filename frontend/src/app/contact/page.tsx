@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 
-const SUPPORT_EMAIL = "support.evara.ai@sendora.me";
+const SUPPORT_EMAIL = "support@plyndrox.app";
 
 function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -92,9 +92,9 @@ const contactRoutes = [
     badge: "bg-violet-50 border-violet-200 text-violet-600",
   },
   {
-    id: "ivana",
-    label: "Evara AI",
-    description: "Questions or issues with the Evara AI web/app assistant",
+    id: "plyndrox",
+    label: "Plyndrox AI",
+    description: "Questions or issues with the Plyndrox AI web/app assistant",
     icon: <BrainIcon className="h-5 w-5" />,
     color: "text-fuchsia-600",
     border: "border-gray-200",
@@ -105,7 +105,7 @@ const contactRoutes = [
   },
   {
     id: "whatsapp",
-    label: "WhatsApp AI",
+    label: "Plyndrox WhatsApp AI",
     description: "Setup, automation, Business API issues, or integration support",
     icon: <WhatsAppIcon className="h-5 w-5" />,
     color: "text-emerald-600",
@@ -127,7 +127,7 @@ const subjectsByRoute: Record<string, string[]> = {
     "Partnership or business inquiry",
     "Other",
   ],
-  ivana: [
+  plyndrox: [
     "AI response quality issue",
     "Chat history not loading",
     "Account or profile settings",
@@ -189,8 +189,8 @@ export default function ContactPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/about" className="hidden text-sm text-gray-500 transition hover:text-[#1d2226] sm:block">About</Link>
@@ -354,8 +354,8 @@ export default function ContactPage() {
                       placeholder={
                         selectedRoute === "whatsapp"
                           ? "Describe your issue in detail. Include your business phone number or WhatsApp Business Account ID if relevant…"
-                          : selectedRoute === "ivana"
-                          ? "Describe the issue you're experiencing with Evara AI. Include any steps to reproduce or example prompts if helpful…"
+                          : selectedRoute === "plyndrox"
+                          ? "Describe the issue you're experiencing with Plyndrox AI. Include any steps to reproduce or example prompts if helpful…"
                           : "Describe your question or issue in as much detail as possible. The more context you provide, the faster we can help…"
                       }
                       value={form.message}
@@ -483,9 +483,9 @@ export default function ContactPage() {
               <div className="flex items-start gap-3">
                 <MessageIcon className="h-5 w-5 text-violet-600 shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-bold text-[#1d2226]">WhatsApp AI Users</p>
+                  <p className="text-sm font-bold text-[#1d2226]">Plyndrox WhatsApp AI Users</p>
                   <p className="mt-1.5 text-xs leading-5 text-gray-500">
-                    When contacting us about WhatsApp AI, please include your WhatsApp Business Account ID and a brief description of your automation setup to help us assist you faster.
+                    When contacting us about Plyndrox WhatsApp AI, please include your WhatsApp Business Account ID and a brief description of your automation setup to help us assist you faster.
                   </p>
                 </div>
               </div>
@@ -496,7 +496,7 @@ export default function ContactPage() {
 
       <footer className="border-t border-gray-200 bg-white px-4 py-8 sm:px-6 lg:px-8 mt-8">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-          <span>© {new Date().getFullYear()} Evara AI. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/privacy-policy" className="transition hover:text-[#1d2226]">Privacy Policy</Link>
             <Link href="/terms" className="transition hover:text-[#1d2226]">Terms of Service</Link>

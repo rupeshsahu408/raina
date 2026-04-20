@@ -8,9 +8,9 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = getPost(slug);
-  if (!post) return { title: "Post Not Found — Evara AI Blog" };
+  if (!post) return { title: "Post Not Found — Plyndrox AI Blog" };
   return {
-    title: `${post.title} — Evara AI Blog`,
+    title: `${post.title} — Plyndrox AI Blog`,
     description: post.excerpt,
     openGraph: {
       title: post.title,
@@ -152,8 +152,8 @@ export default async function BlogPostPage({ params }: Props) {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/blog" className="hidden text-sm text-gray-400 transition hover:text-gray-600 sm:block">Blog</Link>
@@ -243,8 +243,8 @@ export default async function BlogPostPage({ params }: Props) {
                   <p className="text-sm text-gray-400">{post.authorRole}</p>
                   <p className="mt-2 text-sm leading-6 text-gray-500">
                     {post.author === "Riley Parker"
-                      ? "Riley is the Founder of Evara AI, leading the company's vision for making AI genuinely useful, accessible, and beautifully designed for every user and business."
-                      : "Rupesh is the Co-Founder and CTO of Evara AI, responsible for the platform's technical architecture and the engineering team that builds every product feature."}
+                      ? "Riley is the Founder of Plyndrox AI, leading the company's vision for making AI genuinely useful, accessible, and beautifully designed for every user and business."
+                      : "Rupesh is the Co-Founder and CTO of Plyndrox AI, responsible for the platform's technical architecture and the engineering team that builds every product feature."}
                   </p>
                 </div>
               </div>
@@ -254,7 +254,7 @@ export default async function BlogPostPage({ params }: Props) {
             <div className="mt-8 flex items-center gap-3">
               <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Share</span>
               <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent("https://rainajet.com/blog/" + post.slug)}`}
+                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent("https://www.plyndrox.app/blog/" + post.slug)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-xs text-gray-500 transition hover:bg-white/10 hover:text-white"
@@ -316,9 +316,9 @@ export default async function BlogPostPage({ params }: Props) {
             )}
 
             <div className="rounded-2xl border border-purple-500/20 bg-purple-500/[0.07] p-5 backdrop-blur-xl">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400 mb-3">Try Evara AI</p>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-purple-400 mb-3">Try Plyndrox AI</p>
               <p className="text-sm text-gray-500 leading-6">
-                Put the ideas from this article into practice with Evara AI and WhatsApp AI.
+                Put the ideas from this article into practice with Plyndrox AI and Plyndrox WhatsApp AI.
               </p>
               <Link href="/signup" className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-black transition hover:bg-zinc-100">
                 Start Free
@@ -364,7 +364,7 @@ export default async function BlogPostPage({ params }: Props) {
 
       <footer className="relative z-10 border-t border-gray-100 bg-gray-50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8 mt-10">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Plyndrox AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/blog" className="transition hover:text-gray-500">Blog</Link>
             <Link href="/about" className="transition hover:text-gray-500">About</Link>

@@ -140,7 +140,7 @@ export function CookiePreferencesModal({ open, onClose }: Props) {
             <div>
               <h2 className="text-base font-semibold text-[#1d2226]">Cookie Preferences</h2>
               <p className="mt-1 text-[12px] leading-relaxed text-gray-400">
-                Evara uses cookies to improve your experience. You can choose which types of cookies you allow below. Essential cookies are always required for the site to work.
+                Plyndrox uses cookies to improve your experience. You can choose which types of cookies you allow below. Essential cookies are always required for the site to work.
               </p>
             </div>
             <button
@@ -175,7 +175,7 @@ export function CookiePreferencesModal({ open, onClose }: Props) {
               <div className="min-w-0">
                 <span className="text-[13px] font-medium text-[#1d2226]">Analytics Cookies</span>
                 <p className="mt-0.5 text-[11px] leading-relaxed text-zinc-600">
-                  Help us understand how you use Evara so we can improve performance, features, and reliability.
+                  Help us understand how you use Plyndrox so we can improve performance, features, and reliability.
                 </p>
               </div>
               <Toggle

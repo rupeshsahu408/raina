@@ -381,7 +381,7 @@ export default function SettingsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `evara-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `plyndrox-export-${new Date().toISOString().slice(0, 10)}.json`;
       a.click();
       URL.revokeObjectURL(url);
       showToast("Export downloaded");
@@ -486,7 +486,7 @@ export default function SettingsPage() {
       {/* ── Sidebar nav ── */}
       <aside className="w-56 shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col py-6 px-3 gap-1 hidden md:flex">
         <div className="flex items-center gap-2.5 px-3 pb-4">
-          <img src="/evara-logo.png" alt="Evara AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
+          <img src="/evara-logo.png" alt="Plyndrox AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
           <span className="text-[14px] font-semibold tracking-tight text-[#1d2226]">Settings</span>
         </div>
         <a href="/chat" className="flex items-center gap-2 px-3 pb-5 text-[13px] text-gray-500 hover:text-gray-700 transition">
@@ -607,7 +607,7 @@ export default function SettingsPage() {
         {/* PERSONALIZATION */}
         {activeSection === "personalization" && (
           <div>
-            <SectionHeader title="Personalization" description="Customize the look and feel of Evara AI." />
+            <SectionHeader title="Personalization" description="Customize the look and feel of Plyndrox AI." />
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] divide-y divide-white/[0.05] p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -670,7 +670,7 @@ export default function SettingsPage() {
         {/* ABOUT YOU */}
         {activeSection === "about" && (
           <div>
-            <SectionHeader title="About You" description="Help Evara AI understand you better for personalized responses." />
+            <SectionHeader title="About You" description="Help Plyndrox AI understand you better for personalized responses." />
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -705,11 +705,11 @@ export default function SettingsPage() {
         {/* MEMORY */}
         {activeSection === "memory" && (
           <div>
-            <SectionHeader title="Memory" description="Control how Evara AI remembers and uses information about you." />
+            <SectionHeader title="Memory" description="Control how Plyndrox AI remembers and uses information about you." />
             <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] divide-y divide-white/[0.05]">
               <SettingRow
                 label="Allow AI memory"
-                description="Evara AI will remember key things you share across conversations."
+                description="Plyndrox AI will remember key things you share across conversations."
               >
                 <Toggle
                   checked={profile.memorySettings.allowMemory}
@@ -875,7 +875,7 @@ export default function SettingsPage() {
                 </div>
                 {confirm === "logoutAll" && (
                   <InlineConfirm
-                    message="This will sign you out of Evara AI on all devices including this one."
+                    message="This will sign you out of Plyndrox AI on all devices including this one."
                     confirmLabel="Sign out everywhere"
                     onConfirm={handleLogoutAll}
                     onCancel={() => setConfirm(null)}

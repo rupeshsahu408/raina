@@ -33,7 +33,7 @@ type LogItem = {
 };
 
 const DEFAULT_CONFIG: BusinessConfig = {
-  businessName: "Evara Studio",
+  businessName: "Plyndrox Studio",
   businessType: "Service business",
   workingHours: "10 AM to 8 PM, Monday to Saturday",
   location: "India",
@@ -225,7 +225,7 @@ export default function DashboardPage() {
       <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/80 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 rounded-lg object-contain bg-white p-1" draggable={false} />
+            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 rounded-lg object-contain bg-white p-1" draggable={false} />
             <span className="font-semibold tracking-tight">Business Dashboard</span>
           </div>
           <div className="flex items-center gap-3">
@@ -419,7 +419,7 @@ export default function DashboardPage() {
                           {log.customerMessage}
                         </div>
                         <div className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-                          <span className="text-[10px] font-bold text-emerald-600/60 uppercase tracking-widest block mb-1">Evara AI</span>
+                          <span className="text-[10px] font-bold text-emerald-600/60 uppercase tracking-widest block mb-1">Plyndrox AI</span>
                           {log.aiReply}
                         </div>
                       </div>

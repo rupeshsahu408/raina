@@ -301,7 +301,7 @@ body,
   backdrop-filter: blur(2px);
 }
 
-/* ── Evara orbital (kept for landing page variant) ── */
+/* ── Plyndrox orbital (kept for landing page variant) ── */
 .evara-orbital-stage {
   position: relative;
   width: min(86vw, 680px);

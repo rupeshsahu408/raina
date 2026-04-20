@@ -84,7 +84,7 @@ const footerColumns = [
       ["Features", "/features"],
       ["App", "/app"],
       ["Chat", "/chat"],
-      ["Business AI", "/business-ai"],
+      ["Plyndrox Business AI", "/business-ai"],
     ],
   },
   {
@@ -131,15 +131,15 @@ export default function Home() {
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Evara" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.28em] text-[#1d2226]">Evara</span>
+            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.28em] text-[#1d2226]">Plyndrox</span>
           </Link>
           <div className="hidden items-center gap-7 text-sm font-medium text-gray-500 md:flex">
             <Link href="/features" className="transition hover:text-[#1d2226]">Features</Link>
             <Link href="/bihar-ai" className="transition hover:text-[#1d2226]">Bihar AI</Link>
             <Link href="/business-ai" className="transition hover:text-[#1d2226]">Business</Link>
-            <Link href="/inbox" className="transition hover:text-[#1d2226]">Inbox AI</Link>
-            <Link href="/payables" className="font-semibold text-violet-600 transition hover:text-violet-700">Payables AI</Link>
+            <Link href="/inbox" className="transition hover:text-[#1d2226]">Plyndrox Inbox AI</Link>
+            <Link href="/payables" className="font-semibold text-violet-600 transition hover:text-violet-700">Plyndrox Payable AI</Link>
             <Link href="/blog" className="transition hover:text-[#1d2226]">Blog</Link>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -186,7 +186,7 @@ export default function Home() {
               </h1>
 
               <p className="mt-6 max-w-xl text-pretty text-base leading-8 text-gray-500 sm:text-lg">
-                Evara brings supportive conversations, regional knowledge, and business automation into one refined platform built to feel effortless on your phone first.
+                Plyndrox brings supportive conversations, regional knowledge, and business automation into one refined platform built to feel effortless on your phone first.
               </p>
 
               <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
@@ -236,10 +236,10 @@ export default function Home() {
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-md">
-                        <img src="/evara-logo.png" alt="Evara" className="h-7 w-7 object-contain" />
+                        <img src="/evara-logo.png" alt="Plyndrox" className="h-7 w-7 object-contain" />
                       </span>
                       <span>
-                        <span className="block text-sm font-bold text-[#1d2226]">Evara AI</span>
+                        <span className="block text-sm font-bold text-[#1d2226]">Plyndrox AI</span>
                         <span className="text-xs text-emerald-600">Ready to listen</span>
                       </span>
                     </div>
@@ -263,8 +263,8 @@ export default function Home() {
               {[
                 { title: "Personal AI", body: "A gentle daily companion that adapts to your emotional state and remembers what matters.", href: "/chat", accent: "violet", dot: "bg-violet-500" },
                 { title: "Bihar AI", body: "Regional intelligence with cultural context for education, jobs, news, and local knowledge.", href: "/bihar-ai", accent: "sky", dot: "bg-sky-500" },
-                { title: "Business AI", body: "Customer support automation for WhatsApp and website chatbots — pick the tools that fit your business.", href: "/business-ai", accent: "emerald", dot: "bg-emerald-500" },
-                { title: "Payables AI", body: "AI reads your invoices automatically, extracts all data, and organizes everything in one calm dashboard. You review and pay.", href: "/payables", accent: "indigo", dot: "bg-indigo-500" },
+                { title: "Plyndrox Business AI", body: "Customer support automation for WhatsApp and website chatbots — pick the tools that fit your business.", href: "/business-ai", accent: "emerald", dot: "bg-emerald-500" },
+                { title: "Plyndrox Payable AI", body: "AI reads your invoices automatically, extracts all data, and organizes everything in one calm dashboard. You review and pay.", href: "/payables", accent: "indigo", dot: "bg-indigo-500" },
               ].map(({ title, body, href, dot }) => (
                 <Link key={title} href={href} className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-gray-300 hover:shadow-md">
                   <div className={`mb-4 h-1.5 w-10 rounded-full ${dot} transition-all group-hover:w-16`} />
@@ -328,7 +328,7 @@ export default function Home() {
                   Explore Bihar AI <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
                 </Link>
                 <Link href="/business-ai" className="group flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300">
-                  Explore Business AI <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
+                  Explore Plyndrox Business AI <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
                 </Link>
               </div>
             </div>
@@ -343,10 +343,10 @@ export default function Home() {
             <div className="space-y-5">
               <Link href="/" className="group inline-flex items-center gap-3">
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm transition group-hover:border-violet-200">
-                  <img src="/evara-logo.png" alt="Evara AI" className="h-6 w-6 object-contain" />
+                  <img src="/evara-logo.png" alt="Plyndrox AI" className="h-6 w-6 object-contain" />
                 </span>
                 <span>
-                  <span className="block text-sm font-black uppercase tracking-[0.2em] text-[#1d2226]">Evara AI</span>
+                  <span className="block text-sm font-black uppercase tracking-[0.2em] text-[#1d2226]">Plyndrox AI</span>
                   <span className="mt-0.5 block text-xs font-medium text-gray-400">Personal, regional, and business AI</span>
                 </span>
               </Link>
@@ -422,7 +422,7 @@ export default function Home() {
           </div>
 
           <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-8 sm:flex-row">
-            <p className="text-xs text-gray-400">© {new Date().getFullYear()} Evara AI. All rights reserved.</p>
+            <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</p>
             <div className="flex gap-5 text-xs text-gray-400">
               <Link href="/privacy-policy" className="hover:text-[#1d2226] transition">Privacy</Link>
               <Link href="/terms" className="hover:text-[#1d2226] transition">Terms</Link>

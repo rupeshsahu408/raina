@@ -210,7 +210,7 @@ export default function AssessmentPage({ params }: { params: Promise<{ token: st
                   </svg>
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-white tracking-wide leading-none">Recruit AI</p>
+                  <p className="text-[11px] font-bold text-white tracking-wide leading-none">Plyndrox Recruit AI</p>
                   {data.jobTitle && <p className="text-[10px] text-gray-400 mt-0.5 leading-none truncate max-w-[160px] sm:max-w-xs">{data.jobTitle}</p>}
                 </div>
               </div>

@@ -100,7 +100,7 @@ function OverviewContent() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-black mb-1">Overview</h1>
-        <p className="text-white/30 text-sm">Your IBARA AI command center</p>
+        <p className="text-white/30 text-sm">Your Plyndrox Web AI command center</p>
       </div>
 
       {!site ? (
@@ -263,7 +263,7 @@ function OverviewContent() {
               </div>
               <h3 className="font-bold mb-2">Configure your AI</h3>
               <p className="text-white/30 text-sm mb-5">
-                Tell IBARA AI about your business so it can answer your customers' questions.
+                Tell Plyndrox Web AI about your business so it can answer your customers' questions.
               </p>
               <button
                 onClick={() => router.push(`/ibara/dashboard/ai-setup?siteId=${siteId}`)}

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About Us — Raina Jet",
+  title: "About Us — Plyndrox AI",
   description:
-    "Learn about Raina Jet — our story, mission, vision, AI products, founders, and the team building the future of intelligent automation.",
+    "Learn about Plyndrox AI — our story, mission, vision, AI products, founders, and the team building the future of intelligent automation.",
 };
 
 function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -101,10 +101,10 @@ function StarIcon(props: React.SVGProps<SVGSVGElement>) {
 
 const products = [
   {
-    name: "Evara AI",
+    name: "Plyndrox AI",
     tagline: "Your Intelligent Web & App AI Assistant",
     description:
-      "Evara AI is the flagship conversational AI assistant within the Raina Jet platform. Designed for both individuals and professionals, Ivana delivers context-aware responses, smart automation, and deep productivity support through natural language interaction. Whether you need help with drafting content, answering complex questions, summarizing information, or navigating technical challenges, Evara AI is built to think alongside you — intelligently, efficiently, and at scale.",
+      "Plyndrox AI is the flagship conversational AI assistant within the Plyndrox AI platform. Designed for both individuals and professionals, Plyndrox AI delivers context-aware responses, smart automation, and deep productivity support through natural language interaction. Whether you need help with drafting content, answering complex questions, summarizing information, or navigating technical challenges, Plyndrox AI is built to think alongside you — intelligently, efficiently, and at scale.",
     capabilities: [
       "Natural language conversations with deep context awareness",
       "Productivity automation for content, research, and problem-solving",
@@ -124,7 +124,7 @@ const products = [
     name: "Bihar AI",
     tagline: "Regional Intelligence, Local Impact",
     description:
-      "Bihar AI is a purpose-built regional AI initiative designed to serve the unique linguistic, cultural, and economic context of Bihar and its surrounding communities. Recognizing that AI should not be a privilege of only English-speaking or metropolitan users, Bihar AI brings the power of intelligent automation to regional users in their own language and context. It is Raina Jet's commitment to inclusive innovation — ensuring that AI tools are equally accessible, relevant, and empowering for users across every geography and background.",
+      "Bihar AI is a purpose-built regional AI initiative designed to serve the unique linguistic, cultural, and economic context of Bihar and its surrounding communities. Recognizing that AI should not be a privilege of only English-speaking or metropolitan users, Bihar AI brings the power of intelligent automation to regional users in their own language and context. It is Plyndrox AI's commitment to inclusive innovation — ensuring that AI tools are equally accessible, relevant, and empowering for users across every geography and background.",
     capabilities: [
       "Regional language understanding and interaction support",
       "Local knowledge base covering culture, governance, and commerce",
@@ -141,10 +141,10 @@ const products = [
     badge: "bg-amber-50 border-amber-100 text-amber-700",
   },
   {
-    name: "WhatsApp AI",
+    name: "Plyndrox WhatsApp AI",
     tagline: "Business Automation at Conversational Scale",
     description:
-      "WhatsApp AI transforms the way businesses communicate with their customers by bringing the power of artificial intelligence directly into the world's most widely used messaging platform. Through deep integration with the WhatsApp Business API, Raina Jet enables businesses to automate responses, manage customer queries at scale, deliver personalized support, and operate intelligent communication workflows — all without compromising the human feel of genuine conversation. It is AI-powered customer engagement, built for modern business.",
+      "Plyndrox WhatsApp AI transforms the way businesses communicate with their customers by bringing the power of artificial intelligence directly into the world's most widely used messaging platform. Through deep integration with the WhatsApp Business API, Plyndrox AI enables businesses to automate responses, manage customer queries at scale, deliver personalized support, and operate intelligent communication workflows — all without compromising the human feel of genuine conversation. It is AI-powered customer engagement, built for modern business.",
     capabilities: [
       "Automated AI responses via WhatsApp Business API",
       "Custom business knowledge base and FAQ automation",
@@ -167,7 +167,7 @@ const founders = [
     name: "Riley Parker",
     title: "Founder & Chief Executive Officer",
     description:
-      "Riley Parker is a forward-thinking technology leader whose vision for accessible, intelligent, and beautifully designed AI tools has been the driving force behind Raina Jet. With a deep belief that the future of productivity lies at the intersection of artificial intelligence and human creativity, Riley has built Raina Jet from the ground up with an unwavering focus on user experience, scalable architecture, and purposeful design. Riley brings a rare combination of strategic leadership, product intuition, and a genuine passion for building technology that improves lives. As the visionary architect of the Raina Jet platform, Riley continues to guide the company toward its mission of democratizing AI access for individuals and businesses globally — ensuring that intelligent automation is not a luxury, but a universal tool.",
+      "Riley Parker is a forward-thinking technology leader whose vision for accessible, intelligent, and beautifully designed AI tools has been the driving force behind Plyndrox AI. With a deep belief that the future of productivity lies at the intersection of artificial intelligence and human creativity, Riley has built Plyndrox AI from the ground up with an unwavering focus on user experience, scalable architecture, and purposeful design. Riley brings a rare combination of strategic leadership, product intuition, and a genuine passion for building technology that improves lives. As the visionary architect of the Plyndrox AI platform, Riley continues to guide the company toward its mission of democratizing AI access for individuals and businesses globally — ensuring that intelligent automation is not a luxury, but a universal tool.",
     traits: ["Visionary Leadership", "Product Strategy", "AI Innovation", "User-Centric Design", "Global Thinking"],
     avatar: "RP",
     gradient: "from-purple-500 via-pink-500 to-rose-500",
@@ -177,7 +177,7 @@ const founders = [
     name: "Rupesh Sahu",
     title: "Co-Founder & Chief Technology Officer",
     description:
-      "Rupesh Sahu is the technical backbone of Raina Jet — a dedicated engineer, builder, and problem-solver who transforms ambitious ideas into production-ready, high-performance AI systems. With an exceptional command of modern software architecture, API integrations, and AI product development, Rupesh has designed and built the core infrastructure that powers every feature within the Raina Jet platform. Known for his relentless work ethic, systematic approach to engineering, and unwavering commitment to quality, Rupesh ensures that the platform not only delivers on its promises but continuously evolves to meet the growing expectations of users and businesses. His deep-rooted belief in building tools that are both technically powerful and genuinely accessible to everyday users drives every technical decision at Raina Jet.",
+      "Rupesh Sahu is the technical backbone of Plyndrox AI — a dedicated engineer, builder, and problem-solver who transforms ambitious ideas into production-ready, high-performance AI systems. With an exceptional command of modern software architecture, API integrations, and AI product development, Rupesh has designed and built the core infrastructure that powers every feature within the Plyndrox AI platform. Known for his relentless work ethic, systematic approach to engineering, and unwavering commitment to quality, Rupesh ensures that the platform not only delivers on its promises but continuously evolves to meet the growing expectations of users and businesses. His deep-rooted belief in building tools that are both technically powerful and genuinely accessible to everyday users drives every technical decision at Plyndrox AI.",
     traits: ["Full-Stack Engineering", "AI Architecture", "Product Development", "Technical Leadership", "Growth Mindset"],
     avatar: "RS",
     gradient: "from-sky-500 via-blue-500 to-indigo-500",
@@ -189,42 +189,42 @@ const whyChooseItems = [
   {
     icon: <ZapIcon className="h-6 w-6" />,
     title: "Smart Automation",
-    description: "Evara AI's intelligent automation eliminates repetitive tasks, accelerates workflows, and enables both individuals and businesses to focus on what truly matters — creative thinking, strategic decisions, and meaningful human interaction.",
+    description: "Plyndrox AI's intelligent automation eliminates repetitive tasks, accelerates workflows, and enables both individuals and businesses to focus on what truly matters — creative thinking, strategic decisions, and meaningful human interaction.",
     color: "text-amber-600",
     bg: "bg-amber-50 border-amber-100",
   },
   {
     icon: <RocketIcon className="h-6 w-6" />,
     title: "Scalable Solutions",
-    description: "Whether you are a solo entrepreneur or a large enterprise, Evara AI scales with your needs. Our platform is engineered to handle growing demands without sacrificing performance, reliability, or response quality.",
+    description: "Whether you are a solo entrepreneur or a large enterprise, Plyndrox AI scales with your needs. Our platform is engineered to handle growing demands without sacrificing performance, reliability, or response quality.",
     color: "text-violet-600",
     bg: "bg-violet-50 border-violet-100",
   },
   {
     icon: <ShieldIcon className="h-6 w-6" />,
     title: "Secure and Reliable",
-    description: "Data security and platform reliability are foundational commitments at Evara AI. We implement rigorous security practices, encrypted data transmission, and resilient infrastructure to protect user information and maintain consistent service availability.",
+    description: "Data security and platform reliability are foundational commitments at Plyndrox AI. We implement rigorous security practices, encrypted data transmission, and resilient infrastructure to protect user information and maintain consistent service availability.",
     color: "text-emerald-600",
     bg: "bg-emerald-50 border-emerald-100",
   },
   {
     icon: <SparklesIcon className="h-6 w-6" />,
     title: "Easy to Use",
-    description: "Advanced AI should not require a technical background to access and benefit from. Evara AI is designed with simplicity and clarity at its core, delivering powerful capabilities through interfaces that feel natural, intuitive, and effortless to use.",
+    description: "Advanced AI should not require a technical background to access and benefit from. Plyndrox AI is designed with simplicity and clarity at its core, delivering powerful capabilities through interfaces that feel natural, intuitive, and effortless to use.",
     color: "text-fuchsia-600",
     bg: "bg-fuchsia-50 border-fuchsia-100",
   },
   {
     icon: <UsersIcon className="h-6 w-6" />,
     title: "Built for Modern Businesses",
-    description: "From automated customer communication to AI-assisted content generation and regional market intelligence, Evara AI is purpose-built to address the real and evolving challenges of modern businesses operating in a fast-paced, digital-first world.",
+    description: "From automated customer communication to AI-assisted content generation and regional market intelligence, Plyndrox AI is purpose-built to address the real and evolving challenges of modern businesses operating in a fast-paced, digital-first world.",
     color: "text-sky-600",
     bg: "bg-sky-50 border-sky-100",
   },
   {
     icon: <GlobeIcon className="h-6 w-6" />,
     title: "Globally Accessible",
-    description: "Evara AI is designed without geographic boundaries. With multilingual capability, regional AI initiatives like Bihar AI, and universal platform accessibility, we are committed to making intelligent technology available to every user, everywhere.",
+    description: "Plyndrox AI is designed without geographic boundaries. With multilingual capability, regional AI initiatives like Bihar AI, and universal platform accessibility, we are committed to making intelligent technology available to every user, everywhere.",
     color: "text-orange-600",
     bg: "bg-orange-50 border-orange-100",
   },
@@ -235,7 +235,7 @@ const futureGoals = [
   "Launching advanced third-party integrations with popular CRMs, e-commerce platforms, and productivity tools.",
   "Extending regional AI coverage beyond Bihar to additional underserved linguistic and cultural communities.",
   "Introducing enterprise-grade analytics dashboards and AI performance reporting for business customers.",
-  "Building a public developer API to enable third-party builders to extend and customize the Raina Jet platform.",
+  "Building a public developer API to enable third-party builders to extend and customize the Plyndrox AI platform.",
   "Achieving global reach across emerging markets in South Asia, Southeast Asia, Africa, and Latin America.",
   "Developing AI-powered voice automation for phone and call-center-based business communication.",
   "Establishing strategic partnerships with educational institutions and NGOs to drive AI literacy programs.",
@@ -248,8 +248,8 @@ export default function AboutPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/cookies" className="hidden text-sm text-gray-500 transition hover:text-[#1d2226] sm:block">Cookie Policy</Link>
@@ -267,14 +267,14 @@ export default function AboutPage() {
           <div className="relative">
             <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-violet-700 mb-7">
               <SparklesIcon className="h-3.5 w-3.5" />
-              <span>About Evara AI</span>
+              <span>About Plyndrox AI</span>
             </div>
             <h1 className="max-w-5xl text-balance text-4xl font-black tracking-tight text-[#1d2226] sm:text-6xl lg:text-7xl">
               Building the Future{" "}
               <span className="text-violet-600">with AI</span>
             </h1>
             <p className="mt-6 max-w-2xl text-balance text-lg leading-relaxed text-gray-500">
-              Evara AI is an AI-powered platform on a singular mission — to make intelligent automation accessible, powerful, and genuinely useful for every person and business on the planet.
+              Plyndrox AI is an AI-powered platform on a singular mission — to make intelligent automation accessible, powerful, and genuinely useful for every person and business on the planet.
             </p>
             <p className="mt-3 max-w-2xl text-base leading-relaxed text-gray-400">
               From individual productivity to enterprise-scale automation, from regional communities to global markets, we are building AI tools that make a real difference.
@@ -318,10 +318,10 @@ export default function AboutPage() {
               </h2>
               <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                 <p>
-                  Evara AI began as a bold question: why should intelligent AI tools only be available to those with technical expertise or enterprise budgets? The founders saw a world where artificial intelligence was transforming industries at a rapid pace, yet the vast majority of individuals and small businesses were left behind — unable to access, understand, or benefit from these powerful technologies.
+                  Plyndrox AI began as a bold question: why should intelligent AI tools only be available to those with technical expertise or enterprise budgets? The founders saw a world where artificial intelligence was transforming industries at a rapid pace, yet the vast majority of individuals and small businesses were left behind — unable to access, understand, or benefit from these powerful technologies.
                 </p>
                 <p>
-                  The idea was simple in concept but ambitious in execution: build a platform that makes AI genuinely useful, approachable, and scalable for everyone. From the earliest prototypes to the full-featured platform it is today, Evara AI has been built with a singular focus on the people it serves — their needs, their challenges, and their aspirations.
+                  The idea was simple in concept but ambitious in execution: build a platform that makes AI genuinely useful, approachable, and scalable for everyone. From the earliest prototypes to the full-featured platform it is today, Plyndrox AI has been built with a singular focus on the people it serves — their needs, their challenges, and their aspirations.
                 </p>
                 <p>
                   What started as a vision between two passionate builders has grown into a multi-product AI platform serving users across India and beyond, with a roadmap that points toward global reach and transformative impact.
@@ -333,10 +333,10 @@ export default function AboutPage() {
                 <div className="space-y-6">
                   {[
                     { year: "2023", event: "Concept & ideation — identifying the gap in accessible AI tools for everyday users and businesses." },
-                    { year: "2024", event: "Platform development begins — building core AI infrastructure, Evara AI assistant, and WhatsApp AI integration framework." },
+                    { year: "2024", event: "Platform development begins — building core AI infrastructure, Plyndrox AI assistant, and Plyndrox WhatsApp AI integration framework." },
                     { year: "Early 2025", event: "Beta launch — first users onboarded, real-world feedback shapes product direction and feature priorities." },
                     { year: "Mid 2025", event: "Bihar AI initiative launched — expanding AI access to regional communities with localized intelligence." },
-                    { year: "2026", event: "Full platform release — Evara AI goes live with all products, growing user base, and global expansion underway." },
+                    { year: "2026", event: "Full platform release — Plyndrox AI goes live with all products, growing user base, and global expansion underway." },
                   ].map((item, i) => (
                     <div key={i} className="flex gap-4">
                       <div className="flex flex-col items-center">
@@ -371,7 +371,7 @@ export default function AboutPage() {
                   Our mission is to dismantle the barriers that separate everyday users from the transformative power of artificial intelligence. We believe that AI should not be complex, exclusive, or intimidating. It should be approachable, intuitive, and empowering — a tool that every person, whether a student, a small business owner, or a global enterprise, can pick up, use, and benefit from immediately.
                 </p>
                 <p className="mt-4 text-base leading-8 text-gray-500">
-                  Every product, every feature, and every design decision at Evara AI is evaluated through this mission lens: does it make AI simpler, more useful, and more accessible? If the answer is yes, we build it.
+                  Every product, every feature, and every design decision at Plyndrox AI is evaluated through this mission lens: does it make AI simpler, more useful, and more accessible? If the answer is yes, we build it.
                 </p>
               </div>
               <div className="rounded-2xl border border-sky-100 bg-white p-8 shadow-sm">
@@ -382,7 +382,7 @@ export default function AboutPage() {
                   Powerful AI for Businesses Globally
                 </h3>
                 <p className="mt-5 text-base leading-8 text-gray-500">
-                  We envision a world where AI-powered tools are the standard operating environment for businesses of all sizes — where intelligent automation handles routine work, enabling humans to focus on creativity, strategy, and relationships. Evara AI is building toward that world, one product, one integration, and one user at a time.
+                  We envision a world where AI-powered tools are the standard operating environment for businesses of all sizes — where intelligent automation handles routine work, enabling humans to focus on creativity, strategy, and relationships. Plyndrox AI is building toward that world, one product, one integration, and one user at a time.
                 </p>
                 <p className="mt-4 text-base leading-8 text-gray-500">
                   Our vision extends beyond product features. We see a global community of AI-enabled businesses and individuals, from metropolitan enterprises to rural entrepreneurs, all equipped with the same quality of intelligence and the same opportunity to thrive.
@@ -398,10 +398,10 @@ export default function AboutPage() {
               The Platform
             </p>
             <h2 className="mt-6 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl lg:text-5xl">
-              What Evara AI Does
+              What Plyndrox AI Does
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-gray-500">
-              Evara AI is more than a single product — it is a unified ecosystem of AI tools designed to address the diverse needs of modern users and businesses. At its core, the platform connects powerful services under one intelligent infrastructure.
+              Plyndrox AI is more than a single product — it is a unified ecosystem of AI tools designed to address the diverse needs of modern users and businesses. At its core, the platform connects powerful services under one intelligent infrastructure.
             </p>
           </div>
 
@@ -431,7 +431,7 @@ export default function AboutPage() {
                 <span className="text-violet-600">One Platform.</span>
               </h2>
               <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-gray-500">
-                Each product within the Evara AI ecosystem is purpose-built for a distinct use case, audience, and context — yet all share the same foundational commitment to intelligence, reliability, and accessibility.
+                Each product within the Plyndrox AI ecosystem is purpose-built for a distinct use case, audience, and context — yet all share the same foundational commitment to intelligence, reliability, and accessibility.
               </p>
             </div>
 
@@ -480,7 +480,7 @@ export default function AboutPage() {
               The People Behind the Vision
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-gray-500">
-              Evara AI was founded by two passionate individuals who share a deep conviction that AI can and should be a democratizing force — empowering individuals and businesses of every size, background, and geography.
+              Plyndrox AI was founded by two passionate individuals who share a deep conviction that AI can and should be a democratizing force — empowering individuals and businesses of every size, background, and geography.
             </p>
           </div>
 
@@ -529,7 +529,7 @@ export default function AboutPage() {
                 </h2>
                 <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                   <p>
-                    Behind every feature, every interface, and every AI capability within the Evara AI platform is a team of skilled, passionate professionals dedicated to crafting software that is reliable, elegant, and genuinely useful.
+                    Behind every feature, every interface, and every AI capability within the Plyndrox AI platform is a team of skilled, passionate professionals dedicated to crafting software that is reliable, elegant, and genuinely useful.
                   </p>
                   <p>
                     We operate as a culture of continuous improvement — rigorously evaluating every aspect of the platform, gathering user feedback with care, iterating on design and functionality, and pushing the boundaries of what is possible with today's AI technologies.
@@ -559,13 +559,13 @@ export default function AboutPage() {
         <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gray-500">
-              Why Evara AI
+              Why Plyndrox AI
             </p>
             <h2 className="mt-6 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl lg:text-5xl">
-              Why Businesses Choose Evara AI
+              Why Businesses Choose Plyndrox AI
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-gray-500">
-              In a crowded landscape of AI tools and automation platforms, Evara AI stands apart through its combination of depth, accessibility, reliability, and purpose-driven design.
+              In a crowded landscape of AI tools and automation platforms, Plyndrox AI stands apart through its combination of depth, accessibility, reliability, and purpose-driven design.
             </p>
           </div>
           <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -595,7 +595,7 @@ export default function AboutPage() {
                   Where We Are Going
                 </h2>
                 <p className="mt-5 text-base leading-8 text-gray-500">
-                  The work we have done so far is just the beginning. Evara AI has an ambitious roadmap built around expanding capabilities, deepening integrations, and broadening access to intelligent automation for users and businesses across the globe.
+                  The work we have done so far is just the beginning. Plyndrox AI has an ambitious roadmap built around expanding capabilities, deepening integrations, and broadening access to intelligent automation for users and businesses across the globe.
                 </p>
               </div>
               <div className="space-y-3">
@@ -622,14 +622,14 @@ export default function AboutPage() {
               Start Your AI Journey Today
             </h2>
             <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-white/60">
-              Join thousands of users and businesses who are already using Evara AI to work smarter, communicate better, and grow faster. The future of intelligent automation is here — and it is built for you.
+              Join thousands of users and businesses who are already using Plyndrox AI to work smarter, communicate better, and grow faster. The future of intelligent automation is here — and it is built for you.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
               <Link
                 href="/signup"
                 className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-sm font-bold text-[#1d2226] shadow-lg transition hover:-translate-y-0.5 hover:bg-gray-100"
               >
-                Try Evara AI Now
+                Try Plyndrox AI Now
                 <ArrowRightIcon className="h-4 w-4" />
               </Link>
               <Link
@@ -653,7 +653,7 @@ export default function AboutPage() {
 
       <footer className="border-t border-gray-200 bg-white px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-          <span>© {new Date().getFullYear()} Evara AI. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/privacy-policy" className="transition hover:text-[#1d2226]">Privacy Policy</Link>
             <Link href="/terms" className="transition hover:text-[#1d2226]">Terms of Service</Link>

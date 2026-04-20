@@ -8,10 +8,10 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const cat = getCategory(slug);
-  if (!cat) return { title: "Category Not Found — Evara AI Blog" };
+  if (!cat) return { title: "Category Not Found — Plyndrox AI Blog" };
   return {
-    title: `${cat.label} — Evara AI Blog`,
-    description: `${cat.description}. Browse all ${cat.label} articles on the Evara AI blog.`,
+    title: `${cat.label} — Plyndrox AI Blog`,
+    description: `${cat.description}. Browse all ${cat.label} articles on the Plyndrox AI blog.`,
   };
 }
 
@@ -60,8 +60,8 @@ export default async function CategoryPage({ params }: Props) {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Evara AI" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Evara AI</span>
+            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link href="/blog" className="hidden text-sm text-gray-400 transition hover:text-gray-600 sm:block">Blog</Link>
@@ -153,7 +153,7 @@ export default async function CategoryPage({ params }: Props) {
 
       <footer className="relative z-10 border-t border-gray-100 bg-gray-50 px-4 py-10 backdrop-blur-xl sm:px-6 lg:px-8 mt-10">
         <div className="mx-auto max-w-7xl flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400">
-          <span>© 2026 Evara AI. All rights reserved.</span>
+          <span>© 2026 Plyndrox AI. All rights reserved.</span>
           <div className="flex flex-wrap gap-4">
             <Link href="/blog" className="transition hover:text-gray-500">Blog</Link>
             <Link href="/about" className="transition hover:text-gray-500">About</Link>

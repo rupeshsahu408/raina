@@ -135,7 +135,7 @@ export default function PayablesPaymentsPage() {
     const autoTable = (await import("jspdf-autotable")).default;
     const doc = new jsPDF();
     doc.setFontSize(18);
-    doc.text("Payables AI Payment Report", 14, 18);
+    doc.text("Plyndrox Payable AI Payment Report", 14, 18);
     doc.setFontSize(10);
     doc.text(`Approved ready: ${queue.summary.approvedReady} | Amount: ${money(queue.summary.approvedAmount)}`, 14, 28);
     autoTable(doc, { startY: 36, head: [["Vendor", "Invoice", "Status", "Due", "Amount"]], body: queue.queue.map((invoice) => [invoice.vendor ?? "Vendor", invoice.invoiceNumber ?? "—", invoice.status ?? "—", dateLabel(invoice.dueDate), money(invoice.total, invoice.currency)]) });
@@ -240,7 +240,7 @@ export default function PayablesPaymentsPage() {
 
           <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
             <h2 className="font-black text-[#1d2226]">Accounting sync</h2>
-            <p className="mt-1 text-sm text-gray-500">Prepare approved and paid invoices for QuickBooks or Xero export, with sync history stored in Payables AI.</p>
+            <p className="mt-1 text-sm text-gray-500">Prepare approved and paid invoices for QuickBooks or Xero export, with sync history stored in Plyndrox Payable AI.</p>
             <div className="mt-5 space-y-3">
               {providers.map((provider) => (
                 <div key={provider.provider} className="rounded-2xl border border-gray-100 p-4">
