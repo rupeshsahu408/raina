@@ -98,6 +98,9 @@ interface Invoice {
   originalFileName?: string;
   flags?: Array<{ type: string; severity: string; message: string }>;
   isNewVendor?: boolean;
+  assignedApproverEmail?: string;
+  assignedApproverName?: string;
+  hasDocument?: boolean;
 }
 
 interface Stats {
@@ -109,6 +112,23 @@ interface Stats {
   flaggedCount: number;
   pendingAmount: number;
   approvedAmount: number;
+}
+
+interface CompanyProfile {
+  companyName?: string;
+  industry?: string;
+  monthlyInvoices?: string;
+  onboarded?: boolean;
+}
+
+interface NotificationItem {
+  _id: string;
+  title: string;
+  message: string;
+  severity: "info" | "warning" | "critical" | "success";
+  invoiceId?: string;
+  readAt?: string;
+  createdAt: string;
 }
 
 /* ─── Helpers ─── */
@@ -157,6 +177,11 @@ export default function PayablesDashboard() {
   const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [companyData, setCompanyData] = useState<CompanyProfile>({});
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -176,16 +201,24 @@ export default function PayablesDashboard() {
       const headers: Record<string, string> = { Authorization: `Bearer ${user.token}`, "x-uid": user.uid };
       const filterParam = activeFilter === "flagged" ? "all&flagged=true" : `status=${activeFilter}`;
       const searchParam = search.trim() ? `&q=${encodeURIComponent(search.trim())}` : "";
-      const [invRes, allInvRes, statsRes, gmailRes] = await Promise.all([
+      const [invRes, allInvRes, statsRes, gmailRes, companyRes, notificationRes] = await Promise.all([
         fetch(`${BACKEND}/payables/invoices?${filterParam}${searchParam}&limit=50`, { headers }),
         fetch(`${BACKEND}/payables/invoices?status=all&limit=100`, { headers }),
         fetch(`${BACKEND}/payables/invoices/stats`, { headers }),
         fetch(`${BACKEND}/payables/gmail/status`, { headers }),
+        fetch(`${BACKEND}/payables/company`, { headers }),
+        fetch(`${BACKEND}/payables/notifications`, { headers }),
       ]);
       if (invRes.ok) { const d = await invRes.json(); setInvoices(d.invoices ?? []); }
       if (allInvRes.ok) { const d = await allInvRes.json(); setAllInvoices(d.invoices ?? []); }
       if (statsRes.ok) setStats(await statsRes.json());
       if (gmailRes.ok) { const d = await gmailRes.json(); setGmailConnected(d.connected); }
+      if (companyRes.ok) setCompanyData(await companyRes.json());
+      if (notificationRes.ok) {
+        const d = await notificationRes.json();
+        setNotifications(d.notifications ?? []);
+        setUnreadCount(d.unreadCount ?? 0);
+      }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   }, [user, activeFilter, search]);
@@ -220,6 +253,30 @@ export default function PayablesDashboard() {
       setGmailMsg({ text: err instanceof Error ? err.message : "Failed to fetch from Gmail", type: "error" });
     } finally {
       setFetchingGmail(false);
+    }
+  };
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((ids) => ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]);
+  };
+
+  const bulkAction = async (action: "approve" | "reject" | "paid" | "delete" | "analyze") => {
+    if (!user || selectedIds.length === 0) return;
+    if (action === "delete" && !confirm(`Delete ${selectedIds.length} selected invoices?`)) return;
+    setBulkLoading(true);
+    try {
+      const res = await fetch(`${BACKEND}/payables/invoices/bulk-action`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: selectedIds, action }),
+      });
+      if (!res.ok) throw new Error("Bulk action failed");
+      setSelectedIds([]);
+      await fetchData();
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setBulkLoading(false);
     }
   };
 
@@ -263,10 +320,6 @@ export default function PayablesDashboard() {
     { key: "flagged", label: `Flagged${stats?.flaggedCount ? ` (${stats.flaggedCount})` : ""}` },
     { key: "processing", label: "Processing" },
   ];
-
-  const companyData = typeof window !== "undefined"
-    ? JSON.parse(localStorage.getItem("payables_company") ?? "{}")
-    : {};
 
   return (
     <div className="min-h-screen bg-[#f8f9fb]">
@@ -418,6 +471,29 @@ export default function PayablesDashboard() {
         <div className="grid gap-7 xl:grid-cols-[1fr_320px]">
           {/* Main: invoice list */}
           <div>
+            {selectedIds.length > 0 && (
+              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-violet-100 bg-violet-50 p-3">
+                <span className="mr-auto text-sm font-bold text-violet-800">{selectedIds.length} selected</span>
+                {[
+                  ["approve", "Approve"],
+                  ["paid", "Mark paid"],
+                  ["analyze", "Re-analyze"],
+                  ["reject", "Reject"],
+                  ["delete", "Delete"],
+                ].map(([action, label]) => (
+                  <button
+                    key={action}
+                    disabled={bulkLoading}
+                    onClick={() => bulkAction(action as "approve" | "reject" | "paid" | "delete" | "analyze")}
+                    className={`rounded-full px-3 py-1.5 text-xs font-bold transition disabled:opacity-50 ${action === "delete" ? "bg-rose-600 text-white" : "bg-white text-violet-700 border border-violet-100"}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+                <button onClick={() => setSelectedIds([])} className="rounded-full px-3 py-1.5 text-xs font-bold text-gray-400">Clear</button>
+              </div>
+            )}
+
             {/* Search + Filter bar */}
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="relative flex-1">
@@ -506,6 +582,13 @@ export default function PayablesDashboard() {
                         hasCritical ? "border-red-200 bg-red-50/30" : hasWarning ? "border-orange-200 bg-orange-50/20" : "border-gray-100 hover:border-gray-200"
                       }`}
                     >
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(inv._id)}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => { e.preventDefault(); toggleSelected(inv._id); }}
+                        className="h-4 w-4 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                      />
                       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${inv.source === "gmail" ? "bg-violet-50" : "bg-indigo-50"}`}>
                         {inv.source === "gmail" ? <MailIcon className="h-5 w-5 text-violet-500" /> : <UploadIcon className="h-5 w-5 text-indigo-500" />}
                       </div>
@@ -533,6 +616,8 @@ export default function PayablesDashboard() {
                               {flagCount} AI flag{flagCount !== 1 ? "s" : ""}
                             </span>
                           )}
+                          {inv.assignedApproverEmail && <span>Assigned to {inv.assignedApproverName || inv.assignedApproverEmail}</span>}
+                          {inv.hasDocument && <span>Document saved</span>}
                         </div>
                       </div>
 
@@ -571,6 +656,16 @@ export default function PayablesDashboard() {
                 <Link href="/payables/vendors" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
                   <BuildingIcon className="h-4 w-4 text-blue-500" />
                   Vendor directory
+                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
+                </Link>
+                <Link href="/payables/team" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
+                  <BuildingIcon className="h-4 w-4 text-emerald-500" />
+                  Team & roles
+                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
+                </Link>
+                <Link href="/payables/rules" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
+                  <FlagIcon className="h-4 w-4 text-orange-500" />
+                  Approval rules
                   <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </Link>
                 {!gmailConnected && (
@@ -618,6 +713,29 @@ export default function PayablesDashboard() {
                       View all {flaggedInvoices.length} flagged invoices →
                     </button>
                   )}
+                </div>
+              </div>
+            )}
+
+            {notifications.length > 0 && (
+              <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-gray-400">
+                    <AlertIcon className="h-3.5 w-3.5" />
+                    Notifications
+                  </h3>
+                  {unreadCount > 0 && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-bold text-violet-700">{unreadCount} new</span>}
+                </div>
+                <div className="space-y-2">
+                  {notifications.slice(0, 5).map((n) => {
+                    const card = (
+                      <div className={`rounded-xl border p-3 ${n.severity === "critical" ? "border-red-100 bg-red-50" : n.severity === "warning" ? "border-orange-100 bg-orange-50" : "border-gray-100 bg-gray-50"}`}>
+                        <p className="text-xs font-bold text-[#1d2226]">{n.title}</p>
+                        <p className="mt-1 line-clamp-2 text-xs text-gray-500">{n.message}</p>
+                      </div>
+                    );
+                    return n.invoiceId ? <Link key={n._id} href={`/payables/invoice/${n.invoiceId}`}>{card}</Link> : <div key={n._id}>{card}</div>;
+                  })}
                 </div>
               </div>
             )}

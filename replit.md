@@ -11,16 +11,18 @@ A multi-platform AI suite with four AI systems:
 - **Frontend** (`frontend/`) — Next.js 16 PWA, port 5000
 - **Backend** (`backend/`) — Express API, port 8080
 
-## Payables AI (Separate SaaS Product — Phase 1 Complete)
+## Payables AI (Separate SaaS Product — Phases 1–3 Complete)
 - Route: `/payables`, `/payables/onboarding`, `/payables/dashboard`, `/payables/upload`, `/payables/invoice/[id]`
 - AI-powered Accounts Payable automation for small businesses
 - **Landing page** (`/payables`): Full redesign — hero with mock dashboard preview, stats bar, "How it works" 4-step section, features grid, testimonials, transparent roadmap ("What's included"), CTA section
-- **Onboarding** (`/payables/onboarding`): 3-step wizard — Company info (name, industry, monthly invoice volume) → Gmail connect check → Completion. Stores completion state in localStorage.
-- **Dashboard** (`/payables/dashboard`): Stats cards (total, pending, approved, processing), upcoming due dates sidebar, overdue alert banners, quick actions sidebar, Gmail fetch, filter tabs (all/ready/pending/approved/rejected/processing), invoice list with status badges and overdue highlighting
+- **Onboarding** (`/payables/onboarding`): 3-step wizard — Company info (name, industry, monthly invoice volume) → Gmail connect check → Completion. Company setup is persisted server-side through `/payables/company`, with localStorage kept only as a compatibility hint.
+- **Dashboard** (`/payables/dashboard`): Stats cards (total, pending, approved, processing), upcoming due dates sidebar, overdue alert banners, quick actions sidebar, in-app notifications, Gmail fetch, filter tabs (all/ready/pending/approved/rejected/processing), invoice list with status badges, overdue highlighting, document indicators, approval assignment, and bulk actions.
 - **Upload** (`/payables/upload`): Drag-and-drop redesign — clear idle/file-selected/uploading/success states, file type badges, tips panel
-- **Invoice detail** (`/payables/invoice/[id]`): Full view, AI confidence meter, edit/approve/reject workflow, line items table, rejection modal with reason
-- Backend: `backend/src/payables.ts` — routes at `/payables/*`, uses NVIDIA vision API for OCR
-- Database model: `backend/src/models/Invoice.ts`
+- **Invoice detail** (`/payables/invoice/[id]`): Full view, original document preview, AI confidence meter, edit/approve/reject/paid workflow, line items table, rejection modal with reason, comments, approver metadata, and audit trail.
+- **Team & roles** (`/payables/team`): Invite finance teammates, assign owner/admin/approver/member roles, and manage pending/active/disabled member states.
+- **Approval rules** (`/payables/rules`): Amount/currency-based approval routing to named approvers. Matching invoices store assigned approver/rule metadata.
+- Backend: `backend/src/payables.ts` — routes at `/payables/*`, uses NVIDIA AI extraction, stores company profiles, team members, approval rules, in-app/email notifications via connected Gmail, audit logs, and invoice source documents.
+- Database model: `backend/src/models/Invoice.ts` with flags, source document metadata, assigned approval fields, comments, and approval/audit metadata.
 - All pages use `getFirebaseAuth()` from `@/lib/firebaseClient` (not raw `getAuth()`) to prevent initialization errors
 - Phase 1 scope: No auto-payment; user reviews and pays manually. Gmail connection reuses existing InboxToken setup.
 

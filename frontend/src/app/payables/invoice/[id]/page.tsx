@@ -66,6 +66,14 @@ interface Invoice {
   flags?: InvoiceFlag[];
   isNewVendor?: boolean;
   analysedAt?: string;
+  hasDocument?: boolean;
+  originalMimeType?: string;
+  assignedApproverEmail?: string;
+  assignedApproverName?: string;
+  approvalRuleName?: string;
+  approvedBy?: string;
+  comments?: Array<{ id: string; body: string; authorEmail?: string; createdAt: string }>;
+  auditLogs?: Array<{ _id: string; action: string; actorEmail?: string; createdAt: string; details?: Record<string, unknown> }>;
 }
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
@@ -112,6 +120,9 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
   const [paymentAmount, setPaymentAmount] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
   const [analysing, setAnalysing] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState("");
+  const [comment, setComment] = useState("");
+  const [commenting, setCommenting] = useState(false);
 
   useEffect(() => {
     try {
@@ -139,6 +150,22 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
   };
 
   useEffect(() => { if (user) fetchInvoice(); }, [user, id]); // eslint-disable-line
+
+  useEffect(() => {
+    if (!user || !invoice?.hasDocument) return;
+    let objectUrl = "";
+    fetch(`${BACKEND}/payables/invoices/${id}/document`, {
+      headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+    })
+      .then((res) => res.ok ? res.blob() : null)
+      .then((blob) => {
+        if (!blob) return;
+        objectUrl = URL.createObjectURL(blob);
+        setDocumentUrl(objectUrl);
+      })
+      .catch(() => setDocumentUrl(""));
+    return () => { if (objectUrl) URL.revokeObjectURL(objectUrl); };
+  }, [user, invoice?.hasDocument, id]);
 
   const save = async () => {
     if (!user || !invoice) return;
@@ -203,6 +230,24 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
       });
       setInvoice(await res.json());
     } finally { setAnalysing(false); }
+  };
+
+  const addComment = async () => {
+    if (!user || !comment.trim()) return;
+    setCommenting(true);
+    try {
+      const res = await fetch(`${BACKEND}/payables/invoices/${id}/comments`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        body: JSON.stringify({ body: comment }),
+      });
+      if (res.ok) {
+        setInvoice(await res.json());
+        setComment("");
+      }
+    } finally {
+      setCommenting(false);
+    }
   };
 
   const deleteInvoice = async () => {
@@ -400,6 +445,26 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
         <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
           {/* Left: details */}
           <div className="space-y-6">
+            {invoice.hasDocument && (
+              <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+                <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                  <h2 className="text-sm font-black uppercase tracking-wider text-gray-400">Original Document</h2>
+                  {invoice.originalFileName && <span className="max-w-[220px] truncate text-xs font-semibold text-gray-400">{invoice.originalFileName}</span>}
+                </div>
+                <div className="bg-gray-50 p-3">
+                  {documentUrl ? (
+                    invoice.originalMimeType?.startsWith("image/") ? (
+                      <img src={documentUrl} alt="Original invoice document" className="max-h-[520px] w-full rounded-xl object-contain" />
+                    ) : (
+                      <iframe src={documentUrl} title="Original invoice document" className="h-[520px] w-full rounded-xl bg-white" />
+                    )
+                  ) : (
+                    <div className="flex h-52 items-center justify-center text-sm text-gray-400">Loading document preview…</div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Invoice details */}
             <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
               <h2 className="mb-5 text-sm font-black uppercase tracking-wider text-gray-400">Invoice Details</h2>
@@ -426,6 +491,8 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
                   {field("Subtotal", fmt(invoice.subtotal, invoice.currency))}
                   {field("Tax", fmt(invoice.tax, invoice.currency))}
                   {field("Total", fmt(invoice.total, invoice.currency))}
+                  {field("Approver", invoice.assignedApproverName || invoice.assignedApproverEmail)}
+                  {field("Approval Rule", invoice.approvalRuleName)}
                 </div>
               )}
 
@@ -547,6 +614,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
               <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
                 <p className="text-sm font-bold text-emerald-700">This invoice has been approved.</p>
                 {invoice.approvedAt && <p className="mt-1 text-xs text-gray-500">on {fmtDate(invoice.approvedAt)}</p>}
+                {invoice.approvedBy && <p className="mt-1 text-xs text-gray-500">by {invoice.approvedBy}</p>}
                 <p className="mt-3 text-xs text-emerald-700">
                   Payment of <strong>{fmt(invoice.total, invoice.currency)}</strong> is due {fmtDate(invoice.dueDate)}.
                 </p>
@@ -600,6 +668,51 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
                   </dd>
                 </div>
               </dl>
+            </div>
+
+            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <h2 className="mb-4 text-xs font-black uppercase tracking-wider text-gray-400">Comments</h2>
+              <div className="space-y-3">
+                {(invoice.comments ?? []).length === 0 ? (
+                  <p className="text-sm text-gray-400">No comments yet.</p>
+                ) : (
+                  [...(invoice.comments ?? [])].reverse().map((c) => (
+                    <div key={c.id} className="rounded-xl bg-gray-50 p-3">
+                      <p className="text-sm text-[#1d2226]">{c.body}</p>
+                      <p className="mt-1 text-xs text-gray-400">{c.authorEmail || "Team member"} · {fmtDate(c.createdAt)}</p>
+                    </div>
+                  ))
+                )}
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Add an internal note for your team…"
+                  rows={3}
+                  className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+                />
+                <button onClick={addComment} disabled={commenting || !comment.trim()} className="rounded-full bg-[#1d2226] px-4 py-2 text-xs font-bold text-white disabled:opacity-50">
+                  {commenting ? "Posting…" : "Add comment"}
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+              <h2 className="mb-4 text-xs font-black uppercase tracking-wider text-gray-400">Audit Trail</h2>
+              {(invoice.auditLogs ?? []).length === 0 ? (
+                <p className="text-sm text-gray-400">No activity recorded yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {(invoice.auditLogs ?? []).map((log) => (
+                    <div key={log._id} className="flex items-start gap-3 rounded-xl bg-gray-50 p-3">
+                      <div className="mt-1 h-2 w-2 rounded-full bg-violet-500" />
+                      <div>
+                        <p className="text-sm font-semibold capitalize text-[#1d2226]">{log.action.replaceAll("_", " ")}</p>
+                        <p className="text-xs text-gray-400">{log.actorEmail || "System"} · {fmtDate(log.createdAt)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

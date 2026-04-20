@@ -86,17 +86,12 @@ export default function PayablesOnboarding() {
   const [user, setUser] = useState<{ uid: string; token: string } | null>(null);
   const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
   const [checkingGmail, setCheckingGmail] = useState(false);
+  const [savingCompany, setSavingCompany] = useState(false);
 
   const [companyName, setCompanyName] = useState("");
   const [industry, setIndustry] = useState("");
   const [monthlyInvoices, setMonthlyInvoices] = useState("");
   const [companyError, setCompanyError] = useState("");
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && localStorage.getItem("payables_onboarded") === "true") {
-      router.replace("/payables/dashboard");
-    }
-  }, [router]);
 
   useEffect(() => {
     try {
@@ -112,6 +107,25 @@ export default function PayablesOnboarding() {
       return undefined;
     }
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    fetch(`${BACKEND}/payables/company`, {
+      headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+    })
+      .then((res) => res.ok ? res.json() : null)
+      .then((profile) => {
+        if (!profile) return;
+        if (profile.onboarded && profile.companyName) {
+          router.replace("/payables/dashboard");
+          return;
+        }
+        setCompanyName(profile.companyName ?? "");
+        setIndustry(profile.industry ?? "");
+        setMonthlyInvoices(profile.monthlyInvoices ?? "");
+      })
+      .catch(() => {});
+  }, [user, router]);
 
   const checkGmailStatus = async () => {
     if (!user) return;
@@ -135,14 +149,33 @@ export default function PayablesOnboarding() {
     }
   }, [step, user]);
 
-  const handleCompanyNext = () => {
+  const handleCompanyNext = async () => {
     if (!companyName.trim()) {
       setCompanyError("Please enter your company name.");
       return;
     }
+    if (!user) {
+      setCompanyError("Please sign in first.");
+      return;
+    }
     setCompanyError("");
-    localStorage.setItem("payables_company", JSON.stringify({ companyName, industry, monthlyInvoices }));
-    setStep(2);
+    setSavingCompany(true);
+    try {
+      const res = await fetch(`${BACKEND}/payables/company`, {
+        method: "PUT",
+        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        body: JSON.stringify({ companyName, industry, monthlyInvoices }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error ?? "Could not save company profile.");
+      localStorage.setItem("payables_company", JSON.stringify({ companyName, industry, monthlyInvoices }));
+      localStorage.setItem("payables_onboarded", "true");
+      setStep(2);
+    } catch (err) {
+      setCompanyError(err instanceof Error ? err.message : "Could not save company profile.");
+    } finally {
+      setSavingCompany(false);
+    }
   };
 
   const handleFinish = () => {
@@ -261,9 +294,10 @@ export default function PayablesOnboarding() {
 
             <button
               onClick={handleCompanyNext}
+              disabled={savingCompany}
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 py-4 text-sm font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg"
             >
-              Continue <ChevronRightIcon className="h-4 w-4" />
+              {savingCompany ? "Saving…" : "Continue"} <ChevronRightIcon className="h-4 w-4" />
             </button>
           </div>
         )}

@@ -12,6 +12,8 @@ export interface InvoiceDoc extends Document {
   source: "upload" | "gmail";
   status: "processing" | "extracted" | "pending_approval" | "approved" | "rejected" | "paid";
   originalFileName?: string;
+  originalMimeType?: string;
+  originalFileData?: string;
   gmailMessageId?: string;
   fileUrl?: string;
   rawText?: string;
@@ -32,6 +34,12 @@ export interface InvoiceDoc extends Document {
   flags?: InvoiceFlag[];
   analysedAt?: Date;
   isNewVendor?: boolean;
+  approvalRuleId?: string;
+  approvalRuleName?: string;
+  assignedApproverEmail?: string;
+  assignedApproverName?: string;
+  approvalTrail?: Array<{ action: string; actorUid?: string; actorEmail?: string; note?: string; at: Date }>;
+  comments?: Array<{ id: string; body: string; authorUid?: string; authorEmail?: string; createdAt: Date }>;
 
   approvedAt?: Date;
   approvedBy?: string;
@@ -70,6 +78,8 @@ const InvoiceSchema = new Schema<InvoiceDoc>(
       default: "processing",
     },
     originalFileName: String,
+    originalMimeType: String,
+    originalFileData: String,
     gmailMessageId: String,
     fileUrl: String,
     rawText: String,
@@ -90,6 +100,28 @@ const InvoiceSchema = new Schema<InvoiceDoc>(
     flags: [FlagSchema],
     analysedAt: Date,
     isNewVendor: Boolean,
+    approvalRuleId: String,
+    approvalRuleName: String,
+    assignedApproverEmail: String,
+    assignedApproverName: String,
+    approvalTrail: [
+      {
+        action: String,
+        actorUid: String,
+        actorEmail: String,
+        note: String,
+        at: { type: Date, default: Date.now },
+      },
+    ],
+    comments: [
+      {
+        id: String,
+        body: String,
+        authorUid: String,
+        authorEmail: String,
+        createdAt: { type: Date, default: Date.now },
+      },
+    ],
 
     approvedAt: Date,
     approvedBy: String,
