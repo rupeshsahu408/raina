@@ -181,10 +181,13 @@ export default function PayablesDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("all");
   const [fetchingGmail, setFetchingGmail] = useState(false);
+  const [disconnectingGmail, setDisconnectingGmail] = useState(false);
   const [gmailMsg, setGmailMsg] = useState<{ text: string; type: "success" | "error" | "info" } | null>(null);
   const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
+  const [gmailEmail, setGmailEmail] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "amount_high" | "amount_low" | "due_soon">("newest");
   const [companyData, setCompanyData] = useState<CompanyProfile>({});
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -220,7 +223,7 @@ export default function PayablesDashboard() {
       if (invRes.ok) { const d = await invRes.json(); setInvoices(d.invoices ?? []); }
       if (allInvRes.ok) { const d = await allInvRes.json(); setAllInvoices(d.invoices ?? []); }
       if (statsRes.ok) setStats(await statsRes.json());
-      if (gmailRes.ok) { const d = await gmailRes.json(); setGmailConnected(d.connected); }
+      if (gmailRes.ok) { const d = await gmailRes.json(); setGmailConnected(d.connected); setGmailEmail(d.email ?? null); }
       if (companyRes.ok) setCompanyData(await companyRes.json());
       if (notificationRes.ok) {
         const d = await notificationRes.json();
@@ -296,6 +299,26 @@ export default function PayablesDashboard() {
     }
   };
 
+  const disconnectGmail = async () => {
+    if (!user || !confirm("Disconnect Gmail? You can reconnect at any time.")) return;
+    setDisconnectingGmail(true);
+    try {
+      const res = await fetch(`${BACKEND}/payables/gmail/disconnect`, {
+        method: "DELETE",
+        headers: payablesHeaders(user),
+      });
+      if (res.ok) {
+        setGmailConnected(false);
+        setGmailEmail(null);
+        setGmailMsg({ text: "Gmail disconnected. Invoice auto-import is paused.", type: "info" });
+      }
+    } catch {
+      setGmailMsg({ text: "Could not disconnect Gmail. Please try again.", type: "error" });
+    } finally {
+      setDisconnectingGmail(false);
+    }
+  };
+
   const toggleSelected = (id: string) => {
     setSelectedIds((ids) => ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]);
   };
@@ -332,6 +355,20 @@ export default function PayablesDashboard() {
   const flaggedInvoices = allInvoices.filter(
     (inv) => inv.flags && inv.flags.length > 0 && !["rejected", "paid"].includes(inv.status)
   );
+
+  const sortedInvoices = [...invoices].sort((a, b) => {
+    if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    if (sortBy === "amount_high") return (b.total ?? 0) - (a.total ?? 0);
+    if (sortBy === "amount_low") return (a.total ?? 0) - (b.total ?? 0);
+    if (sortBy === "due_soon") {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    }
+    return 0;
+  });
 
   if (!user && !loading) {
     return (
@@ -427,20 +464,6 @@ export default function PayablesDashboard() {
           </div>
         )}
 
-        {/* Gmail not connected */}
-        {gmailConnected === false && (
-          <div className="mb-5 flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50 p-4">
-            <AlertIcon className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-amber-800">Gmail not connected</p>
-              <p className="mt-0.5 text-xs text-amber-600">
-                Connect Gmail to automatically detect and import invoice emails.{" "}
-                <button onClick={connectGmail} className="font-bold underline hover:no-underline">Connect now →</button>
-              </p>
-            </div>
-            <button className="text-xs text-amber-400 hover:text-amber-600" onClick={() => setGmailConnected(null)}>✕</button>
-          </div>
-        )}
 
         {/* Overdue alert */}
         {!loading && overdueInvoices.length > 0 && (
@@ -553,6 +576,17 @@ export default function PayablesDashboard() {
                   </button>
                 )}
               </div>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                className="shrink-0 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-semibold text-gray-600 shadow-sm outline-none transition focus:border-violet-300"
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="amount_high">Amount: high → low</option>
+                <option value="amount_low">Amount: low → high</option>
+                <option value="due_soon">Due date: soonest</option>
+              </select>
             </div>
 
             {/* Filter tabs */}
@@ -581,7 +615,7 @@ export default function PayablesDashboard() {
                   <div key={i} className="h-[76px] animate-pulse rounded-2xl bg-gray-100" />
                 ))}
               </div>
-            ) : invoices.length === 0 ? (
+            ) : sortedInvoices.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center">
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50">
                   <MailIcon className="h-7 w-7 text-gray-200" />
@@ -607,7 +641,7 @@ export default function PayablesDashboard() {
               </div>
             ) : (
               <div className="space-y-2.5">
-                {invoices.map((inv) => {
+                {sortedInvoices.map((inv) => {
                   const cfg = STATUS_CONFIG[inv.status] ?? STATUS_CONFIG.processing;
                   const overdue = !["approved", "rejected", "paid"].includes(inv.status) && isOverdue(inv.dueDate);
                   const hasCritical = inv.flags?.some((f) => f.severity === "critical");
@@ -679,6 +713,68 @@ export default function PayablesDashboard() {
 
           {/* Sidebar */}
           <div className="space-y-5">
+            {/* Gmail integration card */}
+            <div className={`rounded-2xl border p-5 shadow-sm ${gmailConnected === true ? "border-emerald-100 bg-white" : gmailConnected === false ? "border-amber-100 bg-amber-50" : "border-gray-100 bg-white"}`}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">Gmail Integration</h3>
+                {gmailConnected ? (
+                  <span className="flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Connected
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-bold text-gray-500">
+                    <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
+                    Not connected
+                  </span>
+                )}
+              </div>
+
+              {gmailConnected === null ? (
+                <div className="h-8 w-full animate-pulse rounded-xl bg-gray-100" />
+              ) : gmailConnected ? (
+                <div>
+                  {gmailEmail && (
+                    <div className="mb-3 flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5 border border-emerald-100">
+                      <MailIcon className="h-4 w-4 shrink-0 text-emerald-600" />
+                      <span className="text-xs font-semibold text-emerald-800 truncate">{gmailEmail}</span>
+                    </div>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={fetchFromGmail}
+                      disabled={fetchingGmail}
+                      className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-xs font-bold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50 disabled:opacity-50"
+                    >
+                      {fetchingGmail ? <Spinner /> : <RefreshIcon className="h-3.5 w-3.5" />}
+                      Fetch now
+                    </button>
+                    <button
+                      onClick={disconnectGmail}
+                      disabled={disconnectingGmail}
+                      className="flex items-center justify-center gap-1.5 rounded-xl border border-rose-100 bg-rose-50 px-3 py-2.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 disabled:opacity-50"
+                      title="Disconnect Gmail"
+                    >
+                      {disconnectingGmail ? <Spinner /> : "Disconnect"}
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs text-gray-400">Auto-imports invoice emails from your inbox.</p>
+                </div>
+              ) : (
+                <div>
+                  <p className="mb-3 text-xs text-amber-700">Connect your Gmail to automatically detect and import invoice emails into your dashboard.</p>
+                  <button
+                    onClick={connectGmail}
+                    disabled={fetchingGmail}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1d2226] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#2d3238] disabled:opacity-50"
+                  >
+                    {fetchingGmail ? <Spinner /> : <MailIcon className="h-3.5 w-3.5" />}
+                    Connect Gmail
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Quick actions */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="mb-4 text-xs font-black uppercase tracking-wider text-gray-400">Quick actions</h3>
@@ -688,13 +784,10 @@ export default function PayablesDashboard() {
                   Upload invoice
                   <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </Link>
-                <button onClick={gmailConnected === false ? connectGmail : fetchFromGmail} disabled={fetchingGmail} className="flex w-full items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-left text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50 disabled:opacity-50">
-                  <MailIcon className="h-4 w-4 text-indigo-500" />
-                  {fetchingGmail ? "Opening Gmail…" : gmailConnected === false ? "Connect Gmail" : "Fetch Gmail invoices"}
-                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
-                </button>
                 <Link href="/payables/payments" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
-                  <CreditCard className="h-4 w-4 text-violet-500" /> Payment queue
+                  <CreditCard className="h-4 w-4 text-violet-500" />
+                  Payment queue
+                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </Link>
                 <Link href="/payables/vendors" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
                   <BuildingIcon className="h-4 w-4 text-blue-500" />
@@ -711,13 +804,6 @@ export default function PayablesDashboard() {
                   Approval rules
                   <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </Link>
-                {!gmailConnected && (
-                  <button onClick={connectGmail} className="flex w-full items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-left text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
-                    <AlertIcon className="h-4 w-4 text-amber-500" />
-                    Connect Gmail
-                    <ChevronRightIcon className="ml-auto h-4 w-4 text-amber-300" />
-                  </button>
-                )}
               </div>
             </div>
 
