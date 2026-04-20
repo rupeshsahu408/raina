@@ -388,7 +388,7 @@ export default function PayablesDashboard() {
         url = data.url;
         setCompanyData((prev) => ({ ...prev, supplierPortalToken: data.token, supplierPortalUrl: data.url }));
       }
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(url!);
       setSupplierLinkCopied(true);
       window.setTimeout(() => setSupplierLinkCopied(false), 2500);
     } catch (err) {
