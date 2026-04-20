@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useEffect, useLayoutEffect, useState } from "react";
+import { createContext, useContext, useLayoutEffect, useState } from "react";
 
-type Theme = "dark" | "light" | "auto";
+export type Theme = "white" | "light" | "dark" | "green" | "reading" | "ocean" | "rose" | "auto";
 
 const STORAGE_KEY = "evara_theme";
 
@@ -12,34 +12,42 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "light",
+  theme: "white",
   setTheme: () => {},
 });
 
-function resolveTheme(theme: Theme): "dark" | "light" {
+function normalizeTheme(theme: Theme | null): Theme {
+  if (!theme) return "white";
+  if (theme === "light") return "white";
+  return theme;
+}
+
+function resolveTheme(theme: Theme): Exclude<Theme, "auto" | "light"> {
   if (theme === "auto") {
     return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
-      : "light";
+      : "white";
   }
-  return theme;
+  return normalizeTheme(theme) as Exclude<Theme, "auto" | "light">;
 }
 
 function applyTheme(theme: Theme) {
   const resolved = resolveTheme(theme);
   document.documentElement.setAttribute("data-theme", resolved);
+  const themeColor = getComputedStyle(document.documentElement).getPropertyValue("--background").trim() || "#ffffff";
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor);
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("light");
+  const [theme, setThemeState] = useState<Theme>("white");
 
   useLayoutEffect(() => {
-    const stored = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "light";
+    const stored = normalizeTheme(localStorage.getItem(STORAGE_KEY) as Theme | null);
     setThemeState(stored);
     applyTheme(stored);
 
     const handler = (e: Event) => {
-      const t = (e as CustomEvent<Theme>).detail;
+      const t = normalizeTheme((e as CustomEvent<Theme>).detail);
       setThemeState(t);
       applyTheme(t);
     };
@@ -47,7 +55,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const mqHandler = () => {
-      const current = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "light";
+      const current = normalizeTheme(localStorage.getItem(STORAGE_KEY) as Theme | null);
       if (current === "auto") applyTheme("auto");
     };
     mq.addEventListener("change", mqHandler);
@@ -59,10 +67,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   function setTheme(t: Theme) {
-    setThemeState(t);
-    localStorage.setItem(STORAGE_KEY, t);
-    applyTheme(t);
-    window.dispatchEvent(new CustomEvent<Theme>("evara-theme-change", { detail: t }));
+    const nextTheme = normalizeTheme(t);
+    setThemeState(nextTheme);
+    localStorage.setItem(STORAGE_KEY, nextTheme);
+    applyTheme(nextTheme);
+    window.dispatchEvent(new CustomEvent<Theme>("evara-theme-change", { detail: nextTheme }));
   }
 
   return (
@@ -78,7 +87,7 @@ export function useTheme() {
 
 export function applyThemeFromStorage() {
   try {
-    const stored = (localStorage.getItem(STORAGE_KEY) as Theme) ?? "light";
+    const stored = normalizeTheme(localStorage.getItem(STORAGE_KEY) as Theme | null);
     const resolved = resolveTheme(stored);
     document.documentElement.setAttribute("data-theme", resolved);
   } catch {}

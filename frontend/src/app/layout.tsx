@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeSettingsPanel } from "@/components/ThemeSettingsPanel";
 import "./globals.css";
 
 const geistSans = Inter({
@@ -45,9 +46,10 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/evara-192.svg" />
         <link rel="manifest" href="/manifest.webmanifest" />
       </head>
-      <body className="unified-white-theme min-h-screen antialiased bg-white text-[#1d2226]" suppressHydrationWarning>
+      <body className="app-theme min-h-screen antialiased bg-white text-[#1d2226]" suppressHydrationWarning>
         <ThemeProvider>
           <div className="min-h-screen">{children}</div>
+          <ThemeSettingsPanel />
         </ThemeProvider>
       </body>
     </html>
