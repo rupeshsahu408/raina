@@ -207,7 +207,7 @@ export default function PayablesPaymentsPage() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                   <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(value: number) => money(value)} />
+                  <Tooltip formatter={(value) => money(typeof value === "number" ? value : Number(value ?? 0))} />
                   <Bar dataKey="amount" fill="#7c3aed" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
