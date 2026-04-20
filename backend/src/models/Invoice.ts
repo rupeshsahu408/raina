@@ -74,6 +74,16 @@ export interface InvoiceDoc extends Document {
   paidAt?: Date;
   paymentAmount?: number;
   paymentDate?: Date;
+  paidNote?: string;
+
+  emailLog?: Array<{
+    type: string;
+    to: string;
+    subject: string;
+    sentAt: Date;
+    sentBy?: string;
+    previewHtml?: string;
+  }>;
 
   createdAt: Date;
   updatedAt: Date;
@@ -185,6 +195,18 @@ const InvoiceSchema = new Schema<InvoiceDoc>(
     paidAt: Date,
     paymentAmount: Number,
     paymentDate: Date,
+    paidNote: String,
+
+    emailLog: [
+      {
+        type: String,
+        to: String,
+        subject: String,
+        sentAt: { type: Date, default: Date.now },
+        sentBy: String,
+        previewHtml: String,
+      },
+    ],
   },
   { timestamps: true }
 );

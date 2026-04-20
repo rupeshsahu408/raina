@@ -31,6 +31,15 @@ function RefreshIcon(p: React.SVGProps<SVGSVGElement>) {
 function DollarIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>;
 }
+function MailIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>;
+}
+function EyeIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
+}
+function SettingsIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>;
+}
 
 interface LineItem {
   description: string;
@@ -97,8 +106,10 @@ interface Invoice {
   assignedApproverName?: string;
   approvalRuleName?: string;
   approvedBy?: string;
+  paidNote?: string;
   comments?: Array<{ id: string; body: string; authorEmail?: string; createdAt: string }>;
   auditLogs?: Array<{ _id: string; action: string; actorEmail?: string; createdAt: string; details?: Record<string, unknown> }>;
+  emailLog?: Array<{ type: string; to: string; subject: string; sentAt: string; sentBy?: string }>;
 }
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
@@ -154,6 +165,15 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
   const [documentUrl, setDocumentUrl] = useState("");
   const [comment, setComment] = useState("");
   const [commenting, setCommenting] = useState(false);
+  const [paidNote, setPaidNote] = useState("");
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailType, setEmailType] = useState("invoice_approved");
+  const [emailOverrideTo, setEmailOverrideTo] = useState("");
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailMsg, setEmailMsg] = useState<{ text: string; ok: boolean } | null>(null);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [previewSubject, setPreviewSubject] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -242,14 +262,58 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     if (!user || !invoice) return;
     setActionLoading(true);
     try {
-      const res = await fetch(`${BACKEND}/payables/invoices/${id}/paid`, {
+      const res = await fetch(`${BACKEND}/payables/invoices/${id}/mark-paid`, {
         method: "POST",
         headers: payablesHeaders(user, true),
-        body: JSON.stringify({ paymentAmount: parseFloat(paymentAmount) || invoice.total }),
+        body: JSON.stringify({ paymentAmount: parseFloat(paymentAmount) || invoice.total, paidNote: paidNote.trim() }),
       });
-      setInvoice(await res.json());
+      const data = await res.json();
+      if (data.invoice) setInvoice(data.invoice);
+      else await fetchInvoice();
       setShowPaidModal(false);
+      if (data.emailSent) setEmailMsg({ text: `Payment confirmation email sent to ${data.emailTo}`, ok: true });
+      else if (data.emailError) setEmailMsg({ text: `Invoice marked paid, but email failed: ${data.emailError}`, ok: false });
     } finally { setActionLoading(false); }
+  };
+
+  const sendEmailToSupplier = async () => {
+    if (!user || !invoice) return;
+    setEmailSending(true);
+    setEmailMsg(null);
+    try {
+      const body: Record<string, string> = { type: emailType };
+      if (emailOverrideTo.trim()) body.to = emailOverrideTo.trim();
+      const res = await fetch(`${BACKEND}/payables/invoices/${id}/send-email`, {
+        method: "POST",
+        headers: payablesHeaders(user, true),
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to send");
+      setEmailMsg({ text: `Email sent to ${data.to}`, ok: true });
+      setShowEmailModal(false);
+      await fetchInvoice();
+    } catch (e) {
+      setEmailMsg({ text: e instanceof Error ? e.message : "Failed to send email", ok: false });
+    } finally {
+      setEmailSending(false);
+    }
+  };
+
+  const loadEmailPreview = async (type: string) => {
+    if (!user) return;
+    setPreviewLoading(true);
+    setPreviewHtml(null);
+    setPreviewSubject(null);
+    try {
+      const res = await fetch(`${BACKEND}/payables/invoices/${id}/email-preview?type=${type}`, {
+        headers: payablesHeaders(user),
+      });
+      const d = await res.json();
+      setPreviewHtml(d.html ?? "");
+      setPreviewSubject(d.subject ?? "");
+    } catch { setPreviewHtml("<p>Preview unavailable.</p>"); }
+    finally { setPreviewLoading(false); }
   };
 
   const reAnalyze = async () => {
@@ -340,6 +404,13 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={() => { setShowEmailModal(true); setEmailMsg(null); setPreviewHtml(null); setEmailOverrideTo(invoice.vendorEmail ?? ""); }}
+              className="flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-700 shadow-sm transition hover:bg-violet-100"
+            >
+              <MailIcon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Email supplier</span>
+            </button>
+            <button
               onClick={reAnalyze}
               disabled={analysing}
               title="Re-run AI analysis"
@@ -368,6 +439,14 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
       </nav>
 
       <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        {emailMsg && (
+          <div className={`mb-5 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium ${emailMsg.ok ? "border border-emerald-100 bg-emerald-50 text-emerald-700" : "border border-rose-100 bg-rose-50 text-rose-700"}`}>
+            {emailMsg.ok ? <CheckIcon className="h-4 w-4 shrink-0" /> : "⚠"}
+            <span className="flex-1">{emailMsg.text}</span>
+            <button onClick={() => setEmailMsg(null)} className="ml-auto opacity-60 hover:opacity-100">✕</button>
+          </div>
+        )}
+
         {/* Header card */}
         <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -813,6 +892,44 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
                 </div>
               )}
             </div>
+
+            {/* Email Log */}
+            {(invoice.emailLog ?? []).length > 0 && (
+              <div className="rounded-2xl border border-violet-100 bg-white p-5 shadow-sm">
+                <div className="mb-4 flex items-center gap-2">
+                  <MailIcon className="h-4 w-4 text-violet-500" />
+                  <h2 className="text-xs font-black uppercase tracking-wider text-gray-400">Emails Sent to Supplier</h2>
+                </div>
+                <div className="space-y-2">
+                  {[...(invoice.emailLog ?? [])].reverse().map((entry, i) => {
+                    const typeLabels: Record<string, { label: string; color: string }> = {
+                      invoice_received: { label: "Invoice Received", color: "bg-violet-100 text-violet-700" },
+                      invoice_approved: { label: "Invoice Approved", color: "bg-emerald-100 text-emerald-700" },
+                      invoice_rejected: { label: "Invoice Rejected", color: "bg-rose-100 text-rose-700" },
+                      invoice_flagged:  { label: "Query Raised",     color: "bg-amber-100 text-amber-700" },
+                      payment_confirmed:{ label: "Payment Sent",     color: "bg-sky-100 text-sky-700" },
+                    };
+                    const tc = typeLabels[entry.type] ?? { label: entry.type, color: "bg-gray-100 text-gray-700" };
+                    return (
+                      <div key={i} className="rounded-xl border border-gray-100 bg-gray-50 p-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${tc.color}`}>{tc.label}</span>
+                          <span className="text-xs text-gray-400 truncate">→ {entry.to}</span>
+                        </div>
+                        <p className="mt-1 text-xs text-gray-400">{entry.subject}</p>
+                        <p className="mt-1 text-xs text-gray-300">{fmtDate(entry.sentAt)} · by {entry.sentBy ?? "system"}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => { setShowEmailModal(true); setEmailMsg(null); setPreviewHtml(null); setEmailOverrideTo(invoice.vendorEmail ?? ""); }}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-violet-100 bg-violet-50 py-2 text-xs font-semibold text-violet-700 transition hover:bg-violet-100"
+                >
+                  <MailIcon className="h-3.5 w-3.5" /> Send another email
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -847,21 +964,123 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-gray-100 bg-white p-6 shadow-xl">
             <h3 className="text-lg font-black text-[#1d2226]">Mark as Paid</h3>
-            <p className="mt-1 text-sm text-gray-500">Confirm the payment amount to mark this invoice as paid.</p>
-            <div className="mt-4">
-              <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400">Payment Amount ({invoice.currency ?? "currency not detected"})</label>
-              <input
-                type="number"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
-              />
+            <p className="mt-1 text-sm text-gray-500">Confirm payment details. A payment confirmation email will automatically be sent to the supplier.</p>
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400">Payment Amount ({invoice.currency ?? "INR"})</label>
+                <input
+                  type="number"
+                  value={paymentAmount || invoice.total || ""}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-400">Payment Note (optional)</label>
+                <input
+                  type="text"
+                  value={paidNote}
+                  onChange={(e) => setPaidNote(e.target.value)}
+                  placeholder="e.g. Paid via NEFT, reference: TXN123456"
+                  className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none transition focus:border-teal-400 focus:ring-2 focus:ring-teal-100"
+                />
+              </div>
+            </div>
+            <div className="mt-2 rounded-xl border border-teal-100 bg-teal-50 px-3 py-2">
+              <p className="text-xs text-teal-700 font-medium flex items-center gap-1.5"><MailIcon className="h-3.5 w-3.5" /> A payment confirmation email will be sent to the supplier automatically.</p>
             </div>
             <div className="mt-4 flex gap-3">
               <button onClick={markPaid} disabled={actionLoading} className="flex-1 rounded-full bg-teal-600 py-2.5 text-sm font-bold text-white transition hover:bg-teal-700 disabled:opacity-50">
-                {actionLoading ? "Saving…" : "Confirm Payment"}
+                {actionLoading ? "Saving…" : "Confirm & Send Email"}
               </button>
               <button onClick={() => setShowPaidModal(false)} className="flex-1 rounded-full border border-gray-200 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-gray-300">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Send Email to Supplier modal */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm p-4 py-8 overflow-y-auto">
+          <div className="w-full max-w-lg rounded-2xl border border-gray-100 bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+              <h3 className="text-base font-black text-[#1d2226]">Send Email to Supplier</h3>
+              <button onClick={() => setShowEmailModal(false)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">✕</button>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-gray-600">Email Type</label>
+                <select
+                  value={emailType}
+                  onChange={(e) => { setEmailType(e.target.value); setPreviewHtml(null); }}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-[#1d2226] outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-100"
+                >
+                  <option value="invoice_received">Invoice Received — "We got your invoice, reviewing it"</option>
+                  <option value="invoice_approved">Invoice Approved — "Approved, payment coming in X days"</option>
+                  <option value="invoice_rejected">Invoice Rejected — "Issue found, please resubmit"</option>
+                  <option value="invoice_flagged">Query Raised — "We have a question about your invoice"</option>
+                  <option value="payment_confirmed">Payment Confirmed — "Payment has been sent"</option>
+                </select>
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-gray-600">Send To (email address)</label>
+                <input
+                  type="email"
+                  value={emailOverrideTo}
+                  onChange={(e) => setEmailOverrideTo(e.target.value)}
+                  placeholder={invoice.vendorEmail ?? "supplier@example.com"}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-sm text-[#1d2226] outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-100"
+                />
+                {!invoice.vendorEmail && (
+                  <p className="mt-1 text-xs text-amber-600">⚠ No supplier email detected on this invoice. Enter one above.</p>
+                )}
+              </div>
+
+              {/* Preview section */}
+              {previewHtml ? (
+                <div className="rounded-xl border border-gray-100 overflow-hidden">
+                  <div className="flex items-center justify-between bg-gray-50 px-3 py-2 border-b border-gray-100">
+                    <div>
+                      <p className="text-xs font-bold text-gray-600">Preview</p>
+                      {previewSubject && <p className="text-xs text-gray-400 font-mono mt-0.5 truncate">{previewSubject}</p>}
+                    </div>
+                    <button onClick={() => setPreviewHtml(null)} className="text-xs text-gray-400 hover:text-gray-600">✕</button>
+                  </div>
+                  <iframe srcDoc={previewHtml} className="w-full bg-white" style={{ height: "340px" }} title="Email preview" />
+                </div>
+              ) : (
+                <button
+                  onClick={() => loadEmailPreview(emailType)}
+                  disabled={previewLoading}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-gray-50 py-2.5 text-xs font-semibold text-gray-600 transition hover:border-violet-200 hover:bg-violet-50 disabled:opacity-50"
+                >
+                  {previewLoading ? (
+                    <><svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Loading preview…</>
+                  ) : (
+                    <><EyeIcon className="h-3.5 w-3.5 text-violet-500" /> Preview email before sending</>
+                  )}
+                </button>
+              )}
+
+              {emailMsg && !emailMsg.ok && (
+                <div className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">{emailMsg.text}</div>
+              )}
+            </div>
+            <div className="flex gap-3 border-t border-gray-100 px-6 py-4">
+              <button
+                onClick={sendEmailToSupplier}
+                disabled={emailSending || (!emailOverrideTo.trim() && !invoice.vendorEmail)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 py-2.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:opacity-50"
+              >
+                {emailSending ? (
+                  <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg> Sending…</>
+                ) : (
+                  <><MailIcon className="h-4 w-4" /> Send Email</>
+                )}
+              </button>
+              <button onClick={() => setShowEmailModal(false)} className="rounded-full border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-gray-300">
                 Cancel
               </button>
             </div>

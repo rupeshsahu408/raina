@@ -11,7 +11,7 @@ A multi-platform AI suite with four AI systems:
 - **Frontend** (`frontend/`) — Next.js 16 PWA, port 5000
 - **Backend** (`backend/`) — Express API, port 8080
 
-## Payables AI (Separate SaaS Product — Phases 1–4 Complete)
+## Payables AI (Separate SaaS Product — Phase 1 Settings + Emails Complete)
 - Route: `/payables`, `/payables/onboarding`, `/payables/dashboard`, `/payables/upload`, `/payables/invoice/[id]`, `/payables/payments`
 - AI-powered Accounts Payable automation for small businesses
 - **Landing page** (`/payables`): Full redesign — hero with mock dashboard preview, stats bar, "How it works" 4-step section, features grid, testimonials, transparent roadmap ("What's included"), CTA section
@@ -134,3 +134,13 @@ All public-facing and product pages use a consistent light design language:
 - **Recruit AI — Diagnostics Page**: `/recruit/diagnostics` is a browser-facing API health page linked from `RecruitHeader`. It checks public Recruit JSON, backend health, protected-route auth guard behavior, and an authenticated recruiter endpoint when the user is signed in. The page displays effective API base, auth state, content type, HTTP status, JSON validity, response previews, and rerun controls to catch Vercel text/HTML responses before they break Recruit buttons.
 - **Recruit AI — Job Description Quality Fix**: Recruit job creation now prompts the AI for concise, human-readable job descriptions and sanitizes model output before saving so raw JSON/rubric text is not stored as `generatedJD`. Public and recruiter job description views also format legacy records that already contain escaped JSON, showing only the clean `jd` content.
 - **Recruit AI — Separate Auth System (Complete)**: Recruit AI now has its own completely separate login/signup system at `/recruit/login` and `/recruit/signup`. Both pages include a Job Creator / Job Seeker role toggle. On sign-in or sign-up, a `RecruitProfile` MongoDB document is created (via `POST /recruit/auth/profile`) storing the user's UID and role. `RecruitAuthContext` provides recruit-specific auth state throughout the recruit section. `RecruitGuard` enforces role-based access — Job Creators are blocked from seeker pages (my-applications, saved-jobs, profile, job-alerts) and Job Seekers are blocked from creator pages (dashboard, analytics, talent-pool, company-profile, diagnostics, jobs/new, jobs/[id]). Even users already logged into other Plyndrox platforms (WhatsApp AI, Website AI, etc.) must separately log in and select their role on Recruit AI. All recruit pages are wrapped in `RecruitAuthProvider` via `frontend/src/app/recruit/layout.tsx`. Backend model: `backend/src/models/RecruitProfile.ts`.
+
+## Payables AI — Phase 1 Settings & Supplier Emails (Complete)
+- **Settings hub** (`/payables/settings`): Company Identity, Sender Identity, Payment Terms, Email Automation toggles (invoice_received, invoice_approved, invoice_rejected, invoice_flagged toggleable; payment_confirmed always sends), live template preview iframe.
+- **5 HTML email templates** (`backend/src/emailTemplates.ts`): invoice_received, invoice_approved, invoice_rejected, invoice_flagged, payment_confirmed.
+- **Mark as Paid flow**: amount + optional payment note → auto-sends payment_confirmed email to supplier.
+- **Send Email modal** on invoice detail: choose type, override recipient, preview rendered template in iframe, send via Gmail.
+- **Email log sidebar**: shows all emails sent per invoice with type badge, recipient, subject, timestamp.
+- **Backend routes**: GET/PATCH /payables/settings, GET /payables/settings/email-preview, POST /invoices/:id/mark-paid, POST /invoices/:id/send-email, GET /invoices/:id/email-preview.
+- **Auto-email hooks**: approve triggers invoice_approved; reject triggers invoice_rejected (if toggle enabled).
+- PayablesCompanyProfile extended; Invoice model gets emailLog + paidNote.

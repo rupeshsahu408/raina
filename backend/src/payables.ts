@@ -9,6 +9,7 @@ import { InboxToken } from "./models/InboxToken";
 import { UserProfile } from "./models/UserProfile";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
 import * as pdfParseModule from "pdf-parse";
+import { buildEmailHtml, buildSubjectLine, EmailSettings, EmailTemplateType } from "./emailTemplates";
 const pdfParse = (pdfParseModule as any).default ?? pdfParseModule;
 
 const upload = multer({
@@ -43,6 +44,17 @@ const PayablesCompanyProfile =
         onboarded: { type: Boolean, default: true },
         gmailAutoImportEnabled: { type: Boolean, default: true },
         notificationEmail: String,
+        brandName: String,
+        senderDisplayName: String,
+        supportEmail: String,
+        companyAddress: String,
+        paymentTermsDays: { type: Number, default: 30 },
+        defaultCurrency: { type: String, default: "INR" },
+        logoUrl: String,
+        autoEmailOnReceive: { type: Boolean, default: false },
+        autoEmailOnApprove: { type: Boolean, default: true },
+        autoEmailOnReject: { type: Boolean, default: true },
+        autoEmailOnFlag: { type: Boolean, default: false },
       },
       { timestamps: true }
     )
@@ -232,6 +244,78 @@ async function sendPayablesEmail(uid: string, input: { to?: string; title: strin
     await gmail.users.messages.send({ userId: "me", requestBody: { raw } });
   } catch (err) {
     console.warn("[payables] email notification skipped:", err instanceof Error ? err.message : err);
+  }
+}
+
+async function getEmailSettings(uid: string): Promise<EmailSettings> {
+  await connectMongo();
+  const company = (await PayablesCompanyProfile.findOne({ uid }).lean()) as any;
+  const profile = (await UserProfile.findOne({ uid }).lean()) as any;
+  return {
+    brandName: company?.brandName || company?.companyName || "Your Company",
+    senderDisplayName: company?.senderDisplayName || `${company?.companyName ?? "AP"} Automation System`,
+    supportEmail: company?.supportEmail || company?.notificationEmail || profile?.email || "ap@example.com",
+    companyAddress: company?.companyAddress || "",
+    paymentTermsDays: company?.paymentTermsDays ?? 30,
+    defaultCurrency: company?.defaultCurrency || "INR",
+    logoUrl: company?.logoUrl,
+  };
+}
+
+async function sendSupplierEmail(
+  uid: string,
+  invoice: any,
+  type: EmailTemplateType,
+  opts: { to?: string; sentBy?: string } = {}
+): Promise<{ success: boolean; to?: string; subject?: string; error?: string }> {
+  try {
+    const to = opts.to || invoice.vendorEmail;
+    if (!to) return { success: false, error: "No supplier email address found on this invoice." };
+
+    const settings = await getEmailSettings(uid);
+    const invData = {
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceDate: invoice.invoiceDate,
+      dueDate: invoice.dueDate,
+      total: invoice.total,
+      currency: invoice.currency,
+      vendor: invoice.vendor,
+      vendorEmail: invoice.vendorEmail,
+      subtotal: invoice.subtotal,
+      tax: invoice.tax,
+      discount: invoice.discount,
+      rejectionReason: invoice.rejectionReason,
+      flagMessages: (invoice.flags ?? []).map((f: any) => f.message).filter(Boolean),
+      bankDetails: invoice.bankDetails,
+      paidAt: invoice.paidAt ? invoice.paidAt.toISOString() : undefined,
+      paidNote: invoice.paidNote,
+    };
+
+    const subject = buildSubjectLine(type, invData, settings);
+    const html = buildEmailHtml(type, invData, settings);
+    const auth = await getGmailClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+    const raw = Buffer.from(buildSimpleEmail(to, subject, html), "utf8").toString("base64url");
+    await gmail.users.messages.send({ userId: "me", requestBody: { raw } });
+
+    await Invoice.findByIdAndUpdate(invoice._id, {
+      $push: {
+        emailLog: {
+          type,
+          to,
+          subject,
+          sentAt: new Date(),
+          sentBy: opts.sentBy ?? "system",
+          previewHtml: html,
+        },
+      },
+    });
+
+    return { success: true, to, subject };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn(`[payables] sendSupplierEmail (${type}) failed:`, msg);
+    return { success: false, error: msg };
   }
 }
 
@@ -757,6 +841,84 @@ payablesRouter.put("/company", async (req, res) => {
   }
 });
 
+payablesRouter.get("/settings", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    await connectMongo();
+    const company = await PayablesCompanyProfile.findOne({ uid: actor.uid }).lean() as any;
+    res.json({
+      brandName: company?.brandName ?? company?.companyName ?? "",
+      senderDisplayName: company?.senderDisplayName ?? "",
+      supportEmail: company?.supportEmail ?? "",
+      companyAddress: company?.companyAddress ?? "",
+      paymentTermsDays: company?.paymentTermsDays ?? 30,
+      defaultCurrency: company?.defaultCurrency ?? "INR",
+      logoUrl: company?.logoUrl ?? "",
+      autoEmailOnReceive: company?.autoEmailOnReceive ?? false,
+      autoEmailOnApprove: company?.autoEmailOnApprove ?? true,
+      autoEmailOnReject: company?.autoEmailOnReject ?? true,
+      autoEmailOnFlag: company?.autoEmailOnFlag ?? false,
+    });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch settings" });
+  }
+});
+
+payablesRouter.patch("/settings", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  try {
+    await connectMongo();
+    const allowed = [
+      "brandName", "senderDisplayName", "supportEmail", "companyAddress",
+      "paymentTermsDays", "defaultCurrency", "logoUrl",
+      "autoEmailOnReceive", "autoEmailOnApprove", "autoEmailOnReject", "autoEmailOnFlag",
+    ];
+    const update: Record<string, unknown> = {};
+    for (const key of allowed) if (Object.prototype.hasOwnProperty.call(req.body, key)) update[key] = req.body[key];
+    const company = await PayablesCompanyProfile.findOneAndUpdate(
+      { uid: actor.uid },
+      { $set: update },
+      { new: true, upsert: false }
+    );
+    if (!company) return res.status(404).json({ error: "Company profile not found. Complete onboarding first." });
+    await audit(actor.uid, undefined, "settings_updated", actor, { fields: Object.keys(update) });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: "Failed to save settings" });
+  }
+});
+
+payablesRouter.get("/settings/email-preview", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    const type = (req.query.type as EmailTemplateType) || "invoice_approved";
+    const settings = await getEmailSettings(actor.uid);
+    const sampleInv = {
+      invoiceNumber: "INV-2026-0001",
+      invoiceDate: new Date().toISOString(),
+      dueDate: (() => { const d = new Date(); d.setDate(d.getDate() + (settings.paymentTermsDays ?? 30)); return d.toISOString(); })(),
+      total: 174500,
+      currency: settings.defaultCurrency,
+      vendor: "Sample Supplier Co.",
+      vendorEmail: settings.supportEmail,
+      bankDetails: { bankName: "HDFC Bank", accountNumber: "****5678", ifscCode: "HDFC0001234" },
+      rejectionReason: "Invoice amount does not match the purchase order. Please resubmit with the correct amount.",
+      flagMessages: ["Invoice amount differs from PO by more than 10%.", "Duplicate invoice detected from the same vendor."],
+      paidAt: new Date().toISOString(),
+      paidNote: "Payment processed via NEFT.",
+    };
+    const html = buildEmailHtml(type, sampleInv, settings);
+    const subject = buildSubjectLine(type, sampleInv, settings);
+    res.json({ html, subject });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to generate preview" });
+  }
+});
+
 payablesRouter.get("/team", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;
@@ -1270,6 +1432,10 @@ payablesRouter.post("/invoices/:id/approve", async (req, res) => {
     await invoice.save();
     await audit(actor.uid, req.params.id, "invoice_approved", actor);
     await notify(actor.uid, { invoiceId: req.params.id, key: `approved:${req.params.id}`, type: "status", title: "Invoice approved", message: `${(invoice as any).vendor ?? "Invoice"} was approved.`, severity: "success" });
+    const company = await PayablesCompanyProfile.findOne({ uid: actor.uid }).lean() as any;
+    if (company?.autoEmailOnApprove !== false) {
+      setImmediate(() => sendSupplierEmail(actor.uid, invoice, "invoice_approved", { sentBy: actor.email }));
+    }
     res.json(sanitizeInvoice(invoice));
   } catch (err) {
     console.error("Payables approve error:", err);
@@ -1291,6 +1457,10 @@ payablesRouter.post("/invoices/:id/reject", async (req, res) => {
     await invoice.save();
     await audit(actor.uid, req.params.id, "invoice_rejected", actor, { reason: req.body.reason ?? "" });
     await notify(actor.uid, { invoiceId: req.params.id, key: `rejected:${req.params.id}`, type: "status", title: "Invoice rejected", message: `${(invoice as any).vendor ?? "Invoice"} was rejected.`, severity: "warning" });
+    const company2 = await PayablesCompanyProfile.findOne({ uid: actor.uid }).lean() as any;
+    if (company2?.autoEmailOnReject !== false) {
+      setImmediate(() => sendSupplierEmail(actor.uid, invoice, "invoice_rejected", { sentBy: actor.email }));
+    }
     res.json(sanitizeInvoice(invoice));
   } catch (err) {
     console.error("Payables reject error:", err);
@@ -1335,7 +1505,85 @@ payablesRouter.post("/invoices/:id/analyze", async (req, res) => {
   }
 });
 
-  payablesRouter.get("/payment-queue", async (req, res) => {
+payablesRouter.post("/invoices/:id/mark-paid", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  try {
+    await connectMongo();
+    const invoice = await Invoice.findOne({ _id: req.params.id, uid: actor.uid });
+    if (!invoice) return res.status(404).json({ error: "Invoice not found" });
+    (invoice as any).status = "paid";
+    (invoice as any).paidAt = new Date();
+    (invoice as any).paymentAmount = req.body.paymentAmount ?? (invoice as any).total;
+    if (req.body.paidNote) (invoice as any).paidNote = String(req.body.paidNote).trim();
+    await invoice.save();
+    await audit(actor.uid, req.params.id, "invoice_marked_paid", actor, { amount: (invoice as any).paymentAmount, note: (invoice as any).paidNote });
+    await notify(actor.uid, { invoiceId: req.params.id, key: `paid:${req.params.id}`, type: "status", title: "Invoice marked as paid", message: `${(invoice as any).vendor ?? "Invoice"} marked as paid.`, severity: "success" });
+    const emailResult = await sendSupplierEmail(actor.uid, invoice, "payment_confirmed", { sentBy: actor.email });
+    res.json({ invoice: sanitizeInvoice(invoice), emailSent: emailResult.success, emailTo: emailResult.to, emailError: emailResult.error });
+  } catch (err) {
+    console.error("Payables mark-paid error:", err);
+    res.status(500).json({ error: "Failed to mark invoice as paid" });
+  }
+});
+
+payablesRouter.post("/invoices/:id/send-email", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  try {
+    await connectMongo();
+    const invoice = await Invoice.findOne({ _id: req.params.id, uid: actor.uid });
+    if (!invoice) return res.status(404).json({ error: "Invoice not found" });
+    const type = req.body.type as EmailTemplateType;
+    const validTypes: EmailTemplateType[] = ["invoice_received", "invoice_approved", "invoice_rejected", "invoice_flagged", "payment_confirmed"];
+    if (!validTypes.includes(type)) return res.status(400).json({ error: "Invalid email type" });
+    const overrideTo = req.body.to ? String(req.body.to).trim() : undefined;
+    const result = await sendSupplierEmail(actor.uid, invoice, type, { to: overrideTo, sentBy: actor.email });
+    if (!result.success) return res.status(400).json({ error: result.error });
+    await audit(actor.uid, req.params.id, "supplier_email_sent", actor, { type, to: result.to, subject: result.subject });
+    res.json({ success: true, to: result.to, subject: result.subject });
+  } catch (err) {
+    console.error("Payables send-email error:", err);
+    res.status(500).json({ error: "Failed to send email" });
+  }
+});
+
+payablesRouter.get("/invoices/:id/email-preview", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    await connectMongo();
+    const invoice = await Invoice.findOne({ _id: req.params.id, uid: actor.uid }).lean() as any;
+    if (!invoice) return res.status(404).json({ error: "Invoice not found" });
+    const type = (req.query.type as EmailTemplateType) || "invoice_approved";
+    const validTypes: EmailTemplateType[] = ["invoice_received", "invoice_approved", "invoice_rejected", "invoice_flagged", "payment_confirmed"];
+    if (!validTypes.includes(type)) return res.status(400).json({ error: "Invalid email type" });
+    const settings = await getEmailSettings(actor.uid);
+    const invData = {
+      invoiceNumber: invoice.invoiceNumber,
+      invoiceDate: invoice.invoiceDate,
+      dueDate: invoice.dueDate,
+      total: invoice.total,
+      currency: invoice.currency,
+      vendor: invoice.vendor,
+      vendorEmail: invoice.vendorEmail,
+      rejectionReason: invoice.rejectionReason,
+      flagMessages: (invoice.flags ?? []).map((f: any) => f.message).filter(Boolean),
+      bankDetails: invoice.bankDetails,
+      paidAt: invoice.paidAt,
+      paidNote: invoice.paidNote,
+    };
+    const html = buildEmailHtml(type, invData, settings);
+    const subject = buildSubjectLine(type, invData, settings);
+    res.json({ html, subject, to: invoice.vendorEmail });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to generate email preview" });
+  }
+});
+
+payablesRouter.get("/payment-queue", async (req, res) => {
     const actor = await getActor(req, res);
     if (!actor) return;
     try {
