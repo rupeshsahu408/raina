@@ -298,6 +298,38 @@ async function sendPayablesEmail(uid: string, input: { to?: string; title: strin
   }
 }
 
+async function sendTeamInviteEmail(uid: string, input: { to: string; inviteeName?: string; role: string; inviterName?: string; inviteUrl: string }) {
+  try {
+    const [company, profile] = await Promise.all([
+      PayablesCompanyProfile.findOne({ uid }).lean(),
+      UserProfile.findOne({ uid }).lean(),
+    ]);
+    const workspaceName = (company as any)?.companyName || (profile as any)?.email || "your team";
+    const inviterDisplay = input.inviterName || (profile as any)?.email || "A workspace admin";
+    const roleLabel = { admin: "Admin", approver: "Approver", viewer: "Viewer", member: "Member" }[input.role] ?? input.role;
+    const body = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#1d2226;max-width:560px;margin:0 auto">
+      <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:16px 16px 0 0;padding:32px 32px 24px">
+        <h1 style="margin:0;color:#fff;font-size:22px;font-weight:800">You&rsquo;re invited to join ${workspaceName}</h1>
+      </div>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 16px 16px;padding:32px">
+        <p style="margin:0 0 16px;font-size:15px">Hi${input.inviteeName ? ` ${input.inviteeName}` : ""},</p>
+        <p style="margin:0 0 24px;font-size:15px"><strong>${inviterDisplay}</strong> has invited you to collaborate on <strong>${workspaceName}</strong> in Payables AI as an <strong>${roleLabel}</strong>.</p>
+        <p style="margin:0 0 24px;font-size:14px;color:#6b7280">As ${roleLabel === "Approver" ? "an Approver" : `a${["Admin","Approver"].includes(roleLabel) ? "n" : ""} ${roleLabel}`}, you will be able to ${roleLabel === "Admin" ? "manage the workspace, invite members, and handle invoices" : roleLabel === "Approver" ? "review and approve invoices assigned to you" : roleLabel === "Viewer" ? "view invoices and reports in read-only mode" : "view and submit invoices"}.</p>
+        <a href="${input.inviteUrl}" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;padding:14px 28px;border-radius:999px;text-decoration:none;font-weight:700;font-size:15px">Accept Invitation</a>
+        <p style="margin:28px 0 0;font-size:12px;color:#9ca3af">Or copy this link into your browser:<br><span style="word-break:break-all;color:#7c3aed">${input.inviteUrl}</span></p>
+        <p style="margin:20px 0 0;font-size:12px;color:#9ca3af">This invitation is specific to ${input.to}. If you received this by mistake, you can safely ignore it.</p>
+      </div>
+    </div>`;
+    const auth = await getGmailClient(uid);
+    const gmail = google.gmail({ version: "v1", auth });
+    const raw = Buffer.from(buildSimpleEmail(input.to, `You're invited to join ${workspaceName} on Payables AI`, body), "utf8").toString("base64url");
+    await gmail.users.messages.send({ userId: "me", requestBody: { raw } });
+    console.log(`[payables] team invite email sent to ${input.to}`);
+  } catch (err) {
+    console.warn("[payables] team invite email skipped:", err instanceof Error ? err.message : err);
+  }
+}
+
 async function getEmailSettings(uid: string): Promise<EmailSettings> {
   await connectMongo();
   const company = (await PayablesCompanyProfile.findOne({ uid }).lean()) as any;
@@ -1713,6 +1745,57 @@ payablesRouter.get("/settings/email-preview", async (req, res) => {
   }
 });
 
+payablesRouter.get("/team/invite-info", async (req, res) => {
+  const token = String(req.query.token ?? "").trim();
+  if (!token) return res.status(400).json({ error: "Token is required" });
+  await connectMongo();
+  const member = await PayablesTeamMember.findOne({ inviteToken: token }).lean();
+  if (!member) return res.status(404).json({ error: "Invite not found or already used" });
+  const [company, profile] = await Promise.all([
+    PayablesCompanyProfile.findOne({ uid: (member as any).uid }).lean(),
+    UserProfile.findOne({ uid: (member as any).uid }).lean(),
+  ]);
+  const workspaceName = (company as any)?.companyName || (profile as any)?.email || "a workspace";
+  res.json({
+    email: (member as any).email,
+    name: (member as any).name,
+    role: (member as any).role,
+    status: (member as any).status,
+    invitedBy: (member as any).invitedBy,
+    workspaceName,
+  });
+});
+
+payablesRouter.get("/team/workspaces", async (req, res) => {
+  const authUid = (req as any).user?.uid as string | undefined;
+  const authEmail = ((req as any).user?.email as string | undefined)?.toLowerCase();
+  if (!authUid) return res.status(401).json({ error: "Unauthorized" });
+  await connectMongo();
+  const [ownProfile, memberships] = await Promise.all([
+    PayablesCompanyProfile.findOne({ uid: authUid }).lean(),
+    authEmail ? PayablesTeamMember.find({ email: authEmail, status: "active" }).lean() : Promise.resolve([]),
+  ]);
+  const workspaces: Array<{ uid: string; name: string; role: string }> = [];
+  const ownName = (ownProfile as any)?.companyName || "My Workspace";
+  workspaces.push({ uid: authUid, name: ownName, role: "owner" });
+  for (const m of memberships as any[]) {
+    if (m.uid === authUid) continue;
+    const [wCompany, wProfile] = await Promise.all([
+      PayablesCompanyProfile.findOne({ uid: m.uid }).lean(),
+      UserProfile.findOne({ uid: m.uid }).lean(),
+    ]);
+    const name = (wCompany as any)?.companyName || (wProfile as any)?.email || "Workspace";
+    workspaces.push({ uid: m.uid, name, role: m.role });
+  }
+  res.json({ workspaces });
+});
+
+payablesRouter.get("/team/my-role", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  res.json({ role: actor.role, uid: actor.uid, actorUid: actor.actorUid, email: actor.email });
+});
+
 payablesRouter.get("/team", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;
@@ -1742,8 +1825,16 @@ payablesRouter.post("/team", async (req, res) => {
       },
       { upsert: true, new: true }
     );
+    const inviteUrl = `${process.env.FRONTEND_URL ?? "https://www.plyndrox.app"}/payables/invite?token=${(member as any).inviteToken}`;
     await audit(actor.uid, undefined, "team_member_invited", actor, { email, role: (member as any).role });
-    res.json({ member, inviteUrl: `${process.env.FRONTEND_URL ?? "https://www.plyndrox.app"}/payables/team?invite=${(member as any).inviteToken}` });
+    sendTeamInviteEmail(actor.uid, {
+      to: email,
+      inviteeName: String(req.body.name ?? "").trim() || undefined,
+      role: (member as any).role,
+      inviterName: actor.email,
+      inviteUrl,
+    }).catch(() => {});
+    res.json({ member, inviteUrl });
   } catch {
     res.status(500).json({ error: "Failed to invite team member" });
   }

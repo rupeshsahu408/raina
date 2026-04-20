@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
-import { payablesHeaders } from "@/lib/payablesApi";
+import { payablesHeaders, setPayablesWorkspaceUid, type PayablesRole, type PayablesWorkspace, ROLE_LABELS, canManage as roleCanManage, canApprove as roleCanApprove, isReadOnly as roleIsReadOnly } from "@/lib/payablesApi";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
@@ -228,6 +228,9 @@ export default function PayablesDashboard() {
   const [supplierLinkCopied, setSupplierLinkCopied] = useState(false);
   const [processingNotice, setProcessingNotice] = useState<string | null>(null);
   const previousProcessingCount = useRef(0);
+  const [myRole, setMyRole] = useState<PayablesRole | null>(null);
+  const [workspaces, setWorkspaces] = useState<PayablesWorkspace[]>([]);
+  const [wsOpen, setWsOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -248,7 +251,7 @@ export default function PayablesDashboard() {
       const headers = payablesHeaders(user);
       const filterParam = activeFilter === "flagged" ? "all&flagged=true" : `status=${activeFilter}`;
       const searchParam = search.trim() ? `&q=${encodeURIComponent(search.trim())}` : "";
-      const [invRes, allInvRes, statsRes, gmailRes, companyRes, notificationRes, personRes] = await Promise.all([
+      const [invRes, allInvRes, statsRes, gmailRes, companyRes, notificationRes, personRes, roleRes, wsRes] = await Promise.all([
         fetch(`${BACKEND}/payables/invoices?${filterParam}${searchParam}&limit=50`, { headers }),
         fetch(`${BACKEND}/payables/invoices?status=all&limit=100`, { headers }),
         fetch(`${BACKEND}/payables/invoices/stats`, { headers }),
@@ -256,6 +259,8 @@ export default function PayablesDashboard() {
         fetch(`${BACKEND}/payables/company`, { headers }),
         fetch(`${BACKEND}/payables/notifications`, { headers }),
         fetch(`${BACKEND}/payables/personalization`, { headers }),
+        fetch(`${BACKEND}/payables/team/my-role`, { headers }),
+        fetch(`${BACKEND}/payables/team/workspaces`, { headers }),
       ]);
       if (invRes.ok) { const d = await invRes.json(); setInvoices(d.invoices ?? []); }
       if (allInvRes.ok) { const d = await allInvRes.json(); setAllInvoices(d.invoices ?? []); }
@@ -268,6 +273,8 @@ export default function PayablesDashboard() {
         setUnreadCount(d.unreadCount ?? 0);
       }
       if (personRes.ok) setPersonalization(await personRes.json());
+      if (roleRes.ok) { const d = await roleRes.json(); setMyRole(d.role ?? "owner"); }
+      if (wsRes.ok) { const d = await wsRes.json(); setWorkspaces(d.workspaces ?? []); }
     } catch (e) { console.error(e); }
     finally { if (!silent) setLoading(false); }
   }, [user, activeFilter, search]);
@@ -490,6 +497,18 @@ export default function PayablesDashboard() {
     );
   }
 
+  const isOwnerOrAdmin = roleCanManage(myRole);
+  const canApproveActs = roleCanApprove(myRole);
+  const isViewer = roleIsReadOnly(myRole);
+
+  const switchWorkspace = (uid: string) => {
+    setPayablesWorkspaceUid(uid);
+    setWsOpen(false);
+    window.location.reload();
+  };
+
+  const currentWorkspace = workspaces.find((w) => w.uid === (typeof window !== "undefined" ? window.localStorage.getItem("payables_workspace_uid") || user?.uid : user?.uid));
+
   const filters = [
     { key: "all", label: "All" },
     { key: "extracted", label: "Ready" },
@@ -522,17 +541,72 @@ export default function PayablesDashboard() {
             </Link>
             <span className="text-gray-300">/</span>
             <span className="text-sm font-black text-[#1d2226]">Dashboard</span>
+
+            {/* Workspace switcher */}
+            {workspaces.length > 1 && (
+              <div className="relative hidden sm:block">
+                <button
+                  onClick={() => setWsOpen((o) => !o)}
+                  className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:border-gray-300 transition-colors"
+                >
+                  <svg className="h-3.5 w-3.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
+                  </svg>
+                  <span className="max-w-[120px] truncate">{currentWorkspace?.name ?? "Workspace"}</span>
+                  <svg className="h-3 w-3 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                {wsOpen && (
+                  <div className="absolute left-0 top-full mt-2 z-50 w-64 rounded-2xl border border-gray-100 bg-white shadow-xl">
+                    <div className="p-2">
+                      <p className="px-3 py-2 text-xs font-black uppercase tracking-wider text-gray-400">Switch workspace</p>
+                      {workspaces.map((ws) => (
+                        <button
+                          key={ws.uid}
+                          onClick={() => switchWorkspace(ws.uid)}
+                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-gray-50 ${currentWorkspace?.uid === ws.uid ? "bg-violet-50" : ""}`}
+                        >
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-100 to-indigo-100 text-xs font-black text-violet-700">
+                            {ws.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-bold text-[#1d2226]">{ws.name}</p>
+                            <p className="text-xs capitalize text-gray-400">{ROLE_LABELS[ws.role as keyof typeof ROLE_LABELS] ?? ws.role}</p>
+                          </div>
+                          {currentWorkspace?.uid === ws.uid && (
+                            <svg className="h-3.5 w-3.5 shrink-0 text-violet-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Role badge */}
+            {myRole && myRole !== "owner" && (
+              <span className="hidden sm:inline-flex items-center rounded-full border border-violet-100 bg-violet-50 px-2.5 py-1 text-xs font-bold capitalize text-violet-700">
+                {ROLE_LABELS[myRole]}
+              </span>
+            )}
           </div>
+
           <div className="flex items-center gap-2">
-            <button
-              onClick={gmailConnected === false ? connectGmail : fetchFromGmail}
-              disabled={fetchingGmail}
-              title={gmailConnected === false ? "Connect Gmail" : "Fetch invoice emails from Gmail"}
-              className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm transition hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 sm:px-4"
-            >
-              {fetchingGmail ? <Spinner /> : <MailIcon className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">{fetchingGmail ? "Opening…" : gmailConnected === false ? "Connect Gmail" : "Fetch Gmail"}</span>
-            </button>
+            {isOwnerOrAdmin && (
+              <button
+                onClick={gmailConnected === false ? connectGmail : fetchFromGmail}
+                disabled={fetchingGmail}
+                title={gmailConnected === false ? "Connect Gmail" : "Fetch invoice emails from Gmail"}
+                className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm transition hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 sm:px-4"
+              >
+                {fetchingGmail ? <Spinner /> : <MailIcon className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">{fetchingGmail ? "Opening…" : gmailConnected === false ? "Connect Gmail" : "Fetch Gmail"}</span>
+              </button>
+            )}
             <Link
               href="/payables/emails"
               className="flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100 sm:px-4"
@@ -554,26 +628,33 @@ export default function PayablesDashboard() {
               <CalendarIcon className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Schedule</span>
             </Link>
-            <Link
-              href="/payables/upload"
-              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:-translate-y-0.5 sm:px-4"
-            >
-              <UploadIcon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Upload</span>
-            </Link>
-            <Link
-              href="/payables/setup"
-              className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white p-2 text-gray-400 shadow-sm transition hover:border-violet-300 hover:text-violet-600"
-              title="Workspace Setup & Personalization"
-            >
-              <SettingsIcon className="h-4 w-4" />
-            </Link>
+            {!isViewer && (
+              <Link
+                href="/payables/upload"
+                className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-3 py-2 text-xs font-bold text-white shadow-sm transition hover:-translate-y-0.5 sm:px-4"
+              >
+                <UploadIcon className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Upload</span>
+              </Link>
+            )}
+            {isOwnerOrAdmin && (
+              <Link
+                href="/payables/setup"
+                className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white p-2 text-gray-400 shadow-sm transition hover:border-violet-300 hover:text-violet-600"
+                title="Workspace Setup & Personalization"
+              >
+                <SettingsIcon className="h-4 w-4" />
+              </Link>
+            )}
             <button onClick={() => fetchData()} className="rounded-full border border-gray-200 bg-white p-2 text-gray-400 shadow-sm transition hover:border-gray-300 hover:text-[#1d2226]" title="Refresh">
               <RefreshIcon className="h-4 w-4" />
             </button>
           </div>
         </div>
       </nav>
+
+      {/* Click-away to close workspace dropdown */}
+      {wsOpen && <div className="fixed inset-0 z-40" onClick={() => setWsOpen(false)} />}
 
       <div className="mx-auto max-w-7xl px-4 py-7 sm:px-6 lg:px-8">
         {/* Page header */}
@@ -690,25 +771,26 @@ export default function PayablesDashboard() {
         <div className="grid gap-7 xl:grid-cols-[1fr_320px]">
           {/* Main: invoice list */}
           <div>
-            {selectedIds.length > 0 && (
+            {selectedIds.length > 0 && !isViewer && (
               <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border border-violet-100 bg-violet-50 p-3">
                 <span className="mr-auto text-sm font-bold text-violet-800">{selectedIds.length} selected</span>
-                {[
-                  ["approve", "Approve"],
-                  ["paid", "Mark paid"],
-                  ["analyze", "Re-analyze"],
-                  ["reject", "Reject"],
-                  ["delete", "Delete"],
-                ].map(([action, label]) => (
+                {(canApproveActs ? [["approve", "Approve"], ["reject", "Reject"]] as const : []).map(([action, label]) => (
                   <button
                     key={action}
                     disabled={bulkLoading}
-                    onClick={() => bulkAction(action as "approve" | "reject" | "paid" | "delete" | "analyze")}
-                    className={`rounded-full px-3 py-1.5 text-xs font-bold transition disabled:opacity-50 ${action === "delete" ? "bg-rose-600 text-white" : "bg-white text-violet-700 border border-violet-100"}`}
+                    onClick={() => bulkAction(action as "approve" | "reject")}
+                    className="rounded-full border border-violet-100 bg-white px-3 py-1.5 text-xs font-bold text-violet-700 transition disabled:opacity-50"
                   >
                     {label}
                   </button>
                 ))}
+                {isOwnerOrAdmin && (
+                  <>
+                    <button disabled={bulkLoading} onClick={() => bulkAction("paid")} className="rounded-full border border-violet-100 bg-white px-3 py-1.5 text-xs font-bold text-violet-700 transition disabled:opacity-50">Mark paid</button>
+                    <button disabled={bulkLoading} onClick={() => bulkAction("analyze")} className="rounded-full border border-violet-100 bg-white px-3 py-1.5 text-xs font-bold text-violet-700 transition disabled:opacity-50">Re-analyze</button>
+                    <button disabled={bulkLoading} onClick={() => bulkAction("delete")} className="rounded-full bg-rose-600 px-3 py-1.5 text-xs font-bold text-white transition disabled:opacity-50">Delete</button>
+                  </>
+                )}
                 <button onClick={() => setSelectedIds([])} className="rounded-full px-3 py-1.5 text-xs font-bold text-gray-400">Clear</button>
               </div>
             )}
@@ -807,12 +889,16 @@ export default function PayablesDashboard() {
                 </p>
                 {activeFilter === "all" && !search && (
                   <div className="mt-6 flex flex-wrap justify-center gap-3">
-                    <Link href="/payables/upload" className="rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5">
-                      Upload invoice
-                    </Link>
-                    <button onClick={fetchFromGmail} disabled={fetchingGmail} className="rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-gray-300 disabled:opacity-50">
-                      {fetchingGmail ? "Fetching…" : "Fetch from Gmail"}
-                    </button>
+                    {!isViewer && (
+                      <Link href="/payables/upload" className="rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5">
+                        Upload invoice
+                      </Link>
+                    )}
+                    {isOwnerOrAdmin && (
+                      <button onClick={fetchFromGmail} disabled={fetchingGmail} className="rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-gray-300 disabled:opacity-50">
+                        {fetchingGmail ? "Fetching…" : "Fetch from Gmail"}
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -833,13 +919,15 @@ export default function PayablesDashboard() {
                         hasCritical ? "border-red-200 bg-red-50/30" : hasWarning ? "border-orange-200 bg-orange-50/20" : "border-gray-100 hover:border-gray-200"
                       }`}
                     >
-                      <input
-                        type="checkbox"
-                        checked={selectedIds.includes(inv._id)}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => { e.preventDefault(); toggleSelected(inv._id); }}
-                        className="h-4 w-4 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-                      />
+                      {!isViewer && (
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(inv._id)}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => { e.preventDefault(); toggleSelected(inv._id); }}
+                          className="h-4 w-4 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
+                        />
+                      )}
                       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${inv.source === "gmail" ? "bg-violet-50" : inv.source === "supplier_link" ? "bg-emerald-50" : "bg-indigo-50"}`}>
                       {inv.source === "gmail" ? <MailIcon className="h-5 w-5 text-violet-500" /> : <UploadIcon className={`h-5 w-5 ${inv.source === "supplier_link" ? "text-emerald-500" : "text-indigo-500"}`} />}
                       </div>
@@ -890,8 +978,27 @@ export default function PayablesDashboard() {
 
           {/* Sidebar */}
           <div className="space-y-5">
-            {/* Gmail integration card */}
-            <div className={`rounded-2xl border p-5 shadow-sm ${gmailConnected === true ? "border-emerald-100 bg-white" : gmailConnected === false ? "border-amber-100 bg-amber-50" : "border-gray-100 bg-white"}`}>
+            {/* Workspace info for non-owners */}
+            {myRole && myRole !== "owner" && currentWorkspace && (
+              <div className="rounded-2xl border border-violet-100 bg-gradient-to-br from-violet-50 to-indigo-50 p-4">
+                <p className="text-xs font-black uppercase tracking-wider text-violet-500 mb-1">Current workspace</p>
+                <p className="text-sm font-bold text-[#1d2226]">{currentWorkspace.name}</p>
+                <p className="mt-1 text-xs text-violet-500">
+                  You are a <strong>{ROLE_LABELS[myRole]}</strong> in this workspace.
+                </p>
+                {workspaces.length > 1 && (
+                  <button
+                    onClick={() => setWsOpen((o) => !o)}
+                    className="mt-3 text-xs font-bold text-violet-600 hover:text-violet-800 underline"
+                  >
+                    Switch workspace
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Gmail integration card — admins/owners only */}
+            {isOwnerOrAdmin && <div className={`rounded-2xl border p-5 shadow-sm ${gmailConnected === true ? "border-emerald-100 bg-white" : gmailConnected === false ? "border-amber-100 bg-amber-50" : "border-gray-100 bg-white"}`}>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-black uppercase tracking-wider text-gray-400">Gmail Integration</h3>
                 {gmailConnected ? (
@@ -950,9 +1057,9 @@ export default function PayablesDashboard() {
                   </button>
                 </div>
               )}
-            </div>
+            </div>}
 
-            <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm">
+            {isOwnerOrAdmin && <div className="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm">
               <h3 className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-wider text-emerald-600">
                 <UploadIcon className="h-3.5 w-3.5" />
                 Supplier upload link
@@ -986,7 +1093,7 @@ export default function PayablesDashboard() {
                   </a>
                 )}
               </div>
-            </div>
+            </div>}
 
             {/* Quick actions */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
@@ -997,36 +1104,44 @@ export default function PayablesDashboard() {
                   Email Invoice Inbox
                   <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </Link>
-                <Link href="/payables/upload" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
-                  <UploadIcon className="h-4 w-4 text-violet-500" />
-                  Upload invoice
-                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
-                </Link>
-                <Link href="/payables/payments" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
-                  <CreditCard className="h-4 w-4 text-violet-500" />
-                  Payment queue
-                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
-                </Link>
+                {!isViewer && (
+                  <Link href="/payables/upload" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
+                    <UploadIcon className="h-4 w-4 text-violet-500" />
+                    Upload invoice
+                    <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
+                  </Link>
+                )}
+                {isOwnerOrAdmin && (
+                  <Link href="/payables/payments" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
+                    <CreditCard className="h-4 w-4 text-violet-500" />
+                    Payment queue
+                    <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
+                  </Link>
+                )}
                 <Link href="/payables/vendors" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
                   <BuildingIcon className="h-4 w-4 text-blue-500" />
                   Vendor directory
                   <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </Link>
-                <Link href="/payables/team" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
-                  <BuildingIcon className="h-4 w-4 text-emerald-500" />
-                  Team & roles
-                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
-                </Link>
-                <Link href="/payables/rules" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
-                  <FlagIcon className="h-4 w-4 text-orange-500" />
-                  Approval rules
-                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
-                </Link>
-                <Link href="/payables/settings" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
-                  <SettingsIcon className="h-4 w-4 text-gray-500" />
-                  Settings & email templates
-                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
-                </Link>
+                {isOwnerOrAdmin && (
+                  <>
+                    <Link href="/payables/team" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
+                      <BuildingIcon className="h-4 w-4 text-emerald-500" />
+                      Team &amp; roles
+                      <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
+                    </Link>
+                    <Link href="/payables/rules" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
+                      <FlagIcon className="h-4 w-4 text-orange-500" />
+                      Approval rules
+                      <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
+                    </Link>
+                    <Link href="/payables/settings" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
+                      <SettingsIcon className="h-4 w-4 text-gray-500" />
+                      Settings &amp; email templates
+                      <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
 
