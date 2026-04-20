@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef } from "react";
+import BusinessAIModulesSection from "@/components/BusinessAIModulesSection";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
@@ -646,6 +647,12 @@ export default function PayablesLanding() {
           </div>
         </div>
       </section>
+
+      <BusinessAIModulesSection
+        exclude="payables"
+        title="Explore the full Business AI Suite"
+        subtitle="Payable AI is one of many tools. Automate every part of your business."
+      />
 
       {/* CTA */}
       <section className="px-4 pb-28 sm:px-6 lg:px-8">

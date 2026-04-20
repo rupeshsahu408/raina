@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import BusinessAIModulesSection from "@/components/BusinessAIModulesSection";
 
 export default function IbaraLanding() {
   const router = useRouter();
@@ -291,6 +292,12 @@ export default function IbaraLanding() {
           </div>
         </div>
       </section>
+
+      <BusinessAIModulesSection
+        exclude="web"
+        title="Explore more Plyndrox AI tools"
+        subtitle="Web AI is just one piece. Discover the full Business AI Suite."
+      />
 
       {/* Footer */}
       <footer className="border-t border-gray-200 py-10 px-6">

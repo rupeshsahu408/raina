@@ -5,8 +5,7 @@ import Link from "next/link";
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
+      <path d="M5 12h14" /><path d="m12 5 7 7-7 7" />
     </svg>
   );
 }
@@ -22,9 +21,7 @@ function WhatsAppIcon(props: React.SVGProps<SVGSVGElement>) {
 function GlobeIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
-      <path d="M2 12h20" />
+      <circle cx="12" cy="12" r="10" /><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" /><path d="M2 12h20" />
     </svg>
   );
 }
@@ -32,8 +29,7 @@ function GlobeIcon(props: React.SVGProps<SVGSVGElement>) {
 function MailIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <rect width="20" height="16" x="2" y="4" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+      <rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
     </svg>
   );
 }
@@ -41,10 +37,7 @@ function MailIcon(props: React.SVGProps<SVGSVGElement>) {
 function UsersIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   );
 }
@@ -52,10 +45,7 @@ function UsersIcon(props: React.SVGProps<SVGSVGElement>) {
 function LedgerIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-      <path d="M8 7h6" />
-      <path d="M8 11h8" />
-      <path d="M8 15h5" />
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" /><path d="M8 7h6" /><path d="M8 11h8" /><path d="M8 15h5" />
     </svg>
   );
 }
@@ -63,16 +53,14 @@ function LedgerIcon(props: React.SVGProps<SVGSVGElement>) {
 function PayablesIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <rect width="20" height="14" x="2" y="5" rx="2" />
-      <path d="M2 10h20" />
-      <path d="M6 15h2" />
-      <path d="M10 15h4" />
+      <rect width="20" height="14" x="2" y="5" rx="2" /><path d="M2 10h20" /><path d="M6 15h2" /><path d="M10 15h4" />
     </svg>
   );
 }
 
-const products = [
+const ALL_MODULES = [
   {
+    id: "whatsapp",
     href: "/whatsapp-ai",
     icon: <WhatsAppIcon className="h-5 w-5" />,
     iconBg: "bg-emerald-50 text-emerald-600",
@@ -89,6 +77,7 @@ const products = [
     hoverBg: "hover:bg-emerald-50/30",
   },
   {
+    id: "web",
     href: "/ibara",
     icon: <GlobeIcon className="h-5 w-5" />,
     iconBg: "bg-violet-50 text-violet-600",
@@ -105,6 +94,7 @@ const products = [
     hoverBg: "hover:bg-violet-50/30",
   },
   {
+    id: "inbox",
     href: "/inbox",
     icon: <MailIcon className="h-5 w-5" />,
     iconBg: "bg-fuchsia-50 text-fuchsia-600",
@@ -121,6 +111,7 @@ const products = [
     hoverBg: "hover:bg-fuchsia-50/30",
   },
   {
+    id: "recruit",
     href: "/recruit/dashboard",
     icon: <UsersIcon className="h-5 w-5" />,
     iconBg: "bg-indigo-50 text-indigo-600",
@@ -137,6 +128,7 @@ const products = [
     hoverBg: "hover:bg-indigo-50/30",
   },
   {
+    id: "ledger",
     href: "/ledger",
     icon: <LedgerIcon className="h-5 w-5" />,
     iconBg: "bg-teal-50 text-teal-600",
@@ -153,6 +145,7 @@ const products = [
     hoverBg: "hover:bg-teal-50/30",
   },
   {
+    id: "payables",
     href: "/payables",
     icon: <PayablesIcon className="h-5 w-5" />,
     iconBg: "bg-orange-50 text-orange-600",
@@ -170,106 +163,65 @@ const products = [
   },
 ];
 
-export default function BusinessAIPage() {
+interface BusinessAIModulesSectionProps {
+  exclude?: string;
+  title?: string;
+  subtitle?: string;
+}
+
+export default function BusinessAIModulesSection({
+  exclude,
+  title = "Explore the full Business AI Suite",
+  subtitle = "Everything you need to automate your business — from customer conversations to invoice processing.",
+}: BusinessAIModulesSectionProps) {
+  const modules = exclude ? ALL_MODULES.filter((m) => m.id !== exclude) : ALL_MODULES;
+
   return (
-    <div className="min-h-screen bg-white text-[#1d2226]">
-
-      {/* Nav */}
-      <nav className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-2.5">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
-            <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox</span>
-          </Link>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-[#1d2226] transition px-3 py-2 rounded-full hover:bg-gray-100">
-              Sign in
-            </Link>
-            <Link href="/signup" className="rounded-full bg-[#1d2226] px-4 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#2d3238] hover:-translate-y-0.5">
-              Get started
-            </Link>
+    <section className="bg-white border-t border-gray-100">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-20 sm:py-24">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-500 animate-pulse" />
+            Plyndrox Business AI
           </div>
-        </div>
-      </nav>
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 pb-24">
-
-        {/* Hero */}
-        <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-gray-500 mb-5 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Plyndrox Business AI Suite
-          </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-[#1d2226] leading-[1.05] mb-5">
-            AI tools built for<br />
-            <span className="text-violet-600">your business</span>
-          </h1>
-          <p className="max-w-xl mx-auto text-base sm:text-lg leading-7 text-gray-500">
-            Choose how you want to automate. Whether it's customer support on WhatsApp or an AI chatbot on your website — we've got you covered.
-          </p>
+          <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-[#1d2226] mb-3">{title}</h2>
+          <p className="max-w-xl mx-auto text-sm sm:text-base leading-7 text-gray-500">{subtitle}</p>
         </div>
 
-        {/* Product Grid */}
         <div className="grid gap-5 sm:grid-cols-2">
-          {products.map((p) => (
+          {modules.map((m) => (
             <Link
-              key={p.title}
-              href={p.href}
-              className={`group relative rounded-2xl border border-gray-200 bg-white p-7 sm:p-8 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${p.hoverBorder} ${p.hoverBg}`}
+              key={m.id}
+              href={m.href}
+              className={`group relative rounded-2xl border border-gray-200 bg-white p-7 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${m.hoverBorder} ${m.hoverBg}`}
             >
-              <div className="relative">
-                <div className="flex items-center justify-between mb-7">
-                  <div className={`flex h-13 w-13 items-center justify-center rounded-2xl border ${p.iconBorder} ${p.iconBg}`}>
-                    {p.icon}
+              <div className="flex items-center justify-between mb-6">
+                <div className={`flex h-11 w-11 items-center justify-center rounded-xl border ${m.iconBorder} ${m.iconBg}`}>
+                  {m.icon}
+                </div>
+                <div className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${m.badgeColor}`}>
+                  {m.badgeDot && <span className={`w-1.5 h-1.5 rounded-full ${m.badgeDot} animate-pulse`} />}
+                  {m.badge}
+                </div>
+              </div>
+              <h3 className="text-xl font-black tracking-tight text-[#1d2226] mb-2">{m.title}</h3>
+              <p className="text-gray-500 text-sm leading-6 mb-6">{m.description}</p>
+              <div className="grid grid-cols-2 gap-2 mb-6">
+                {m.features.map((feat) => (
+                  <div key={feat} className="flex items-center gap-2 text-xs text-gray-500">
+                    <span className={`w-1.5 h-1.5 rounded-full ${m.featureDot} shrink-0`} />
+                    {feat}
                   </div>
-                  <div className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${p.badgeColor}`}>
-                    {p.badgeDot && <span className={`w-1.5 h-1.5 rounded-full ${p.badgeDot} animate-pulse`} />}
-                    {p.badge}
-                  </div>
-                </div>
-                <h2 className="text-2xl font-black tracking-tight text-[#1d2226] mb-3">{p.title}</h2>
-                <p className="text-gray-500 text-sm leading-7 mb-7">{p.description}</p>
-                <div className="grid grid-cols-2 gap-2.5 mb-7">
-                  {p.features.map((feat) => (
-                    <div key={feat} className="flex items-center gap-2 text-xs text-gray-500">
-                      <span className={`w-1.5 h-1.5 rounded-full ${p.featureDot} shrink-0`} />
-                      {feat}
-                    </div>
-                  ))}
-                </div>
-                <div className={`flex items-center gap-2 text-sm font-bold transition-all ${p.cta} group-hover:gap-3`}>
-                  Get started
-                  <ArrowRightIcon className="h-4 w-4" />
-                </div>
+                ))}
+              </div>
+              <div className={`flex items-center gap-2 text-sm font-bold transition-all ${m.cta} group-hover:gap-3`}>
+                Get started
+                <ArrowRightIcon className="h-4 w-4" />
               </div>
             </Link>
           ))}
         </div>
-
-        {/* Bottom note */}
-        <div className="mt-14 max-w-3xl mx-auto rounded-2xl border border-gray-200 bg-gray-50 p-8 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-gray-400 mb-2">Not sure which to pick?</p>
-          <h3 className="text-xl font-black text-[#1d2226] mb-3">Use both together</h3>
-          <p className="text-gray-500 text-sm leading-7 max-w-lg mx-auto">
-            Many businesses run Plyndrox WhatsApp AI for customer conversations and Plyndrox Web AI for their site visitors. They work independently and complement each other perfectly.
-          </p>
-        </div>
-      </main>
-
-      <footer className="border-t border-gray-200 bg-white py-7 px-4 sm:px-6">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2.5 text-gray-400 hover:text-[#1d2226] transition">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
-            <span className="text-xs font-bold uppercase tracking-[0.18em]">Plyndrox AI</span>
-          </Link>
-          <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</p>
-          <div className="flex gap-5 text-xs text-gray-400">
-            <Link href="/privacy-policy" className="hover:text-[#1d2226] transition">Privacy</Link>
-            <Link href="/terms" className="hover:text-[#1d2226] transition">Terms</Link>
-            <Link href="/contact" className="hover:text-[#1d2226] transition">Contact</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </section>
   );
 }

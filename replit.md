@@ -111,6 +111,7 @@ All public-facing and product pages use a consistent light design language:
 ## Components
 - `VoiceRecordingBar` — live waveform during voice recording (MediaRecorder + AudioContext + SpeechRecognition)
 - `CookiePreferencesModal` — full cookie consent modal (Essential/Analytics/Marketing toggles, Accept All / Reject All / Save, success toast)
+- `BusinessAIModulesSection` — reusable module navigation card grid (6 products: WhatsApp AI, Web AI, Inbox AI, Recruit AI, Smart Ledger, Payable AI). Used on individual product pages (`/whatsapp-ai`, `/ibara`, `/inbox`, `/payables`) as an "Explore more tools" section. Accepts `exclude` (module id), `title`, and `subtitle` props. Renders a 2-column card grid matching the `/business-ai` page design with icon, status badge, description, 2-column feature bullets, and "Get started →" link.
 
 ## Hooks
 - `useCookiePreferences` — loads/saves cookie prefs to localStorage, applies analytics/marketing script logic reactively

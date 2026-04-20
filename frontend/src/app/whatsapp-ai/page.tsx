@@ -1,5 +1,7 @@
 "use client";
 
+import BusinessAIModulesSection from "@/components/BusinessAIModulesSection";
+
 export default function WhatsAppAILandingPage() {
   return (
     <main className="relative min-h-screen" style={{ background: "var(--background)", color: "var(--foreground)" }}>
@@ -81,7 +83,15 @@ export default function WhatsAppAILandingPage() {
           ))}
         </div>
 
-        <footer className="mt-20 py-14" style={{ borderTop: "1px solid var(--border)" }}>
+        <div className="mt-20 -mx-4 sm:-mx-6 lg:-mx-10">
+          <BusinessAIModulesSection
+            exclude="whatsapp"
+            title="Explore more Plyndrox AI tools"
+            subtitle="WhatsApp is just the start. Discover the full Business AI Suite."
+          />
+        </div>
+
+        <footer className="mt-0 py-14" style={{ borderTop: "1px solid var(--border)" }}>
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <div className="flex items-center gap-3">

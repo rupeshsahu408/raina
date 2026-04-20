@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import BusinessAIModulesSection from "@/components/BusinessAIModulesSection";
 
 function SparkIcon() {
   return (
@@ -358,6 +359,12 @@ export default function InboxLandingPage() {
           <p className="text-xs text-gray-400 mt-4">No credit card · Secure OAuth · Cancel anytime</p>
         </div>
       </section>
+
+      <BusinessAIModulesSection
+        exclude="inbox"
+        title="Explore more Plyndrox AI tools"
+        subtitle="Inbox AI is just one piece. Discover the full Business AI Suite."
+      />
 
       {/* Footer */}
       <footer className="border-t border-gray-200 bg-white py-7 px-4 sm:px-6">
