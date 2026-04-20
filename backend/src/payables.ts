@@ -3214,6 +3214,114 @@ payablesRouter.delete("/email-inbox/:emailId", async (req, res) => {
   }
 });
 
+/* ─── API Access Request (public, no auth) ─── */
+payablesPublicRouter.post("/api-access-request", async (req, res) => {
+  try {
+    const {
+      fullName, companyName, email, website,
+      useCase, integrationType, monthlyVolume, techStack,
+    } = req.body as Record<string, string>;
+
+    // Basic validation
+    if (!fullName || !email || !useCase) {
+      return res.status(400).json({ error: "Full name, email, and use case are required." });
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Invalid email address." });
+    }
+
+    // Store in DB
+    await connectMongo();
+    const ApiAccessRequest = mongoose.models.ApiAccessRequest || mongoose.model(
+      "ApiAccessRequest",
+      new Schema({
+        fullName: String, companyName: String, email: String,
+        website: String, useCase: String, integrationType: String,
+        monthlyVolume: String, techStack: String,
+        status: { type: String, default: "pending" },
+        submittedAt: { type: Date, default: Date.now },
+      })
+    );
+    await ApiAccessRequest.create({ fullName, companyName, email, website, useCase, integrationType, monthlyVolume, techStack });
+
+    // Send email via SMTP
+    const smtpUser = process.env.SMTP_USER ?? "";
+    const smtpPass = process.env.SMTP_PASS ?? "";
+    const smtpHost = process.env.SMTP_HOST ?? "smtp.gmail.com";
+    const ownerEmail = process.env.OWNER_EMAIL ?? smtpUser;
+
+    if (smtpUser && smtpPass) {
+      const nodemailer = await import("nodemailer");
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: 465,
+        secure: true,
+        auth: { user: smtpUser, pass: smtpPass },
+      });
+
+      const submittedAt = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "full", timeStyle: "short" });
+
+      const html = `
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f7f8fc;margin:0;padding:0;color:#1d2226;}
+  .wrap{max-width:600px;margin:32px auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.07);}
+  .header{background:linear-gradient(135deg,#7c3aed,#4f46e5);padding:32px 32px 24px;color:#fff;}
+  .header h1{margin:0 0 4px;font-size:20px;font-weight:800;}
+  .header p{margin:0;opacity:0.85;font-size:13px;}
+  .badge{display:inline-block;background:rgba(255,255,255,0.2);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;letter-spacing:0.06em;margin-bottom:12px;}
+  .body{padding:28px 32px;}
+  .field{margin-bottom:18px;}
+  .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#7c3aed;margin-bottom:4px;}
+  .value{font-size:15px;font-weight:600;color:#1d2226;background:#f7f8fc;border-radius:8px;padding:10px 14px;border:1px solid #e9eaf0;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .footer{background:#f7f8fc;padding:18px 32px;font-size:12px;color:#9ca3af;border-top:1px solid #e9eaf0;}
+  .action-row{margin-top:24px;display:flex;gap:12px;}
+  .btn{display:inline-block;padding:10px 22px;border-radius:50px;font-size:13px;font-weight:700;text-decoration:none;}
+  .btn-approve{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;}
+  .btn-deny{background:#fff;color:#64748b;border:1px solid #e2e8f0;}
+</style></head><body>
+<div class="wrap">
+  <div class="header">
+    <div class="badge">NEW API ACCESS REQUEST</div>
+    <h1>Developer API Access Request</h1>
+    <p>Submitted on ${submittedAt} (IST)</p>
+  </div>
+  <div class="body">
+    <div class="grid">
+      <div class="field"><div class="label">Full Name</div><div class="value">${fullName}</div></div>
+      <div class="field"><div class="label">Email</div><div class="value">${email}</div></div>
+      <div class="field"><div class="label">Company</div><div class="value">${companyName || "—"}</div></div>
+      <div class="field"><div class="label">Website</div><div class="value">${website || "—"}</div></div>
+      <div class="field"><div class="label">Integration Type</div><div class="value">${integrationType || "—"}</div></div>
+      <div class="field"><div class="label">Monthly Invoice Volume</div><div class="value">${monthlyVolume || "—"}</div></div>
+    </div>
+    <div class="field"><div class="label">Tech Stack / Languages</div><div class="value">${techStack || "—"}</div></div>
+    <div class="field"><div class="label">Use Case / What are you building?</div><div class="value" style="white-space:pre-wrap">${useCase}</div></div>
+    <div class="action-row">
+      <a class="btn btn-approve" href="mailto:${email}?subject=Your Plyndrox API Access Request — Approved&body=Hi ${encodeURIComponent(fullName)},%0A%0AGreat news! Your API access request has been approved.%0A%0AWe will be in touch shortly with your API credentials and documentation.%0A%0AThank you for choosing Plyndrox.%0A%0ABest regards,">Approve & Reply</a>
+      <a class="btn btn-deny" href="mailto:${email}?subject=Your Plyndrox API Access Request — Update&body=Hi ${encodeURIComponent(fullName)},%0A%0AThank you for your interest in the Plyndrox API.%0A%0A">Reply to Applicant</a>
+    </div>
+  </div>
+  <div class="footer">This request was submitted via plyndrox.app · Plyndrox Developer Platform</div>
+</div>
+</body></html>`;
+
+      await transporter.sendMail({
+        from: `"Plyndrox API Gateway" <${smtpUser}>`,
+        to: ownerEmail,
+        subject: `[API Access Request] ${fullName}${companyName ? ` · ${companyName}` : ""} — ${email}`,
+        html,
+        replyTo: email,
+      });
+    }
+
+    res.json({ success: true, message: "Your request has been submitted. We will review it and reach out to you within 1–2 business days." });
+  } catch (err) {
+    console.error("API access request error:", err);
+    res.status(500).json({ error: "Failed to submit request. Please try again." });
+  }
+});
+
 payablesRouter.get("/flags", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;

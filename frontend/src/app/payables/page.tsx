@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useRef } from "react";
+
+const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
 /* ─── Icons ─── */
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -67,6 +70,177 @@ function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
       <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
     </svg>
+  );
+}
+function CodeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
+    </svg>
+  );
+}
+function WebhookIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M18 16.98h-5.99c-1.1 0-1.95.94-2.48 1.9A4 4 0 0 1 2 17c.01-.7.2-1.4.57-2" />
+      <path d="m6 17 3.13-5.78c.53-.97.1-2.18-.5-3.1a4 4 0 1 1 6.89-4.06" />
+      <path d="m12 6 3.13 5.73C15.66 12.7 16.9 13 18 13a4 4 0 0 1 0 8" />
+    </svg>
+  );
+}
+function LockIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+function SendIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" />
+    </svg>
+  );
+}
+function ApiIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M21 2H3v16h5v4l4-4h5l4-4V2zm-10 9V7m4 4V7" />
+    </svg>
+  );
+}
+
+/* ─── API Access Request Form ─── */
+function ApiAccessForm() {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({
+    fullName: "", companyName: "", email: "", website: "",
+    useCase: "", integrationType: "", monthlyVolume: "", techStack: "",
+  });
+
+  function set(k: string) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+      setForm((f) => ({ ...f, [k]: e.target.value }));
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch(`${BACKEND}/payables/api-access-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Submission failed");
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message ?? "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (success) {
+    return (
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-10 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+          <CheckIcon className="h-7 w-7 text-emerald-600" />
+        </div>
+        <div>
+          <p className="text-lg font-black text-[#1d2226]">Request Submitted!</p>
+          <p className="mt-1 text-sm text-gray-500">We've received your request and will review it shortly. You'll hear from us within 1–2 business days.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const inputClass = "w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-[#1d2226] placeholder-gray-400 outline-none transition focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-100";
+  const labelClass = "mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-500";
+
+  return (
+    <form ref={formRef} onSubmit={submit} className="space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className={labelClass}>Full Name <span className="text-rose-500">*</span></label>
+          <input required className={inputClass} placeholder="Rahul Sharma" value={form.fullName} onChange={set("fullName")} />
+        </div>
+        <div>
+          <label className={labelClass}>Company / Startup Name</label>
+          <input className={inputClass} placeholder="Acme Technologies" value={form.companyName} onChange={set("companyName")} />
+        </div>
+        <div>
+          <label className={labelClass}>Work Email <span className="text-rose-500">*</span></label>
+          <input required type="email" className={inputClass} placeholder="you@company.com" value={form.email} onChange={set("email")} />
+        </div>
+        <div>
+          <label className={labelClass}>Website / Product URL</label>
+          <input className={inputClass} placeholder="https://yourproduct.com" value={form.website} onChange={set("website")} />
+        </div>
+        <div>
+          <label className={labelClass}>Integration Type</label>
+          <select className={inputClass} value={form.integrationType} onChange={set("integrationType")}>
+            <option value="">Select one</option>
+            <option value="REST API">REST API (read/write invoices)</option>
+            <option value="Webhooks">Webhooks (event notifications)</option>
+            <option value="Both">Both REST API + Webhooks</option>
+            <option value="Embedded">Embedded / White-label</option>
+          </select>
+        </div>
+        <div>
+          <label className={labelClass}>Monthly Invoice Volume</label>
+          <select className={inputClass} value={form.monthlyVolume} onChange={set("monthlyVolume")}>
+            <option value="">Select range</option>
+            <option value="<50">Less than 50</option>
+            <option value="50-200">50 – 200</option>
+            <option value="200-1000">200 – 1,000</option>
+            <option value="1000+">1,000+</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label className={labelClass}>Tech Stack / Languages</label>
+        <input className={inputClass} placeholder="e.g. Node.js, Python, React, SAP" value={form.techStack} onChange={set("techStack")} />
+      </div>
+      <div>
+        <label className={labelClass}>What are you building? <span className="text-rose-500">*</span></label>
+        <textarea
+          required
+          rows={4}
+          className={inputClass}
+          placeholder="Describe your use case — e.g. We want to auto-import approved invoices from Plyndrox into our ERP system, and trigger payment workflows when an invoice is approved..."
+          value={form.useCase}
+          onChange={set("useCase")}
+        />
+      </div>
+      {error && (
+        <p className="rounded-xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600">{error}</p>
+      )}
+      <button
+        type="submit"
+        disabled={loading}
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-sm font-bold text-white shadow-md transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60 disabled:translate-y-0"
+      >
+        {loading ? (
+          <>
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+            Submitting…
+          </>
+        ) : (
+          <>
+            <SendIcon className="h-4 w-4" />
+            Submit API Access Request
+          </>
+        )}
+      </button>
+      <p className="text-center text-xs text-gray-400">Your request goes directly to our team for review. No auto-approval — we personally evaluate every request.</p>
+    </form>
   );
 }
 
@@ -138,6 +312,9 @@ export default function PayablesLanding() {
             <span className="text-sm font-black tracking-tight text-[#1d2226]">Payables AI</span>
           </div>
           <div className="flex items-center gap-3">
+            <a href="#api" className="hidden text-sm font-semibold text-gray-500 transition hover:text-[#1d2226] sm:block">
+              API & Webhooks
+            </a>
             <Link href="/payables/dashboard" className="hidden text-sm font-semibold text-gray-500 transition hover:text-[#1d2226] sm:block">
               Dashboard
             </Link>
@@ -373,6 +550,100 @@ export default function PayablesLanding() {
           <p className="mt-6 text-center text-sm text-gray-400">
             Duplicate detection, team approvals, payment queue, and QuickBooks sync are coming in upcoming releases.
           </p>
+        </div>
+      </section>
+
+      {/* ── Developer API & Webhooks ── */}
+      <section id="api" className="px-4 py-24 sm:px-6 lg:px-8 bg-gradient-to-b from-white to-[#f7f8fc]">
+        <div className="mx-auto max-w-7xl">
+          {/* Header */}
+          <div className="mb-14 text-center">
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-100 bg-violet-50 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-violet-700">
+              <CodeIcon className="h-3.5 w-3.5" />
+              Developer Platform
+            </div>
+            <h2 className="text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl lg:text-5xl">
+              Build on top of Plyndrox
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-gray-500">
+              Embed our invoice intelligence into your own ERP, accounting software, or product using our REST APIs and real-time webhooks. Turn Plyndrox into the AP backbone of your platform.
+            </p>
+          </div>
+
+          {/* Feature cards */}
+          <div className="mb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                icon: <CodeIcon className="h-5 w-5" />,
+                color: "bg-violet-50 text-violet-600",
+                border: "border-violet-100",
+                title: "REST API",
+                desc: "Full read/write access to invoices, vendors, approval status, and payment records. Paginated, filterable, and JSON-native.",
+                tags: ["GET /invoices", "POST /approve", "GET /vendors"],
+              },
+              {
+                icon: <WebhookIcon className="h-5 w-5" />,
+                color: "bg-indigo-50 text-indigo-600",
+                border: "border-indigo-100",
+                title: "Webhooks",
+                desc: "Get real-time HTTP callbacks when events happen — invoice approved, payment marked, vendor flagged. Trigger your ERP instantly.",
+                tags: ["invoice.approved", "invoice.paid", "vendor.flagged"],
+              },
+              {
+                icon: <LockIcon className="h-5 w-5" />,
+                color: "bg-emerald-50 text-emerald-600",
+                border: "border-emerald-100",
+                title: "Gated Access",
+                desc: "API keys are issued only after manual review. We evaluate every integration to ensure security, quality, and responsible use.",
+                tags: ["Reviewed & approved", "Rate limited", "Secure by default"],
+              },
+            ].map((card) => (
+              <div key={card.title} className={`rounded-2xl border ${card.border} bg-white p-7 shadow-sm`}>
+                <div className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl ${card.color}`}>
+                  {card.icon}
+                </div>
+                <h3 className="mb-2 text-base font-black text-[#1d2226]">{card.title}</h3>
+                <p className="mb-4 text-sm leading-6 text-gray-500">{card.desc}</p>
+                <div className="flex flex-wrap gap-2">
+                  {card.tags.map((t) => (
+                    <span key={t} className="rounded-full border border-gray-100 bg-gray-50 px-3 py-1 font-mono text-[11px] font-semibold text-gray-500">{t}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* How it works timeline */}
+          <div className="mb-16 rounded-3xl border border-gray-100 bg-white p-8 shadow-sm sm:p-12">
+            <h3 className="mb-8 text-center text-xl font-black text-[#1d2226]">How API access works</h3>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { step: "01", title: "Submit Request", desc: "Fill in your details and describe what you're building. Takes 2 minutes.", color: "from-violet-500 to-indigo-500" },
+                { step: "02", title: "We Review", desc: "Your request lands in our inbox. We personally evaluate every integration.", color: "from-indigo-500 to-blue-500" },
+                { step: "03", title: "Approval via Email", desc: "Once approved, you get a confirmation email with next steps.", color: "from-blue-500 to-cyan-500" },
+                { step: "04", title: "Receive API Credentials", desc: "We send your API key and documentation. You start building.", color: "from-cyan-500 to-emerald-500" },
+              ].map((s) => (
+                <div key={s.step} className="flex flex-col items-center text-center">
+                  <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${s.color} text-sm font-black text-white shadow-md`}>
+                    {s.step}
+                  </div>
+                  <p className="mb-1.5 text-sm font-black text-[#1d2226]">{s.title}</p>
+                  <p className="text-xs leading-5 text-gray-500">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Request form */}
+          <div className="mx-auto max-w-2xl">
+            <div className="mb-8 text-center">
+              <h3 className="text-2xl font-black text-[#1d2226]">Request API Access</h3>
+              <p className="mt-2 text-sm text-gray-500">Tell us about your integration. All requests are reviewed personally — expect a reply within 1–2 business days.</p>
+            </div>
+            <div className="rounded-3xl border border-gray-100 bg-white p-8 shadow-sm sm:p-10">
+              <ApiAccessForm />
+            </div>
+          </div>
         </div>
       </section>
 
