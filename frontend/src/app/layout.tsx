@@ -35,6 +35,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => { try { const allowed = new Set(["white","dark","green","reading","ocean","rose","auto","light"]); let theme = localStorage.getItem("plyndrox_theme") || localStorage.getItem("evara_theme") || "white"; if (!allowed.has(theme)) theme = "white"; if (theme === "light") theme = "white"; const resolved = theme === "auto" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "white") : theme; document.documentElement.setAttribute("data-theme", resolved); localStorage.setItem("plyndrox_theme", theme); } catch (_) {} })();`,
+          }}
+        />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -47,7 +52,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/plyndrox-192.svg" />
         <link rel="manifest" href="/manifest.webmanifest" />
       </head>
-      <body className="app-theme min-h-screen antialiased bg-white text-[#1d2226]" suppressHydrationWarning>
+      <body className="app-theme min-h-screen antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <div className="min-h-screen">{children}</div>
           <ThemeSettingsPanel />

@@ -4,7 +4,8 @@ import { createContext, useContext, useLayoutEffect, useState } from "react";
 
 export type Theme = "white" | "light" | "dark" | "green" | "reading" | "ocean" | "rose" | "auto";
 
-const STORAGE_KEY = "evara_theme";
+export const THEME_STORAGE_KEY = "plyndrox_theme";
+const LEGACY_STORAGE_KEY = "evara_theme";
 
 interface ThemeContextValue {
   theme: Theme;
@@ -19,6 +20,7 @@ const ThemeContext = createContext<ThemeContextValue>({
 function normalizeTheme(theme: Theme | null): Theme {
   if (!theme) return "white";
   if (theme === "light") return "white";
+  if (!["white", "dark", "green", "reading", "ocean", "rose", "auto"].includes(theme)) return "white";
   return theme;
 }
 
@@ -38,11 +40,19 @@ function applyTheme(theme: Theme) {
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor);
 }
 
+function readStoredTheme(): Theme {
+  const stored = normalizeTheme(
+    (localStorage.getItem(THEME_STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY)) as Theme | null
+  );
+  localStorage.setItem(THEME_STORAGE_KEY, stored);
+  return stored;
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("white");
 
   useLayoutEffect(() => {
-    const stored = normalizeTheme(localStorage.getItem(STORAGE_KEY) as Theme | null);
+    const stored = readStoredTheme();
     setThemeState(stored);
     applyTheme(stored);
 
@@ -55,7 +65,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     const mqHandler = () => {
-      const current = normalizeTheme(localStorage.getItem(STORAGE_KEY) as Theme | null);
+      const current = readStoredTheme();
       if (current === "auto") applyTheme("auto");
     };
     mq.addEventListener("change", mqHandler);
@@ -69,7 +79,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   function setTheme(t: Theme) {
     const nextTheme = normalizeTheme(t);
     setThemeState(nextTheme);
-    localStorage.setItem(STORAGE_KEY, nextTheme);
+    localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    localStorage.setItem(LEGACY_STORAGE_KEY, nextTheme);
     applyTheme(nextTheme);
     window.dispatchEvent(new CustomEvent<Theme>("evara-theme-change", { detail: nextTheme }));
   }
@@ -87,7 +98,9 @@ export function useTheme() {
 
 export function applyThemeFromStorage() {
   try {
-    const stored = normalizeTheme(localStorage.getItem(STORAGE_KEY) as Theme | null);
+    const stored = normalizeTheme(
+      (localStorage.getItem(THEME_STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY)) as Theme | null
+    );
     const resolved = resolveTheme(stored);
     document.documentElement.setAttribute("data-theme", resolved);
   } catch {}

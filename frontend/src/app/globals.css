@@ -4,8 +4,11 @@
   --background: #ffffff;
   --foreground: #09090b;
   --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #f8fafc;
   --border: #e4e4e7;
   --text-secondary: #52525b;
+  --text-muted: #71717a;
   --accent: #4f46e5;
   --accent-hover: #4338ca;
 }
@@ -15,8 +18,11 @@ html[data-theme="light"] {
   --background: #ffffff;
   --foreground: #09090b;
   --surface: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #f8fafc;
   --border: #e4e4e7;
   --text-secondary: #52525b;
+  --text-muted: #71717a;
   --accent: #4f46e5;
   --accent-hover: #4338ca;
 }
@@ -25,8 +31,11 @@ html[data-theme="dark"] {
   --background: #09090b;
   --foreground: #fafafa;
   --surface: #18181b;
+  --surface-elevated: #111827;
+  --surface-muted: #27272a;
   --border: #27272a;
   --text-secondary: #a1a1aa;
+  --text-muted: #d4d4d8;
   --accent: #6366f1;
   --accent-hover: #818cf8;
 }
@@ -34,9 +43,12 @@ html[data-theme="dark"] {
 html[data-theme="green"] {
   --background: #f0fdf4;
   --foreground: #10251a;
-  --surface: #ffffff;
+  --surface: #f7fee7;
+  --surface-elevated: #ffffff;
+  --surface-muted: #dcfce7;
   --border: #bbf7d0;
   --text-secondary: #3f6b4f;
+  --text-muted: #4d7c5b;
   --accent: #16a34a;
   --accent-hover: #15803d;
 }
@@ -45,8 +57,11 @@ html[data-theme="reading"] {
   --background: #fff8ed;
   --foreground: #2d2216;
   --surface: #fffaf2;
+  --surface-elevated: #ffffff;
+  --surface-muted: #f8ecd7;
   --border: #ead7bd;
   --text-secondary: #725b3d;
+  --text-muted: #8a6a43;
   --accent: #b7791f;
   --accent-hover: #92400e;
 }
@@ -54,9 +69,12 @@ html[data-theme="reading"] {
 html[data-theme="ocean"] {
   --background: #eff6ff;
   --foreground: #132238;
-  --surface: #ffffff;
+  --surface: #f8fbff;
+  --surface-elevated: #ffffff;
+  --surface-muted: #dbeafe;
   --border: #bfdbfe;
   --text-secondary: #395b85;
+  --text-muted: #4d6f9b;
   --accent: #2563eb;
   --accent-hover: #1d4ed8;
 }
@@ -64,9 +82,12 @@ html[data-theme="ocean"] {
 html[data-theme="rose"] {
   --background: #fff1f2;
   --foreground: #31151c;
-  --surface: #ffffff;
+  --surface: #fff7f8;
+  --surface-elevated: #ffffff;
+  --surface-muted: #ffe4e6;
   --border: #fecdd3;
   --text-secondary: #7f3d4b;
+  --text-muted: #9f5260;
   --accent: #e11d48;
   --accent-hover: #be123c;
 }
@@ -84,6 +105,104 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
   overflow-x: hidden;
+}
+
+body.app-theme {
+  background: var(--background) !important;
+  color: var(--foreground) !important;
+}
+
+body.app-theme .bg-white,
+body.app-theme .bg-zinc-50,
+body.app-theme .bg-gray-50,
+body.app-theme .bg-slate-50,
+body.app-theme .bg-neutral-50,
+body.app-theme .bg-white\/95,
+body.app-theme .bg-white\/90,
+body.app-theme .bg-white\/80,
+body.app-theme .bg-white\/70,
+body.app-theme .bg-white\/60,
+body.app-theme .bg-zinc-50\/80,
+body.app-theme .bg-gray-50\/80 {
+  background-color: var(--surface) !important;
+}
+
+body.app-theme .bg-zinc-100,
+body.app-theme .bg-gray-100,
+body.app-theme .bg-slate-100,
+body.app-theme .bg-neutral-100 {
+  background-color: var(--surface-muted) !important;
+}
+
+body.app-theme .bg-\[\#f7f8fc\],
+body.app-theme .bg-\[\#f8f9fa\],
+body.app-theme .bg-\[\#f9fafb\],
+body.app-theme .bg-\[\#fafafa\],
+body.app-theme .bg-\[\#fff\],
+body.app-theme .bg-\[\#ffffff\] {
+  background-color: var(--surface) !important;
+}
+
+body.app-theme .text-zinc-950,
+body.app-theme .text-zinc-900,
+body.app-theme .text-gray-950,
+body.app-theme .text-gray-900,
+body.app-theme .text-slate-950,
+body.app-theme .text-slate-900,
+body.app-theme .text-neutral-950,
+body.app-theme .text-neutral-900,
+body.app-theme .text-\[\#1d2226\],
+body.app-theme .text-\[\#09090b\],
+body.app-theme .text-\[\#111827\],
+body.app-theme .text-\[\#18181b\] {
+  color: var(--foreground) !important;
+}
+
+body.app-theme .text-zinc-700,
+body.app-theme .text-zinc-600,
+body.app-theme .text-gray-700,
+body.app-theme .text-gray-600,
+body.app-theme .text-slate-700,
+body.app-theme .text-slate-600 {
+  color: var(--text-secondary) !important;
+}
+
+body.app-theme .text-zinc-500,
+body.app-theme .text-zinc-400,
+body.app-theme .text-gray-500,
+body.app-theme .text-gray-400,
+body.app-theme .text-slate-500,
+body.app-theme .text-slate-400 {
+  color: var(--text-muted) !important;
+}
+
+body.app-theme .border-zinc-50,
+body.app-theme .border-zinc-100,
+body.app-theme .border-zinc-200,
+body.app-theme .border-gray-100,
+body.app-theme .border-gray-200,
+body.app-theme .border-slate-100,
+body.app-theme .border-slate-200,
+body.app-theme .border-neutral-100,
+body.app-theme .border-neutral-200,
+body.app-theme .border-\[\#e9eaf0\] {
+  border-color: var(--border) !important;
+}
+
+body.app-theme .glass-nav,
+body.app-theme .glass-card,
+body.app-theme .bento-item,
+body.app-theme .bihar-sidebar,
+body.app-theme .bihar-chat-bg {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+body.app-theme .shadow-black\/5,
+body.app-theme .shadow-black\/10,
+body.app-theme .shadow-black\/15 {
+  --tw-shadow-color: color-mix(in srgb, var(--foreground) 16%, transparent) !important;
 }
 
 /* High end grid background */
