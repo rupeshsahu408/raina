@@ -231,6 +231,21 @@ export default function PayablesDashboard() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const result = new URLSearchParams(window.location.search).get("gmail");
+    if (result === "connected") {
+      setGmailConnected(true);
+      setGmailMsg({ text: "Gmail connected successfully. You can now import invoice emails.", type: "success" });
+      window.history.replaceState({}, "", "/payables/dashboard");
+    }
+    if (result === "oauth_failed") {
+      setGmailConnected(false);
+      setGmailMsg({ text: "Gmail connection failed. Please try again.", type: "error" });
+      window.history.replaceState({}, "", "/payables/dashboard");
+    }
+  }, []);
+
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => setSearch(searchInput), 400);
@@ -258,6 +273,23 @@ export default function PayablesDashboard() {
     } catch (err: unknown) {
       setGmailMsg({ text: err instanceof Error ? err.message : "Failed to fetch from Gmail", type: "error" });
     } finally {
+      setFetchingGmail(false);
+    }
+  };
+
+  const connectGmail = async () => {
+    if (!user) return;
+    setFetchingGmail(true);
+    setGmailMsg(null);
+    try {
+      const res = await fetch(`${BACKEND}/payables/gmail/auth-url?returnTo=${encodeURIComponent("/payables/dashboard?gmail=connected")}`, {
+        headers: payablesHeaders(user),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error ?? "Could not start Gmail connection.");
+      window.location.href = data.url;
+    } catch (err) {
+      setGmailMsg({ text: err instanceof Error ? err.message : "Could not start Gmail connection.", type: "error" });
       setFetchingGmail(false);
     }
   };
@@ -342,13 +374,13 @@ export default function PayablesDashboard() {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={fetchFromGmail}
+              onClick={gmailConnected === false ? connectGmail : fetchFromGmail}
               disabled={fetchingGmail}
-              title={gmailConnected === false ? "Gmail not connected" : "Fetch invoice emails from Gmail"}
+              title={gmailConnected === false ? "Connect Gmail" : "Fetch invoice emails from Gmail"}
               className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 shadow-sm transition hover:border-gray-300 hover:bg-gray-50 disabled:opacity-50 sm:px-4"
             >
               {fetchingGmail ? <Spinner /> : <MailIcon className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">{fetchingGmail ? "Fetching…" : "Fetch Gmail"}</span>
+              <span className="hidden sm:inline">{fetchingGmail ? "Opening…" : gmailConnected === false ? "Connect Gmail" : "Fetch Gmail"}</span>
             </button>
             <Link
               href="/payables/upload"
@@ -401,7 +433,7 @@ export default function PayablesDashboard() {
               <p className="text-sm font-semibold text-amber-800">Gmail not connected</p>
               <p className="mt-0.5 text-xs text-amber-600">
                 Connect Gmail to automatically detect and import invoice emails.{" "}
-                <Link href="/inbox/connect" className="font-bold underline hover:no-underline">Connect now →</Link>
+                <button onClick={connectGmail} className="font-bold underline hover:no-underline">Connect now →</button>
               </p>
             </div>
             <button className="text-xs text-amber-400 hover:text-amber-600" onClick={() => setGmailConnected(null)}>✕</button>
@@ -654,9 +686,9 @@ export default function PayablesDashboard() {
                   Upload invoice
                   <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </Link>
-                <button onClick={fetchFromGmail} disabled={fetchingGmail} className="flex w-full items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-left text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50 disabled:opacity-50">
+                <button onClick={gmailConnected === false ? connectGmail : fetchFromGmail} disabled={fetchingGmail} className="flex w-full items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-left text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50 disabled:opacity-50">
                   <MailIcon className="h-4 w-4 text-indigo-500" />
-                  {fetchingGmail ? "Fetching from Gmail…" : "Fetch Gmail invoices"}
+                  {fetchingGmail ? "Opening Gmail…" : gmailConnected === false ? "Connect Gmail" : "Fetch Gmail invoices"}
                   <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </button>
                 <Link href="/payables/payments" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
@@ -678,11 +710,11 @@ export default function PayablesDashboard() {
                   <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </Link>
                 {!gmailConnected && (
-                  <Link href="/inbox/connect" className="flex items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
+                  <button onClick={connectGmail} className="flex w-full items-center gap-3 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-left text-sm font-semibold text-amber-700 transition hover:bg-amber-100">
                     <AlertIcon className="h-4 w-4 text-amber-500" />
                     Connect Gmail
                     <ChevronRightIcon className="ml-auto h-4 w-4 text-amber-300" />
-                  </Link>
+                  </button>
                 )}
               </div>
             </div>

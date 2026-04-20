@@ -87,6 +87,7 @@ export default function PayablesOnboarding() {
   const [user, setUser] = useState<{ uid: string; token: string } | null>(null);
   const [gmailConnected, setGmailConnected] = useState<boolean | null>(null);
   const [checkingGmail, setCheckingGmail] = useState(false);
+  const [gmailMessage, setGmailMessage] = useState("");
   const [savingCompany, setSavingCompany] = useState(false);
 
   const [companyName, setCompanyName] = useState("");
@@ -149,6 +150,41 @@ export default function PayablesOnboarding() {
       checkGmailStatus();
     }
   }, [step, user]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const result = new URLSearchParams(window.location.search).get("gmail");
+    if (result === "connected") {
+      setStep(2);
+      setGmailConnected(true);
+      setGmailMessage("Gmail connected successfully. Payables AI can now import invoice emails.");
+      window.history.replaceState({}, "", "/payables/onboarding");
+    }
+    if (result === "oauth_failed") {
+      setStep(2);
+      setGmailConnected(false);
+      setGmailMessage("Gmail connection failed. Please try again or contact support if it repeats.");
+      window.history.replaceState({}, "", "/payables/onboarding");
+    }
+  }, []);
+
+  const connectGmail = async () => {
+    if (!user) return;
+    setCheckingGmail(true);
+    setGmailMessage("");
+    try {
+      const res = await fetch(`${BACKEND}/payables/gmail/auth-url?returnTo=${encodeURIComponent("/payables/onboarding?gmail=connected")}`, {
+        headers: payablesHeaders(user),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error ?? "Could not start Gmail connection.");
+      window.location.href = data.url;
+    } catch (err) {
+      setGmailConnected(false);
+      setGmailMessage(err instanceof Error ? err.message : "Could not start Gmail connection.");
+      setCheckingGmail(false);
+    }
+  };
 
   const handleCompanyNext = async () => {
     if (!companyName.trim()) {
@@ -315,6 +351,11 @@ export default function PayablesOnboarding() {
             <p className="mt-2 text-sm leading-6 text-gray-500">
               Payables AI will automatically detect invoice emails and extract data — no manual forwarding needed.
             </p>
+            {gmailMessage && (
+              <div className="mt-5 rounded-2xl border border-violet-100 bg-violet-50 p-4 text-sm font-semibold text-violet-700">
+                {gmailMessage}
+              </div>
+            )}
 
             <div className="mt-7">
               {checkingGmail ? (
@@ -342,16 +383,17 @@ export default function PayablesOnboarding() {
                       Connect your Gmail so Payables AI can automatically find and import invoice emails.
                     </p>
                   </div>
-                  <a
-                    href={`${BACKEND}/inbox/connect?uid=${user?.uid ?? ""}`}
+                  <button
+                    onClick={connectGmail}
+                    disabled={checkingGmail}
                     className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-200 bg-white py-4 text-sm font-semibold text-[#1d2226] shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md"
                   >
                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none">
                       <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6z" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                       <path d="m2 6 10 7 10-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                     </svg>
-                    Connect Gmail Account
-                  </a>
+                    {checkingGmail ? "Opening Google…" : "Connect Gmail Account"}
+                  </button>
                   <button
                     onClick={checkGmailStatus}
                     className="w-full py-2 text-xs text-gray-400 underline transition hover:text-gray-600"

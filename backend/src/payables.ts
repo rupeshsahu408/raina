@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 import mongoose, { Schema } from "mongoose";
-import { randomUUID } from "crypto";
+import { createHmac, randomUUID } from "crypto";
 import { google } from "googleapis";
 import { connectMongo } from "./db";
 import { Invoice, InvoiceFlag } from "./models/Invoice";
@@ -19,12 +19,14 @@ const upload = multer({
 });
 
 export const payablesRouter = express.Router();
+export const payablesPublicRouter = express.Router();
 
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY ?? "";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? "";
 const GOOGLE_REDIRECT_URI =
   process.env.GOOGLE_REDIRECT_URI ?? "https://raina-1.onrender.com/inbox/callback";
+const OAUTH_STATE_SECRET = process.env.OAUTH_STATE_SECRET || GOOGLE_CLIENT_SECRET || "payables-dev-oauth-state";
 
 const PayablesCompanyProfile =
   mongoose.models.PayablesCompanyProfile ||
@@ -139,6 +141,12 @@ const PayablesAccountingConnection =
 
 function makeOAuth2Client() {
   return new google.auth.OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI);
+}
+
+function signOAuthState(payload: Record<string, unknown>) {
+  const body = Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+  const sig = createHmac("sha256", OAUTH_STATE_SECRET).update(body).digest("base64url");
+  return `payables:${body}.${sig}`;
 }
 
 async function getActor(req: express.Request, res: express.Response) {
@@ -714,6 +722,48 @@ payablesRouter.delete("/approval-rules/:id", async (req, res) => {
   await connectMongo();
   await PayablesApprovalRule.deleteOne({ _id: req.params.id, uid: actor.uid });
   await audit(actor.uid, undefined, "approval_rule_deleted", actor, { ruleId: req.params.id });
+  res.json({ success: true });
+});
+
+payablesRouter.get("/gmail/auth-url", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+    return res.status(503).json({ error: "Google OAuth is not configured on the server." });
+  }
+  const returnTo = typeof req.query.returnTo === "string" && req.query.returnTo.startsWith("/payables")
+    ? req.query.returnTo
+    : "/payables/onboarding?gmail=connected";
+  const state = signOAuthState({
+    workspaceUid: actor.uid,
+    actorUid: actor.actorUid,
+    product: "payables",
+    returnTo,
+    nonce: randomUUID(),
+    createdAt: Date.now(),
+  });
+  const oauth2 = makeOAuth2Client();
+  const url = oauth2.generateAuthUrl({
+    access_type: "offline",
+    prompt: "consent",
+    scope: [
+      "https://www.googleapis.com/auth/gmail.modify",
+      "https://www.googleapis.com/auth/gmail.send",
+      "https://www.googleapis.com/auth/userinfo.email",
+    ],
+    state,
+  });
+  res.json({ url });
+});
+
+payablesRouter.delete("/gmail/disconnect", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  await connectMongo();
+  await InboxToken.deleteOne({ uid: actor.uid });
+  await audit(actor.uid, undefined, "gmail_disconnected", actor);
   res.json({ success: true });
 });
 

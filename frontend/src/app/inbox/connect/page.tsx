@@ -7,7 +7,7 @@ import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { Suspense } from "react";
 import Link from "next/link";
 
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+const API = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
 function ConnectContent() {
   const router = useRouter();
@@ -72,14 +72,15 @@ function ConnectContent() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Could not generate authorization URL.");
       if (data.url) {
         window.location.href = data.url;
       } else {
         setErrorMsg("Could not generate authorization URL. Please try again.");
         setConnecting(false);
       }
-    } catch {
-      setErrorMsg("Something went wrong. Check your connection and try again.");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Something went wrong. Check your connection and try again.");
       setConnecting(false);
     }
   }

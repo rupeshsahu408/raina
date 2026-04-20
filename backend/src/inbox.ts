@@ -1,5 +1,6 @@
 import express from "express";
 import multer from "multer";
+import { createHmac } from "crypto";
 import { google } from "googleapis";
 import { connectMongo } from "./db";
 import { InboxToken } from "./models/InboxToken";
@@ -16,9 +17,29 @@ const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID ?? "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET ?? "";
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI ?? "https://raina-1.onrender.com/inbox/callback";
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY ?? "";
+const OAUTH_STATE_SECRET = process.env.OAUTH_STATE_SECRET || GOOGLE_CLIENT_SECRET || "payables-dev-oauth-state";
 
 function makeOAuth2Client() {
   return new google.auth.OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI);
+}
+
+function parsePayablesOAuthState(state?: string) {
+  if (!state?.startsWith("payables:")) return null;
+  const raw = state.slice("payables:".length);
+  const [body, sig] = raw.split(".");
+  if (!body || !sig) return null;
+  const expected = createHmac("sha256", OAUTH_STATE_SECRET).update(body).digest("base64url");
+  if (sig !== expected) return null;
+  const parsed = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
+  if (!parsed?.workspaceUid || parsed.product !== "payables") return null;
+  if (parsed.createdAt && Date.now() - Number(parsed.createdAt) > 10 * 60 * 1000) return null;
+  return parsed as { workspaceUid: string; actorUid?: string; returnTo?: string };
+}
+
+function safeFrontendRedirect(path?: string) {
+  const frontend = process.env.FRONTEND_URL ?? "https://www.plyndrox.app";
+  const safePath = path?.startsWith("/payables") || path?.startsWith("/inbox") ? path : "/inbox/dashboard";
+  return `${frontend}${safePath}`;
 }
 
 async function getAuthenticatedClient(uid: string) {
@@ -594,6 +615,11 @@ inboxPublicRouter.get("/callback", async (req, res) => {
     return res.redirect(`${process.env.FRONTEND_URL ?? "https://www.plyndrox.app"}/inbox/connect?error=missing_params`);
   }
   try {
+    const payablesState = parsePayablesOAuthState(uid);
+    if (uid.startsWith("payables:") && !payablesState) {
+      return res.redirect(safeFrontendRedirect("/payables/onboarding?gmail=oauth_failed"));
+    }
+    const tokenUid = payablesState?.workspaceUid ?? uid;
     const oauth2 = makeOAuth2Client();
     const { tokens } = await oauth2.getToken(code);
     oauth2.setCredentials(tokens);
@@ -601,21 +627,28 @@ inboxPublicRouter.get("/callback", async (req, res) => {
     const { data } = await oauth2info.userinfo.get();
     const email = data.email ?? "";
     await connectMongo();
+    const existing = await InboxToken.findOne({ uid: tokenUid });
     await InboxToken.findOneAndUpdate(
-      { uid },
+      { uid: tokenUid },
       {
-        uid,
+        uid: tokenUid,
         email,
-        accessToken: tokens.access_token ?? "",
-        refreshToken: tokens.refresh_token ?? "",
+        accessToken: tokens.access_token ?? existing?.accessToken ?? "",
+        refreshToken: tokens.refresh_token ?? existing?.refreshToken ?? "",
         expiresAt: tokens.expiry_date ?? Date.now() + 3600_000,
       },
       { upsert: true, new: true }
     );
+    if (payablesState) {
+      return res.redirect(safeFrontendRedirect(payablesState.returnTo ?? "/payables/onboarding?gmail=connected"));
+    }
     return res.redirect(`${process.env.FRONTEND_URL ?? "https://www.plyndrox.app"}/inbox/dashboard`);
   } catch (err: any) {
     console.error("[inbox/callback]", err);
-    return res.redirect(`${process.env.FRONTEND_URL ?? "https://www.plyndrox.app"}/inbox/connect?error=oauth_failed`);
+    const redirect = String(uid).startsWith("payables:")
+      ? safeFrontendRedirect("/payables/onboarding?gmail=oauth_failed")
+      : `${process.env.FRONTEND_URL ?? "https://www.plyndrox.app"}/inbox/connect?error=oauth_failed`;
+    return res.redirect(redirect);
   }
 });
 
