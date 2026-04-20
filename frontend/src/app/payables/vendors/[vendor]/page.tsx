@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { payablesHeaders } from "@/lib/payablesApi";
 import { onAuthStateChanged } from "firebase/auth";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
@@ -95,14 +96,14 @@ export default function VendorDetailPage() {
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uid, setUid] = useState<string | null>(null);
+  const [user, setUser] = useState<{ uid: string; token: string } | null>(null);
 
-  const fetchInvoices = useCallback(async (userId: string) => {
+  const fetchInvoices = useCallback(async (currentUser: { uid: string; token: string }) => {
     setLoading(true);
     try {
       const res = await fetch(
         `${BACKEND}/payables/vendors/${encodeURIComponent(vendorName)}/invoices`,
-        { headers: { "x-uid": userId } }
+        { headers: payablesHeaders(currentUser) }
       );
       const data = await res.json();
       setInvoices(data.invoices ?? []);
@@ -114,8 +115,8 @@ export default function VendorDetailPage() {
     try {
       const auth = getFirebaseAuth();
       if (!auth) return;
-      const unsub = onAuthStateChanged(auth, (user) => {
-        if (user) { setUid(user.uid); fetchInvoices(user.uid); }
+      const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) { const currentUser = { uid: firebaseUser.uid, token: await firebaseUser.getIdToken() }; setUser(currentUser); fetchInvoices(currentUser); }
         else router.push("/payables/dashboard");
       });
       return () => unsub();

@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { payablesHeaders } from "@/lib/payablesApi";
 import { onAuthStateChanged } from "firebase/auth";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
@@ -130,15 +131,15 @@ export default function VendorsPage() {
   const [vendors, setVendors] = useState<VendorStat[]>([]);
   const [filtered, setFiltered] = useState<VendorStat[]>([]);
   const [loading, setLoading] = useState(true);
-  const [uid, setUid] = useState<string | null>(null);
+  const [user, setUser] = useState<{ uid: string; token: string } | null>(null);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"spend" | "count" | "recent">("spend");
   const [filter, setFilter] = useState<"all" | "new" | "trusted">("all");
 
-  const fetchVendors = useCallback(async (userId: string) => {
+  const fetchVendors = useCallback(async (currentUser: { uid: string; token: string }) => {
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND}/payables/vendors`, { headers: { "x-uid": userId } });
+      const res = await fetch(`${BACKEND}/payables/vendors`, { headers: payablesHeaders(currentUser) });
       const data = await res.json();
       setVendors(data.vendors ?? []);
     } catch { setVendors([]); }
@@ -149,8 +150,8 @@ export default function VendorsPage() {
     try {
       const auth = getFirebaseAuth();
       if (!auth) return;
-      const unsub = onAuthStateChanged(auth, (user) => {
-        if (user) { setUid(user.uid); fetchVendors(user.uid); }
+      const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+        if (firebaseUser) { const currentUser = { uid: firebaseUser.uid, token: await firebaseUser.getIdToken() }; setUser(currentUser); fetchVendors(currentUser); }
         else router.push("/payables/dashboard");
       });
       return () => unsub();
@@ -195,7 +196,7 @@ export default function VendorsPage() {
               </div>
             </div>
           </div>
-          <button onClick={() => uid && fetchVendors(uid)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
+          <button onClick={() => user && fetchVendors(user)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-600 border border-gray-200 hover:bg-gray-50 transition-colors">
             <RefreshCw className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Refresh</span>
           </button>

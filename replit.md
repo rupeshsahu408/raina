@@ -11,19 +11,21 @@ A multi-platform AI suite with four AI systems:
 - **Frontend** (`frontend/`) — Next.js 16 PWA, port 5000
 - **Backend** (`backend/`) — Express API, port 8080
 
-## Payables AI (Separate SaaS Product — Phases 1–3 Complete)
-- Route: `/payables`, `/payables/onboarding`, `/payables/dashboard`, `/payables/upload`, `/payables/invoice/[id]`
+## Payables AI (Separate SaaS Product — Phases 1–4 Complete)
+- Route: `/payables`, `/payables/onboarding`, `/payables/dashboard`, `/payables/upload`, `/payables/invoice/[id]`, `/payables/payments`
 - AI-powered Accounts Payable automation for small businesses
 - **Landing page** (`/payables`): Full redesign — hero with mock dashboard preview, stats bar, "How it works" 4-step section, features grid, testimonials, transparent roadmap ("What's included"), CTA section
 - **Onboarding** (`/payables/onboarding`): 3-step wizard — Company info (name, industry, monthly invoice volume) → Gmail connect check → Completion. Company setup is persisted server-side through `/payables/company`, with localStorage kept only as a compatibility hint.
 - **Dashboard** (`/payables/dashboard`): Stats cards (total, pending, approved, processing), upcoming due dates sidebar, overdue alert banners, quick actions sidebar, in-app notifications, Gmail fetch, filter tabs (all/ready/pending/approved/rejected/processing), invoice list with status badges, overdue highlighting, document indicators, approval assignment, and bulk actions.
 - **Upload** (`/payables/upload`): Drag-and-drop redesign — clear idle/file-selected/uploading/success states, file type badges, tips panel
 - **Invoice detail** (`/payables/invoice/[id]`): Full view, original document preview, AI confidence meter, edit/approve/reject/paid workflow, line items table, rejection modal with reason, comments, approver metadata, and audit trail.
-- **Team & roles** (`/payables/team`): Invite finance teammates, assign owner/admin/approver/member roles, and manage pending/active/disabled member states.
+- **Team & roles** (`/payables/team`): Invite finance teammates, assign owner/admin/approver/viewer roles, and manage pending/active/disabled member states.
 - **Approval rules** (`/payables/rules`): Amount/currency-based approval routing to named approvers. Matching invoices store assigned approver/rule metadata.
-- Backend: `backend/src/payables.ts` — routes at `/payables/*`, uses NVIDIA AI extraction, stores company profiles, team members, approval rules, in-app/email notifications via connected Gmail, audit logs, and invoice source documents.
+- **Payment Queue & Cash Intelligence** (`/payables/payments`): Prioritized payment queue, overdue/due-soon urgency, early-payment discount alerts, cash forecast buckets, vendor spend analytics, CSV/PDF reporting, and QuickBooks/Xero export-ready accounting sync controls.
+- Backend: `backend/src/payables.ts` — routes at `/payables/*`, uses NVIDIA AI extraction, stores company profiles, team members, approval rules, in-app/email notifications via connected Gmail, audit logs, invoice source documents, accounting sync metadata, payment queue, cash forecast, spend analytics, and report exports.
 - Database model: `backend/src/models/Invoice.ts` with flags, source document metadata, assigned approval fields, comments, and approval/audit metadata.
 - All pages use `getFirebaseAuth()` from `@/lib/firebaseClient` (not raw `getAuth()`) to prevent initialization errors
+- Payables workspaces now support owner/admin/approver/viewer access controls using the authenticated Firebase user plus a workspace header, preserving client/server separation for team collaboration.
 - Phase 1 scope: No auto-payment; user reviews and pays manually. Gmail connection reuses existing InboxToken setup.
 
 ## Smart Ledger (Separate SaaS Product)

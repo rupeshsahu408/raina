@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { payablesHeaders } from "@/lib/payablesApi";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
@@ -127,7 +128,7 @@ export default function UploadPage() {
 
       const res = await fetch(`${BACKEND}/payables/upload`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "x-uid": uid },
+        headers: payablesHeaders({ uid, token }),
         body: form,
       });
 

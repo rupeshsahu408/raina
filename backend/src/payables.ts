@@ -53,7 +53,7 @@ const PayablesTeamMember =
         uid: { type: String, required: true, index: true },
         email: { type: String, required: true },
         name: String,
-        role: { type: String, enum: ["owner", "admin", "approver", "member"], default: "member" },
+        role: { type: String, enum: ["owner", "admin", "approver", "member", "viewer"], default: "viewer" },
         status: { type: String, enum: ["pending", "active", "disabled"], default: "pending" },
         inviteToken: { type: String, index: true },
         invitedBy: String,
@@ -118,24 +118,70 @@ const PayablesNotification =
     )
   );
 
+const PayablesAccountingConnection =
+  mongoose.models.PayablesAccountingConnection ||
+  mongoose.model(
+    "PayablesAccountingConnection",
+    new Schema(
+      {
+        uid: { type: String, required: true, index: true },
+        provider: { type: String, enum: ["quickbooks", "xero"], required: true },
+        status: { type: String, enum: ["not_connected", "export_ready", "connected"], default: "not_connected" },
+        externalCompanyName: String,
+        lastSyncAt: Date,
+        lastSyncCount: Number,
+        lastSyncMode: String,
+        settings: Schema.Types.Mixed,
+      },
+      { timestamps: true }
+    )
+  );
+
 function makeOAuth2Client() {
   return new google.auth.OAuth2(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI);
 }
 
-function getActor(req: express.Request, res: express.Response) {
+async function getActor(req: express.Request, res: express.Response) {
   const authUid = (req as any).user?.uid as string | undefined;
-  const authEmail = (req as any).user?.email as string | undefined;
-  const headerUid = req.headers["x-uid"] as string | undefined;
-  const uid = authUid || headerUid;
-  if (!uid) {
+  const authEmail = ((req as any).user?.email as string | undefined)?.toLowerCase();
+  const requestedWorkspace = ((req.headers["x-payables-workspace-uid"] as string | undefined) || (req.headers["x-uid"] as string | undefined) || authUid || "").trim();
+  if (!authUid || !requestedWorkspace) {
     res.status(401).json({ error: "Unauthorized" });
     return null;
   }
-  if (authUid && headerUid && authUid !== headerUid) {
-    res.status(403).json({ error: "Authenticated user does not match requested workspace" });
+  if (requestedWorkspace === authUid) {
+    return { uid: requestedWorkspace, actorUid: authUid, email: authEmail, role: "owner", memberStatus: "active" };
+  }
+  await connectMongo();
+  const member = await PayablesTeamMember.findOne({ uid: requestedWorkspace, email: authEmail, status: "active" }).lean();
+  if (!member) {
+    res.status(403).json({ error: "You do not have access to this Payables workspace" });
     return null;
   }
-  return { uid, email: authEmail };
+  return { uid: requestedWorkspace, actorUid: authUid, email: authEmail, role: (member as any).role ?? "member", memberStatus: (member as any).status ?? "active" };
+}
+
+function canManageWorkspace(actor: { role?: string }) {
+  return ["owner", "admin"].includes(actor.role ?? "");
+}
+
+function canApproveInvoice(actor: { role?: string; email?: string }, invoice: any) {
+  if (["owner", "admin"].includes(actor.role ?? "")) return true;
+  if ((actor.role ?? "") !== "approver") return false;
+  if (!invoice.assignedApproverEmail) return true;
+  return !!actor.email && String(invoice.assignedApproverEmail).toLowerCase() === actor.email.toLowerCase();
+}
+
+function ensureManageWorkspace(actor: { role?: string }, res: express.Response) {
+  if (canManageWorkspace(actor)) return true;
+  res.status(403).json({ error: "Only workspace admins can perform this action" });
+  return false;
+}
+
+function ensureCanApprove(actor: { role?: string; email?: string }, invoice: any, res: express.Response) {
+  if (canApproveInvoice(actor, invoice)) return true;
+  res.status(403).json({ error: "Only an admin or assigned approver can perform this action" });
+  return false;
 }
 
 function sanitizeInvoice(invoice: any) {
@@ -437,8 +483,56 @@ function collectParts(payload: any, parts: any[] = []) {
   return parts;
 }
 
+function invoiceAmount(invoice: any) {
+  return Number(invoice.total ?? invoice.paymentAmount ?? 0) || 0;
+}
+
+function daysFromNow(date?: string | Date) {
+  if (!date) return null;
+  return Math.ceil((new Date(date).getTime() - Date.now()) / 86400000);
+}
+
+function paymentUrgency(invoice: any) {
+  const days = daysFromNow(invoice.dueDate);
+  if (days == null) return "unscheduled";
+  if (days < 0) return "overdue";
+  if (days <= 3) return "due_soon";
+  if (days <= 14) return "upcoming";
+  return "later";
+}
+
+function earlyPaymentDiscount(invoice: any) {
+  const text = [invoice.notes, invoice.rawText].filter(Boolean).join(" ").toLowerCase();
+  const amount = invoiceAmount(invoice);
+  const match = text.match(/(\d+(?:\.\d+)?)\s*%[^.]{0,40}(?:early|within|days|net)/i) || text.match(/(\d+(?:\.\d+)?)\s*\/\s*10/);
+  if (!match || !amount) return null;
+  const percent = Math.min(Number(match[1]), 50);
+  if (!percent) return null;
+  const estimatedSavings = Math.round((amount * percent) / 100);
+  return { percent, estimatedSavings, message: "Possible " + percent + "% early-payment discount detected. Estimated savings: " + (invoice.currency ?? "USD") + " " + estimatedSavings.toLocaleString() + "." };
+}
+
+function startOfDay(date = new Date()) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function summarizeInvoices(invoices: any[]) {
+  return invoices.reduce((sum, inv) => sum + invoiceAmount(inv), 0);
+}
+
+function csvEscape(value: unknown) {
+  const str = String(value ?? "");
+  return /[",\n]/.test(str) ? '"' + str.replace(/"/g, '""') + '"' : str;
+}
+
 payablesRouter.get("/company", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
@@ -450,8 +544,9 @@ payablesRouter.get("/company", async (req, res) => {
 });
 
 payablesRouter.put("/company", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   try {
     const companyName = String(req.body.companyName ?? "").trim();
     if (!companyName) return res.status(400).json({ error: "Company name is required" });
@@ -482,7 +577,7 @@ payablesRouter.put("/company", async (req, res) => {
 });
 
 payablesRouter.get("/team", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   await connectMongo();
   const members = await PayablesTeamMember.find({ uid: actor.uid }).sort({ role: 1, createdAt: -1 }).lean();
@@ -490,8 +585,9 @@ payablesRouter.get("/team", async (req, res) => {
 });
 
 payablesRouter.post("/team", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   try {
     const email = String(req.body.email ?? "").trim().toLowerCase();
     if (!email || !email.includes("@")) return res.status(400).json({ error: "Valid email is required" });
@@ -502,7 +598,7 @@ payablesRouter.post("/team", async (req, res) => {
         uid: actor.uid,
         email,
         name: String(req.body.name ?? "").trim(),
-        role: ["admin", "approver", "member"].includes(req.body.role) ? req.body.role : "member",
+        role: ["admin", "approver", "viewer", "member"].includes(req.body.role) ? (req.body.role === "member" ? "viewer" : req.body.role) : "viewer",
         status: "pending",
         inviteToken: randomUUID(),
         invitedBy: actor.email ?? actor.uid,
@@ -517,7 +613,7 @@ payablesRouter.post("/team", async (req, res) => {
 });
 
 payablesRouter.post("/team/accept", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     const token = String(req.body.token ?? "").trim();
@@ -539,11 +635,12 @@ payablesRouter.post("/team/accept", async (req, res) => {
 });
 
 payablesRouter.patch("/team/:id", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   await connectMongo();
   const update: Record<string, unknown> = {};
-  if (["admin", "approver", "member"].includes(req.body.role)) update.role = req.body.role;
+  if (["admin", "approver", "viewer", "member"].includes(req.body.role)) update.role = req.body.role === "member" ? "viewer" : req.body.role;
   if (["pending", "active", "disabled"].includes(req.body.status)) update.status = req.body.status;
   if (typeof req.body.name === "string") update.name = req.body.name.trim();
   const member = await PayablesTeamMember.findOneAndUpdate({ _id: req.params.id, uid: actor.uid, role: { $ne: "owner" } }, update, { new: true });
@@ -553,8 +650,9 @@ payablesRouter.patch("/team/:id", async (req, res) => {
 });
 
 payablesRouter.delete("/team/:id", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   await connectMongo();
   await PayablesTeamMember.deleteOne({ _id: req.params.id, uid: actor.uid, role: { $ne: "owner" } });
   await audit(actor.uid, undefined, "team_member_removed", actor, { memberId: req.params.id });
@@ -562,7 +660,7 @@ payablesRouter.delete("/team/:id", async (req, res) => {
 });
 
 payablesRouter.get("/approval-rules", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   await connectMongo();
   const rules = await PayablesApprovalRule.find({ uid: actor.uid }).sort({ minAmount: 1 }).lean();
@@ -570,8 +668,9 @@ payablesRouter.get("/approval-rules", async (req, res) => {
 });
 
 payablesRouter.post("/approval-rules", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   try {
     const name = String(req.body.name ?? "").trim();
     const approverEmail = String(req.body.approverEmail ?? "").trim().toLowerCase();
@@ -595,8 +694,9 @@ payablesRouter.post("/approval-rules", async (req, res) => {
 });
 
 payablesRouter.patch("/approval-rules/:id", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   await connectMongo();
   const allowed = ["name", "minAmount", "maxAmount", "currency", "approverEmail", "approverName", "active"];
   const update: Record<string, unknown> = {};
@@ -608,8 +708,9 @@ payablesRouter.patch("/approval-rules/:id", async (req, res) => {
 });
 
 payablesRouter.delete("/approval-rules/:id", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   await connectMongo();
   await PayablesApprovalRule.deleteOne({ _id: req.params.id, uid: actor.uid });
   await audit(actor.uid, undefined, "approval_rule_deleted", actor, { ruleId: req.params.id });
@@ -617,7 +718,7 @@ payablesRouter.delete("/approval-rules/:id", async (req, res) => {
 });
 
 payablesRouter.get("/notifications", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   await connectMongo();
   const notifications = await PayablesNotification.find({ uid: actor.uid }).sort({ createdAt: -1 }).limit(50).lean();
@@ -626,7 +727,7 @@ payablesRouter.get("/notifications", async (req, res) => {
 });
 
 payablesRouter.post("/notifications/mark-read", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   await connectMongo();
   await PayablesNotification.updateMany({ uid: actor.uid, readAt: { $exists: false } }, { $set: { readAt: new Date() } });
@@ -634,8 +735,9 @@ payablesRouter.post("/notifications/mark-read", async (req, res) => {
 });
 
 payablesRouter.post("/upload", upload.single("invoice"), async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   try {
     if (!req.file) return res.status(400).json({ error: "No file provided" });
     await connectMongo();
@@ -672,8 +774,9 @@ payablesRouter.post("/upload", upload.single("invoice"), async (req, res) => {
 });
 
 payablesRouter.post("/fetch-gmail", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   try {
     await connectMongo();
     let auth: Awaited<ReturnType<typeof getGmailClient>>;
@@ -761,12 +864,13 @@ payablesRouter.post("/fetch-gmail", async (req, res) => {
 });
 
 payablesRouter.post("/invoices/bulk-action", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     const ids = Array.isArray(req.body.ids) ? req.body.ids : [];
     const action = req.body.action;
     if (!ids.length || !["approve", "reject", "paid", "delete", "analyze"].includes(action)) return res.status(400).json({ error: "Select invoices and a valid action" });
+    if (["paid", "delete"].includes(action) && !ensureManageWorkspace(actor, res)) return;
     await connectMongo();
     let updated = 0;
     if (action === "delete") {
@@ -775,6 +879,7 @@ payablesRouter.post("/invoices/bulk-action", async (req, res) => {
     } else {
       const invoices = await Invoice.find({ uid: actor.uid, _id: { $in: ids } });
       for (const invoice of invoices as any[]) {
+        if (["approve", "reject"].includes(action) && !canApproveInvoice(actor, invoice)) continue;
         if (action === "approve") { invoice.status = "approved"; invoice.approvedAt = new Date(); invoice.approvedBy = actor.email ?? actor.uid; }
         if (action === "reject") { invoice.status = "rejected"; invoice.rejectedAt = new Date(); invoice.rejectionReason = req.body.reason ?? "Bulk rejected"; }
         if (action === "paid") { invoice.status = "paid"; invoice.paidAt = new Date(); invoice.paymentAmount = invoice.total; }
@@ -792,7 +897,7 @@ payablesRouter.post("/invoices/bulk-action", async (req, res) => {
 });
 
 payablesRouter.get("/invoices", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
@@ -819,7 +924,7 @@ payablesRouter.get("/invoices", async (req, res) => {
 });
 
 payablesRouter.get("/invoices/stats", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
@@ -848,7 +953,7 @@ payablesRouter.get("/invoices/stats", async (req, res) => {
 });
 
 payablesRouter.get("/invoices/:id/document", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   await connectMongo();
   const invoice = (await Invoice.findOne({ _id: req.params.id, uid: actor.uid }).select("originalFileData originalMimeType originalFileName")) as any;
@@ -859,7 +964,7 @@ payablesRouter.get("/invoices/:id/document", async (req, res) => {
 });
 
 payablesRouter.get("/invoices/:id", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
@@ -874,12 +979,15 @@ payablesRouter.get("/invoices/:id", async (req, res) => {
 });
 
 payablesRouter.patch("/invoices/:id", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
     const invoice = await Invoice.findOne({ _id: req.params.id, uid: actor.uid });
     if (!invoice) return res.status(404).json({ error: "Invoice not found" });
+    if (req.body.status === "approved" || req.body.status === "rejected") { if (!ensureCanApprove(actor, invoice, res)) return; }
+    else if (req.body.status === "paid") { if (!ensureManageWorkspace(actor, res)) return; }
+    else if (!canManageWorkspace(actor) && (actor.role ?? "") !== "approver") return res.status(403).json({ error: "Only admins and approvers can edit invoices" });
     const allowed = ["vendor", "vendorEmail", "invoiceNumber", "invoiceDate", "dueDate", "currency", "subtotal", "tax", "total", "lineItems", "notes", "status", "assignedApproverEmail", "assignedApproverName"];
     for (const key of allowed) if (req.body[key] !== undefined) (invoice as any)[key] = req.body[key];
     if (req.body.status === "approved") { (invoice as any).approvedAt = new Date(); (invoice as any).approvedBy = actor.email ?? actor.uid; }
@@ -895,8 +1003,9 @@ payablesRouter.patch("/invoices/:id", async (req, res) => {
 });
 
 payablesRouter.delete("/invoices/:id", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   try {
     await connectMongo();
     await Invoice.deleteOne({ _id: req.params.id, uid: actor.uid });
@@ -909,7 +1018,7 @@ payablesRouter.delete("/invoices/:id", async (req, res) => {
 });
 
 payablesRouter.post("/invoices/:id/comments", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   const body = String(req.body.body ?? "").trim();
   if (!body) return res.status(400).json({ error: "Comment is required" });
@@ -922,12 +1031,13 @@ payablesRouter.post("/invoices/:id/comments", async (req, res) => {
 });
 
 payablesRouter.post("/invoices/:id/approve", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
     const invoice = await Invoice.findOne({ _id: req.params.id, uid: actor.uid });
     if (!invoice) return res.status(404).json({ error: "Invoice not found" });
+    if (!ensureCanApprove(actor, invoice, res)) return;
     (invoice as any).status = "approved";
     (invoice as any).approvedAt = new Date();
     (invoice as any).approvedBy = actor.email ?? actor.uid;
@@ -942,12 +1052,13 @@ payablesRouter.post("/invoices/:id/approve", async (req, res) => {
 });
 
 payablesRouter.post("/invoices/:id/reject", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
     const invoice = await Invoice.findOne({ _id: req.params.id, uid: actor.uid });
     if (!invoice) return res.status(404).json({ error: "Invoice not found" });
+    if (!ensureCanApprove(actor, invoice, res)) return;
     (invoice as any).status = "rejected";
     (invoice as any).rejectedAt = new Date();
     (invoice as any).rejectionReason = req.body.reason ?? "";
@@ -962,8 +1073,9 @@ payablesRouter.post("/invoices/:id/reject", async (req, res) => {
 });
 
 payablesRouter.post("/invoices/:id/paid", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
   try {
     await connectMongo();
     const invoice = await Invoice.findOne({ _id: req.params.id, uid: actor.uid });
@@ -981,7 +1093,7 @@ payablesRouter.post("/invoices/:id/paid", async (req, res) => {
 });
 
 payablesRouter.post("/invoices/:id/analyze", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
@@ -996,8 +1108,145 @@ payablesRouter.post("/invoices/:id/analyze", async (req, res) => {
   }
 });
 
+  payablesRouter.get("/payment-queue", async (req, res) => {
+    const actor = await getActor(req, res);
+    if (!actor) return;
+    try {
+      await connectMongo();
+      const invoices = await Invoice.find({ uid: actor.uid, status: { $in: ["approved", "pending_approval", "extracted"] } })
+        .select("-originalFileData")
+        .sort({ dueDate: 1, total: -1 })
+        .lean();
+      const queue = invoices.map((invoice: any) => ({ ...invoice, daysUntilDue: daysFromNow(invoice.dueDate), urgency: paymentUrgency(invoice), discountAlert: earlyPaymentDiscount(invoice) }));
+      const approved = queue.filter((invoice: any) => invoice.status === "approved");
+      const discounts = queue.filter((invoice: any) => invoice.discountAlert);
+      res.json({ queue, summary: { totalQueued: queue.length, approvedReady: approved.length, approvedAmount: summarizeInvoices(approved), discountOpportunities: discounts.length, estimatedSavings: discounts.reduce((sum: number, inv: any) => sum + (inv.discountAlert?.estimatedSavings ?? 0), 0) } });
+    } catch (err) {
+      console.error("Payables payment queue error:", err);
+      res.status(500).json({ error: "Failed to fetch payment queue" });
+    }
+  });
+
+  payablesRouter.get("/cash-forecast", async (req, res) => {
+    const actor = await getActor(req, res);
+    if (!actor) return;
+    try {
+      await connectMongo();
+      const invoices = await Invoice.find({ uid: actor.uid, status: { $nin: ["paid", "rejected"] }, dueDate: { $exists: true, $nin: [null, ""] } })
+        .select("-originalFileData")
+        .lean();
+      const today = startOfDay();
+      const in7 = addDays(today, 7);
+      const in30 = addDays(today, 30);
+      const in60 = addDays(today, 60);
+      const bucket = (from: Date | null, to: Date | null) => invoices.filter((invoice: any) => {
+        const due = new Date(invoice.dueDate);
+        if (from && due < from) return false;
+        if (to && due > to) return false;
+        return true;
+      });
+      const overdue = invoices.filter((invoice: any) => new Date(invoice.dueDate) < today);
+      const thisWeek = bucket(today, in7);
+      const thisMonth = bucket(today, in30);
+      const nextMonth = bucket(addDays(in30, 1), in60);
+      const later = bucket(addDays(in60, 1), null);
+      res.json({
+        generatedAt: new Date().toISOString(),
+        buckets: {
+          overdue: { count: overdue.length, amount: summarizeInvoices(overdue), invoices: overdue },
+          thisWeek: { count: thisWeek.length, amount: summarizeInvoices(thisWeek), invoices: thisWeek },
+          thisMonth: { count: thisMonth.length, amount: summarizeInvoices(thisMonth), invoices: thisMonth },
+          nextMonth: { count: nextMonth.length, amount: summarizeInvoices(nextMonth), invoices: nextMonth },
+          later: { count: later.length, amount: summarizeInvoices(later), invoices: later },
+        },
+      });
+    } catch (err) {
+      console.error("Payables forecast error:", err);
+      res.status(500).json({ error: "Failed to build cash forecast" });
+    }
+  });
+
+  payablesRouter.get("/spend-analytics", async (req, res) => {
+    const actor = await getActor(req, res);
+    if (!actor) return;
+    try {
+      await connectMongo();
+      const [byVendor, byMonth, byStatus] = await Promise.all([
+        Invoice.aggregate([{ $match: { uid: actor.uid, total: { $gt: 0 } } }, { $group: { _id: "$vendor", vendor: { $first: "$vendor" }, amount: { $sum: "$total" }, count: { $sum: 1 } } }, { $sort: { amount: -1 } }, { $limit: 12 }]),
+        Invoice.aggregate([{ $match: { uid: actor.uid, total: { $gt: 0 } } }, { $group: { _id: { $substr: ["$invoiceDate", 0, 7] }, amount: { $sum: "$total" }, count: { $sum: 1 } } }, { $sort: { _id: 1 } }]),
+        Invoice.aggregate([{ $match: { uid: actor.uid } }, { $group: { _id: "$status", amount: { $sum: { $ifNull: ["$total", 0] } }, count: { $sum: 1 } } }, { $sort: { count: -1 } }]),
+      ]);
+      res.json({ byVendor, byMonth, byStatus });
+    } catch (err) {
+      console.error("Payables analytics error:", err);
+      res.status(500).json({ error: "Failed to fetch spend analytics" });
+    }
+  });
+
+  payablesRouter.get("/accounting/status", async (req, res) => {
+    const actor = await getActor(req, res);
+    if (!actor) return;
+    await connectMongo();
+    const records = await PayablesAccountingConnection.find({ uid: actor.uid }).lean();
+    const providers = ["quickbooks", "xero"].map((provider) => records.find((record: any) => record.provider === provider) ?? { provider, status: "not_connected" });
+    res.json({ providers });
+  });
+
+  payablesRouter.post("/accounting/connect", async (req, res) => {
+    const actor = await getActor(req, res);
+    if (!actor) return;
+    if (!ensureManageWorkspace(actor, res)) return;
+    const provider = String(req.body.provider ?? "").toLowerCase();
+    if (!["quickbooks", "xero"].includes(provider)) return res.status(400).json({ error: "Provider must be quickbooks or xero" });
+    await connectMongo();
+    const hasOAuthConfig = provider === "quickbooks" ? !!(process.env.QUICKBOOKS_CLIENT_ID && process.env.QUICKBOOKS_CLIENT_SECRET) : !!(process.env.XERO_CLIENT_ID && process.env.XERO_CLIENT_SECRET);
+    const connection = await PayablesAccountingConnection.findOneAndUpdate(
+      { uid: actor.uid, provider },
+      { uid: actor.uid, provider, status: hasOAuthConfig ? "connected" : "export_ready", externalCompanyName: String(req.body.externalCompanyName ?? "").trim(), settings: { configuredBy: actor.email ?? actor.actorUid, configuredAt: new Date().toISOString(), mode: hasOAuthConfig ? "oauth_configured" : "export_ready" } },
+      { upsert: true, new: true }
+    );
+    await audit(actor.uid, undefined, "accounting_connection_updated", actor, { provider, status: (connection as any).status });
+    res.json({ connection, oauthConfigured: hasOAuthConfig });
+  });
+
+  payablesRouter.post("/accounting/sync", async (req, res) => {
+    const actor = await getActor(req, res);
+    if (!actor) return;
+    if (!ensureManageWorkspace(actor, res)) return;
+    const provider = String(req.body.provider ?? "").toLowerCase();
+    if (!["quickbooks", "xero"].includes(provider)) return res.status(400).json({ error: "Provider must be quickbooks or xero" });
+    await connectMongo();
+    const invoices = await Invoice.find({ uid: actor.uid, status: { $in: ["approved", "paid"] } }).select("-originalFileData").lean();
+    const connection = await PayablesAccountingConnection.findOneAndUpdate(
+      { uid: actor.uid, provider },
+      { uid: actor.uid, provider, status: "export_ready", lastSyncAt: new Date(), lastSyncCount: invoices.length, lastSyncMode: "export_ready" },
+      { upsert: true, new: true }
+    );
+    await audit(actor.uid, undefined, "accounting_sync_prepared", actor, { provider, invoiceCount: invoices.length });
+    res.json({ success: true, provider, mode: (connection as any).lastSyncMode, syncedCount: invoices.length, invoices });
+  });
+
+  payablesRouter.get("/reports/summary.csv", async (req, res) => {
+    const actor = await getActor(req, res);
+    if (!actor) return;
+    await connectMongo();
+    const invoices = await Invoice.find({ uid: actor.uid }).select("-originalFileData").sort({ dueDate: 1 }).lean();
+    const rows = [["Vendor", "Invoice Number", "Status", "Due Date", "Currency", "Total", "Source"], ...invoices.map((invoice: any) => [invoice.vendor, invoice.invoiceNumber, invoice.status, invoice.dueDate, invoice.currency, invoice.total, invoice.source])];
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=payables-report.csv");
+    res.send(rows.map((row) => row.map(csvEscape).join(",")).join("\n"));
+  });
+
+  payablesRouter.get("/reports/summary", async (req, res) => {
+    const actor = await getActor(req, res);
+    if (!actor) return;
+    await connectMongo();
+    const invoices = await Invoice.find({ uid: actor.uid }).select("-originalFileData").sort({ dueDate: 1 }).lean();
+    res.json({ invoices, totals: { count: invoices.length, amount: summarizeInvoices(invoices as any[]) } });
+  });
+  
 payablesRouter.get("/vendors", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
@@ -1029,7 +1278,7 @@ payablesRouter.get("/vendors", async (req, res) => {
 });
 
 payablesRouter.get("/vendors/:vendorName/invoices", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
@@ -1042,7 +1291,7 @@ payablesRouter.get("/vendors/:vendorName/invoices", async (req, res) => {
 });
 
 payablesRouter.get("/gmail/status", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();
@@ -1054,7 +1303,7 @@ payablesRouter.get("/gmail/status", async (req, res) => {
 });
 
 payablesRouter.get("/flags", async (req, res) => {
-  const actor = getActor(req, res);
+  const actor = await getActor(req, res);
   if (!actor) return;
   try {
     await connectMongo();

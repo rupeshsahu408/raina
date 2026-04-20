@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { payablesHeaders, setPayablesWorkspaceUid } from "@/lib/payablesApi";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
-type Member = { _id: string; email: string; name?: string; role: "owner" | "admin" | "approver" | "member"; status: "pending" | "active" | "disabled"; inviteToken?: string };
+type Member = { _id: string; email: string; name?: string; role: "owner" | "admin" | "approver" | "member" | "viewer"; status: "pending" | "active" | "disabled"; inviteToken?: string };
 
 export default function PayablesTeamPage() {
   const [user, setUser] = useState<{ uid: string; token: string } | null>(null);
@@ -37,7 +38,7 @@ export default function PayablesTeamPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const res = await fetch(`${BACKEND}/payables/team`, { headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid } });
+      const res = await fetch(`${BACKEND}/payables/team`, { headers: payablesHeaders(user) });
       if (res.ok) setMembers((await res.json()).members ?? []);
     } finally {
       setLoading(false);
@@ -52,11 +53,12 @@ export default function PayablesTeamPage() {
     if (!token) return;
     fetch(`${BACKEND}/payables/team/accept`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+      headers: payablesHeaders(user, true),
       body: JSON.stringify({ token }),
     })
       .then((res) => res.json().then((data) => ({ ok: res.ok, data })))
       .then(({ ok, data }) => {
+        if (ok && data.workspaceUid) setPayablesWorkspaceUid(data.workspaceUid);
         setInviteMessage(ok ? "Invite accepted. You can now collaborate in this Payables workspace." : (data.error ?? "Could not accept invite."));
         return load();
       })
@@ -70,7 +72,7 @@ export default function PayablesTeamPage() {
     try {
       const res = await fetch(`${BACKEND}/payables/team`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        headers: payablesHeaders(user, true),
         body: JSON.stringify({ email, name, role }),
       });
       const data = await res.json();
@@ -88,7 +90,7 @@ export default function PayablesTeamPage() {
     if (!user) return;
     await fetch(`${BACKEND}/payables/team/${id}`, {
       method: "PATCH",
-      headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+      headers: payablesHeaders(user, true),
       body: JSON.stringify(patch),
     });
     await load();
@@ -96,7 +98,7 @@ export default function PayablesTeamPage() {
 
   const removeMember = async (id: string) => {
     if (!user || !confirm("Remove this team member?")) return;
-    await fetch(`${BACKEND}/payables/team/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid } });
+    await fetch(`${BACKEND}/payables/team/${id}`, { method: "DELETE", headers: payablesHeaders(user) });
     await load();
   };
 

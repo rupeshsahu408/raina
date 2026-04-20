@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { payablesHeaders } from "@/lib/payablesApi";
 
 function ArrowLeftIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>;
@@ -139,7 +140,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     if (!user) return;
     try {
       const res = await fetch(`${BACKEND}/payables/invoices/${id}`, {
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+        headers: payablesHeaders(user),
       });
       if (!res.ok) throw new Error("Not found");
       const data = await res.json();
@@ -155,7 +156,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     if (!user || !invoice?.hasDocument) return;
     let objectUrl = "";
     fetch(`${BACKEND}/payables/invoices/${id}/document`, {
-      headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+      headers: payablesHeaders(user),
     })
       .then((res) => res.ok ? res.blob() : null)
       .then((blob) => {
@@ -173,7 +174,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     try {
       const res = await fetch(`${BACKEND}/payables/invoices/${id}`, {
         method: "PATCH",
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        headers: payablesHeaders(user, true),
         body: JSON.stringify(editData),
       });
       if (!res.ok) throw new Error("Save failed");
@@ -187,7 +188,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     setActionLoading(true);
     try {
       const res = await fetch(`${BACKEND}/payables/invoices/${id}/approve`, {
-        method: "POST", headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+        method: "POST", headers: payablesHeaders(user),
       });
       setInvoice(await res.json());
     } finally { setActionLoading(false); }
@@ -199,7 +200,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     try {
       await fetch(`${BACKEND}/payables/invoices/${id}/reject`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        headers: payablesHeaders(user, true),
         body: JSON.stringify({ reason: rejectReason }),
       });
       await fetchInvoice();
@@ -213,7 +214,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     try {
       const res = await fetch(`${BACKEND}/payables/invoices/${id}/paid`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        headers: payablesHeaders(user, true),
         body: JSON.stringify({ paymentAmount: parseFloat(paymentAmount) || invoice.total }),
       });
       setInvoice(await res.json());
@@ -226,7 +227,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     setAnalysing(true);
     try {
       const res = await fetch(`${BACKEND}/payables/invoices/${id}/analyze`, {
-        method: "POST", headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+        method: "POST", headers: payablesHeaders(user),
       });
       setInvoice(await res.json());
     } finally { setAnalysing(false); }
@@ -238,7 +239,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
     try {
       const res = await fetch(`${BACKEND}/payables/invoices/${id}/comments`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        headers: payablesHeaders(user, true),
         body: JSON.stringify({ body: comment }),
       });
       if (res.ok) {
@@ -253,7 +254,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
   const deleteInvoice = async () => {
     if (!user || !confirm("Delete this invoice? This cannot be undone.")) return;
     await fetch(`${BACKEND}/payables/invoices/${id}`, {
-      method: "DELETE", headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+      method: "DELETE", headers: payablesHeaders(user),
     });
     router.push("/payables/dashboard");
   };

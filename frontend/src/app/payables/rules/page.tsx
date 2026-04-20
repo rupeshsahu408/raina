@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { payablesHeaders } from "@/lib/payablesApi";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
@@ -29,7 +30,7 @@ export default function PayablesRulesPage() {
     }
   }, []);
 
-  const headers = user ? { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" } : undefined;
+  const headers = user ? payablesHeaders(user, true) : undefined;
 
   const load = async () => {
     if (!user) return;
@@ -69,7 +70,7 @@ export default function PayablesRulesPage() {
 
   const deleteRule = async (id: string) => {
     if (!user || !confirm("Delete this approval rule?")) return;
-    await fetch(`${BACKEND}/payables/approval-rules/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid } });
+    await fetch(`${BACKEND}/payables/approval-rules/${id}`, { method: "DELETE", headers: payablesHeaders(user) });
     await load();
   };
 

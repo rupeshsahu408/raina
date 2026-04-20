@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { payablesHeaders } from "@/lib/payablesApi";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
@@ -80,6 +81,11 @@ const BuildingIcon = (p: React.SVGProps<SVGSVGElement>) => (
 const FlagIcon = (p: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
     <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" x2="4" y1="22" y2="15" />
+  </svg>
+);
+const CreditCard = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <rect width="20" height="14" x="2" y="5" rx="2" /><line x1="2" x2="22" y1="10" y2="10" />
   </svg>
 );
 
@@ -198,7 +204,7 @@ export default function PayablesDashboard() {
     if (!user) return;
     setLoading(true);
     try {
-      const headers: Record<string, string> = { Authorization: `Bearer ${user.token}`, "x-uid": user.uid };
+      const headers = payablesHeaders(user);
       const filterParam = activeFilter === "flagged" ? "all&flagged=true" : `status=${activeFilter}`;
       const searchParam = search.trim() ? `&q=${encodeURIComponent(search.trim())}` : "";
       const [invRes, allInvRes, statsRes, gmailRes, companyRes, notificationRes] = await Promise.all([
@@ -238,7 +244,7 @@ export default function PayablesDashboard() {
     try {
       const res = await fetch(`${BACKEND}/payables/fetch-gmail`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+        headers: payablesHeaders(user),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed");
@@ -267,7 +273,7 @@ export default function PayablesDashboard() {
     try {
       const res = await fetch(`${BACKEND}/payables/invoices/bulk-action`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        headers: payablesHeaders(user, true),
         body: JSON.stringify({ ids: selectedIds, action }),
       });
       if (!res.ok) throw new Error("Bulk action failed");
@@ -653,6 +659,9 @@ export default function PayablesDashboard() {
                   {fetchingGmail ? "Fetching from Gmail…" : "Fetch Gmail invoices"}
                   <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
                 </button>
+                <Link href="/payables/payments" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
+                  <CreditCard className="h-4 w-4 text-violet-500" /> Payment queue
+                </Link>
                 <Link href="/payables/vendors" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
                   <BuildingIcon className="h-4 w-4 text-blue-500" />
                   Vendor directory

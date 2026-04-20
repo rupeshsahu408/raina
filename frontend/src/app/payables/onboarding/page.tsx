@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
+import { payablesHeaders } from "@/lib/payablesApi";
 
 const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL ?? "https://raina-1.onrender.com";
 
@@ -111,7 +112,7 @@ export default function PayablesOnboarding() {
   useEffect(() => {
     if (!user) return;
     fetch(`${BACKEND}/payables/company`, {
-      headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+      headers: payablesHeaders(user),
     })
       .then((res) => res.ok ? res.json() : null)
       .then((profile) => {
@@ -132,7 +133,7 @@ export default function PayablesOnboarding() {
     setCheckingGmail(true);
     try {
       const res = await fetch(`${BACKEND}/payables/gmail/status`, {
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid },
+        headers: payablesHeaders(user),
       });
       const data = await res.json();
       setGmailConnected(data.connected);
@@ -163,7 +164,7 @@ export default function PayablesOnboarding() {
     try {
       const res = await fetch(`${BACKEND}/payables/company`, {
         method: "PUT",
-        headers: { Authorization: `Bearer ${user.token}`, "x-uid": user.uid, "Content-Type": "application/json" },
+        headers: payablesHeaders(user, true),
         body: JSON.stringify({ companyName, industry, monthlyInvoices }),
       });
       const data = await res.json().catch(() => ({}));
