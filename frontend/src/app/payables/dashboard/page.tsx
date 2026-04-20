@@ -455,7 +455,7 @@ export default function PayablesDashboard() {
               <UploadIcon className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Upload</span>
             </Link>
-            <button onClick={fetchData} className="rounded-full border border-gray-200 bg-white p-2 text-gray-400 shadow-sm transition hover:border-gray-300 hover:text-[#1d2226]" title="Refresh">
+            <button onClick={() => fetchData()} className="rounded-full border border-gray-200 bg-white p-2 text-gray-400 shadow-sm transition hover:border-gray-300 hover:text-[#1d2226]" title="Refresh">
               <RefreshIcon className="h-4 w-4" />
             </button>
           </div>
