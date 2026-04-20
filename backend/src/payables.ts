@@ -8,6 +8,8 @@ import { Invoice, InvoiceFlag } from "./models/Invoice";
 import { InboxToken } from "./models/InboxToken";
 import { UserProfile } from "./models/UserProfile";
 import { callNvidiaChatCompletions } from "./ai/nvidiaClient";
+import * as pdfParseModule from "pdf-parse";
+const pdfParse = (pdfParseModule as any).default ?? pdfParseModule;
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -260,57 +262,104 @@ async function getGmailClient(uid: string) {
   return oauth2;
 }
 
-async function extractInvoiceDataFromImage(imageBase64: string, mimeType: string): Promise<Record<string, unknown>> {
-  const prompt = `You are an expert accounts payable AI. Extract all invoice data from this document and return ONLY a valid JSON object with these exact fields (use null for missing fields):
+const INVOICE_EXTRACTION_PROMPT = `You are an expert accounts payable AI. Extract all invoice data from this document and return ONLY a valid JSON object with these exact fields (use null for missing fields):
 {
-  "vendor": "string - company name",
+  "vendor": "string - company or sender name",
   "vendorEmail": "string - vendor email if present",
   "invoiceNumber": "string",
   "invoiceDate": "string - ISO date YYYY-MM-DD",
   "dueDate": "string - ISO date YYYY-MM-DD",
-  "currency": "string - 3-letter code like USD, INR, EUR",
+  "currency": "string - 3-letter ISO code like USD, INR, EUR",
   "subtotal": number,
   "tax": number,
   "total": number,
   "lineItems": [{"description": "string", "quantity": number, "unitPrice": number, "amount": number}],
-  "notes": "string - any payment terms or notes",
+  "notes": "string - payment terms or notes",
   "confidence": number between 0 and 1
 }
 Currency rules:
-- Return ISO 4217 currency codes only.
+- Return ISO 4217 codes only.
 - Use INR for ₹, Rs, Rs., INR, rupee, rupees, or amounts labelled "(Rs.)".
 - Use USD for $, US$, dollar, dollars; EUR for €, euro; GBP for £, pound; AED for dirham; SGD for S$; AUD/CAD only when explicitly shown.
 - Never default to USD. If the document does not show a currency, return null.
 Amount rules:
-- Return numeric values only, with currency symbols, commas, and Indian grouping removed.
-- For Indian formatted amounts like 1,74,500.00, return 174500.
-- Prefer "Total Due", "Grand Total", or "Amount Due" for total.
-- Treat GST/tax rows as tax, not as red flags.
-Validation rules:
-- A normal invoice with vendor, invoice number, dates, line items, GST/tax, bank details, and total due is valid even if it is a new vendor.
-- Do not invent fraud/risk issues. Only extract the fields.
-Return ONLY the JSON. No markdown. No explanation.`;
+- Return numeric values only — remove currency symbols and commas including Indian grouping (e.g. 1,74,500.00 → 174500).
+- Prefer "Total Due", "Grand Total", or "Amount Due" for the total field.
+- Treat GST/IGST/CGST/SGST rows as tax, not as additional items.
+Extraction rules:
+- Look carefully throughout the entire document for the vendor/company name, invoice number, and total amount.
+- The vendor name is typically at the top of the invoice or in a "From:" / "Bill From:" section.
+- The invoice number may be labelled "Invoice No.", "Invoice #", "Inv No.", "Bill No.", etc.
+- A valid invoice with vendor, invoice number, dates, line items, taxes, and a total is completely normal — do not flag it.
+Return ONLY the JSON object. No markdown, no code blocks, no explanation.`;
 
+function extractJsonFromResponse(response: string): Record<string, unknown> | null {
+  const cleaned = response.trim();
+  const match = cleaned.match(/\{[\s\S]*\}/);
+  if (!match) return null;
   try {
+    return JSON.parse(match[0]);
+  } catch {
+    const repaired = match[0]
+      .replace(/,\s*\}/g, "}")
+      .replace(/,\s*\]/g, "]")
+      .replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+    try {
+      return JSON.parse(repaired);
+    } catch {
+      return null;
+    }
+  }
+}
+
+async function extractInvoiceDataFromImage(imageBase64: string, mimeType: string): Promise<Record<string, unknown>> {
+  try {
+    if (mimeType === "application/pdf") {
+      const pdfBuffer = Buffer.from(imageBase64, "base64");
+      let pdfText = "";
+      try {
+        const pdfData = await pdfParse(pdfBuffer);
+        pdfText = pdfData.text?.trim() ?? "";
+      } catch (pdfErr) {
+        console.warn("[payables] pdf-parse failed:", pdfErr instanceof Error ? pdfErr.message : pdfErr);
+      }
+      if (!pdfText || pdfText.length < 30) {
+        console.warn("[payables] PDF text extraction returned insufficient text, falling back to base64 text approach");
+        pdfText = "";
+      }
+      const content = pdfText
+        ? `${INVOICE_EXTRACTION_PROMPT}\n\nINVOICE TEXT CONTENT:\n${pdfText.slice(0, 6000)}`
+        : `${INVOICE_EXTRACTION_PROMPT}\n\n[This PDF could not be parsed as text. Do your best to extract invoice fields from context.]`;
+      const response = await callNvidiaChatCompletions({
+        apiKey: NVIDIA_API_KEY,
+        model: "nvidia/llama-3.1-nemotron-70b-instruct",
+        messages: [{ role: "user", content }],
+        temperature: 0.1,
+        max_tokens: 2000,
+      });
+      const parsed = extractJsonFromResponse(response);
+      if (!parsed) return {};
+      return normalizeExtractedData(parsed, `${response}\n${pdfText}`);
+    }
+
     const response = await callNvidiaChatCompletions({
       apiKey: NVIDIA_API_KEY,
-      model: mimeType.startsWith("image/") ? "meta/llama-3.2-11b-vision-instruct" : "nvidia/llama-3.1-nemotron-70b-instruct",
+      model: "meta/llama-3.2-90b-vision-instruct",
       messages: [{
         role: "user",
-        content: mimeType.startsWith("image/")
-          ? [
-              { type: "text", text: prompt },
-              { type: "image_url", image_url: { url: `data:${mimeType};base64,${imageBase64}` } },
-            ]
-          : `${prompt}\n\n[DOCUMENT DATA:${mimeType}:base64]${imageBase64}`,
+        content: [
+          { type: "text", text: INVOICE_EXTRACTION_PROMPT },
+          { type: "image_url", image_url: { url: `data:${mimeType};base64,${imageBase64}` } },
+        ],
       }],
-      max_tokens: 1500,
+      temperature: 0.1,
+      max_tokens: 2000,
     });
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return {};
-    const parsed = JSON.parse(jsonMatch[0]);
+    const parsed = extractJsonFromResponse(response);
+    if (!parsed) return {};
     return normalizeExtractedData(parsed, response);
-  } catch {
+  } catch (err) {
+    console.error("[payables] extractInvoiceDataFromImage error:", err instanceof Error ? err.message : err);
     return {};
   }
 }
@@ -323,37 +372,17 @@ async function extractInvoiceDataFromText(text: string): Promise<Record<string, 
       messages: [
         {
           role: "user",
-          content: `You are an expert accounts payable AI. Extract all invoice data from this email/text and return ONLY a valid JSON object with these exact fields (use null for missing fields):
-{
-  "vendor": "string - company/sender name",
-  "vendorEmail": "string - sender email",
-  "invoiceNumber": "string",
-  "invoiceDate": "string - ISO date YYYY-MM-DD",
-  "dueDate": "string - ISO date YYYY-MM-DD",
-  "currency": "string - 3-letter code like USD, INR, EUR",
-  "subtotal": number,
-  "tax": number,
-  "total": number,
-  "lineItems": [{"description": "string", "quantity": number, "unitPrice": number, "amount": number}],
-  "notes": "string - any payment terms or notes",
-  "confidence": number between 0 and 1
-}
-Currency rules: return ISO 4217 codes only. Use INR for ₹/Rs/rupees, USD for $, EUR for €, GBP for £. Never default to USD when currency is not shown; use null.
-Amount rules: return numbers only. Remove currency symbols and commas, including Indian grouping such as 1,74,500.00 => 174500.
-
-EMAIL/TEXT TO EXTRACT FROM:
-${text.slice(0, 4000)}
-
-Return ONLY the JSON. No markdown. No explanation.`,
+          content: `${INVOICE_EXTRACTION_PROMPT}\n\nEMAIL/TEXT TO EXTRACT FROM:\n${text.slice(0, 6000)}`,
         },
       ],
-      max_tokens: 1000,
+      temperature: 0.1,
+      max_tokens: 2000,
     });
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return {};
-    const parsed = JSON.parse(jsonMatch[0]);
+    const parsed = extractJsonFromResponse(response);
+    if (!parsed) return {};
     return normalizeExtractedData(parsed, `${response}\n${text}`);
-  } catch {
+  } catch (err) {
+    console.error("[payables] extractInvoiceDataFromText error:", err instanceof Error ? err.message : err);
     return {};
   }
 }
