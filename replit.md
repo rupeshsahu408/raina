@@ -13,6 +13,7 @@ A multi-platform AI suite with four AI systems:
 
 ## Payables AI (Separate SaaS Product — Phase 1 Settings + Emails Complete)
 - Route: `/payables`, `/payables/onboarding`, `/payables/dashboard`, `/payables/upload`, `/payables/invoice/[id]`, `/payables/payments`
+- Production scope: all future Plyndrox Payables work should be implemented inside the existing product at `https://www.plyndrox.app/payables`; frontend is deployed on Vercel at `https://www.plyndrox.app/` and backend is deployed on Render at `https://raina-1.onrender.com/`.
 - AI-powered Accounts Payable automation for small businesses
 - **Landing page** (`/payables`): Full redesign — hero with mock dashboard preview, stats bar, "How it works" 4-step section, features grid, testimonials, transparent roadmap ("What's included"), CTA section
 - **Onboarding** (`/payables/onboarding`): 3-step wizard — Company info (name, industry, monthly invoice volume) → Gmail connect check → Completion. Company setup is persisted server-side through `/payables/company`, with localStorage kept only as a compatibility hint. Gmail connection now starts through authenticated `GET /payables/gmail/auth-url`, signs OAuth state for the Payables workspace, completes through the existing Google callback, stores tokens in `InboxToken`, and redirects back to Payables.
