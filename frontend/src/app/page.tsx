@@ -1,11 +1,12 @@
 import { AuthRedirect } from "@/components/AuthRedirect";
 import Link from "next/link";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
-import { DemoChatWidgetLazy, IntroVideoSectionLazy, FeedbackReportSectionLazy } from "@/components/LandingDynamicSections";
+import { DemoChatWidgetLazy, IntroVideoSectionLazy, FeedbackReportSectionLazy, PlyndroxAssistantLazy } from "@/components/LandingDynamicSections";
 
 const DemoChatWidget = DemoChatWidgetLazy;
 const IntroVideoSection = IntroVideoSectionLazy;
 const FeedbackReportSection = FeedbackReportSectionLazy;
+const PlyndroxAssistant = PlyndroxAssistantLazy;
 
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -548,6 +549,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      <PlyndroxAssistant />
     </div>
   );
 }

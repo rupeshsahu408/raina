@@ -19,3 +19,8 @@ export const FeedbackReportSectionLazy = dynamic(
   () => import("@/components/FeedbackReportSection").then((m) => ({ default: m.FeedbackReportSection })),
   { ssr: false, loading: () => null }
 );
+
+export const PlyndroxAssistantLazy = dynamic(
+  () => import("@/components/PlyndroxAssistant").then((m) => ({ default: m.PlyndroxAssistant })),
+  { ssr: false, loading: () => null }
+);
