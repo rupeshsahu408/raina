@@ -2390,6 +2390,55 @@ payablesRouter.get("/vendors/:vendorName/invoices", async (req, res) => {
   }
 });
 
+/* Supplier history — fuzzy name match OR exact email match + aggregated stats */
+payablesRouter.get("/supplier-history", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    await connectMongo();
+    const { name, email } = req.query as { name?: string; email?: string };
+    if (!name && !email) return res.status(400).json({ error: "name or email required" });
+
+    const orClauses: Record<string, unknown>[] = [];
+    if (name && name.trim()) {
+      orClauses.push({ vendor: new RegExp(name.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i") });
+    }
+    if (email && email.trim()) {
+      orClauses.push({ vendorEmail: email.trim().toLowerCase() });
+    }
+
+    const invoices = await Invoice.find({ uid: actor.uid, $or: orClauses })
+      .select("-originalFileData")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const totalSpend = invoices.reduce((s: number, inv: any) => s + (inv.total ?? 0), 0);
+    const statusCounts: Record<string, number> = {};
+    for (const inv of invoices) {
+      const st = (inv as any).status ?? "unknown";
+      statusCounts[st] = (statusCounts[st] ?? 0) + 1;
+    }
+    const avgInvoice = invoices.length > 0 ? totalSpend / invoices.length : 0;
+    const latestInvoice = invoices[0] as any;
+    const currencies = [...new Set(invoices.map((i: any) => i.currency).filter(Boolean))];
+
+    res.json({
+      invoices,
+      stats: {
+        totalInvoices: invoices.length,
+        totalSpend,
+        avgInvoice,
+        statusCounts,
+        currencies,
+        latestDate: latestInvoice?.invoiceDate ?? latestInvoice?.createdAt,
+        latestInvoiceNumber: latestInvoice?.invoiceNumber,
+      },
+    });
+  } catch {
+    res.status(500).json({ error: "Failed to fetch supplier history" });
+  }
+});
+
 payablesRouter.get("/gmail/status", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;

@@ -85,6 +85,26 @@ const ListIcon = (p: React.SVGProps<SVGSVGElement>) => (
     <line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" />
   </svg>
 );
+const XIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+const TrendingUpIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />
+  </svg>
+);
+const ClockIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+const FlagIcon = (p: React.SVGProps<SVGSVGElement>) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" y1="22" x2="4" y2="15" />
+  </svg>
+);
 
 /* ─── Types ─── */
 interface GmailEmail {
@@ -108,6 +128,33 @@ interface Stats {
   pending: number;
   processing: number;
   completed: number;
+}
+
+interface SupplierInvoice {
+  _id: string;
+  invoiceNumber?: string;
+  vendor?: string;
+  vendorEmail?: string;
+  total?: number;
+  currency?: string;
+  invoiceDate?: string;
+  dueDate?: string;
+  status?: string;
+  createdAt?: string;
+  flags?: Array<{ type: string; message: string }>;
+}
+
+interface SupplierHistoryData {
+  invoices: SupplierInvoice[];
+  stats: {
+    totalInvoices: number;
+    totalSpend: number;
+    avgInvoice: number;
+    statusCounts: Record<string, number>;
+    currencies: string[];
+    latestDate?: string;
+    latestInvoiceNumber?: string;
+  };
 }
 
 interface SupplierGroup {
@@ -284,8 +331,217 @@ function EmailCard({
   );
 }
 
+/* ─── Supplier History Panel (slide-over) ─── */
+function SupplierHistoryPanel({
+  group,
+  user,
+  onClose,
+}: {
+  group: SupplierGroup;
+  user: { uid: string; token: string };
+  onClose: () => void;
+}) {
+  const [data, setData] = useState<SupplierHistoryData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const color = avatarColor(group.name);
+  const init = initials(group.name);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    const params = new URLSearchParams();
+    params.set("name", group.name);
+    if (group.email) params.set("email", group.email);
+    fetch(`${BACKEND}/payables/supplier-history?${params}`, { headers: payablesHeaders(user) })
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) throw new Error(d.error);
+        setData(d);
+      })
+      .catch((e) => setError(e.message || "Failed to load history"))
+      .finally(() => setLoading(false));
+  }, [group.key]);
+
+  const statusColors: Record<string, string> = {
+    paid:             "bg-green-50 text-green-700 border-green-200",
+    approved:         "bg-blue-50 text-blue-700 border-blue-200",
+    pending_approval: "bg-amber-50 text-amber-700 border-amber-200",
+    rejected:         "bg-red-50 text-red-700 border-red-200",
+    processing:       "bg-violet-50 text-violet-700 border-violet-200",
+    extracted:        "bg-cyan-50 text-cyan-700 border-cyan-200",
+  };
+  const statusLabel: Record<string, string> = {
+    paid: "Paid", approved: "Approved", pending_approval: "Pending", rejected: "Rejected",
+    processing: "Processing", extracted: "Extracted",
+  };
+
+  const fmt = (n: number, cur: string) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: cur || "INR", maximumFractionDigits: 0 }).format(n);
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[2px]" onClick={onClose} />
+      {/* Panel */}
+      <div className="fixed inset-y-0 right-0 z-50 flex w-full flex-col bg-white shadow-2xl sm:max-w-md">
+        {/* Panel header */}
+        <div className={`flex items-center gap-4 border-b border-gray-100 px-5 py-4`}>
+          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${color} text-white text-sm font-bold shadow`}>
+            {init}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-bold text-gray-900 text-base truncate">{group.name}</h2>
+            <p className="text-xs text-gray-400 truncate">{group.email}</p>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+            <XIcon className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Spinner size="h-6 w-6" />
+              <p className="text-sm text-gray-400">Loading invoice history...</p>
+            </div>
+          ) : error ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
+          ) : !data || data.stats.totalInvoices === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100">
+                <BuildingIcon className="h-7 w-7 text-gray-300" />
+              </div>
+              <p className="font-medium text-gray-600">No processed invoices yet</p>
+              <p className="text-sm text-gray-400 max-w-xs">
+                Once you fetch and process emails from this supplier, their invoices will appear here.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Stats summary */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-2xl border border-gray-100 bg-gray-50 p-3 text-center">
+                  <div className="text-xs text-gray-400 mb-1">Invoices</div>
+                  <div className="text-xl font-bold text-gray-900">{data.stats.totalInvoices}</div>
+                </div>
+                <div className="rounded-2xl border border-violet-100 bg-violet-50 p-3 text-center">
+                  <div className="text-xs text-violet-500 mb-1">Total Spend</div>
+                  <div className="text-base font-bold text-violet-700 leading-tight">
+                    {fmt(data.stats.totalSpend, data.stats.currencies[0] || "INR")}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 p-3 text-center">
+                  <div className="text-xs text-blue-400 mb-1">Avg Invoice</div>
+                  <div className="text-base font-bold text-blue-700 leading-tight">
+                    {fmt(data.stats.avgInvoice, data.stats.currencies[0] || "INR")}
+                  </div>
+                </div>
+              </div>
+
+              {/* Status breakdown pills */}
+              {Object.keys(data.stats.statusCounts).length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Status Breakdown</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.entries(data.stats.statusCounts).map(([st, cnt]) => (
+                      <span key={st} className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusColors[st] ?? "bg-gray-50 text-gray-600 border-gray-200"}`}>
+                        {statusLabel[st] ?? st} · {cnt}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Invoice timeline */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Invoice History</p>
+                <div className="space-y-2">
+                  {data.invoices.map((inv) => {
+                    const stCls = statusColors[inv.status ?? ""] ?? "bg-gray-50 text-gray-600 border-gray-200";
+                    const stLabel = statusLabel[inv.status ?? ""] ?? inv.status ?? "Unknown";
+                    const currency = inv.currency || data.stats.currencies[0] || "INR";
+                    return (
+                      <div key={inv._id} className="rounded-xl border border-gray-100 bg-white p-3 hover:border-violet-200 hover:shadow-sm transition-all">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {inv.invoiceNumber && (
+                                <span className="text-xs font-bold text-gray-800">#{inv.invoiceNumber}</span>
+                              )}
+                              <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${stCls}`}>
+                                {stLabel}
+                              </span>
+                              {inv.flags && inv.flags.length > 0 && (
+                                <span className="flex items-center gap-1 text-xs text-amber-600">
+                                  <FlagIcon className="h-3 w-3" />
+                                  {inv.flags.length} flag{inv.flags.length !== 1 ? "s" : ""}
+                                </span>
+                              )}
+                            </div>
+                            <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
+                              {inv.invoiceDate && (
+                                <span className="flex items-center gap-1">
+                                  <ClockIcon className="h-3 w-3" />
+                                  {new Date(inv.invoiceDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "2-digit" })}
+                                </span>
+                              )}
+                              {inv.dueDate && (
+                                <span className={new Date(inv.dueDate) < new Date() && inv.status !== "paid" ? "text-red-500 font-medium" : ""}>
+                                  Due {new Date(inv.dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            {inv.total != null && (
+                              <div className="text-sm font-bold text-gray-900">
+                                {fmt(inv.total, currency)}
+                              </div>
+                            )}
+                            <Link
+                              href={`/payables/invoice/${inv._id}`}
+                              className="mt-1 flex items-center gap-0.5 justify-end text-xs text-violet-600 hover:text-violet-700 font-medium"
+                            >
+                              View <ExternalLinkIcon className="h-3 w-3" />
+                            </Link>
+                          </div>
+                        </div>
+                        {/* Show flags inline */}
+                        {inv.flags && inv.flags.length > 0 && (
+                          <div className="mt-2 space-y-1">
+                            {inv.flags.map((f, i) => (
+                              <p key={i} className="text-xs text-amber-700 bg-amber-50 rounded-lg px-2 py-1">{f.message}</p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Panel footer */}
+        <div className="border-t border-gray-100 px-5 py-4">
+          <Link
+            href={`/payables/dashboard?vendor=${encodeURIComponent(group.name)}`}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-medium text-violet-700 hover:bg-violet-100 transition-colors"
+          >
+            <TrendingUpIcon className="h-4 w-4" />
+            View all {group.name} invoices in dashboard
+          </Link>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function SupplierCard({
-  group, processingIds, deletingIds, supplierFetchingKeys, onFetchOne, onDelete, onFetchSupplier,
+  group, processingIds, deletingIds, supplierFetchingKeys, onFetchOne, onDelete, onFetchSupplier, onViewHistory,
 }: {
   group: SupplierGroup;
   processingIds: Set<string>;
@@ -294,6 +550,7 @@ function SupplierCard({
   onFetchOne: (id: string) => void;
   onDelete: (id: string) => void;
   onFetchSupplier: (group: SupplierGroup) => void;
+  onViewHistory: (group: SupplierGroup) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const color = avatarColor(group.name);
@@ -312,15 +569,24 @@ function SupplierCard({
         }`}
         onClick={() => setExpanded((v) => !v)}
       >
-        {/* Avatar */}
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${color} text-white text-sm font-bold shadow-sm`}>
+        {/* Avatar — click to open history panel */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onViewHistory(group); }}
+          title="View invoice history"
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${color} text-white text-sm font-bold shadow-sm hover:ring-2 hover:ring-offset-1 hover:ring-violet-400 transition-all`}
+        >
           {init}
-        </div>
+        </button>
 
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-bold text-gray-900 text-sm">{group.name}</span>
+            <button
+              onClick={(e) => { e.stopPropagation(); onViewHistory(group); }}
+              className="font-bold text-gray-900 text-sm hover:text-violet-700 hover:underline underline-offset-2 transition-colors text-left"
+            >
+              {group.name}
+            </button>
             {hasActiveProcessing && (
               <span className="flex items-center gap-1.5 text-xs text-violet-700 font-medium bg-violet-50 border border-violet-200 rounded-full px-2 py-0.5">
                 <Spinner size="h-2.5 w-2.5" />
@@ -414,6 +680,7 @@ export default function EmailInboxPage() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [scanResult, setScanResult] = useState<{ discovered: number; message: string } | null>(null);
   const [lastAutoScan, setLastAutoScan] = useState<string | null>(null);
+  const [selectedSupplier, setSelectedSupplier] = useState<SupplierGroup | null>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   function addToast(type: Toast["type"], message: string) {
@@ -758,6 +1025,7 @@ export default function EmailInboxPage() {
                   onFetchOne={handleFetchOne}
                   onDelete={handleDelete}
                   onFetchSupplier={handleFetchSupplier}
+                  onViewHistory={setSelectedSupplier}
                 />
               ))
             )}
@@ -843,6 +1111,15 @@ export default function EmailInboxPage() {
           </div>
         )}
       </div>
+
+      {/* Supplier History Panel */}
+      {selectedSupplier && user && (
+        <SupplierHistoryPanel
+          group={selectedSupplier}
+          user={user}
+          onClose={() => setSelectedSupplier(null)}
+        />
+      )}
 
       {/* Toasts */}
       <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none">
