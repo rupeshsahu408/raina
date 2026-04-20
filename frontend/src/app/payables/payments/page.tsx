@@ -20,11 +20,11 @@ type Provider = { provider: "quickbooks" | "xero"; status: string; externalCompa
 function money(value?: number, currency?: string) {
   const amount = value ?? 0;
   const code = currency?.trim().toUpperCase();
-  if (!code) return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(amount);
+  if (!code) return new Intl.NumberFormat("en-IN", { minimumFractionDigits: Number.isInteger(amount) ? 0 : 2, maximumFractionDigits: 2 }).format(amount);
   try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, maximumFractionDigits: 0 }).format(amount);
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: code, minimumFractionDigits: Number.isInteger(amount) ? 0 : 2, maximumFractionDigits: 2 }).format(amount);
   } catch {
-    return `${code} ${amount.toLocaleString()}`;
+    return `${code} ${amount.toLocaleString("en-IN")}`;
   }
 }
 

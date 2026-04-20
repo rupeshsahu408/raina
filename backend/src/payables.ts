@@ -1294,7 +1294,7 @@ payablesRouter.get("/analyze/action-plan", async (req, res) => {
     healthScore = Math.max(healthScore, 0);
 
     const today = now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
-    const fmtAmt = (n: number) => { if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`; if (n >= 1000) return `₹${(n / 1000).toFixed(0)}K`; return `₹${n.toLocaleString()}`; };
+    const fmtAmt = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency, minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
 
     const summaryLines = [
       `Today is ${today}.`,
@@ -1323,6 +1323,7 @@ Rules:
 - Do NOT use bullet points, headers, or markdown. Plain prose only.
 - Keep it under 80 words total.
 - Sound like a trusted CFO advisor, not a robot.
+- Use exact currency amounts from the summary. Do not abbreviate, round, or approximate money as K, L, lakh, or crore.
 - If everything looks healthy, acknowledge it warmly and suggest a proactive action.`;
 
     let briefing = "";
@@ -1366,10 +1367,12 @@ payablesRouter.get("/scheduler", async (req, res) => {
     }).lean() as any[];
 
     const fmtAmt = (n: number, c = "INR") => {
-      const sym = c === "USD" ? "$" : c === "EUR" ? "€" : c === "GBP" ? "£" : "₹";
-      if (n >= 100000) return `${sym}${(n / 100000).toFixed(1)}L`;
-      if (n >= 1000) return `${sym}${(n / 1000).toFixed(0)}K`;
-      return `${sym}${n.toLocaleString()}`;
+      const code = c?.trim().toUpperCase() || "INR";
+      try {
+        return new Intl.NumberFormat("en-IN", { style: "currency", currency: code, minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
+      } catch {
+        return `${code} ${n.toLocaleString("en-IN")}`;
+      }
     };
 
     type Bucket = { key: string; label: string; color: string; urgency: number; invoices: any[]; total: number };
@@ -1446,7 +1449,7 @@ Write a smart payment scheduling recommendation in 3 short sentences:
 2. Mention any batching opportunities (vendors with multiple invoices = pay together for fewer transactions).
 3. End with a cash flow tip or sequencing advice for the coming weeks.
 
-Rules: Plain prose only, no bullet points, no markdown, second person ("You have…"), under 70 words total.`,
+Rules: Plain prose only, no bullet points, no markdown, second person ("You have…"), under 70 words total. Use exact currency amounts from the summary; do not abbreviate, round, or approximate money as K, L, lakh, or crore.`,
         }],
         temperature: 0.5,
         max_tokens: 180,

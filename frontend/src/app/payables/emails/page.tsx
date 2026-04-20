@@ -377,7 +377,7 @@ function SupplierHistoryPanel({
   };
 
   const fmt = (n: number, cur: string) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: cur || "INR", maximumFractionDigits: 0 }).format(n);
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: cur || "INR", minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
 
   return (
     <>

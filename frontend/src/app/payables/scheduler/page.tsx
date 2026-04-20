@@ -61,10 +61,12 @@ interface SchedulerData {
 
 /* ─── Helpers ─── */
 function fmtAmt(n: number, currency = "INR") {
-  const sym = currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : "₹";
-  if (n >= 100000) return `${sym}${(n / 100000).toFixed(1)}L`;
-  if (n >= 1000) return `${sym}${(n / 1000).toFixed(0)}K`;
-  return `${sym}${n.toLocaleString()}`;
+  const code = currency?.trim().toUpperCase() || "INR";
+  try {
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: code, minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
+  } catch {
+    return `${code} ${n.toLocaleString("en-IN")}`;
+  }
 }
 
 function fmtDate(d: string | null) {

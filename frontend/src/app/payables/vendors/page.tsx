@@ -93,11 +93,11 @@ interface VendorStat {
 function formatCurrency(val: number, currency?: string) {
   if (!val) return "—";
   const code = currency?.trim().toUpperCase();
-  if (!code) return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(val);
+  if (!code) return new Intl.NumberFormat("en-IN", { minimumFractionDigits: Number.isInteger(val) ? 0 : 2, maximumFractionDigits: 2 }).format(val);
   try {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, maximumFractionDigits: 0 }).format(val);
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: code, minimumFractionDigits: Number.isInteger(val) ? 0 : 2, maximumFractionDigits: 2 }).format(val);
   } catch {
-    return `${code} ${val.toLocaleString()}`;
+    return `${code} ${val.toLocaleString("en-IN")}`;
   }
 }
 function timeAgo(dateStr: string) {

@@ -174,9 +174,9 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; dot: string;
 function fmt(n?: number, currency?: string) {
   if (n == null) return "—";
   const code = currency?.trim().toUpperCase();
-  if (!code) return new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
-  try { return new Intl.NumberFormat("en-US", { style: "currency", currency: code, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
-  catch { return `${code} ${n.toLocaleString()}`; }
+  if (!code) return new Intl.NumberFormat("en-IN", { minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
+  try { return new Intl.NumberFormat("en-IN", { style: "currency", currency: code, minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n); }
+  catch { return `${code} ${n.toLocaleString("en-IN")}`; }
 }
 function fmtDate(d?: string) {
   if (!d) return "—";

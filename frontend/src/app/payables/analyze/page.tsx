@@ -40,14 +40,11 @@ function Spinner() {
 /* ─── Formatters ─── */
 function fmt(n: number, cur = "INR") {
   try {
-    if (n >= 10000000) return `${(n / 10000000).toFixed(1)}Cr`;
-    if (n >= 100000) return `${(n / 100000).toFixed(1)}L`;
-    if (n >= 1000) return `${(n / 1000).toFixed(1)}K`;
-    return new Intl.NumberFormat("en-IN", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(n);
+    return new Intl.NumberFormat("en-IN", { style: "currency", currency: cur, minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n);
   } catch { return `${cur} ${n.toLocaleString()}`; }
 }
 function fmtFull(n: number, cur = "INR") {
-  try { return new Intl.NumberFormat("en-IN", { style: "currency", currency: cur, maximumFractionDigits: 0 }).format(n); }
+  try { return new Intl.NumberFormat("en-IN", { style: "currency", currency: cur, minimumFractionDigits: Number.isInteger(n) ? 0 : 2, maximumFractionDigits: 2 }).format(n); }
   catch { return `${cur} ${n.toLocaleString()}`; }
 }
 
