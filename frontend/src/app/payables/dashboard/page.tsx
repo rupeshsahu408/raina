@@ -500,6 +500,13 @@ export default function PayablesDashboard() {
               <span className="hidden sm:inline">{fetchingGmail ? "Opening…" : gmailConnected === false ? "Connect Gmail" : "Fetch Gmail"}</span>
             </button>
             <Link
+              href="/payables/emails"
+              className="flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 shadow-sm transition hover:bg-blue-100 sm:px-4"
+            >
+              <MailIcon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Email Inbox</span>
+            </Link>
+            <Link
               href="/payables/analyze"
               className="flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-bold text-violet-700 shadow-sm transition hover:bg-violet-100 sm:px-4"
             >
@@ -903,6 +910,11 @@ export default function PayablesDashboard() {
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <h3 className="mb-4 text-xs font-black uppercase tracking-wider text-gray-400">Quick actions</h3>
               <div className="space-y-2.5">
+                <Link href="/payables/emails" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-blue-200 hover:bg-blue-50">
+                  <MailIcon className="h-4 w-4 text-blue-500" />
+                  Email Invoice Inbox
+                  <ChevronRightIcon className="ml-auto h-4 w-4 text-gray-300" />
+                </Link>
                 <Link href="/payables/upload" className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-[#1d2226] transition hover:border-violet-200 hover:bg-violet-50">
                   <UploadIcon className="h-4 w-4 text-violet-500" />
                   Upload invoice

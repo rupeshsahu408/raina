@@ -2402,6 +2402,321 @@ payablesRouter.get("/gmail/status", async (req, res) => {
   }
 });
 
+/* ──────────────────────────────────────────────────────────────────────────────
+   EMAIL INBOX DASHBOARD — scan, fetch-one, fetch-all (sequential), delete
+   ────────────────────────────────────────────────────────────────────────────── */
+
+const GmailEmailSchema = new Schema(
+  {
+    uid: { type: String, required: true, index: true },
+    gmailMessageId: { type: String, required: true, index: true },
+    subject: String,
+    from: String,
+    fromEmail: String,
+    snippet: String,
+    receivedAt: Date,
+    hasAttachment: { type: Boolean, default: false },
+    attachmentName: String,
+    attachmentMime: String,
+    status: {
+      type: String,
+      enum: ["pending", "processing", "completed", "failed"],
+      default: "pending",
+    },
+    invoiceId: String,
+    processedAt: Date,
+    errorMessage: String,
+  },
+  { timestamps: true }
+);
+
+GmailEmailSchema.index({ uid: 1, gmailMessageId: 1 }, { unique: true });
+
+const GmailEmail =
+  mongoose.models.GmailEmail ||
+  mongoose.model("GmailEmail", GmailEmailSchema);
+
+function parseEmailAddress(raw: string): { name: string; email: string } {
+  const match = raw.match(/^(.*?)\s*<([^>]+)>$/);
+  if (match) return { name: match[1].trim().replace(/^["']|["']$/g, ""), email: match[2].trim() };
+  return { name: raw.trim(), email: raw.trim() };
+}
+
+async function isInvoiceEmail(subject: string, snippet: string): Promise<boolean> {
+  const combined = `${subject} ${snippet}`.toLowerCase();
+  const keywords = ["invoice", "bill", "payment due", "receipt", "proforma", "purchase order", "statement", "overdue", "amount due", "tax invoice", "credit note", "debit note", "quotation", "payable"];
+  return keywords.some((k) => combined.includes(k));
+}
+
+payablesRouter.get("/email-inbox", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  try {
+    await connectMongo();
+    const search = (req.query.search as string) || "";
+    const statusFilter = (req.query.status as string) || "all";
+    const query: Record<string, unknown> = { uid: actor.uid };
+    if (statusFilter !== "all") query.status = statusFilter;
+    if (search) {
+      query.$or = [
+        { subject: { $regex: search, $options: "i" } },
+        { from: { $regex: search, $options: "i" } },
+        { fromEmail: { $regex: search, $options: "i" } },
+        { snippet: { $regex: search, $options: "i" } },
+      ];
+    }
+    const emails = await GmailEmail.find(query).sort({ receivedAt: -1 }).limit(100).lean();
+    const total = await GmailEmail.countDocuments({ uid: actor.uid });
+    const pending = await GmailEmail.countDocuments({ uid: actor.uid, status: "pending" });
+    const processing = await GmailEmail.countDocuments({ uid: actor.uid, status: "processing" });
+    const completed = await GmailEmail.countDocuments({ uid: actor.uid, status: "completed" });
+    res.json({ emails, stats: { total, pending, processing, completed } });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to load email inbox" });
+  }
+});
+
+payablesRouter.post("/email-inbox/scan", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  try {
+    await connectMongo();
+    let auth: Awaited<ReturnType<typeof getGmailClient>>;
+    try {
+      auth = await getGmailClient(actor.uid);
+    } catch {
+      return res.status(400).json({ error: "Gmail not connected. Please connect your Gmail in the Payables setup." });
+    }
+
+    const gmail = google.gmail({ version: "v1", auth });
+    const listRes = await gmail.users.messages.list({
+      userId: "me",
+      q: "-in:sent newer_than:60d",
+      maxResults: 50,
+    });
+
+    const messages = listRes.data.messages ?? [];
+    let discovered = 0;
+    let skipped = 0;
+
+    for (const msg of messages) {
+      if (!msg.id) continue;
+      const existing = await GmailEmail.findOne({ uid: actor.uid, gmailMessageId: msg.id }).lean();
+      if (existing) { skipped++; continue; }
+
+      try {
+        const full = await gmail.users.messages.get({ userId: "me", id: msg.id, format: "metadata", metadataHeaders: ["Subject", "From", "Date"] });
+        const payload = full.data.payload;
+        const headers = payload?.headers ?? [];
+        const subject = headers.find((h) => h.name === "Subject")?.value ?? "";
+        const fromRaw = headers.find((h) => h.name === "From")?.value ?? "";
+        const dateHeader = headers.find((h) => h.name === "Date")?.value;
+        const snippet = full.data.snippet ?? "";
+
+        const isInvoice = await isInvoiceEmail(subject, snippet);
+        if (!isInvoice) { skipped++; continue; }
+
+        const { name: fromName, email: fromEmail } = parseEmailAddress(fromRaw);
+        const receivedAt = dateHeader ? new Date(dateHeader) : new Date(Number(full.data.internalDate));
+
+        const parts = collectParts(payload);
+        const attachmentPart = parts.find((p: any) => ["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(p.mimeType) && (p.body?.attachmentId || p.body?.data));
+        const hasAttachment = !!attachmentPart;
+        const attachmentName = attachmentPart?.filename || "";
+        const attachmentMime = attachmentPart?.mimeType || "";
+
+        await GmailEmail.create({
+          uid: actor.uid,
+          gmailMessageId: msg.id,
+          subject,
+          from: fromName || fromEmail,
+          fromEmail,
+          snippet,
+          receivedAt,
+          hasAttachment,
+          attachmentName,
+          attachmentMime,
+          status: "pending",
+        });
+        discovered++;
+      } catch {
+        skipped++;
+      }
+    }
+
+    res.json({ success: true, discovered, skipped, message: `Scan complete. Found ${discovered} new invoice email${discovered !== 1 ? "s" : ""}.` });
+  } catch (err) {
+    console.error("[payables] email-inbox scan error:", err);
+    res.status(500).json({ error: "Failed to scan Gmail inbox" });
+  }
+});
+
+payablesRouter.post("/email-inbox/:emailId/process", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  try {
+    await connectMongo();
+    const emailDoc = await GmailEmail.findOne({ _id: req.params.emailId, uid: actor.uid });
+    if (!emailDoc) return res.status(404).json({ error: "Email not found" });
+    if ((emailDoc as any).status === "processing") return res.status(400).json({ error: "This email is already being processed" });
+    if ((emailDoc as any).status === "completed") return res.status(400).json({ error: "This email has already been processed" });
+
+    (emailDoc as any).status = "processing";
+    await emailDoc.save();
+
+    setImmediate(async () => {
+      try {
+        let auth: Awaited<ReturnType<typeof getGmailClient>>;
+        try { auth = await getGmailClient(actor.uid); } catch { (emailDoc as any).status = "failed"; (emailDoc as any).errorMessage = "Gmail not connected"; await emailDoc.save(); return; }
+        const gmail = google.gmail({ version: "v1", auth });
+        const full = await gmail.users.messages.get({ userId: "me", id: (emailDoc as any).gmailMessageId, format: "full" });
+        const payload = full.data.payload;
+        if (!payload) { (emailDoc as any).status = "failed"; (emailDoc as any).errorMessage = "Could not retrieve email content"; await emailDoc.save(); return; }
+        const headers = payload.headers ?? [];
+        const subject = headers.find((h) => h.name === "Subject")?.value ?? "";
+        const from = headers.find((h) => h.name === "From")?.value ?? "";
+        const parts = collectParts(payload);
+        let bodyText = "";
+        for (const part of parts) if (part.mimeType === "text/plain" && part.body?.data) bodyText += decodeGmailData(part.body.data);
+        if (!bodyText && payload.body?.data) bodyText = decodeGmailData(payload.body.data);
+
+        let attachmentData = "";
+        let attachmentMime = "";
+        let attachmentName = "";
+        const attachmentPart = parts.find((p: any) => ["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(p.mimeType) && (p.body?.attachmentId || p.body?.data));
+        if (attachmentPart) {
+          attachmentMime = attachmentPart.mimeType;
+          attachmentName = attachmentPart.filename || subject || "gmail-invoice";
+          if (attachmentPart.body?.data) attachmentData = attachmentPart.body.data.replace(/-/g, "+").replace(/_/g, "/");
+          else if (attachmentPart.body?.attachmentId) {
+            const att = await gmail.users.messages.attachments.get({ userId: "me", messageId: (emailDoc as any).gmailMessageId, id: attachmentPart.body.attachmentId });
+            attachmentData = (att.data.data ?? "").replace(/-/g, "+").replace(/_/g, "/");
+          }
+        }
+
+        const rawText = `Subject: ${subject}\nFrom: ${from}\n\n${bodyText}`;
+        const existingInvoice = await Invoice.findOne({ uid: actor.uid, gmailMessageId: (emailDoc as any).gmailMessageId });
+        let invoice = existingInvoice as any;
+        if (!invoice) {
+          invoice = new Invoice({ uid: actor.uid, source: "gmail", status: "processing", gmailMessageId: (emailDoc as any).gmailMessageId, rawText, originalFileName: attachmentName || subject || "Gmail invoice", originalMimeType: attachmentMime || undefined, originalFileData: attachmentData || undefined }) as any;
+          await invoice.save();
+          await audit(actor.uid, invoice._id.toString(), "gmail_invoice_imported", actor, { subject, from });
+          await notify(actor.uid, { invoiceId: invoice._id.toString(), key: `new:${invoice._id.toString()}`, type: "new_invoice", title: "New Gmail invoice imported", message: `${subject || "A Gmail invoice"} was imported from ${from || "Gmail"} and AI extraction has started.`, severity: "info" });
+        }
+
+        await extractAndApplyInvoice(invoice);
+        await analyzeInvoice(invoice._id.toString(), actor.uid);
+
+        (emailDoc as any).status = "completed";
+        (emailDoc as any).invoiceId = invoice._id.toString();
+        (emailDoc as any).processedAt = new Date();
+        await emailDoc.save();
+      } catch (err: any) {
+        (emailDoc as any).status = "failed";
+        (emailDoc as any).errorMessage = err?.message || "Processing failed";
+        await emailDoc.save();
+      }
+    });
+
+    res.json({ success: true, message: "Processing started" });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to start processing" });
+  }
+});
+
+payablesRouter.post("/email-inbox/process-all", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  try {
+    await connectMongo();
+    const pendingEmails = await GmailEmail.find({ uid: actor.uid, status: "pending" }).sort({ receivedAt: 1 }).lean();
+    if (!pendingEmails.length) return res.json({ success: true, queued: 0, message: "No pending emails to process" });
+
+    const ids = pendingEmails.map((e: any) => e._id.toString());
+    await GmailEmail.updateMany({ _id: { $in: ids } }, { $set: { status: "processing" } });
+
+    setImmediate(async () => {
+      for (const emailMeta of pendingEmails) {
+        const emailDoc = await GmailEmail.findOne({ _id: (emailMeta as any)._id, uid: actor.uid });
+        if (!emailDoc) continue;
+        try {
+          let auth: Awaited<ReturnType<typeof getGmailClient>>;
+          try { auth = await getGmailClient(actor.uid); } catch { (emailDoc as any).status = "failed"; (emailDoc as any).errorMessage = "Gmail not connected"; await emailDoc.save(); continue; }
+          const gmail = google.gmail({ version: "v1", auth });
+          const full = await gmail.users.messages.get({ userId: "me", id: (emailDoc as any).gmailMessageId, format: "full" });
+          const payload = full.data.payload;
+          if (!payload) { (emailDoc as any).status = "failed"; (emailDoc as any).errorMessage = "Could not retrieve email content"; await emailDoc.save(); continue; }
+          const headers = payload.headers ?? [];
+          const subject = headers.find((h) => h.name === "Subject")?.value ?? "";
+          const from = headers.find((h) => h.name === "From")?.value ?? "";
+          const parts = collectParts(payload);
+          let bodyText = "";
+          for (const part of parts) if (part.mimeType === "text/plain" && part.body?.data) bodyText += decodeGmailData(part.body.data);
+          if (!bodyText && payload.body?.data) bodyText = decodeGmailData(payload.body.data);
+
+          let attachmentData = "";
+          let attachmentMime = "";
+          let attachmentName = "";
+          const attachmentPart = parts.find((p: any) => ["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(p.mimeType) && (p.body?.attachmentId || p.body?.data));
+          if (attachmentPart) {
+            attachmentMime = attachmentPart.mimeType;
+            attachmentName = attachmentPart.filename || subject || "gmail-invoice";
+            if (attachmentPart.body?.data) attachmentData = attachmentPart.body.data.replace(/-/g, "+").replace(/_/g, "/");
+            else if (attachmentPart.body?.attachmentId) {
+              const att = await gmail.users.messages.attachments.get({ userId: "me", messageId: (emailDoc as any).gmailMessageId, id: attachmentPart.body.attachmentId });
+              attachmentData = (att.data.data ?? "").replace(/-/g, "+").replace(/_/g, "/");
+            }
+          }
+
+          const rawText = `Subject: ${subject}\nFrom: ${from}\n\n${bodyText}`;
+          const existingInvoice = await Invoice.findOne({ uid: actor.uid, gmailMessageId: (emailDoc as any).gmailMessageId });
+          let invoice = existingInvoice as any;
+          if (!invoice) {
+            invoice = new Invoice({ uid: actor.uid, source: "gmail", status: "processing", gmailMessageId: (emailDoc as any).gmailMessageId, rawText, originalFileName: attachmentName || subject || "Gmail invoice", originalMimeType: attachmentMime || undefined, originalFileData: attachmentData || undefined }) as any;
+            await invoice.save();
+            await audit(actor.uid, invoice._id.toString(), "gmail_invoice_imported", actor, { subject, from });
+          }
+
+          await extractAndApplyInvoice(invoice);
+          await analyzeInvoice(invoice._id.toString(), actor.uid);
+
+          (emailDoc as any).status = "completed";
+          (emailDoc as any).invoiceId = invoice._id.toString();
+          (emailDoc as any).processedAt = new Date();
+          await emailDoc.save();
+
+          await new Promise((r) => setTimeout(r, 1500));
+        } catch (err: any) {
+          (emailDoc as any).status = "failed";
+          (emailDoc as any).errorMessage = err?.message || "Processing failed";
+          await emailDoc.save();
+        }
+      }
+    });
+
+    res.json({ success: true, queued: pendingEmails.length, message: `Started processing ${pendingEmails.length} email${pendingEmails.length !== 1 ? "s" : ""} one by one` });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to start batch processing" });
+  }
+});
+
+payablesRouter.delete("/email-inbox/:emailId", async (req, res) => {
+  const actor = await getActor(req, res);
+  if (!actor) return;
+  if (!ensureManageWorkspace(actor, res)) return;
+  try {
+    await connectMongo();
+    const result = await GmailEmail.deleteOne({ _id: req.params.emailId, uid: actor.uid });
+    if (!result.deletedCount) return res.status(404).json({ error: "Email not found" });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ error: "Failed to delete email" });
+  }
+});
+
 payablesRouter.get("/flags", async (req, res) => {
   const actor = await getActor(req, res);
   if (!actor) return;
