@@ -208,7 +208,7 @@ export default function InboxHealthPage() {
   }
 
   if (authLoading) {
-    return <div className="flex min-h-screen items-center justify-center bg-white"><div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" /></div>;
+    return <div className="flex min-h-screen items-center justify-center bg-white"><div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" /></div>;
   }
 
   const styles = data ? gradeStyles(data.score) : gradeStyles(0);
@@ -224,7 +224,7 @@ export default function InboxHealthPage() {
             Back to Inbox
           </Link>
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-400/15 text-rose-300"><HeartIcon /></span>
+            <span className="flex h-5 w-5 items-center justify-center rounded-2xl bg-rose-400/15 text-rose-300"><HeartIcon /></span>
             <div>
               <h1 className="text-xl font-black tracking-tight">Inbox Health Score</h1>
               <p className="text-xs text-gray-500">Your daily inbox productivity score</p>
@@ -271,7 +271,7 @@ export default function InboxHealthPage() {
                 </>
               ) : (
                 <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"><CheckIcon /></span>
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"><CheckIcon /></span>
                   <p className="text-sm font-semibold text-slate-700">{data.briefing.message}</p>
                 </div>
               )}

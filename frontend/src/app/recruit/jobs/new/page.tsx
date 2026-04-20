@@ -171,7 +171,7 @@ function NewJobContent() {
   }
 
   if (createdJob) {
-    const publicUrl = `https://plyndrox.app/recruit/opportunities/${createdJob.id}`;
+    const publicUrl = `//recruit/opportunities/${createdJob.id}`;
     const whatsappMsg = encodeURIComponent(`We're hiring! Check out this job: ${createdJob.title}\n${publicUrl}`);
 
     function copyLink() {
@@ -273,7 +273,7 @@ function NewJobContent() {
             <div key={s} className="flex items-center gap-2 flex-1">
               <button
                 onClick={() => i < step && setStep(i)}
-                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold transition ${
                   i < step ? "bg-indigo-500 text-white cursor-pointer"
                   : i === step ? "border-2 border-indigo-500 text-indigo-400"
                   : "border border-gray-200 text-gray-400"

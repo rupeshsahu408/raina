@@ -52,7 +52,7 @@ export default function ClientSaveButton({ jobId, title, companyName, location, 
     <button
       onClick={toggle}
       title={saved ? "Remove from saved" : "Save job"}
-      className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${saved ? "border-[#0a66c2] bg-blue-50 text-[#0a66c2]" : "border-slate-200 text-slate-400 hover:border-[#0a66c2] hover:text-[#0a66c2] bg-white"}`}
+      className={`flex h-6 w-6 items-center justify-center rounded-full border transition ${saved ? "border-[#0a66c2] bg-blue-50 text-[#0a66c2]" : "border-slate-200 text-slate-400 hover:border-[#0a66c2] hover:text-[#0a66c2] bg-white"}`}
     >
       {saved ? <BookmarkFilledIcon /> : <BookmarkIcon />}
     </button>

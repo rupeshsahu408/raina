@@ -34,7 +34,7 @@ export default function ProfileNudge() {
   return (
     <div className="mb-5 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-indigo-50/60 p-4 shadow-sm">
       <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#0a66c2] text-white text-sm">✨</div>
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-xl bg-[#0a66c2] text-white text-sm">✨</div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-slate-900">Unlock AI match scores for every job</p>
           <p className="mt-0.5 text-xs text-slate-600 leading-relaxed">

@@ -383,7 +383,7 @@ export default function SchedulerPage() {
             {/* ── Summary Hero ── */}
             <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-violet-600 via-violet-700 to-indigo-700 p-5 text-white shadow-lg">
               <div className="mb-4 flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/15">
+                <div className="flex h-5 w-5 items-center justify-center rounded-xl bg-white/15">
                   <Calendar className="h-4 w-4 text-white" />
                 </div>
                 <div>

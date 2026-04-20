@@ -132,7 +132,7 @@ function RecruitAnalyticsContent() {
             </Link>
             <span className="text-zinc-700">/</span>
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+              <div className="flex h-5 w-5 items-center justify-center rounded-lg border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
                 <ChartBarIcon />
               </div>
               <span className="text-sm font-semibold text-white">Analytics</span>

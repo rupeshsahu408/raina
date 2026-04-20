@@ -148,7 +148,7 @@ export default function FeaturesPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 object-contain" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -287,7 +287,7 @@ export default function FeaturesPage() {
                   { icon: <SmartphoneIcon className="h-5 w-5" />, title: "PWA + Android", desc: "Native app feel on every device", style: "text-emerald-600 bg-emerald-50 border-emerald-100" },
                 ].map((card) => (
                   <div key={card.title} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-md">
-                    <div className={`mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl border ${card.style}`}>
+                    <div className={`mb-3 inline-flex h-6 w-6 items-center justify-center rounded-xl border ${card.style}`}>
                       {card.icon}
                     </div>
                     <h4 className="text-sm font-bold text-[#1d2226]">{card.title}</h4>
@@ -313,7 +313,7 @@ export default function FeaturesPage() {
                   { icon: <UsersIcon className="h-5 w-5" />, title: "24/7 Automation", desc: "Never miss a customer message, day or night", style: "text-lime-600 bg-lime-50 border-lime-100" },
                 ].map((card) => (
                   <div key={card.title} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-                    <div className={`mb-3 inline-flex h-9 w-9 items-center justify-center rounded-xl border ${card.style}`}>
+                    <div className={`mb-3 inline-flex h-6 w-6 items-center justify-center rounded-xl border ${card.style}`}>
                       {card.icon}
                     </div>
                     <h4 className="text-sm font-bold text-[#1d2226]">{card.title}</h4>
@@ -435,7 +435,7 @@ export default function FeaturesPage() {
       <footer className="border-t border-gray-200 bg-white py-7 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 text-gray-400 hover:text-[#1d2226] transition">
-            <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain opacity-60" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-xs font-bold uppercase tracking-[0.18em]">Plyndrox AI</span>
           </Link>
           <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</p>

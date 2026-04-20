@@ -117,7 +117,7 @@ function ConnectContent() {
   if (authLoading || status === "checking") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#04030a]">
-        <div className="h-8 w-8 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin" />
+        <div className="h-5 w-5 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin" />
       </div>
     );
   }
@@ -134,7 +134,7 @@ function ConnectContent() {
           <span className="text-sm">Plyndrox Inbox AI</span>
         </Link>
         <div className="flex items-center gap-2">
-          <img src="/evara-logo.png" alt="Plyndrox" className="h-7 w-7 object-contain opacity-70" />
+          <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
           <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Plyndrox</span>
         </div>
       </nav>
@@ -171,7 +171,7 @@ function ConnectContent() {
           ) : (
             <div className="rounded-[2rem] border border-gray-200 bg-white/[0.03] p-8 text-center">
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-violet-500/25 bg-violet-500/10">
-                <svg className="h-8 w-8" viewBox="0 0 24 24">
+                <svg className="h-5 w-5" viewBox="0 0 24 24">
                   <rect width="20" height="16" x="2" y="4" rx="2" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-violet-400" />
                   <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-violet-400" />
                 </svg>
@@ -228,7 +228,7 @@ export default function ConnectPage() {
   return (
     <Suspense fallback={
       <div className="flex min-h-screen items-center justify-center bg-[#04030a]">
-        <div className="h-8 w-8 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin" />
+        <div className="h-5 w-5 rounded-full border-2 border-violet-500/30 border-t-violet-500 animate-spin" />
       </div>
     }>
       <ConnectContent />

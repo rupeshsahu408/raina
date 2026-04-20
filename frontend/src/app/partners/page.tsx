@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Partners — Plyndrox AI",
   description:
-    "Discover the trusted partnerships that power Plyndrox AI — including Sendora.me — and learn how we collaborate to build scalable, reliable AI infrastructure.",
+    "Discover the trusted partnerships that power Plyndrox AI — including Plyndrox AI — and learn how we collaborate to build scalable, reliable AI infrastructure.",
 };
 
 function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -213,7 +213,7 @@ export default function PartnersPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226] transition group-hover:text-white">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -307,7 +307,7 @@ export default function PartnersPage() {
                   { icon: <GlobeIcon className="h-5 w-5 text-sky-300" />, label: "Global Scalability", desc: "Partners that help us reach and serve users everywhere." },
                 ].map((item) => (
                   <div key={item.label} className="rounded-2xl border border-gray-200 bg-white p-5 backdrop-blur-xl">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-gray-200 bg-gray-100 mb-3">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-xl border border-gray-200 bg-gray-100 mb-3">
                       {item.icon}
                     </div>
                     <p className="text-sm font-semibold text-white">{item.label}</p>
@@ -319,20 +319,19 @@ export default function PartnersPage() {
           </div>
         </section>
 
-        {/* Featured Partner – Sendora.me */}
         <section id="featured-partner" className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8 scroll-mt-16">
           <div className="text-center mb-14">
             <p className="inline-flex rounded-full border border-indigo-400/20 bg-indigo-400/10 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-indigo-300">
-              Featured Partner
+              Platform Foundation
             </p>
             <h2 className="mt-6 text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              Our Strategic{" "}
+              Built Around the{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">
-                Partner
+                Plyndrox AI Ecosystem
               </span>
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-gray-500">
-              We are proud to work with an exceptional partner who has been instrumental in shaping the Plyndrox AI platform.
+              A unified product foundation that keeps every Plyndrox experience consistent, reliable, and ready to scale.
             </p>
           </div>
 
@@ -345,16 +344,16 @@ export default function PartnersPage() {
                     <div className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-pink-500/10 blur-xl" />
                     <div className="relative flex h-44 w-44 items-center justify-center rounded-[1.75rem] border border-gray-200 bg-white p-4 shadow-2xl">
                       <img
-                        src="/sendora-logo.png"
-                        alt="Sendora.me"
+                        src="/plyndrox-logo.svg"
+                        alt="Plyndrox AI"
                         className="h-full w-full object-contain"
                         draggable={false}
                       />
                     </div>
                   </div>
                   <div className="text-center lg:text-left">
-                    <p className="text-2xl font-bold text-white">Sendora.me</p>
-                    <p className="mt-1 text-sm text-indigo-300">Strategic Technology Partner</p>
+                    <p className="text-2xl font-bold text-white">Plyndrox AI</p>
+                    <p className="mt-1 text-sm text-indigo-300">Unified AI Platform</p>
                     <div className="mt-3 flex justify-center gap-1 lg:justify-start">
                       {[1, 2, 3, 4, 5].map((s) => (
                         <StarIcon key={s} className="h-3.5 w-3.5 text-yellow-400" />
@@ -372,31 +371,31 @@ export default function PartnersPage() {
                     <span>Partnership Overview</span>
                   </div>
                   <h3 className="text-2xl font-semibold text-white sm:text-3xl">
-                    The Infrastructure Behind Plyndrox AI
+                    The Product Layer Behind Every Plyndrox Experience
                   </h3>
                   <div className="mt-6 space-y-5 text-base leading-8 text-gray-500">
                     <p>
-                      Sendora.me is a premier technology and communication platform that serves as one of the most critical infrastructure partners supporting the Plyndrox AI ecosystem. Since the earliest stages of the platform's development, Sendora.me has been instrumental in providing the reliable, scalable, and performance-optimized services that allow Plyndrox AI to serve its users with consistency and quality.
+                      Plyndrox AI brings the product family together through one premium brand system, one consistent interface language, and one clear promise: practical AI that helps people and teams move faster.
                     </p>
                     <p>
-                      The partnership between Plyndrox AI and Sendora.me is built on a shared commitment to technological excellence, operational reliability, and the belief that the best products are built through focused collaboration rather than isolated effort. Sendora.me brings deep technical expertise, a proven track record of platform reliability, and a forward-thinking product philosophy that aligns closely with Plyndrox AI's mission and values.
+                      From Personal AI and Bihar AI to business automation, recruiting, finance, inbox, and ledger workflows, every product is designed to feel connected while still serving a specific job.
                     </p>
                     <p>
-                      Through this strategic partnership, Plyndrox AI benefits from Sendora.me's robust communication infrastructure, which plays a key role in powering essential platform features including transactional messaging, support routing, notification delivery, and business communication capabilities. This infrastructure layer allows Plyndrox AI to focus its core development efforts on building outstanding AI products, knowing that the critical communication backbone of the platform is in trusted, capable hands.
+                      The ecosystem approach helps users discover the right AI tool at the right moment without jumping between unrelated brands, broken flows, or inconsistent experiences.
                     </p>
                     <p>
-                      Beyond infrastructure, the Sendora.me partnership represents a long-term vision for what collaborative AI platform development can look like — two teams aligned on quality, invested in each other's success, and moving in the same direction. We are proud to call Sendora.me a partner and look forward to a continued, growing relationship as both platforms evolve.
+                      As Plyndrox AI grows, this foundation keeps the platform recognizable, easier to navigate, and ready for new products under the same trusted identity.
                     </p>
                   </div>
 
                   <div className="mt-8 grid gap-3 sm:grid-cols-2">
                     {[
-                      "Strategic infrastructure and communication support",
-                      "Reliable service delivery and uptime commitment",
-                      "Deep technical alignment and integration quality",
+                      "Consistent brand system across every product",
+                      "Unified navigation between AI tools",
+                      "Focused workflows for individuals and teams",
                       "Shared commitment to user privacy and data security",
                       "Long-term vision and collaborative product planning",
-                      "Scalable solutions supporting Plyndrox AI's growth trajectory",
+                      "Scalable product foundation for future launches",
                     ].map((item) => (
                       <div key={item} className="flex items-start gap-2.5 text-sm text-gray-500">
                         <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-indigo-400" />
@@ -407,12 +406,12 @@ export default function PartnersPage() {
 
                   <div className="mt-10 flex flex-wrap gap-3">
                     <a
-                      href="https://sendora.me"
+                      href="/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="group inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-400/10 px-5 py-2.5 text-sm font-semibold text-indigo-200 transition hover:bg-indigo-400/20"
                     >
-                      Visit Sendora.me
+                      Explore Plyndrox AI
                       <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-0.5" />
                     </a>
                   </div>
@@ -479,7 +478,7 @@ export default function PartnersPage() {
                 className="group rounded-[2rem] border border-gray-200 bg-white p-8 backdrop-blur-xl transition-all hover:border-gray-300 hover:bg-gray-50"
               >
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-gray-100">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-xl border border-gray-200 bg-gray-100">
                     {area.icon}
                   </div>
                   <h3 className="text-lg font-semibold text-white">{area.title}</h3>
@@ -518,7 +517,7 @@ export default function PartnersPage() {
             <div className="grid gap-6 lg:grid-cols-3">
               {[
                 {
-                  icon: <BrainIcon className="h-7 w-7" />,
+                  icon: <BrainIcon className="h-5 w-5" />,
                   name: "Plyndrox AI",
                   tagline: "Web / App AI Assistant",
                   color: "text-violet-600",
@@ -533,7 +532,7 @@ export default function PartnersPage() {
                   ],
                 },
                 {
-                  icon: <MessageIcon className="h-7 w-7" />,
+                  icon: <MessageIcon className="h-5 w-5" />,
                   name: "Plyndrox WhatsApp AI",
                   tagline: "Business Automation",
                   color: "text-emerald-300",
@@ -548,7 +547,7 @@ export default function PartnersPage() {
                   ],
                 },
                 {
-                  icon: <LayersIcon className="h-7 w-7" />,
+                  icon: <LayersIcon className="h-5 w-5" />,
                   name: "Platform Core",
                   tagline: "Infrastructure & Reliability",
                   color: "text-sky-300",
@@ -556,7 +555,7 @@ export default function PartnersPage() {
                   bg: "bg-sky-500/[0.07]",
                   iconBg: "bg-sky-500/15 border-sky-500/20",
                   points: [
-                    "Sendora.me and other infrastructure partners provide the communication backbone and delivery systems that keep the platform running reliably.",
+                    "Plyndrox AI and other infrastructure partners provide the communication backbone and delivery systems that keep the platform running reliably.",
                     "Monitoring and observability partners give the Plyndrox AI team real-time visibility into platform health, performance, and reliability metrics.",
                     "Database and storage partners ensure that user data, business configurations, and conversation history are stored securely and durably.",
                     "Deployment and DevOps partners enable rapid, safe, and consistent platform updates across all environments without user disruption.",
@@ -624,7 +623,7 @@ export default function PartnersPage() {
                 { title: "Strategic Alliances", desc: "Established companies interested in co-building, co-marketing, or co-distributing AI-powered products with Plyndrox AI." },
               ].map((item, i) => (
                 <div key={item.title} className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-5 backdrop-blur-xl">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-xs font-bold text-white">
+                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-xs font-bold text-white">
                     {i + 1}
                   </div>
                   <div>

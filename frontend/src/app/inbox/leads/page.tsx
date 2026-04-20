@@ -212,7 +212,7 @@ export default function LeadsPage() {
   }
 
   if (authLoading) {
-    return <div className="flex min-h-screen items-center justify-center bg-white"><div className="h-8 w-8 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" /></div>;
+    return <div className="flex min-h-screen items-center justify-center bg-white"><div className="h-5 w-5 animate-spin rounded-full border-2 border-indigo-200 border-t-indigo-600" /></div>;
   }
 
   return (
@@ -224,7 +224,7 @@ export default function LeadsPage() {
             Back to Inbox
           </Link>
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-400/15 text-emerald-300"><SparkIcon /></span>
+            <span className="flex h-5 w-5 items-center justify-center rounded-2xl bg-emerald-400/15 text-emerald-300"><SparkIcon /></span>
             <div>
               <h1 className="text-xl font-black tracking-tight">Lead & Revenue Intelligence</h1>
               <p className="text-xs text-gray-500">AI-ranked opportunities from your Gmail conversations</p>
@@ -319,7 +319,7 @@ export default function LeadsPage() {
                       className={`w-full border-b border-slate-100 px-4 py-3 text-left transition hover:bg-[#f8f7ff] ${active ? "bg-[#eeebff]" : "bg-white"}`}
                     >
                       <div className="flex items-start gap-3">
-                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-black text-white ring-4 ${style.ring}`} style={{ background: avatarColor(lead.name || lead.email) }}>
+                        <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-sm font-black text-white ring-4 ${style.ring}`} style={{ background: avatarColor(lead.name || lead.email) }}>
                           {(lead.name || lead.email || "?")[0]?.toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">

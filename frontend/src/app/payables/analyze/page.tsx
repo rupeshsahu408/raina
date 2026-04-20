@@ -104,7 +104,7 @@ function Section({ title, icon, badge, badgeColor = "gray", children, defaultOpe
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
       <button onClick={() => setOpen(o => !o)} className="flex w-full items-center justify-between px-5 py-4 text-left transition hover:bg-gray-50 active:bg-gray-100">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gray-50">{icon}</div>
+          <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-xl bg-gray-50">{icon}</div>
           <span className="text-sm font-black text-[#1d2226]">{title}</span>
           {badge !== undefined && badge !== 0 && (
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${badgeColors[badgeColor]}`}>{badge}</span>
@@ -239,7 +239,7 @@ export default function AnalyzePage() {
       {loading && (
         <div className="flex flex-col items-center justify-center gap-4 px-4 py-20 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-50">
-            <Sparkles className="h-7 w-7 animate-pulse text-violet-600" />
+            <Sparkles className="h-5 w-5 animate-pulse text-violet-600" />
           </div>
           <div>
             <p className="text-base font-black text-[#1d2226]">Running AI Analysis…</p>
@@ -300,7 +300,7 @@ export default function AnalyzePage() {
           <div className="overflow-hidden rounded-2xl border border-violet-100 bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-violet-50 bg-gradient-to-r from-violet-50 to-indigo-50 px-5 py-3.5">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600">
+                <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600">
                   <Sparkles className="h-3.5 w-3.5 text-white" />
                 </div>
                 <span className="text-sm font-black text-[#1d2226]">Today's Action Plan</span>
@@ -347,7 +347,7 @@ export default function AnalyzePage() {
           <Section title="What Needs Attention Now" icon={<Zap className="h-4 w-4 text-rose-500" />} badge={data.priorityActions.length} badgeColor={data.priorityActions.length > 0 ? "red" : "green"} defaultOpen>
             {data.priorityActions.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-4 text-center">
-                <CheckCircle className="h-10 w-10 text-emerald-400" />
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
                 <p className="font-semibold text-emerald-700">All clear! No urgent actions needed.</p>
                 <p className="text-sm text-gray-400">Your invoices are on track.</p>
               </div>
@@ -422,7 +422,7 @@ export default function AnalyzePage() {
           <Section title="Exception Report" icon={<AlertTriangle className="h-4 w-4 text-amber-500" />} badge={data.exceptions.length} badgeColor={data.exceptions.length > 0 ? "amber" : "green"}>
             {data.exceptions.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-4 text-center">
-                <CheckCircle className="h-10 w-10 text-emerald-400" />
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
                 <p className="font-semibold text-emerald-700">No exceptions found.</p>
                 <p className="text-sm text-gray-400">All invoices look clean and complete.</p>
               </div>
@@ -458,7 +458,7 @@ export default function AnalyzePage() {
           <Section title="Fraud & Anomaly Signals" icon={<Shield className="h-4 w-4 text-rose-500" />} badge={data.fraudSignals.length} badgeColor={data.fraudSignals.length > 0 ? "red" : "green"}>
             {data.fraudSignals.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-4 text-center">
-                <Shield className="h-10 w-10 text-emerald-400" />
+                <Shield className="h-5 w-5 text-emerald-400" />
                 <p className="font-semibold text-emerald-700">No fraud signals detected.</p>
                 <p className="text-sm text-gray-400">All vendor patterns look consistent.</p>
               </div>
@@ -487,7 +487,7 @@ export default function AnalyzePage() {
           <Section title="Duplicate Invoice Scanner" icon={<Copy className="h-4 w-4 text-violet-500" />} badge={data.duplicates.length} badgeColor={data.duplicates.length > 0 ? "violet" : "green"}>
             {data.duplicates.length === 0 ? (
               <div className="flex flex-col items-center gap-2 py-4 text-center">
-                <CheckCircle className="h-10 w-10 text-emerald-400" />
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
                 <p className="font-semibold text-emerald-700">No duplicate invoices found.</p>
                 <p className="text-sm text-gray-400">AI scanned all invoices for duplicate patterns.</p>
               </div>

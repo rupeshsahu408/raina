@@ -501,7 +501,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-violet-600" />
+        <div className="h-5 w-5 animate-spin rounded-full border-4 border-gray-200 border-t-violet-600" />
       </div>
     );
   }
@@ -580,7 +580,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
           <div className={`mb-5 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium ${emailMsg.ok ? "border border-emerald-100 bg-emerald-50 text-emerald-700" : "border border-rose-100 bg-rose-50 text-rose-700"}`}>
             {emailMsg.ok ? <CheckIcon className="h-4 w-4 shrink-0" /> : "⚠"}
             <span className="flex-1">{emailMsg.text}</span>
-            <button onClick={() => setEmailMsg(null)} className="ml-auto opacity-60 hover:opacity-100">✕</button>
+            <button onClick={() => setEmailMsg(null)} className="ml-auto hover:opacity-100">✕</button>
           </div>
         )}
 
@@ -595,7 +595,7 @@ export default function InvoiceDetail({ params }: { params: Promise<{ id: string
           <div className="mb-5 flex items-center gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
             <CheckIcon className="h-4 w-4 shrink-0" />
             <span className="flex-1">AI processing is complete. The extracted invoice data is ready for review.</span>
-            <button onClick={() => setProcessingCompleteMsg(false)} className="ml-auto opacity-60 hover:opacity-100">✕</button>
+            <button onClick={() => setProcessingCompleteMsg(false)} className="ml-auto hover:opacity-100">✕</button>
           </div>
         )}
 

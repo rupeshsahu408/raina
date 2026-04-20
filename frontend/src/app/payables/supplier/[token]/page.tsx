@@ -178,7 +178,7 @@ export default function SupplierUploadPage() {
           <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
             {success ? (
               <div className="py-10 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-500 text-white"><CheckIcon className="h-8 w-8" /></div>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-500 text-white"><CheckIcon className="h-5 w-5" /></div>
                 <h2 className="mt-5 text-2xl font-black text-[#1d2226]">Invoice submitted successfully</h2>
                 <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">Thank you. The invoice has been sent to {brand} and AI processing has already started.</p>
                 <button onClick={() => setSuccess(false)} className="mt-6 rounded-full border border-gray-200 bg-white px-6 py-3 text-sm font-bold text-gray-700 transition hover:border-gray-300">Upload another invoice</button>
@@ -193,7 +193,7 @@ export default function SupplierUploadPage() {
                 </div>
                 <div onClick={() => inputRef.current?.click()} onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); selectFile(e.dataTransfer.files[0]); }} className="mt-5 cursor-pointer rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center transition hover:border-violet-300 hover:bg-violet-50/40">
                   <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" className="hidden" onChange={(e) => selectFile(e.target.files?.[0] ?? null)} />
-                  <UploadIcon className="mx-auto h-10 w-10 text-gray-300" />
+                  <UploadIcon className="mx-auto h-5 w-5 text-gray-300" />
                   <p className="mt-3 text-sm font-bold text-[#1d2226]">{file ? file.name : "Drag invoice here or click to browse"}</p>
                   <p className="mt-1 text-xs text-gray-400">{file ? `${(file.size / 1024 / 1024).toFixed(2)} MB selected` : "Clear invoice photos and original PDFs work best"}</p>
                 </div>

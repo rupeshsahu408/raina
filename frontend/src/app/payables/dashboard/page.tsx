@@ -484,7 +484,7 @@ export default function PayablesDashboard() {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-white px-4 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-100 to-indigo-100">
-          <AlertIcon className="h-8 w-8 text-violet-400" />
+          <AlertIcon className="h-5 w-5 text-violet-400" />
         </div>
         <div>
           <h2 className="text-xl font-black text-[#1d2226]">Sign in to access your payables</h2>
@@ -558,7 +558,7 @@ export default function PayablesDashboard() {
                         onClick={() => switchWorkspace(ws.uid)}
                         className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-gray-50 ${currentWorkspace?.uid === ws.uid ? "bg-violet-50" : ""}`}
                       >
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-100 to-indigo-100 text-xs font-black text-violet-700">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-violet-100 to-indigo-100 text-xs font-black text-violet-700">
                           {ws.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -615,7 +615,7 @@ export default function PayablesDashboard() {
           }`}>
             <ZapIcon className="mt-0.5 h-4 w-4 shrink-0" />
             <span>{gmailMsg.text}</span>
-            <button onClick={() => setGmailMsg(null)} className="ml-auto text-xs opacity-60 hover:opacity-100">✕</button>
+            <button onClick={() => setGmailMsg(null)} className="ml-auto text-xs hover:opacity-100">✕</button>
           </div>
         )}
 
@@ -623,7 +623,7 @@ export default function PayablesDashboard() {
           <div className="mb-5 flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
             <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0" />
             <span className="flex-1">{processingNotice}</span>
-            <button onClick={() => setProcessingNotice(null)} className="ml-auto text-xs opacity-60 hover:opacity-100">✕</button>
+            <button onClick={() => setProcessingNotice(null)} className="ml-auto text-xs hover:opacity-100">✕</button>
           </div>
         )}
 
@@ -677,7 +677,7 @@ export default function PayablesDashboard() {
               <div key={label} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{label}</p>
-                  <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${iconBg}`}>
+                  <div className={`flex h-5 w-5 items-center justify-center rounded-lg ${iconBg}`}>
                     <Icon className="h-4 w-4" />
                   </div>
                 </div>
@@ -803,7 +803,7 @@ export default function PayablesDashboard() {
             ) : sortedInvoices.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-gray-200 bg-white py-20 text-center">
                 <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-50">
-                  <MailIcon className="h-7 w-7 text-gray-200" />
+                  <MailIcon className="h-5 w-5 text-gray-200" />
                 </div>
                 <p className="text-base font-bold text-gray-400">
                   {search ? `No invoices matching "${search}"` : activeFilter === "all" ? "No invoices yet" : `No ${activeFilter.replace("_", " ")} invoices`}
@@ -854,7 +854,7 @@ export default function PayablesDashboard() {
                           className="h-4 w-4 shrink-0 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
                         />
                       )}
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${inv.source === "gmail" ? "bg-violet-50" : inv.source === "supplier_link" ? "bg-emerald-50" : "bg-indigo-50"}`}>
+                      <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-xl ${inv.source === "gmail" ? "bg-violet-50" : inv.source === "supplier_link" ? "bg-emerald-50" : "bg-indigo-50"}`}>
                       {inv.source === "gmail" ? <MailIcon className="h-5 w-5 text-violet-500" /> : <UploadIcon className={`h-5 w-5 ${inv.source === "supplier_link" ? "text-emerald-500" : "text-indigo-500"}`} />}
                       </div>
 
@@ -1045,7 +1045,7 @@ export default function PayablesDashboard() {
                 <div className="space-y-2.5">{[...Array(3)].map((_, i) => (<div key={i} className="h-12 animate-pulse rounded-xl bg-gray-100" />))}</div>
               ) : upcomingDue.length === 0 ? (
                 <div className="py-6 text-center">
-                  <CheckCircleIcon className="mx-auto mb-2 h-8 w-8 text-emerald-300" />
+                  <CheckCircleIcon className="mx-auto mb-2 h-5 w-5 text-emerald-300" />
                   <p className="text-xs text-gray-400">No upcoming due dates.</p>
                 </div>
               ) : (

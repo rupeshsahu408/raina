@@ -305,9 +305,9 @@ function TypingDots() {
 function PlyndroxAvatar(_: { personality: Personality }) {
   return (
     <img
-      src="/evara-logo.png"
+      src="/plyndrox-logo.svg"
       alt="Plyndrox"
-      className="h-8 w-8 shrink-0 object-contain"
+      className="h-10 w-10 shrink-0 object-contain plyndrox-logo-img"
       draggable={false}
     />
   );
@@ -933,7 +933,7 @@ export default function ChatPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-3 pb-3 pt-4">
           <div className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 shrink-0 object-contain plyndrox-logo-img" draggable={false} />
             <span className="text-[14px] font-black tracking-tight text-[#1d2226]">Plyndrox AI</span>
           </div>
           <button
@@ -1014,7 +1014,7 @@ export default function ChatPage() {
         <div className="flex-1 overflow-y-auto px-2 py-1">
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-12 px-4 text-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-gray-400">
+              <div className="flex h-5 w-5 items-center justify-center rounded-xl bg-white text-gray-400">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
@@ -1120,7 +1120,7 @@ export default function ChatPage() {
 
           {/* User row */}
           <div className="flex items-center gap-3 rounded-xl px-3.5 py-2.5 hover:bg-white transition cursor-default group">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-700 text-[11px] font-bold text-white">
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-700 text-[11px] font-bold text-white">
               {avatarInitial}
             </div>
             <span className="flex-1 truncate text-[13px] text-gray-600">{displayName}</span>
@@ -1187,7 +1187,7 @@ export default function ChatPage() {
               <button
                 type="button"
                 onClick={() => setShowTopMenu((v) => !v)}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 via-violet-600 to-sky-500 text-[12px] font-black text-white shadow-lg shadow-violet-500/20 transition hover:ring-2 hover:ring-violet-500/40"
+                className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 via-violet-600 to-sky-500 text-[12px] font-black text-white shadow-lg shadow-violet-500/20 transition hover:ring-2 hover:ring-violet-500/40"
               >
                 {avatarInitial}
               </button>
@@ -1254,7 +1254,7 @@ export default function ChatPage() {
         {loading ? (
           <div className="flex flex-1 items-center justify-center">
             <div className="flex flex-col items-center gap-4">
-              <img src="/evara-logo.png" alt="Plyndrox AI" className="h-12 w-12 object-contain" draggable={false} />
+              <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
               <p className="text-[13px] text-gray-400">
                 {historyLoading ? "Loading chat history…" : "Loading…"}
               </p>
@@ -1371,7 +1371,7 @@ export default function ChatPage() {
                           type="button"
                           onClick={startRecording}
                           disabled={isTyping}
-                          className="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/[0.08] bg-white text-gray-500 transition hover:border-white/12 hover:bg-gray-50 hover:text-[#1d2226] disabled:opacity-40"
+                          className="flex h-6 w-6 items-center justify-center rounded-2xl border border-white/[0.08] bg-white text-gray-500 transition hover:border-white/12 hover:bg-gray-50 hover:text-[#1d2226] disabled:opacity-40"
                           aria-label="Voice input"
                           title="Voice input"
                         >
@@ -1380,7 +1380,7 @@ export default function ChatPage() {
                         <button
                           type="submit"
                           disabled={isTyping || input.trim().length === 0}
-                          className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-black shadow-lg shadow-white/10 transition hover:-translate-y-0.5 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
+                          className="flex h-6 w-6 items-center justify-center rounded-2xl bg-white text-black shadow-lg shadow-white/10 transition hover:-translate-y-0.5 hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-40"
                         >
                           <IconSend size={14} />
                         </button>
@@ -1440,7 +1440,7 @@ export default function ChatPage() {
                   ].join(" ")}
                 >
                   <span className="flex items-center gap-2.5">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[11px] font-black">{cfg.icon}</span>
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/10 text-[11px] font-black">{cfg.icon}</span>
                     <span className="font-medium">{cfg.label}</span>
                   </span>
                   {mode === key && (

@@ -2,26 +2,27 @@
   "id": "/",
   "name": "Plyndrox AI",
   "short_name": "Plyndrox",
-  "description": "Plyndrox AI is your calm, emotionally intelligent AI companion.",
+  "description": "Plyndrox AI is a premium AI platform for personal assistance, regional intelligence, and professional automation.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "any",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/icons/evara-192.svg",
+      "src": "/icons/plyndrox-192.svg",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     },
     {
-      "src": "/icons/evara-512.svg",
+      "src": "/icons/plyndrox-512.svg",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
-

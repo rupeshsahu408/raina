@@ -110,7 +110,7 @@ export function VoiceRecordingBar({
           onClick={onCancel}
           disabled={isTranscribing}
           title="Cancel"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.1] text-gray-500 transition hover:border-white/20 hover:text-[#1d2226] disabled:opacity-40"
+          className="flex h-5 w-5 items-center justify-center rounded-full border border-white/[0.1] text-gray-500 transition hover:border-white/20 hover:text-[#1d2226] disabled:opacity-40"
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
             <path d="M18 6 6 18M6 6l12 12" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
@@ -122,7 +122,7 @@ export function VoiceRecordingBar({
           onClick={onConfirm}
           disabled={isTranscribing}
           title={isTranscribing ? "Transcribing…" : "Done"}
-          className="flex h-8 w-8 items-center justify-center rounded-full transition disabled:opacity-60"
+          className="flex h-5 w-5 items-center justify-center rounded-full transition disabled:opacity-60"
           style={{ backgroundColor: confirmColor }}
         >
           {isTranscribing ? (

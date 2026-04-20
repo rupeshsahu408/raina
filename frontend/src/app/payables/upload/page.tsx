@@ -169,7 +169,7 @@ export default function UploadPage() {
         <div className="flex flex-1 items-center justify-center px-4 py-16">
           <div className="w-full max-w-md rounded-3xl border border-emerald-100 bg-gradient-to-b from-emerald-50 to-white p-10 text-center shadow-sm">
             <div className="mb-2 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-emerald-500 shadow-md">
-              <CheckCircleIcon className="h-8 w-8 text-white" />
+              <CheckCircleIcon className="h-5 w-5 text-white" />
             </div>
             <h2 className="mt-5 text-2xl font-black text-[#1d2226]">Invoice uploaded!</h2>
             <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-gray-500">
@@ -229,7 +229,7 @@ export default function UploadPage() {
 
       <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-14">
         <div className="mb-8">
-          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500">
+          <div className="mb-3 inline-flex h-5 w-5 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500">
             <ZapIcon className="h-5 w-5 text-white" />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-[#1d2226] sm:text-3xl">Upload Invoice</h1>
@@ -266,7 +266,7 @@ export default function UploadPage() {
           {file ? (
             <div className="flex flex-col items-center">
               <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100">
-                <FileIcon className="h-7 w-7 text-emerald-600" />
+                <FileIcon className="h-5 w-5 text-emerald-600" />
               </div>
               <p className="max-w-xs truncate text-base font-bold text-[#1d2226]">{file.name}</p>
               <p className="mt-1 text-sm text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
@@ -284,7 +284,7 @@ export default function UploadPage() {
           ) : (
             <div className="flex flex-col items-center">
               <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 transition group-hover:bg-violet-100">
-                <UploadCloudIcon className="h-8 w-8 text-gray-400" />
+                <UploadCloudIcon className="h-5 w-5 text-gray-400" />
               </div>
               <p className="text-base font-bold text-[#1d2226]">
                 {dragOver ? "Drop it here!" : "Drag your invoice here"}

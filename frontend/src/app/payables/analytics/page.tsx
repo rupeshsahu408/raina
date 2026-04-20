@@ -380,7 +380,7 @@ export default function AnalyticsPage() {
               <h2 className="text-sm font-black text-[#1d2226]">Monthly Spend Trend</h2>
               <p className="text-xs text-gray-400">How much you're spending each month</p>
             </div>
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+            <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
               <TrendingUp className="h-4 w-4" />
             </div>
           </div>
@@ -491,7 +491,7 @@ export default function AnalyticsPage() {
                 <h2 className="text-sm font-black text-[#1d2226]">Spend Categories</h2>
                 <p className="text-xs text-gray-400">Top line items by amount</p>
               </div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
                 <Layers className="h-4 w-4" />
               </div>
             </div>
@@ -542,7 +542,7 @@ export default function AnalyticsPage() {
                 <h2 className="text-sm font-black text-[#1d2226]">Invoice Status Breakdown</h2>
                 <p className="text-xs text-gray-400">Spend by approval stage</p>
               </div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
+              <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600">
                 <PieChartIcon className="h-4 w-4" />
               </div>
             </div>
@@ -581,7 +581,7 @@ export default function AnalyticsPage() {
                 <h2 className="text-sm font-black text-[#1d2226]">Invoice Sources</h2>
                 <p className="text-xs text-gray-400">Where your invoices come from</p>
               </div>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+              <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                 <Zap className="h-4 w-4" />
               </div>
             </div>
@@ -661,7 +661,7 @@ function KpiCard({
     <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{label}</p>
-        <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${iconBg}`}>{icon}</div>
+        <div className={`flex h-5 w-5 items-center justify-center rounded-lg ${iconBg}`}>{icon}</div>
       </div>
       <p className={`mt-3 text-2xl font-black leading-tight ${valueColor}`}>{value}</p>
       <p className="mt-1 text-xs text-gray-400">{sub}</p>
@@ -673,7 +673,7 @@ function KpiCard({
 function EmptyChart({ message }: { message: string }) {
   return (
     <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-xl bg-gray-50">
-      <BarChart2 className="h-8 w-8 text-gray-200" />
+      <BarChart2 className="h-5 w-5 text-gray-200" />
       <p className="text-sm text-gray-400">{message}</p>
       <p className="text-xs text-gray-300">Upload invoices to start seeing analytics</p>
     </div>

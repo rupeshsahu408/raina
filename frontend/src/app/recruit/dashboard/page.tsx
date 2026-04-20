@@ -182,8 +182,8 @@ function RecruitDashboardContent() {
       <header className="sticky top-0 z-20 bg-white border-b border-slate-200 shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
           <Link href="/recruit" className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-700 shadow">
-              <img src="/evara-logo.png" alt="Plyndrox" className="h-4.5 w-4.5 object-contain brightness-0 invert" draggable={false} />
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-700 shadow">
+              <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
             </span>
             <span>
               <span className="block text-sm font-bold text-slate-900 leading-none">Plyndrox Recruit AI</span>
@@ -292,7 +292,7 @@ function RecruitDashboardContent() {
                   className="group relative flex flex-col rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:shadow-md hover:border-blue-300 transition-all"
                 >
                   <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
                       <BriefcaseIcon size={18} />
                     </div>
                     <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -337,7 +337,7 @@ function RecruitDashboardContent() {
               href="/recruit/jobs/new"
               className="group flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center hover:border-blue-300 hover:bg-blue-50/40 transition-all"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-slate-400 group-hover:border-blue-400 group-hover:text-blue-600 transition mb-3">
+              <div className="flex h-5 w-5 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 text-slate-400 group-hover:border-blue-400 group-hover:text-blue-600 transition mb-3">
                 <PlusIcon />
               </div>
               <p className="text-sm font-semibold text-slate-500 group-hover:text-blue-700 transition">New Job Posting</p>

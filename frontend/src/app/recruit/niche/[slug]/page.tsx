@@ -229,7 +229,7 @@ function JobCard({ job }: { job: Job }) {
       className="group block rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-[#0a66c2]/30 hover:shadow-md"
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-sm font-black text-[#0a66c2]">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-sm font-black text-[#0a66c2]">
           {(job.companyName || job.title).charAt(0).toUpperCase()}
         </div>
         <div className="min-w-0 flex-1">

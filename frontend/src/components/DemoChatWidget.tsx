@@ -122,7 +122,7 @@ export function DemoChatWidget() {
     <div className="rounded-[1.7rem] border border-gray-200 bg-white/[0.055] p-3 text-xs text-gray-600 shadow-2xl shadow-black/30">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-9 w-9 rounded-2xl bg-gradient-to-br from-pink-400 via-purple-500 to-sky-400 shadow-lg shadow-violet-500/20" />
+          <div className="h-6 w-6 rounded-2xl bg-gradient-to-br from-pink-400 via-purple-500 to-sky-400 shadow-lg shadow-violet-500/20" />
           <div>
             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-gray-500">
               Demo chat

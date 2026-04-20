@@ -486,7 +486,7 @@ export default function SettingsPage() {
       {/* ── Sidebar nav ── */}
       <aside className="w-56 shrink-0 border-r border-gray-200 bg-gray-50 flex flex-col py-6 px-3 gap-1 hidden md:flex">
         <div className="flex items-center gap-2.5 px-3 pb-4">
-          <img src="/evara-logo.png" alt="Plyndrox AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
+          <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 shrink-0 object-contain plyndrox-logo-img" draggable={false} />
           <span className="text-[14px] font-semibold tracking-tight text-[#1d2226]">Settings</span>
         </div>
         <a href="/chat" className="flex items-center gap-2 px-3 pb-5 text-[13px] text-gray-500 hover:text-gray-700 transition">

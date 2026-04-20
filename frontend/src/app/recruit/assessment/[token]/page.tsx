@@ -204,7 +204,7 @@ export default function AssessmentPage({ params }: { params: Promise<{ token: st
           <div className="mx-auto max-w-2xl">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/10">
+                <div className="flex h-5 w-5 items-center justify-center rounded-lg border border-indigo-500/30 bg-indigo-500/10">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
                     <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
                   </svg>
@@ -258,7 +258,7 @@ export default function AssessmentPage({ params }: { params: Promise<{ token: st
 
             <div className="rounded-2xl sm:rounded-3xl border border-white/[0.08] bg-gray-50 p-5 sm:p-6 mb-5">
               <div className="flex items-start gap-3 mb-4">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-[11px] font-bold text-indigo-400 mt-0.5">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-[11px] font-bold text-indigo-400 mt-0.5">
                   {currentQ + 1}
                 </span>
                 <p className="text-sm sm:text-base font-medium text-white leading-7">

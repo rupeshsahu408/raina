@@ -225,7 +225,7 @@ export default function DashboardPage() {
       <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white/80 px-4 py-3 backdrop-blur-md sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-5xl items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 rounded-lg object-contain bg-white p-1" draggable={false} />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 rounded-lg object-contain bg-white p-1 plyndrox-logo-img" draggable={false} />
             <span className="font-semibold tracking-tight">Business Dashboard</span>
           </div>
           <div className="flex items-center gap-3">

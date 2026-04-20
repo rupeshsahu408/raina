@@ -32,7 +32,7 @@ export function RecruitGuard({ requiredRole, children }: RecruitGuardProps) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f3f6f8]">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#0a66c2] border-t-transparent" />
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#0a66c2] border-t-transparent" />
           <p className="text-sm text-slate-500">Loading...</p>
         </div>
       </div>

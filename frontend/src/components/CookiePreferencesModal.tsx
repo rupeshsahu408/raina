@@ -30,7 +30,7 @@ function Toggle({
       className={[
         "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#161616]",
         checked ? color : "bg-zinc-700",
-        disabled ? "cursor-not-allowed opacity-60" : "",
+        disabled ? "cursor-not-allowed" : "",
       ].join(" ")}
     >
       <span
@@ -145,7 +145,7 @@ export function CookiePreferencesModal({ open, onClose }: Props) {
             </div>
             <button
               onClick={onClose}
-              className="ml-4 mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-xl border border-white/[0.06] text-gray-400 transition hover:border-gray-200 hover:text-gray-600"
+              className="ml-4 mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-xl border border-white/[0.06] text-gray-400 transition hover:border-gray-200 hover:text-gray-600"
               aria-label="Close"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none">

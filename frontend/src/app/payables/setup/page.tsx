@@ -356,9 +356,9 @@ export default function PayablesSetupPage() {
             <div className="flex items-center justify-between border-b border-gray-100 bg-white px-5 py-3">
               <div className="flex items-center gap-3">
                 {logoPreview ? (
-                  <img src={logoPreview} alt="logo" className="h-7 w-7 rounded-lg object-cover" />
+                  <img src={logoPreview} alt="logo" className="h-5 w-5 rounded-lg object-cover" />
                 ) : (
-                  <div className="h-7 w-7 animate-pulse rounded-lg bg-gray-100" />
+                  <div className="h-5 w-5 animate-pulse rounded-lg bg-gray-100" />
                 )}
                 <div className="h-3.5 w-24 animate-pulse rounded bg-gray-100" />
                 <span className="text-gray-200">/</span>
@@ -367,7 +367,7 @@ export default function PayablesSetupPage() {
               <div className="flex gap-2">
                 <div className="h-7 w-20 animate-pulse rounded-full bg-gray-100" />
                 <div className="h-7 w-16 animate-pulse rounded-full bg-violet-100" />
-                <div className="h-7 w-7 animate-pulse rounded-full bg-gray-100" />
+                <div className="h-5 w-5 animate-pulse rounded-full bg-gray-100" />
               </div>
             </div>
             {/* Stats row */}
@@ -381,7 +381,7 @@ export default function PayablesSetupPage() {
                 <div key={label} className={`rounded-xl ${color} p-4`}>
                   <div className="mb-2 h-3 w-14 animate-pulse rounded bg-gray-200" />
                   <div className="mb-3 h-6 w-10 animate-pulse rounded bg-gray-200" />
-                  <div className={`h-1.5 w-full rounded-full ${bar} opacity-60`} />
+                  <div className={`h-1.5 w-full rounded-full ${bar}`} />
                 </div>
               ))}
             </div>
@@ -395,7 +395,7 @@ export default function PayablesSetupPage() {
               </div>
               {[1,2,3].map(i => (
                 <div key={i} className="flex items-center gap-4 border-b border-gray-50 py-3 last:border-0">
-                  <div className="h-9 w-9 animate-pulse rounded-xl bg-gray-100" />
+                  <div className="h-6 w-6 animate-pulse rounded-xl bg-gray-100" />
                   <div className="flex-1 space-y-1.5">
                     <div className="h-3 w-32 animate-pulse rounded bg-gray-100" />
                     <div className="h-3 w-20 animate-pulse rounded bg-gray-50" />
@@ -445,7 +445,7 @@ export default function PayablesSetupPage() {
                 <div key={s.num} className="flex items-center">
                   <button
                     onClick={() => { if (s.num < step || personalizationDone) setStep(s.num); }}
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition ${step === s.num ? "bg-violet-600 text-white" : s.num < step ? "bg-emerald-100 text-emerald-700 cursor-pointer" : "bg-gray-100 text-gray-400"}`}
+                    className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold transition ${step === s.num ? "bg-violet-600 text-white" : s.num < step ? "bg-emerald-100 text-emerald-700 cursor-pointer" : "bg-gray-100 text-gray-400"}`}
                   >
                     {s.num < step ? <CheckIcon className="h-3.5 w-3.5" /> : s.num}
                   </button>

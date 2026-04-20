@@ -293,7 +293,7 @@ export default function FollowUpsPage() {
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin" />
+        <div className="h-5 w-5 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin" />
       </div>
     );
   }
@@ -309,7 +309,7 @@ export default function FollowUpsPage() {
           Back to Inbox
         </Link>
         <div className="flex items-center gap-3 ml-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+          <span className="flex h-6 w-6 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
             <BellIcon />
           </span>
           <div>

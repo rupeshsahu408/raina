@@ -90,7 +90,7 @@ function RecruitLoginForm() {
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center gap-2">
           <Link href="/recruit" className="flex items-center gap-2.5">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0a66c2] text-sm font-black text-white">R</span>
+            <span className="flex h-5 w-5 items-center justify-center rounded-xl bg-[#0a66c2] text-sm font-black text-white">R</span>
             <span>
               <span className="block text-base font-bold leading-tight text-slate-900">Plyndrox Recruit AI</span>
               <span className="block text-[11px] text-slate-500 leading-tight">Plyndrox Jobs Network</span>

@@ -253,7 +253,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 border border-emerald-100 p-3">
-                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">✓</div>
+                <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">✓</div>
                 <div>
                   <p className="text-xs font-bold text-slate-900">Free to apply</p>
                   <p className="mt-0.5 text-[11px] text-slate-500">No fees charged to candidates. Ever.</p>
@@ -261,7 +261,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
               </div>
               {job.salaryMin || job.salaryMax ? (
                 <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 border border-emerald-100 p-3">
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">₹</div>
+                  <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">₹</div>
                   <div>
                     <p className="text-xs font-bold text-slate-900">Salary disclosed</p>
                     <p className="mt-0.5 text-[11px] text-slate-500">Recruiter shared the salary range upfront.</p>
@@ -269,7 +269,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                 </div>
               ) : (
                 <div className="flex items-start gap-3 rounded-2xl bg-slate-50 border border-slate-100 p-3">
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 text-xs font-black">₹</div>
+                  <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 text-xs font-black">₹</div>
                   <div>
                     <p className="text-xs font-bold text-slate-500">Salary not disclosed</p>
                     <p className="mt-0.5 text-[11px] text-slate-400">Ask during application process.</p>
@@ -278,7 +278,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
               )}
               {job.verifiedCompany ? (
                 <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 border border-emerald-100 p-3">
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">✓</div>
+                  <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 text-xs font-black">✓</div>
                   <div>
                     <p className="text-xs font-bold text-slate-900">Verified company</p>
                     <p className="mt-0.5 text-[11px] text-slate-500">Company identity reviewed by Plyndrox team.</p>
@@ -286,7 +286,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                 </div>
               ) : (
                 <div className="flex items-start gap-3 rounded-2xl bg-slate-50 border border-slate-100 p-3">
-                  <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 text-[11px] font-black">?</div>
+                  <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400 text-[11px] font-black">?</div>
                   <div>
                     <p className="text-xs font-bold text-slate-500">Not verified</p>
                     <p className="mt-0.5 text-[11px] text-slate-400">Review company details before applying.</p>

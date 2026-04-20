@@ -88,7 +88,7 @@ export default function RecommendedJobs() {
     <div className="rounded-2xl border border-[#0a66c2]/20 bg-blue-50/30 p-4 sm:p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#0a66c2] text-white text-sm">✦</span>
+          <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-[#0a66c2] text-white text-sm">✦</span>
           <div>
             <p className="text-xs font-bold text-[#0a66c2] uppercase tracking-wide">Recommended for you</p>
             {nicheLabel && <p className="text-xs text-slate-500">{nicheLabel}{prefs.workMode ? ` · ${prefs.workMode}` : ""}</p>}
@@ -107,7 +107,7 @@ export default function RecommendedJobs() {
               href={`/recruit/opportunities/${job._id}`}
               className="group flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm hover:border-[#0a66c2]/30 hover:shadow-md transition-all"
             >
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-xs font-black text-[#0a66c2]">
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-xs font-black text-[#0a66c2]">
                 {(job.companyName || job.title).charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">

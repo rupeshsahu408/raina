@@ -125,7 +125,7 @@ export default function QuickCalculator({ compact = false }: { compact?: boolean
             <h3 className="font-black text-slate-950">Quick Calculator</h3>
             <p className="mt-1 text-xs font-medium text-slate-500">Rates, quantity, commission, and cash checks</p>
           </div>
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
+          <div className="flex h-5 w-5 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-800">
             <CalculatorIcon className="h-5 w-5" />
           </div>
         </div>

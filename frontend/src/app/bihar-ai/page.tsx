@@ -187,9 +187,9 @@ function TypingDots() {
 function BiharAvatar() {
   return (
     <img
-      src="/evara-logo.png"
+      src="/plyndrox-logo.svg"
       alt="Plyndrox"
-      className="h-8 w-8 shrink-0 object-contain"
+      className="h-10 w-10 shrink-0 object-contain plyndrox-logo-img"
       draggable={false}
     />
   );
@@ -470,7 +470,7 @@ export default function BiharAiPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#111111]">
         <div className="flex flex-col items-center gap-4">
-          <img src="/evara-logo.png" alt="Plyndrox AI" className="h-12 w-12 object-contain" draggable={false} />
+          <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
           <p className="text-[13px] text-zinc-500">Loading…</p>
         </div>
       </div>
@@ -501,7 +501,7 @@ export default function BiharAiPage() {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-gray-100 px-4 pt-5 pb-4">
           <div className="flex items-center gap-2">
-            <img src="/evara-logo.png" alt="Bihar AI" className="h-10 w-10 shrink-0 object-contain" draggable={false} />
+            <img src="/plyndrox-logo.svg" alt="Bihar AI" className="h-10 w-10 shrink-0 object-contain plyndrox-logo-img" draggable={false} />
             <div>
               <p className="text-[14px] font-semibold text-amber-600 leading-tight">Bihar AI</p>
               <p className="text-[10px] text-gray-400 leading-tight">Bihar-focused assistant</p>
@@ -784,7 +784,7 @@ export default function BiharAiPage() {
                       type="button"
                       onClick={startRecording}
                       disabled={isTyping}
-                      className="flex h-8 w-8 items-center justify-center rounded-xl border border-gray-200 text-gray-400 transition hover:border-gray-300 hover:text-[#1d2226] disabled:opacity-40"
+                      className="flex h-5 w-5 items-center justify-center rounded-xl border border-gray-200 text-gray-400 transition hover:border-gray-300 hover:text-[#1d2226] disabled:opacity-40"
                       aria-label="Voice input"
                       title="Voice input"
                     >
@@ -793,7 +793,7 @@ export default function BiharAiPage() {
                     <button
                       type="submit"
                       disabled={isTyping || input.trim().length === 0}
-                      className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm transition hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="flex h-5 w-5 items-center justify-center rounded-xl bg-amber-500 text-white shadow-sm transition hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       <IconSend size={14} />
                     </button>

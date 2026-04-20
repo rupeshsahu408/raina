@@ -149,8 +149,8 @@ export default function Home() {
       <nav className="fixed inset-x-0 top-0 z-50 glass-nav transition-all duration-300">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-white transition-transform group-hover:scale-105">
-              <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain brightness-0 invert" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-zinc-950 text-white transition-transform group-hover:scale-105">
+              <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
             </div>
             <span className="text-base font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
           </Link>
@@ -256,7 +256,7 @@ export default function Home() {
               {/* Bihar AI */}
               <Link href="/bihar-ai" className="bento-item col-span-4 group bg-zinc-950 border-zinc-800 text-white hover:border-zinc-700">
                 <div className="mb-8">
-                  <div className="h-10 w-10 rounded-xl bg-zinc-800 text-white flex items-center justify-center mb-6 border border-zinc-700">
+                  <div className="h-5 w-5 rounded-xl bg-zinc-800 text-white flex items-center justify-center mb-6 border border-zinc-700">
                     <GlobeIcon className="h-5 w-5" />
                   </div>
                   <h3 className="text-xl font-bold mb-2 text-white">Bihar AI</h3>
@@ -272,7 +272,7 @@ export default function Home() {
               {/* Payables */}
               <Link href="/payables" className="bento-item col-span-4 group bg-sky-50/30 border-sky-100 hover:border-sky-200">
                 <div className="mb-8">
-                  <div className="h-10 w-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center mb-6">
+                  <div className="h-5 w-5 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center mb-6">
                     <FileTextIcon className="h-5 w-5" />
                   </div>
                   <h3 className="text-xl font-bold text-zinc-950 mb-2">Plyndrox Payable AI</h3>
@@ -288,7 +288,7 @@ export default function Home() {
               {/* Ledger */}
               <Link href="/ledger" className="bento-item col-span-4 group bg-amber-50/30 border-amber-100 hover:border-amber-200">
                 <div className="mb-8">
-                  <div className="h-10 w-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-6">
+                  <div className="h-5 w-5 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-6">
                     <CalculatorIcon className="h-5 w-5" />
                   </div>
                   <h3 className="text-xl font-bold text-zinc-950 mb-2">Smart Ledger</h3>
@@ -304,7 +304,7 @@ export default function Home() {
               {/* Business/WhatsApp */}
               <Link href="/business-ai" className="bento-item col-span-4 group bg-emerald-50/30 border-emerald-100 hover:border-emerald-200">
                 <div className="mb-8">
-                  <div className="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6">
+                  <div className="h-5 w-5 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6">
                     <ZapIcon className="h-5 w-5" />
                   </div>
                   <h3 className="text-xl font-bold text-zinc-950 mb-2">Plyndrox Business AI</h3>
@@ -320,7 +320,7 @@ export default function Home() {
               {/* Recruit */}
               <Link href="/recruit" className="bento-item col-span-6 group bg-purple-50/30 border-purple-100 hover:border-purple-200">
                 <div className="mb-8">
-                  <div className="h-10 w-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-6">
+                  <div className="h-5 w-5 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-6">
                     <BriefcaseIcon className="h-5 w-5" />
                   </div>
                   <h3 className="text-xl font-bold text-zinc-950 mb-2">Plyndrox Recruit AI</h3>
@@ -336,7 +336,7 @@ export default function Home() {
               {/* Inbox */}
               <Link href="/inbox" className="bento-item col-span-6 group bg-rose-50/30 border-rose-100 hover:border-rose-200">
                 <div className="mb-8">
-                  <div className="h-10 w-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-6">
+                  <div className="h-5 w-5 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-6">
                     <InboxIcon className="h-5 w-5" />
                   </div>
                   <h3 className="text-xl font-bold text-zinc-950 mb-2">Plyndrox Inbox AI</h3>
@@ -466,8 +466,8 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-16">
             <div className="lg:col-span-2 pr-8">
               <Link href="/" className="flex items-center gap-2 mb-6 group">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 text-white transition-transform group-hover:scale-105 shadow-sm">
-                  <img src="/evara-logo.png" alt="Plyndrox" className="h-6 w-6 object-contain brightness-0 invert" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-950 text-white transition-transform group-hover:scale-105 shadow-sm">
+              <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
                 </div>
                 <span className="text-xl font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
               </Link>

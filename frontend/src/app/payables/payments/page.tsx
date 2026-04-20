@@ -142,7 +142,7 @@ export default function PayablesPaymentsPage() {
     doc.save("payables-payment-report.pdf");
   };
 
-  if (loading) return <div className="flex min-h-screen items-center justify-center bg-white"><div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-violet-600" /></div>;
+  if (loading) return <div className="flex min-h-screen items-center justify-center bg-white"><div className="h-5 w-5 animate-spin rounded-full border-4 border-gray-200 border-t-violet-600" /></div>;
 
   return (
     <div className="min-h-screen bg-[#f8f9fb]">

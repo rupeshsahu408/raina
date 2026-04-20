@@ -71,7 +71,7 @@ export function PlatformSwitcher({ current }: PlatformSwitcherProps) {
                   onClick={() => go(p)}
                   className="group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition hover:bg-white/5"
                 >
-                  <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${meta.bg} ${meta.border} border`}>
+                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-lg ${meta.bg} ${meta.border} border`}>
                     <span className={`text-[10px] font-black ${meta.color}`}>
                       {p === "evara" ? "E" : p === "whatsapp-ai" ? "W" : "I"}
                     </span>

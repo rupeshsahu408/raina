@@ -186,7 +186,7 @@ export default function JobMatchPanel({ jobId }: { jobId: string }) {
     return (
       <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50/60 p-5 shadow-sm">
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0a66c2] text-white text-base">✨</div>
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-[#0a66c2] text-white text-base">✨</div>
           <div className="flex-1">
             <h2 className="text-sm font-bold text-slate-900">See why this job matches you</h2>
             <p className="mt-1 text-xs text-slate-600 leading-relaxed">
@@ -221,7 +221,7 @@ export default function JobMatchPanel({ jobId }: { jobId: string }) {
     return (
       <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-indigo-50/60 p-5 shadow-sm">
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#0a66c2] text-white text-base">✨</div>
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-[#0a66c2] text-white text-base">✨</div>
           <div className="flex-1">
             <h2 className="text-sm font-bold text-slate-900">Why this job matches you</h2>
             <p className="mt-1 text-xs text-slate-600 leading-relaxed">

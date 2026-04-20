@@ -8,7 +8,7 @@ export default function WhatsAppAILandingPage() {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-0 pt-6 sm:px-6 lg:px-10">
         <header className="flex items-center justify-between rounded-full border border-gray-200 bg-white/90 px-5 py-4 shadow-sm backdrop-blur-xl">
           <a href="/" className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" draggable={false} />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
             <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Plyndrox Business</span>
           </a>
           <div className="flex items-center gap-3">
@@ -82,7 +82,7 @@ export default function WhatsAppAILandingPage() {
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <div className="flex items-center gap-3">
-                <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" draggable={false} />
+                <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
                 <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Plyndrox AI</span>
               </div>
               <p className="mt-4 text-sm leading-relaxed text-gray-500">

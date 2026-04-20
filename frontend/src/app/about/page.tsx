@@ -115,7 +115,7 @@ const products = [
     gradient: "from-violet-500 to-fuchsia-500",
     border: "border-gray-200",
     bg: "bg-white",
-    icon: <BrainIcon className="h-7 w-7" />,
+    icon: <BrainIcon className="h-5 w-5" />,
     iconBg: "bg-violet-50 border-violet-100",
     iconColor: "text-violet-600",
     badge: "bg-violet-50 border-violet-100 text-violet-700",
@@ -135,7 +135,7 @@ const products = [
     gradient: "from-amber-500 to-orange-500",
     border: "border-gray-200",
     bg: "bg-white",
-    icon: <GlobeIcon className="h-7 w-7" />,
+    icon: <GlobeIcon className="h-5 w-5" />,
     iconBg: "bg-amber-50 border-amber-100",
     iconColor: "text-amber-600",
     badge: "bg-amber-50 border-amber-100 text-amber-700",
@@ -155,7 +155,7 @@ const products = [
     gradient: "from-emerald-500 to-teal-500",
     border: "border-gray-200",
     bg: "bg-white",
-    icon: <MessageIcon className="h-7 w-7" />,
+    icon: <MessageIcon className="h-5 w-5" />,
     iconBg: "bg-emerald-50 border-emerald-100",
     iconColor: "text-emerald-600",
     badge: "bg-emerald-50 border-emerald-100 text-emerald-700",
@@ -248,7 +248,7 @@ export default function AboutPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -340,7 +340,7 @@ export default function AboutPage() {
                   ].map((item, i) => (
                     <div key={i} className="flex gap-4">
                       <div className="flex flex-col items-center">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-violet-200 bg-violet-50 text-xs font-bold text-violet-700">
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-violet-200 bg-violet-50 text-xs font-bold text-violet-700">
                           {i + 1}
                         </div>
                         {i < 4 && <div className="mt-1 h-full w-px bg-gray-200" />}
@@ -412,7 +412,7 @@ export default function AboutPage() {
               { icon: <RocketIcon className="h-6 w-6 text-sky-600" />, title: "Scalable Infrastructure", desc: "Handle growing usage, multiple channels, and concurrent workloads without compromising speed or quality.", bg: "bg-sky-50 border-sky-100" },
             ].map((item) => (
               <div key={item.title} className={`rounded-2xl border p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${item.bg}`}>
-                <div className="h-10 w-10 rounded-xl border border-white bg-white flex items-center justify-center shadow-sm">{item.icon}</div>
+                <div className="h-5 w-5 rounded-xl border border-white bg-white flex items-center justify-center shadow-sm">{item.icon}</div>
                 <h3 className="mt-4 font-bold text-[#1d2226]">{item.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-gray-500">{item.desc}</p>
               </div>
@@ -601,7 +601,7 @@ export default function AboutPage() {
               <div className="space-y-3">
                 {futureGoals.map((goal, i) => (
                   <div key={i} className="flex items-start gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white">
                       {i + 1}
                     </div>
                     <p className="text-sm leading-6 text-gray-500">{goal}</p>

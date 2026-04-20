@@ -4,7 +4,7 @@ export default function DataDeletionPage() {
       <header className="border-b border-zinc-100 bg-white px-4 py-4 sm:px-6">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           <a href="/whatsapp-ai" className="flex items-center gap-2">
-            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-7 w-7 rounded-md bg-white p-0.5 object-contain" draggable={false} />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 rounded-md bg-white p-0.5 object-contain plyndrox-logo-img" draggable={false} />
             <span className="text-sm font-bold tracking-wide text-zinc-900">Plyndrox AI</span>
           </a>
           <a href="/whatsapp-ai" className="text-sm text-emerald-700 hover:underline">← Back to Home</a>

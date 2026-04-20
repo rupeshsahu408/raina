@@ -109,7 +109,7 @@ export default function BusinessSummaryTimelinePage() {
   if (loading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#f4f8f5]">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-emerald-100 border-t-[#123f31]" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-emerald-100 border-t-[#123f31]" />
       </div>
     );
   }
@@ -152,7 +152,7 @@ export default function BusinessSummaryTimelinePage() {
         {summary.daily.length === 0 && !summaryLoading ? (
           <section className="mt-6 rounded-[2rem] bg-white p-10 text-center shadow-sm ring-1 ring-emerald-100">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-              <CalendarIcon className="h-7 w-7" />
+              <CalendarIcon className="h-5 w-5" />
             </div>
             <p className="text-lg font-black text-[#1d2226]">No business summary yet</p>
             <p className="mt-1 text-sm font-medium text-gray-500">Upload sattis from the dashboard and this timeline will fill automatically.</p>

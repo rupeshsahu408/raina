@@ -61,7 +61,7 @@ function SidebarContent({ pathname, onClose }: { pathname: string; onClose?: () 
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex h-16 shrink-0 items-center gap-3 px-5 border-b border-white/10">
-        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500 shadow-lg shadow-indigo-500/30">
+        <div className="flex h-5 w-5 items-center justify-center rounded-xl bg-indigo-500 shadow-lg shadow-indigo-500/30">
           <ZapIcon className="h-4 w-4 text-white" />
         </div>
         <div>

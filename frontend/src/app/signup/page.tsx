@@ -23,7 +23,7 @@ function SignupForm() {
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between bg-gray-50 border-r border-gray-200 p-10">
         <Link href="/" className="flex items-center gap-2.5">
-          <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+          <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
           <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
         </Link>
         <div>
@@ -50,7 +50,7 @@ function SignupForm() {
       <div className="flex flex-1 flex-col px-6 py-8 sm:px-12">
         <div className="flex items-center justify-between mb-8 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
-            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-7 w-7 object-contain" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-black uppercase tracking-[0.2em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <Link href={`/login?next=${encodeURIComponent(nextPath)}`} className="text-xs text-gray-500 hover:text-[#1d2226] transition">

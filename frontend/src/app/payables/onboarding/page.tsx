@@ -239,7 +239,7 @@ export default function PayablesOnboarding() {
         <div className="mb-10 flex items-center justify-center gap-0">
           {STEPS.map((s, i) => (
             <div key={s.num} className="flex items-center">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-black transition-all ${
+              <div className={`flex h-5 w-5 items-center justify-center rounded-full text-xs font-black transition-all ${
                 step > s.num
                   ? "bg-emerald-500 text-white"
                   : step === s.num
@@ -365,7 +365,7 @@ export default function PayablesOnboarding() {
                 </div>
               ) : gmailConnected ? (
                 <div className="flex items-start gap-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-emerald-500">
                     <CheckIcon className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -444,7 +444,7 @@ export default function PayablesOnboarding() {
         {step === 3 && (
           <div className="rounded-3xl border border-gray-100 bg-white p-8 text-center shadow-sm sm:p-10">
             <div className="mb-2 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg">
-              <SparklesIcon className="h-8 w-8 text-white" />
+              <SparklesIcon className="h-5 w-5 text-white" />
             </div>
             <h1 className="mt-5 text-2xl font-black tracking-tight text-[#1d2226] sm:text-3xl">
               You're all set, {companyName || "there"}!

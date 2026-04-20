@@ -144,7 +144,7 @@ export default function AppPage() {
       <nav className="fixed inset-x-0 top-0 z-50 border-b border-gray-100 bg-gray-50 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 object-contain" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-bold uppercase tracking-widest text-[#1d2226]">Plyndrox</span>
           </Link>
           <div className="flex items-center gap-4">
@@ -218,7 +218,7 @@ export default function AppPage() {
                   <div className="flex flex-col bg-gray-50 px-4 pb-6">
                     {/* App header */}
                     <div className="flex items-center gap-2 py-3 border-b border-gray-100">
-                      <img src="/evara-logo.png" alt="Plyndrox" className="h-6 w-6 object-contain" />
+                      <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
                       <span className="text-xs font-bold tracking-widest uppercase text-white">Plyndrox AI</span>
                     </div>
                     {/* Chat bubbles */}
@@ -332,7 +332,7 @@ export default function AppPage() {
                       className="group flex items-start gap-4 rounded-2xl border border-gray-100 bg-white/[0.02] p-4 transition-all hover:bg-gray-50 hover:border-emerald-500/20"
                       style={{ animationDelay: `${i * 100}ms` }}
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-emerald-500/10 text-emerald-400 font-bold text-sm">
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-emerald-500/10 text-emerald-400 font-bold text-sm">
                         {step.icon}
                       </div>
                       <div>
@@ -377,7 +377,7 @@ export default function AppPage() {
                       {/* Install banner */}
                       <div className="mt-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3">
                         <div className="flex items-center gap-2">
-                          <img src="/evara-logo.png" alt="Plyndrox" className="h-7 w-7 object-contain rounded-xl" />
+                          <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain rounded-xl plyndrox-logo-img" />
                           <div>
                             <p className="text-[10px] font-bold text-white">Plyndrox AI</p>
                             <p className="text-[9px] text-gray-500">Add to Home Screen</p>
@@ -389,7 +389,7 @@ export default function AppPage() {
                       <div className="mt-4 grid grid-cols-4 gap-2">
                         {["🤖","📱","💬","🎵","📷","🗓","⚙️","🌐"].map((em, i) => (
                           <div key={i} className="flex flex-col items-center gap-1">
-                            <div className={`h-10 w-10 rounded-xl flex items-center justify-center text-base ${i === 0 ? "bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30" : "bg-zinc-800"}`}>
+                            <div className={`h-5 w-5 rounded-xl flex items-center justify-center text-base ${i === 0 ? "bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30" : "bg-zinc-800"}`}>
                               {em}
                             </div>
                           </div>
@@ -441,7 +441,7 @@ export default function AppPage() {
                             { icon: <GlobeIcon className="h-4 w-4 text-gray-500" />, label: "Open" },
                           ].map((item, i) => (
                             <div key={i} className="flex flex-col items-center gap-1">
-                              <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${i === 0 ? "bg-sky-500/20 border border-sky-500/30" : "bg-gray-50"}`}>
+                              <div className={`h-5 w-5 rounded-xl flex items-center justify-center ${i === 0 ? "bg-sky-500/20 border border-sky-500/30" : "bg-gray-50"}`}>
                                 {item.icon}
                               </div>
                               <span className="text-[8px] text-gray-400">{item.label}</span>
@@ -456,8 +456,8 @@ export default function AppPage() {
                       <div className="mt-3 grid grid-cols-4 gap-2">
                         {["📧","🗺","🎵","📸","📰","📅","⚙","🌤"].map((em, i) => (
                           <div key={i} className="flex flex-col items-center gap-1">
-                            <div className={`h-10 w-10 rounded-[14px] flex items-center justify-center text-sm ${i === 6 ? "bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30" : "bg-zinc-800"}`}>
-                              {i === 6 ? <img src="/evara-logo.png" alt="" className="h-6 w-6 object-contain" /> : em}
+                            <div className={`h-5 w-5 rounded-[14px] flex items-center justify-center text-sm ${i === 6 ? "bg-gradient-to-br from-purple-600 to-pink-600 shadow-lg shadow-purple-500/30" : "bg-zinc-800"}`}>
+                              {i === 6 ? <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" /> : em}
                             </div>
                           </div>
                         ))}
@@ -490,7 +490,7 @@ export default function AppPage() {
                       key={i}
                       className="group flex items-start gap-4 rounded-2xl border border-gray-100 bg-white/[0.02] p-4 transition-all hover:bg-gray-50 hover:border-sky-500/20"
                     >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-sky-500/10 text-sky-400">
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-sky-500/10 text-sky-400">
                         {step.icon}
                       </div>
                       <div>
@@ -533,7 +533,7 @@ export default function AppPage() {
                 { icon: <BrainIcon className="h-5 w-5" />, color: "text-violet-400 bg-violet-500/10", title: "Always Updated", desc: "PWA updates automatically — you always have the latest version without manual updates." },
               ].map((item) => (
                 <div key={item.title} className="group flex flex-col gap-4 rounded-[1.5rem] border border-gray-100 bg-white/[0.02] p-6 transition-all hover:bg-white">
-                  <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${item.color}`}>
+                  <div className={`inline-flex h-5 w-5 items-center justify-center rounded-xl ${item.color}`}>
                     {item.icon}
                   </div>
                   <div>
@@ -607,7 +607,7 @@ export default function AppPage() {
             <div className="absolute left-1/2 top-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-purple-600/20 blur-[100px]" />
           </div>
           <div className="relative z-10 mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-            <SparklesIcon className="mx-auto h-10 w-10 text-purple-400 mb-6" />
+            <SparklesIcon className="mx-auto h-5 w-5 text-purple-400 mb-6" />
             <h2 className="text-4xl font-medium tracking-tight text-white sm:text-6xl text-balance">
               Your AI, always in your pocket.
             </h2>
@@ -638,7 +638,7 @@ export default function AppPage() {
               <div className="space-y-6">
                 <Link href="/" className="group inline-flex items-center gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white/10 shadow-lg shadow-purple-500/10 transition group-hover:scale-105 group-hover:border-purple-300/50">
-                    <img src="/evara-logo.png" alt="Plyndrox AI" className="h-7 w-7 object-contain" />
+                    <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
                   </span>
                   <span>
                     <span className="block text-base font-bold uppercase tracking-[0.22em] text-white">Plyndrox AI</span>

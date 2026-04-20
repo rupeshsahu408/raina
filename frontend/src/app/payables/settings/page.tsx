@@ -82,7 +82,7 @@ function SectionCard({ icon, title, subtitle, children }: { icon: React.ReactNod
   return (
     <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
       <div className="flex items-center gap-3 border-b border-gray-50 px-6 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-50">{icon}</div>
+        <div className="flex h-6 w-6 items-center justify-center rounded-xl bg-violet-50">{icon}</div>
         <div>
           <h2 className="text-sm font-bold text-[#1d2226]">{title}</h2>
           <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>
@@ -494,7 +494,7 @@ export default function PayablesSettings() {
           {gmailMsg && (
             <div className={`rounded-xl border px-4 py-3 text-sm flex items-center gap-2 ${gmailMsg.type === "success" ? "border-emerald-100 bg-emerald-50 text-emerald-700" : gmailMsg.type === "error" ? "border-rose-100 bg-rose-50 text-rose-700" : "border-violet-100 bg-violet-50 text-violet-700"}`}>
               <span className="flex-1">{gmailMsg.text}</span>
-              <button onClick={() => setGmailMsg(null)} className="text-xs opacity-60 hover:opacity-100">✕</button>
+              <button onClick={() => setGmailMsg(null)} className="text-xs hover:opacity-100">✕</button>
             </div>
           )}
           <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">

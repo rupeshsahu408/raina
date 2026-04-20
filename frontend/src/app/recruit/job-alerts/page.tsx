@@ -321,7 +321,7 @@ function JobAlertsContent() {
                 {alerts.map(alert => (
                   <div key={alert._id} className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
                     <div className="flex items-center gap-3 p-4">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0a66c2]">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0a66c2]">
                         <BellIcon />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -334,10 +334,10 @@ function JobAlertsContent() {
                             {alert.newJobCount} new
                           </span>
                         )}
-                        <button onClick={() => toggleExpand(alert._id)} className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition">
+                        <button onClick={() => toggleExpand(alert._id)} className="flex h-5 w-5 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition">
                           <div className={`transition-transform ${expandedAlert === alert._id ? "rotate-180" : ""}`}><ChevronDown /></div>
                         </button>
-                        <button onClick={() => handleDelete(alert._id)} disabled={deleting === alert._id} className="flex h-8 w-8 items-center justify-center rounded-lg border border-red-100 text-red-400 hover:bg-red-50 transition disabled:opacity-50">
+                        <button onClick={() => handleDelete(alert._id)} disabled={deleting === alert._id} className="flex h-5 w-5 items-center justify-center rounded-lg border border-red-100 text-red-400 hover:bg-red-50 transition disabled:opacity-50">
                           <TrashIcon />
                         </button>
                       </div>
@@ -365,7 +365,7 @@ function JobAlertsContent() {
                                   href={`/recruit/opportunities/${job._id}`}
                                   className="group flex items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 hover:border-[#0a66c2]/30 hover:bg-blue-50/20 transition"
                                 >
-                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200 text-xs font-black text-[#0a66c2]">
+                                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-white border border-slate-200 text-xs font-black text-[#0a66c2]">
                                     {(job.companyName || job.title).charAt(0).toUpperCase()}
                                   </div>
                                   <div className="min-w-0 flex-1">

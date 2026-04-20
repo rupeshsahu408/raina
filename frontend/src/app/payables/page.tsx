@@ -151,7 +151,7 @@ function ApiAccessForm() {
     return (
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-10 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
-          <CheckIcon className="h-7 w-7 text-emerald-600" />
+          <CheckIcon className="h-5 w-5 text-emerald-600" />
         </div>
         <div>
           <p className="text-lg font-black text-[#1d2226]">Request Submitted!</p>
@@ -422,7 +422,7 @@ export default function PayablesLanding() {
                   { vendor: "Slack Technologies", amount: "$420", due: "May 12", status: "Processing", statusColor: "bg-amber-50 text-amber-700" },
                 ].map((row) => (
                   <div key={row.vendor} className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-50">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-lg bg-violet-50">
                       <MailIcon className="h-4 w-4 text-violet-400" />
                     </div>
                     <div className="flex-1 text-sm font-semibold text-[#1d2226]">{row.vendor}</div>
@@ -599,7 +599,7 @@ export default function PayablesLanding() {
               },
             ].map((card) => (
               <div key={card.title} className={`rounded-2xl border ${card.border} bg-white p-7 shadow-sm`}>
-                <div className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl ${card.color}`}>
+                <div className={`mb-4 inline-flex h-5 w-5 items-center justify-center rounded-xl ${card.color}`}>
                   {card.icon}
                 </div>
                 <h3 className="mb-2 text-base font-black text-[#1d2226]">{card.title}</h3>
@@ -651,7 +651,7 @@ export default function PayablesLanding() {
       <section className="px-4 pb-28 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-10 text-center shadow-sm sm:p-20">
           <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-600 to-indigo-600 shadow-lg">
-            <ShieldIcon className="h-8 w-8 text-white" />
+            <ShieldIcon className="h-5 w-5 text-white" />
           </div>
           <h2 className="mt-4 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl">
             Ready to take control of your payables?

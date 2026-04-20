@@ -1534,7 +1534,7 @@ export default function InboxDashboard() {
   if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-8 w-8 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin" />
+        <div className="h-5 w-5 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin" />
       </div>
     );
   }
@@ -1564,8 +1564,8 @@ export default function InboxDashboard() {
         {/* Logo */}
         <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
           <Link href="/" className="flex items-center gap-3 min-w-0">
-            <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#5c4ff6 0%,#7c3aed 100%)", boxShadow: "0 4px 12px rgba(92,79,246,0.45)" }}>
-              <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain" />
+            <div className="h-6 w-6 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#5c4ff6 0%,#7c3aed 100%)", boxShadow: "0 4px 12px rgba(92,79,246,0.45)" }}>
+              <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-black tracking-tight text-white leading-none">Plyndrox</p>
@@ -1812,7 +1812,7 @@ export default function InboxDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2.5 mb-0.5">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#5c4ff6]">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-xl bg-[#5c4ff6]">
                         <SparkleIcon />
                       </span>
                       <h1 className="text-lg font-black text-white tracking-tight">Today's Mission</h1>
@@ -2930,7 +2930,7 @@ export default function InboxDashboard() {
                       {(followUpDetecting || followUpDetection) && (
                         <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
                           <div className="flex items-center gap-2 mb-3">
-                            <span className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
+                            <span className="flex h-5 w-5 items-center justify-center rounded-xl bg-amber-100 text-amber-600">
                               <BellIcon />
                             </span>
                             <span className="text-xs font-black text-amber-800">AI Follow-Up Detection</span>

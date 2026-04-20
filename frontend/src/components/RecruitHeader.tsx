@@ -69,7 +69,7 @@ export default function RecruitHeader() {
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link href="/recruit" className="flex items-center gap-2.5 shrink-0">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a66c2] text-sm font-black text-white">R</span>
+          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#0a66c2] text-sm font-black text-white">R</span>
           <span className="hidden sm:block">
             <span className="block text-sm font-bold leading-tight">Plyndrox Recruit AI</span>
             <span className="block text-[11px] text-slate-500 leading-tight">India Jobs Network</span>
@@ -145,7 +145,7 @@ export default function RecruitHeader() {
           )}
           <button
             onClick={() => setMobileOpen(o => !o)}
-            className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
+            className="md:hidden flex h-6 w-6 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
           >
             {mobileOpen ? <XIcon /> : <MenuIcon />}
           </button>

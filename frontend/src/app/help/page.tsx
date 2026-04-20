@@ -398,7 +398,7 @@ export default function HelpPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -494,7 +494,7 @@ export default function HelpPage() {
                   key={i}
                   className="group flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-4 transition hover:border-gray-300 hover:bg-gray-50 cursor-pointer"
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-gray-100">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl border border-gray-200 bg-gray-100">
                     <BookIcon className="h-4 w-4 text-gray-500" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -631,7 +631,7 @@ export default function HelpPage() {
             ))}
             {filteredFaqs.length === 0 && (
               <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
-                <SearchIcon className="h-8 w-8 text-zinc-700 mx-auto mb-3" />
+                <SearchIcon className="h-5 w-5 text-zinc-700 mx-auto mb-3" />
                 <p className="text-sm text-gray-500">No results found. Try different keywords.</p>
                 <Link href="/contact" className="mt-4 inline-flex items-center gap-1.5 text-sm text-indigo-400 hover:text-indigo-300 transition">
                   Contact support <ArrowRightIcon className="h-4 w-4" />

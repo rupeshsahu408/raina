@@ -99,7 +99,7 @@ export default function InboxLandingPage() {
       <nav className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 items-center justify-between px-4 max-w-7xl sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 object-contain" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox</span>
           </Link>
           <div className="hidden md:flex items-center gap-6 text-sm text-gray-500">
@@ -299,7 +299,7 @@ export default function InboxLandingPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
               <div key={f.title} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-                <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl border ${f.iconStyle}`}>
+                <div className={`mb-4 flex h-5 w-5 items-center justify-center rounded-xl border ${f.iconStyle}`}>
                   {f.icon}
                 </div>
                 <h3 className="text-base font-bold text-[#1d2226] mb-2">{f.title}</h3>
@@ -363,7 +363,7 @@ export default function InboxLandingPage() {
       <footer className="border-t border-gray-200 bg-white py-7 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 text-gray-400 hover:text-[#1d2226] transition">
-            <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain opacity-60" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-xs font-bold uppercase tracking-[0.18em]">Plyndrox · Plyndrox Inbox AI</span>
           </Link>
           <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox. All rights reserved.</p>

@@ -411,7 +411,7 @@ function SupplierHistoryPanel({
           ) : !data || data.stats.totalInvoices === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100">
-                <BuildingIcon className="h-7 w-7 text-gray-300" />
+                <BuildingIcon className="h-5 w-5 text-gray-300" />
               </div>
               <p className="font-medium text-gray-600">No processed invoices yet</p>
               <p className="text-sm text-gray-400 max-w-xs">
@@ -830,7 +830,7 @@ export default function EmailInboxPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <Spinner size="h-8 w-8" />
+          <Spinner size="h-5 w-5" />
           <p className="text-gray-500 text-sm">Loading email inbox...</p>
         </div>
       </div>
@@ -849,7 +849,7 @@ export default function EmailInboxPage() {
             </Link>
             <span className="text-gray-300">/</span>
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-600">
+              <div className="flex h-5 w-5 items-center justify-center rounded-lg bg-violet-600">
                 <MailIcon className="h-4 w-4 text-white" />
               </div>
               <span className="font-semibold text-gray-900 text-sm">Email Invoice Inbox</span>
@@ -994,7 +994,7 @@ export default function EmailInboxPage() {
         {emails.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-gray-200 bg-white p-12 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gray-100">
-              <MailIcon className="h-7 w-7 text-gray-400" />
+              <MailIcon className="h-5 w-5 text-gray-400" />
             </div>
             <h3 className="font-semibold text-gray-700">No invoice emails found</h3>
             <p className="mt-1 text-sm text-gray-500">
@@ -1044,7 +1044,7 @@ export default function EmailInboxPage() {
                   : email.status === "failed" ? "border-red-200/50"
                   : "border-gray-200"
                 }`}>
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${color} text-white text-sm font-bold`}>
+                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${color} text-white text-sm font-bold`}>
                     {init}
                   </div>
                   <div className="flex-1 min-w-0">

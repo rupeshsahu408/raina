@@ -953,7 +953,7 @@ export default function LedgerDashboard() {
                   </div>
                 ) : isPdfUpload ? (
                   <div className="w-24 h-24 rounded-2xl bg-red-50 border-2 border-red-100 flex items-center justify-center shadow-sm">
-                    <FileImageIcon className="h-10 w-10 text-red-400" />
+                    <FileImageIcon className="h-5 w-5 text-red-400" />
                   </div>
                 ) : null}
                 <div className="w-full max-w-xs">
@@ -974,7 +974,7 @@ export default function LedgerDashboard() {
               <div className="flex flex-col items-center gap-4">
                 <div className="relative">
                   <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-                    <UploadIcon className="h-7 w-7 text-emerald-600" />
+                    <UploadIcon className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-xl bg-emerald-600 border-2 border-white flex items-center justify-center">
                     <FileImageIcon className="h-3.5 w-3.5 text-white" />

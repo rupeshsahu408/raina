@@ -189,7 +189,7 @@ export default function ContactPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Plyndrox AI" className="h-8 w-8 object-contain" />
+            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -233,7 +233,7 @@ export default function ContactPage() {
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
-                    <div className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 ${r.color}`}>
+                    <div className={`mb-3 flex h-6 w-6 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 ${r.color}`}>
                       {r.icon}
                     </div>
                     <p className="font-semibold text-[#1d2226] text-sm">{r.label}</p>
@@ -251,7 +251,7 @@ export default function ContactPage() {
             {submitted ? (
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-10 text-center">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-emerald-200 bg-emerald-100">
-                  <CheckCircleIcon className="h-8 w-8 text-emerald-600" />
+                  <CheckCircleIcon className="h-5 w-5 text-emerald-600" />
                 </div>
                 <h3 className="mt-5 text-xl font-bold text-[#1d2226]">Message Ready to Send</h3>
                 <p className="mt-3 text-sm leading-7 text-gray-500">
@@ -280,7 +280,7 @@ export default function ContactPage() {
                 className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8"
               >
                 <div className="mb-6 flex items-center gap-3">
-                  <span className={`flex h-8 w-8 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 ${route.color}`}>
+                  <span className={`flex h-5 w-5 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 ${route.color}`}>
                     {route.icon}
                   </span>
                   <div>
@@ -399,7 +399,7 @@ export default function ContactPage() {
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 mb-5">Contact Details</p>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-violet-100 bg-violet-50 text-violet-600">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl border border-violet-100 bg-violet-50 text-violet-600">
                     <MailIcon className="h-4 w-4" />
                   </div>
                   <div>
@@ -410,7 +410,7 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-600">
                     <ClockIcon className="h-4 w-4" />
                   </div>
                   <div>
@@ -419,7 +419,7 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-sky-100 bg-sky-50 text-sky-600">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xl border border-sky-100 bg-sky-50 text-sky-600">
                     <ShieldIcon className="h-4 w-4" />
                   </div>
                   <div>
@@ -442,7 +442,7 @@ export default function ContactPage() {
                       selectedRoute === r.id ? "border-violet-200 bg-violet-50" : "border-gray-200 bg-transparent"
                     }`}
                   >
-                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 ${r.color}`}>
+                    <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-gray-50 ${r.color}`}>
                       {r.icon}
                     </span>
                     <div className="min-w-0">
