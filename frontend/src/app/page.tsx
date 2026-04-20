@@ -1,7 +1,6 @@
-import { InstallPrompt } from "@/components/InstallPrompt";
-import { DemoChatWidget } from "@/components/DemoChatWidget";
 import { AuthRedirect } from "@/components/AuthRedirect";
 import Link from "next/link";
+import { DemoChatWidget } from "@/components/DemoChatWidget";
 
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -12,94 +11,120 @@ function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function ZapIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  );
+}
+
+function ShieldIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    </svg>
+  );
+}
+
+function GlobeIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  );
+}
+
 function SmartphoneIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
-      <path d="M12 18h.01" />
+      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+      <line x1="12" y1="18" x2="12.01" y2="18" />
     </svg>
   );
 }
 
-function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
+function BriefcaseIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-      <path d="M5 3v4" /><path d="M19 17v4" /><path d="M3 5h4" /><path d="M17 19h4" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
     </svg>
   );
 }
 
-function CheckIcon(props: React.SVGProps<SVGSVGElement>) {
+function InboxIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M20 6 9 17l-5-5" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
+      <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
     </svg>
   );
 }
 
-function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
+function FileTextIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <rect x="3" y="3" width="18" height="18" rx="5" />
-      <circle cx="12" cy="12" r="4" />
-      <path d="M17.5 6.5h.01" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
     </svg>
   );
 }
 
-function LinkedInIcon(props: React.SVGProps<SVGSVGElement>) {
+function CalculatorIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-13h4v2" />
-      <path d="M2 9h4v12H2z" />
-      <circle cx="4" cy="4" r="2" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+      <line x1="8" y1="6" x2="16" y2="6" />
+      <line x1="16" y1="14" x2="16" y2="14.01" />
+      <line x1="16" y1="10" x2="16" y2="10.01" />
+      <line x1="16" y1="18" x2="16" y2="18.01" />
+      <line x1="12" y1="14" x2="12" y2="14.01" />
+      <line x1="12" y1="10" x2="12" y2="10.01" />
+      <line x1="12" y1="18" x2="12" y2="18.01" />
+      <line x1="8" y1="14" x2="8" y2="14.01" />
+      <line x1="8" y1="10" x2="8" y2="10.01" />
+      <line x1="8" y1="18" x2="8" y2="18.01" />
     </svg>
   );
 }
 
-function XIcon(props: React.SVGProps<SVGSVGElement>) {
+function NetworkIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M4 4l16 16" />
-      <path d="M20 4 4 20" />
-    </svg>
-  );
-}
-
-function YouTubeIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M22 12s0-3.4-.44-5.02a2.82 2.82 0 0 0-1.98-1.98C17.96 4.56 12 4.56 12 4.56s-5.96 0-7.58.44a2.82 2.82 0 0 0-1.98 1.98C2 8.6 2 12 2 12s0 3.4.44 5.02a2.82 2.82 0 0 0 1.98 1.98c1.62.44 7.58.44 7.58.44s5.96 0 7.58-.44a2.82 2.82 0 0 0 1.98-1.98C22 15.4 22 12 22 12Z" />
-      <path d="m10 15 5-3-5-3v6Z" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="16" y="16" width="6" height="6" rx="1" />
+      <rect x="2" y="16" width="6" height="6" rx="1" />
+      <rect x="9" y="2" width="6" height="6" rx="1" />
+      <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
+      <path d="M12 12V8" />
     </svg>
   );
 }
 
 const footerColumns = [
   {
-    title: "Product",
+    title: "Platform",
     links: [
-      ["Home", "/"],
-      ["Features", "/features"],
-      ["App", "/app"],
-      ["Chat", "/chat"],
-      ["Plyndrox Business AI", "/business-ai"],
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      ["Blog", "/blog"],
-      ["Help Center", "/help"],
+      ["Personal AI", "/chat"],
       ["Bihar AI", "/bihar-ai"],
-      ["Settings", "/settings"],
+      ["Plyndrox Business AI", "/business-ai"],
+      ["Plyndrox Inbox AI", "/inbox"],
+      ["Plyndrox Payable AI", "/payables"],
+      ["Plyndrox Recruit AI", "/recruit"],
+      ["Smart Ledger", "/ledger"],
     ],
   },
   {
     title: "Company",
     links: [
       ["About Us", "/about"],
+      ["Features", "/features"],
+      ["Blog", "/blog"],
       ["Partners", "/partners"],
       ["Contact", "/contact"],
     ],
@@ -110,141 +135,297 @@ const footerColumns = [
       ["Privacy Policy", "/privacy-policy"],
       ["Terms of Service", "/terms"],
       ["Cookie Policy", "/cookies"],
-      ["Disclaimer", "/disclaimer"],
+      ["Trust & Safety", "/disclaimer"],
     ],
   },
 ];
 
-const socialLinks = [
-  { label: "Instagram", href: "https://www.instagram.com/", Icon: InstagramIcon },
-  { label: "LinkedIn", href: "https://www.linkedin.com/", Icon: LinkedInIcon },
-  { label: "Twitter X", href: "https://x.com/", Icon: XIcon },
-  { label: "YouTube", href: "https://www.youtube.com/", Icon: YouTubeIcon },
-];
-
 export default function Home() {
   return (
-    <div className="relative min-h-screen bg-white text-[#1d2226]">
+    <div className="relative min-h-screen bg-white text-zinc-950 font-sans selection:bg-indigo-100 selection:text-indigo-900">
       <AuthRedirect />
 
       {/* Navigation */}
-      <nav className="fixed inset-x-0 top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
+      <nav className="fixed inset-x-0 top-0 z-50 glass-nav transition-all duration-300">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2.5">
-            <img src="/evara-logo.png" alt="Plyndrox" className="h-8 w-8 object-contain" />
-            <span className="text-sm font-black uppercase tracking-[0.28em] text-[#1d2226]">Plyndrox</span>
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-950 text-white transition-transform group-hover:scale-105">
+              <img src="/evara-logo.png" alt="Plyndrox" className="h-5 w-5 object-contain brightness-0 invert" />
+            </div>
+            <span className="text-base font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
           </Link>
-          <div className="hidden items-center gap-7 text-sm font-medium text-gray-500 md:flex">
-            <Link href="/features" className="transition hover:text-[#1d2226]">Features</Link>
-            <Link href="/bihar-ai" className="transition hover:text-[#1d2226]">Bihar AI</Link>
-            <Link href="/business-ai" className="transition hover:text-[#1d2226]">Business</Link>
-            <Link href="/inbox" className="transition hover:text-[#1d2226]">Plyndrox Inbox AI</Link>
-            <Link href="/payables" className="font-semibold text-violet-600 transition hover:text-violet-700">Plyndrox Payable AI</Link>
-            <Link href="/blog" className="transition hover:text-[#1d2226]">Blog</Link>
+          <div className="hidden items-center gap-8 text-sm font-medium text-zinc-600 md:flex">
+            <Link href="/chat" className="transition hover:text-zinc-950">Personal</Link>
+            <Link href="/business-ai" className="transition hover:text-zinc-950">Business</Link>
+            <Link href="/payables" className="transition hover:text-zinc-950">Finance</Link>
+            <Link href="/recruit" className="transition hover:text-zinc-950">Recruiting</Link>
+            <Link href="/bihar-ai" className="transition hover:text-zinc-950">Regional</Link>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Link href="/login" className="hidden rounded-full px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-100 sm:block">
-              Sign in
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="hidden text-sm font-semibold text-zinc-600 transition hover:text-zinc-950 sm:block">
+              Log in
             </Link>
-            <Link href="/signup" className="rounded-full bg-[#1d2226] px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-[#2d3238] sm:px-5 sm:text-sm">
-              Get started
+            <Link href="/signup" className="btn-primary px-5 py-2 text-sm">
+              Get Started
             </Link>
           </div>
         </div>
       </nav>
 
       <main className="flex flex-col">
-
-        {/* Hero */}
-        <section className="relative flex min-h-[100svh] items-center overflow-hidden px-4 pb-16 pt-28 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-gray-50 to-white">
-          <div className="absolute inset-0 premium-grid opacity-60" />
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-violet-300/40 to-transparent" />
-
-          <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="flex flex-col items-start text-left">
-              <div className="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-                <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-700 shadow-sm">
-                  <SparklesIcon className="h-3.5 w-3.5" />
-                  <span>Mobile-first personal intelligence</span>
-                </div>
-                <a
-                  href="https://sendora.me/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white py-1.5 pl-1.5 pr-4 text-xs font-bold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow"
-                  aria-label="Powered by Sendora"
-                >
-                  <span className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-gray-100 bg-white">
-                    <img src="/sendora-logo.png" alt="Sendora logo" className="h-7 w-7 object-contain" />
-                  </span>
-                  <span className="tracking-[0.1em]">Powered by Sendora</span>
-                </a>
+        {/* Hero Section */}
+        <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+          <div className="absolute inset-0 hero-grid opacity-[0.4]" />
+          <div className="hero-glow" />
+          
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-4xl mx-auto">
+              <div className="animate-fade-in-up inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50/50 px-4 py-1.5 text-xs font-semibold text-indigo-700 mb-8 backdrop-blur-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                </span>
+                Introducing Plyndrox Intelligence Suite
               </div>
-
-              <h1 className="max-w-3xl text-balance text-5xl font-black leading-[1.0] tracking-[-0.04em] text-[#1d2226] sm:text-6xl lg:text-7xl">
-                An AI companion that feels calm, capable, and human.
+              
+              <h1 className="animate-fade-in-up delay-100 text-5xl font-extrabold tracking-tight text-zinc-950 sm:text-7xl lg:text-[5rem] leading-[1.05]">
+                Intelligence built for <br/>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">life and work.</span>
               </h1>
-
-              <p className="mt-6 max-w-xl text-pretty text-base leading-8 text-gray-500 sm:text-lg">
-                Plyndrox brings supportive conversations, regional knowledge, and business automation into one refined platform built to feel effortless on your phone first.
+              
+              <p className="animate-fade-in-up delay-200 mt-8 max-w-2xl mx-auto text-lg leading-relaxed text-zinc-600 sm:text-xl">
+                Plyndrox AI brings personal assistance, regional intelligence, and professional automation into one polished platform for modern individuals, teams, and growing businesses.
               </p>
-
-              <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-                <Link href="/signup" className="inline-flex min-h-13 w-full items-center justify-center rounded-full bg-[#1d2226] px-7 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#2d3238] hover:shadow-md sm:w-auto">
-                  Start free
+              
+              <div className="animate-fade-in-up delay-300 mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link href="/signup" className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 text-base">
+                  Start Free <ArrowRightIcon className="h-4 w-4" />
                 </Link>
-                <Link href="/chat" className="inline-flex min-h-13 w-full items-center justify-center rounded-full border border-gray-200 bg-white px-7 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:shadow sm:w-auto">
-                  Open chat
-                </Link>
-                <Link
-                  href="/app"
-                  className="inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-7 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:w-auto"
-                >
-                  <SmartphoneIcon className="h-4 w-4" />
-                  Install app
+                <Link href="/features" className="btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 text-base">
+                  Explore Platform
                 </Link>
               </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-5 text-sm text-gray-400">
-                {["Free to start", "No credit card", "Works on all devices"].map((item) => (
-                  <span key={item} className="flex items-center gap-1.5">
-                    <CheckIcon className="h-3.5 w-3.5 text-emerald-500" />
-                    {item}
-                  </span>
-                ))}
-              </div>
-
-              <div className="mt-8 grid w-full max-w-sm grid-cols-3 gap-3">
-                {[
-                  ["24/7", "companion"],
-                  ["10+", "languages"],
-                  ["PWA", "ready"],
-                ].map(([value, label]) => (
-                  <div key={label} className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-                    <p className="text-xl font-black text-[#1d2226] sm:text-2xl">{value}</p>
-                    <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">{label}</p>
-                  </div>
-                ))}
+              <div className="mt-16 animate-fade-in delay-300 border-t border-zinc-100 pt-10">
+                <div className="mx-auto grid max-w-3xl gap-3 text-left sm:grid-cols-3">
+                  {[
+                    ["7 AI workspaces", "Personal, regional, business, finance, hiring, email, and ledger workflows."],
+                    ["Mobile-first", "Designed to feel fast and focused from phone to desktop."],
+                    ["Human-in-loop", "Automation that keeps people in control of important decisions."],
+                  ].map(([title, body]) => (
+                    <div key={title} className="rounded-2xl border border-zinc-100 bg-white/80 p-4 shadow-sm">
+                      <p className="text-sm font-bold text-zinc-950">{title}</p>
+                      <p className="mt-1 text-xs leading-5 text-zinc-500">{body}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
+        </section>
 
-            {/* Chat preview */}
-            <div className="relative mx-auto w-full max-w-sm lg:ml-auto lg:max-w-md">
-              <div className="absolute -inset-4 rounded-[2.5rem] bg-gradient-to-br from-violet-100/80 via-indigo-50/60 to-sky-100/60 blur-2xl" />
-              <div className="relative rounded-[2rem] border border-gray-200 bg-white p-3 shadow-xl">
-                <div className="rounded-[1.6rem] border border-gray-100 bg-gray-50/80 p-4">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 shadow-md">
-                        <img src="/evara-logo.png" alt="Plyndrox" className="h-7 w-7 object-contain" />
-                      </span>
-                      <span>
-                        <span className="block text-sm font-bold text-[#1d2226]">Plyndrox AI</span>
-                        <span className="text-xs text-emerald-600">Ready to listen</span>
-                      </span>
-                    </div>
-                    <InstallPrompt label="Install" className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-[11px] font-bold text-gray-600 shadow-sm transition hover:bg-gray-50" />
+        {/* Core Product Suite - Bento Grid */}
+        <section className="py-24 bg-white relative">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="mb-16">
+              <h2 className="text-3xl font-extrabold tracking-tight text-zinc-950 sm:text-4xl">
+                A unified ecosystem. <br/> Tailored for your specific needs.
+              </h2>
+              <p className="mt-4 text-lg text-zinc-600 max-w-2xl">
+                We didn't build just one tool. We built an entire intelligence layer that integrates seamlessly into how you live, work, and operate.
+              </p>
+            </div>
+
+            <div className="bento-grid">
+              {/* Personal AI (Large) */}
+              <Link href="/chat" className="bento-item col-span-8 group flex flex-col justify-between bg-zinc-50/50 hover:bg-zinc-50 border-indigo-100">
+                <div className="mb-8">
+                  <div className="h-12 w-12 rounded-2xl bg-indigo-100 text-indigo-600 flex items-center justify-center mb-6 shadow-sm border border-indigo-200/50">
+                    <SmartphoneIcon className="h-6 w-6" />
                   </div>
+                  <h3 className="text-2xl font-bold text-zinc-950 mb-3 group-hover:text-indigo-600 transition-colors">Plyndrox Personal Companion</h3>
+                  <p className="text-zinc-600 leading-relaxed max-w-lg text-base">
+                    An emotionally intelligent AI that remembers context, provides gentle support, and acts as your daily sounding board. Available instantly on mobile.
+                  </p>
+                </div>
+                <div className="mt-auto flex items-center text-sm font-bold text-indigo-600 uppercase tracking-wide">
+                  Try Personal AI <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+
+              {/* Bihar AI */}
+              <Link href="/bihar-ai" className="bento-item col-span-4 group bg-zinc-950 border-zinc-800 text-white hover:border-zinc-700">
+                <div className="mb-8">
+                  <div className="h-10 w-10 rounded-xl bg-zinc-800 text-white flex items-center justify-center mb-6 border border-zinc-700">
+                    <GlobeIcon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2 text-white">Bihar AI</h3>
+                  <p className="text-zinc-400 text-sm leading-relaxed">
+                    Deep regional intelligence. Rooted in local culture, news, education, and career opportunities specific to Bihar.
+                  </p>
+                </div>
+                <div className="mt-auto flex items-center text-sm font-semibold text-white">
+                  Explore Region <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+
+              {/* Payables */}
+              <Link href="/payables" className="bento-item col-span-4 group bg-sky-50/30 border-sky-100 hover:border-sky-200">
+                <div className="mb-8">
+                  <div className="h-10 w-10 rounded-xl bg-sky-100 text-sky-600 flex items-center justify-center mb-6">
+                    <FileTextIcon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-bold text-zinc-950 mb-2">Plyndrox Payable AI</h3>
+                  <p className="text-zinc-600 text-sm leading-relaxed">
+                    Automate invoice processing. Extract data, manage approvals, and schedule payments without touching a spreadsheet.
+                  </p>
+                </div>
+                <div className="mt-auto flex items-center text-sm font-semibold text-sky-600">
+                  Automate Finance <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+
+              {/* Ledger */}
+              <Link href="/ledger" className="bento-item col-span-4 group bg-amber-50/30 border-amber-100 hover:border-amber-200">
+                <div className="mb-8">
+                  <div className="h-10 w-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center mb-6">
+                    <CalculatorIcon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-bold text-zinc-950 mb-2">Smart Ledger</h3>
+                  <p className="text-zinc-600 text-sm leading-relaxed">
+                    Smart ledger workflows for small businesses. Track cash flow, manage expenses, and generate reports automatically.
+                  </p>
+                </div>
+                <div className="mt-auto flex items-center text-sm font-semibold text-amber-600">
+                  Manage Ledger <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+
+              {/* Business/WhatsApp */}
+              <Link href="/business-ai" className="bento-item col-span-4 group bg-emerald-50/30 border-emerald-100 hover:border-emerald-200">
+                <div className="mb-8">
+                  <div className="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6">
+                    <ZapIcon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-bold text-zinc-950 mb-2">Plyndrox Business AI</h3>
+                  <p className="text-zinc-600 text-sm leading-relaxed">
+                    Deploy intelligent agents on WhatsApp and your website. Handle routine questions, capture leads, and create cleaner handoff paths.
+                  </p>
+                </div>
+                <div className="mt-auto flex items-center text-sm font-semibold text-emerald-600">
+                  Connect Customers <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+
+              {/* Recruit */}
+              <Link href="/recruit" className="bento-item col-span-6 group bg-purple-50/30 border-purple-100 hover:border-purple-200">
+                <div className="mb-8">
+                  <div className="h-10 w-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-6">
+                    <BriefcaseIcon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-bold text-zinc-950 mb-2">Plyndrox Recruit AI</h3>
+                  <p className="text-zinc-600 text-sm leading-relaxed">
+                    AI-powered candidate screening and matching. Find the right talent faster while eliminating resume fatigue. Automate your hiring pipeline end-to-end.
+                  </p>
+                </div>
+                <div className="mt-auto flex items-center text-sm font-semibold text-purple-600">
+                  Hire Smarter <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+
+              {/* Inbox */}
+              <Link href="/inbox" className="bento-item col-span-6 group bg-rose-50/30 border-rose-100 hover:border-rose-200">
+                <div className="mb-8">
+                  <div className="h-10 w-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mb-6">
+                    <InboxIcon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-xl font-bold text-zinc-950 mb-2">Plyndrox Inbox AI</h3>
+                  <p className="text-zinc-600 text-sm leading-relaxed">
+                    Intelligent email management. Triage inbox noise, extract action items, and draft responses based on your writing style.
+                  </p>
+                </div>
+                <div className="mt-auto flex items-center text-sm font-semibold text-rose-600">
+                  Master Email <ArrowRightIcon className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="border-y border-zinc-100 bg-zinc-50 py-16">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+              <div className="stat-card text-center sm:text-left sm:pl-8">
+                <p className="text-4xl font-black text-zinc-950 tracking-tight">7</p>
+                <p className="mt-2 text-sm font-medium text-zinc-500 uppercase tracking-wider">AI Workspaces</p>
+              </div>
+              <div className="stat-card text-center sm:text-left sm:pl-8">
+                <p className="text-4xl font-black text-zinc-950 tracking-tight">1</p>
+                <p className="mt-2 text-sm font-medium text-zinc-500 uppercase tracking-wider">Unified Platform</p>
+              </div>
+              <div className="stat-card text-center sm:text-left sm:pl-8">
+                <p className="text-4xl font-black text-zinc-950 tracking-tight">24/7</p>
+                <p className="mt-2 text-sm font-medium text-zinc-500 uppercase tracking-wider">AI Availability</p>
+              </div>
+              <div className="stat-card text-center sm:text-left sm:pl-8">
+                <p className="text-4xl font-black text-zinc-950 tracking-tight">PWA</p>
+                <p className="mt-2 text-sm font-medium text-zinc-500 uppercase tracking-wider">Installable App</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Feature Deep Dive */}
+        <section className="py-32 bg-zinc-950 text-zinc-50 overflow-hidden">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+            <div className="absolute top-0 right-0 -mr-20 -mt-20 w-[600px] h-[600px] bg-indigo-500/20 rounded-full blur-[120px] pointer-events-none" />
+            
+            <div className="grid lg:grid-cols-2 gap-20 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-zinc-800 bg-zinc-900/50 px-3 py-1 text-xs font-semibold text-zinc-300 mb-6">
+                  <ShieldIcon className="h-3.5 w-3.5 text-indigo-400" /> Production-minded
+                </div>
+                <h2 className="text-4xl font-extrabold sm:text-5xl tracking-tight mb-6 text-white leading-tight">
+                  Engineered for reliability. <br/> Designed for simplicity.
+                </h2>
+                <p className="text-zinc-400 text-lg mb-10 leading-relaxed max-w-xl">
+                  Plyndrox is organized around clear product boundaries, focused workflows, and human review where it matters. The experience stays simple on the surface while supporting serious personal and business use cases underneath.
+                </p>
+
+                <div className="space-y-8">
+                  {[
+                    { title: "Privacy-aware flows", desc: "Sensitive actions stay inside focused, authenticated product areas with clear user intent.", icon: ShieldIcon },
+                    { title: "Fast, practical automation", desc: "Each workspace is shaped around real tasks such as replies, invoices, candidates, and ledgers.", icon: ZapIcon },
+                    { title: "Cross-product continuity", desc: "Start with one use case and expand into the broader Plyndrox AI suite as your needs grow.", icon: NetworkIcon }
+                  ].map((item, i) => (
+                    <div key={i} className="flex gap-5">
+                      <div className="flex-shrink-0 mt-1 h-12 w-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-indigo-400 shadow-inner">
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-lg">{item.title}</h4>
+                        <p className="text-base text-zinc-400 mt-1 leading-relaxed">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* UI Mockup / Visual */}
+              <div className="relative lg:ml-10">
+                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 rounded-3xl transform rotate-2 scale-105" />
+                <div className="relative bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="h-3 w-3 rounded-full bg-zinc-700 hover:bg-red-500 transition-colors" />
+                      <div className="h-3 w-3 rounded-full bg-zinc-700 hover:bg-amber-500 transition-colors" />
+                      <div className="h-3 w-3 rounded-full bg-zinc-700 hover:bg-green-500 transition-colors" />
+                    </div>
+                    <div className="text-xs text-zinc-500 font-mono">live-preview.tsx</div>
+                  </div>
+                  
+                  {/* Interactive Demo Widget representing the capability */}
                   <DemoChatWidget />
                 </div>
               </div>
@@ -252,84 +433,27 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Product cards */}
-        <section className="relative px-4 py-16 sm:px-6 lg:px-8 bg-white">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-10 text-center">
-              <p className="text-xs font-bold uppercase tracking-[0.22em] text-violet-600">Everything you need</p>
-              <h2 className="mt-3 text-3xl font-black tracking-tight text-[#1d2226] sm:text-4xl">Four intelligent tools, one platform</h2>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {[
-                { title: "Personal AI", body: "A gentle daily companion that adapts to your emotional state and remembers what matters.", href: "/chat", accent: "violet", dot: "bg-violet-500" },
-                { title: "Bihar AI", body: "Regional intelligence with cultural context for education, jobs, news, and local knowledge.", href: "/bihar-ai", accent: "sky", dot: "bg-sky-500" },
-                { title: "Plyndrox Business AI", body: "Customer support automation for WhatsApp and website chatbots — pick the tools that fit your business.", href: "/business-ai", accent: "emerald", dot: "bg-emerald-500" },
-                { title: "Plyndrox Payable AI", body: "AI reads your invoices automatically, extracts all data, and organizes everything in one calm dashboard. You review and pay.", href: "/payables", accent: "indigo", dot: "bg-indigo-500" },
-              ].map(({ title, body, href, dot }) => (
-                <Link key={title} href={href} className="group rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-gray-300 hover:shadow-md">
-                  <div className={`mb-4 h-1.5 w-10 rounded-full ${dot} transition-all group-hover:w-16`} />
-                  <h2 className="text-xl font-black tracking-tight text-[#1d2226]">{title}</h2>
-                  <p className="mt-3 text-sm leading-7 text-gray-500">{body}</p>
-                  <div className="mt-5 flex items-center gap-1.5 text-sm font-semibold text-gray-400 transition group-hover:text-[#1d2226] group-hover:gap-2.5">
-                    Explore <ArrowRightIcon className="h-4 w-4" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Designed for real use */}
-        <section className="relative px-4 py-20 sm:px-6 sm:py-24 lg:px-8 bg-gray-50">
-          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.24em] text-violet-600">Designed for real use</p>
-              <h2 className="mt-4 max-w-xl text-balance text-3xl font-black tracking-tight text-[#1d2226] sm:text-5xl">
-                Clean enough for daily focus. Rich enough to feel alive.
-              </h2>
-              <p className="mt-5 max-w-lg text-base leading-8 text-gray-500">
-                The experience is shaped around fast mobile access, thumb-friendly actions, calm surfaces, and clear pathways into personal chat, Bihar AI, and business automation.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                ["Mobile-first", "Large touch targets, compact sections, and clean vertical flow for small screens."],
-                ["Emotion-aware", "The visual language feels supportive without becoming childish or cluttered."],
-                ["Professional", "Consistent branding, stronger hierarchy, and fewer distracting dead-end links."],
-                ["Expandable", "Landing, chat, PWA, and business surfaces feel like one connected product."],
-              ].map(([title, body]) => (
-                <div key={title} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                  <h3 className="text-base font-bold text-[#1d2226]">{title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-gray-500">{body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <section className="relative px-4 py-20 sm:px-6 sm:py-24 lg:px-8 bg-white">
-          <div className="mx-auto max-w-5xl overflow-hidden rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 via-white to-indigo-50 p-8 shadow-sm sm:p-12 lg:p-16">
-            <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.24em] text-violet-600">Start in seconds</p>
-                <h2 className="mt-4 text-balance text-3xl font-black tracking-tight text-[#1d2226] sm:text-5xl">
-                  One platform. Three ways to use it.
+        {/* CTA Section */}
+        <section className="py-24 bg-white relative overflow-hidden">
+          <div className="absolute inset-0 hero-grid opacity-[0.08] pointer-events-none" />
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="rounded-3xl bg-indigo-600 px-8 py-20 text-center sm:px-16 shadow-2xl shadow-indigo-600/20 border border-indigo-500 overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-700 opacity-90" />
+              <div className="relative z-10">
+                <h2 className="text-4xl font-black text-white tracking-tight sm:text-5xl mb-6">
+                  Ready to elevate your intelligence layer?
                 </h2>
-                <p className="mt-5 max-w-2xl text-base leading-8 text-gray-500">
-                  Chat for personal support, explore Bihar-focused knowledge, or automate your business conversations — all in one place.
+                <p className="text-indigo-100 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+                  Start with the workspace that fits today, then expand into the full Plyndrox AI suite as your personal and business workflows grow.
                 </p>
-              </div>
-              <div className="grid gap-3">
-                <Link href="/signup" className="group flex items-center justify-between rounded-2xl bg-[#1d2226] px-5 py-4 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#2d3238]">
-                  Create account <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
-                </Link>
-                <Link href="/bihar-ai" className="group flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300">
-                  Explore Bihar AI <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
-                </Link>
-                <Link href="/business-ai" className="group flex items-center justify-between rounded-2xl border border-gray-200 bg-white px-5 py-4 text-sm font-semibold text-gray-700 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300">
-                  Explore Plyndrox Business AI <ArrowRightIcon className="h-4 w-4 transition group-hover:translate-x-1" />
-                </Link>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <Link href="/signup" className="btn-secondary bg-white text-indigo-600 hover:text-indigo-700 hover:bg-zinc-50 px-8 py-4 text-base border-transparent font-bold shadow-xl shadow-black/10">
+                    Create Free Account
+                  </Link>
+                  <Link href="/contact" className="btn-primary bg-indigo-900/50 hover:bg-indigo-900 border border-indigo-400 text-white px-8 py-4 text-base shadow-none backdrop-blur-sm">
+                    Contact Sales
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
@@ -337,97 +461,47 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-[1.2fr_1.8fr_1fr]">
-            <div className="space-y-5">
-              <Link href="/" className="group inline-flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm transition group-hover:border-violet-200">
-                  <img src="/evara-logo.png" alt="Plyndrox AI" className="h-6 w-6 object-contain" />
-                </span>
-                <span>
-                  <span className="block text-sm font-black uppercase tracking-[0.2em] text-[#1d2226]">Plyndrox AI</span>
-                  <span className="mt-0.5 block text-xs font-medium text-gray-400">Personal, regional, and business AI</span>
-                </span>
-              </Link>
-              <p className="max-w-sm text-sm leading-6 text-gray-500">
-                A polished AI platform for supportive conversations, local knowledge, and smarter customer workflows.
-              </p>
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
-                <Link href="/signup" className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#1d2226] px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#2d3238]">
-                  Start free
-                </Link>
-                <Link href="/chat" className="inline-flex min-h-10 items-center justify-center rounded-full border border-gray-200 bg-white px-5 py-2.5 text-sm font-semibold text-gray-600 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300">
-                  Chat with AI
-                </Link>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {["Secure", "Fast", "Reliable"].map((badge) => (
-                  <span key={badge} className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                    {badge}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-              {footerColumns.map((column) => (
-                <div key={column.title}>
-                  <h3 className="text-xs font-bold uppercase tracking-[0.18em] text-[#1d2226]">{column.title}</h3>
-                  <ul className="mt-4 space-y-3">
-                    {column.links.map(([label, href]) => (
-                      <li key={href}>
-                        <Link href={href} className="text-sm text-gray-500 transition hover:text-[#1d2226]">
-                          {label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
+      <footer className="border-t border-zinc-200 bg-white pt-20 pb-10">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8 mb-16">
+            <div className="lg:col-span-2 pr-8">
+              <Link href="/" className="flex items-center gap-2 mb-6 group">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 text-white transition-transform group-hover:scale-105 shadow-sm">
+                  <img src="/evara-logo.png" alt="Plyndrox" className="h-6 w-6 object-contain brightness-0 invert" />
                 </div>
-              ))}
+                <span className="text-xl font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
+              </Link>
+              <p className="text-base text-zinc-500 max-w-xs mb-8 leading-relaxed">
+                A unified AI ecosystem built for individuals and businesses. Premium intelligence, seamlessly integrated into your workflows.
+              </p>
             </div>
 
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5">
-              <h3 className="text-sm font-bold text-[#1d2226]">Get latest AI updates</h3>
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                Product updates, automation ideas, and practical AI workflows.
-              </p>
-              <form className="mt-4 flex flex-col gap-3">
-                <label htmlFor="footer-email" className="sr-only">Email address</label>
-                <input
-                  id="footer-email"
-                  type="email"
-                  placeholder="you@example.com"
-                  className="min-h-11 rounded-xl border border-gray-200 bg-white px-4 text-sm text-[#1d2226] outline-none transition placeholder:text-gray-400 focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
-                />
-                <button type="button" className="min-h-11 rounded-xl bg-[#1d2226] px-5 text-sm font-bold text-white shadow-sm transition hover:bg-[#2d3238]">
-                  Subscribe
-                </button>
-              </form>
-              <div className="mt-5 flex items-center gap-2.5">
-                {socialLinks.map(({ label, href, Icon }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 shadow-sm transition hover:-translate-y-0.5 hover:border-gray-300 hover:text-[#1d2226]"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
-                ))}
+            {footerColumns.map((col) => (
+              <div key={col.title}>
+                <h3 className="text-sm font-bold text-zinc-950 mb-6 uppercase tracking-wider">{col.title}</h3>
+                <ul className="space-y-4">
+                  {col.links.map(([label, href]) => (
+                    <li key={href}>
+                      <Link href={href} className="text-base text-zinc-500 hover:text-indigo-600 transition-colors font-medium">
+                        {label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
               </div>
-            </div>
+            ))}
           </div>
 
-          <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-gray-100 pt-8 sm:flex-row">
-            <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</p>
-            <div className="flex gap-5 text-xs text-gray-400">
-              <Link href="/privacy-policy" className="hover:text-[#1d2226] transition">Privacy</Link>
-              <Link href="/terms" className="hover:text-[#1d2226] transition">Terms</Link>
-              <Link href="/cookies" className="hover:text-[#1d2226] transition">Cookies</Link>
-              <Link href="/contact" className="hover:text-[#1d2226] transition">Contact</Link>
+          <div className="border-t border-zinc-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm font-medium text-zinc-400">
+              © {new Date().getFullYear()} Plyndrox AI, Inc. All rights reserved.
+            </p>
+            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-500 bg-zinc-50 px-3 py-1.5 rounded-full border border-zinc-100">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              Plyndrox AI platform
             </div>
           </div>
         </div>

@@ -118,6 +118,7 @@ All public-facing and product pages use a consistent light design language:
 ## Notes
 - User preference: work in this Replit project should focus on frontend improvements and new frontend ideas. The production frontend is deployed on Vercel at `https://www.plyndrox.app/`, and the backend is already deployed and stable on Render at `https://raina-1.onrender.com/`; do not modify backend code/configuration unless the user explicitly asks.
 - Frontend theme update: the website now uses a global `app-theme` applied from the root layout, with shared CSS variables controlling page, section, panel, text, border, and neutral surface colors across landing, Plyndrox AI, Bihar AI, product pages, and other frontend routes.
+- Landing page redesign: the homepage now uses a premium startup-grade marketing structure with a stronger Plyndrox AI hero, product-suite bento grid, credibility section, interactive AI preview, and responsive CTA/footer treatment. Copy avoids unsupported certification or fake metric claims.
 - Frontend theme panel: a global floating `ThemeSettingsPanel` now lets users switch frontend-only themes saved in localStorage. Available themes include White Mode (default), Dark Mode, Green Mode, Reading Mode, Ocean Mode, Rose Mode, and System Auto. This remains client-side only and does not modify backend profile data or backend configuration.
 - The ThreeBackground 3D animation requires WebGL — it gracefully skips if WebGL is unavailable
 - Backend runs `tsx watch` for hot-reload in dev mode
