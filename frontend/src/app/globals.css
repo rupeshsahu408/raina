@@ -172,16 +172,24 @@ body.app-theme .bg-\[\#ffffff\] {
 
 body.app-theme .text-zinc-950,
 body.app-theme .text-zinc-900,
+body.app-theme .text-zinc-800,
 body.app-theme .text-gray-950,
 body.app-theme .text-gray-900,
+body.app-theme .text-gray-800,
 body.app-theme .text-slate-950,
 body.app-theme .text-slate-900,
+body.app-theme .text-slate-800,
 body.app-theme .text-neutral-950,
 body.app-theme .text-neutral-900,
+body.app-theme .text-neutral-800,
+body.app-theme .text-stone-950,
+body.app-theme .text-stone-900,
+body.app-theme .text-black,
 body.app-theme .text-\[\#1d2226\],
 body.app-theme .text-\[\#09090b\],
 body.app-theme .text-\[\#111827\],
-body.app-theme .text-\[\#18181b\] {
+body.app-theme .text-\[\#18181b\],
+body.app-theme .text-\[\#0a66c2\] {
   color: var(--foreground) !important;
 }
 
@@ -190,30 +198,174 @@ body.app-theme .text-zinc-600,
 body.app-theme .text-gray-700,
 body.app-theme .text-gray-600,
 body.app-theme .text-slate-700,
-body.app-theme .text-slate-600 {
+body.app-theme .text-slate-600,
+body.app-theme .text-neutral-700,
+body.app-theme .text-neutral-600,
+body.app-theme .text-stone-700,
+body.app-theme .text-stone-600 {
   color: var(--text-secondary) !important;
 }
 
 body.app-theme .text-zinc-500,
 body.app-theme .text-zinc-400,
+body.app-theme .text-zinc-300,
 body.app-theme .text-gray-500,
 body.app-theme .text-gray-400,
+body.app-theme .text-gray-300,
 body.app-theme .text-slate-500,
-body.app-theme .text-slate-400 {
+body.app-theme .text-slate-400,
+body.app-theme .text-slate-300,
+body.app-theme .text-neutral-500,
+body.app-theme .text-neutral-400,
+body.app-theme .text-stone-500,
+body.app-theme .text-stone-400 {
   color: var(--text-muted) !important;
 }
 
 body.app-theme .border-zinc-50,
 body.app-theme .border-zinc-100,
 body.app-theme .border-zinc-200,
+body.app-theme .border-zinc-300,
 body.app-theme .border-gray-100,
 body.app-theme .border-gray-200,
+body.app-theme .border-gray-300,
 body.app-theme .border-slate-100,
 body.app-theme .border-slate-200,
+body.app-theme .border-slate-300,
 body.app-theme .border-neutral-100,
 body.app-theme .border-neutral-200,
+body.app-theme .border-stone-100,
+body.app-theme .border-stone-200,
 body.app-theme .border-\[\#e9eaf0\] {
   border-color: var(--border) !important;
+}
+
+/* In dark/non-white themes, light tinted backgrounds (blue-50, indigo-50, etc.) become invisible "wash" surfaces.
+   Re-map them to the surface-muted variable so cards stay visible and text stays readable. */
+body.app-theme[data-theme="dark"] .bg-blue-50,
+body.app-theme[data-theme="dark"] .bg-blue-50\/40,
+body.app-theme[data-theme="dark"] .bg-blue-50\/50,
+body.app-theme[data-theme="dark"] .bg-blue-50\/60,
+body.app-theme[data-theme="dark"] .bg-indigo-50,
+body.app-theme[data-theme="dark"] .bg-indigo-50\/60,
+body.app-theme[data-theme="dark"] .bg-indigo-50\/90,
+body.app-theme[data-theme="dark"] .bg-violet-50,
+body.app-theme[data-theme="dark"] .bg-purple-50,
+body.app-theme[data-theme="dark"] .bg-emerald-50,
+body.app-theme[data-theme="dark"] .bg-emerald-50\/60,
+body.app-theme[data-theme="dark"] .bg-emerald-50\/90,
+body.app-theme[data-theme="dark"] .bg-sky-50,
+body.app-theme[data-theme="dark"] .bg-sky-50\/60,
+body.app-theme[data-theme="dark"] .bg-sky-50\/90,
+body.app-theme[data-theme="dark"] .bg-amber-50,
+body.app-theme[data-theme="dark"] .bg-amber-50\/60,
+body.app-theme[data-theme="dark"] .bg-amber-50\/90,
+body.app-theme[data-theme="dark"] .bg-rose-50,
+body.app-theme[data-theme="dark"] .bg-rose-50\/60,
+body.app-theme[data-theme="dark"] .bg-rose-50\/90,
+body.app-theme[data-theme="dark"] .bg-pink-50,
+body.app-theme[data-theme="dark"] .bg-green-50,
+body.app-theme[data-theme="dark"] .bg-yellow-50,
+body.app-theme[data-theme="dark"] .bg-orange-50,
+body.app-theme[data-theme="dark"] .bg-teal-50,
+body.app-theme[data-theme="dark"] .bg-cyan-50,
+body.app-theme[data-theme="dark"] .bg-fuchsia-50 {
+  background-color: var(--surface-muted) !important;
+}
+
+/* Dark theme: bright-saturated text (-700/-800/-900 on tinted palettes) becomes hard to read on dark.
+   Lift them to a pastel variant for legibility while preserving brand color identity. */
+body.app-theme[data-theme="dark"] .text-blue-900,
+body.app-theme[data-theme="dark"] .text-blue-800,
+body.app-theme[data-theme="dark"] .text-blue-700,
+body.app-theme[data-theme="dark"] .text-blue-600 { color: #93c5fd !important; }
+
+body.app-theme[data-theme="dark"] .text-indigo-900,
+body.app-theme[data-theme="dark"] .text-indigo-800,
+body.app-theme[data-theme="dark"] .text-indigo-700,
+body.app-theme[data-theme="dark"] .text-indigo-600 { color: #a5b4fc !important; }
+
+body.app-theme[data-theme="dark"] .text-violet-900,
+body.app-theme[data-theme="dark"] .text-violet-800,
+body.app-theme[data-theme="dark"] .text-violet-700,
+body.app-theme[data-theme="dark"] .text-violet-600,
+body.app-theme[data-theme="dark"] .text-purple-900,
+body.app-theme[data-theme="dark"] .text-purple-800,
+body.app-theme[data-theme="dark"] .text-purple-700,
+body.app-theme[data-theme="dark"] .text-purple-600 { color: #c4b5fd !important; }
+
+body.app-theme[data-theme="dark"] .text-emerald-900,
+body.app-theme[data-theme="dark"] .text-emerald-800,
+body.app-theme[data-theme="dark"] .text-emerald-700,
+body.app-theme[data-theme="dark"] .text-emerald-600,
+body.app-theme[data-theme="dark"] .text-green-900,
+body.app-theme[data-theme="dark"] .text-green-800,
+body.app-theme[data-theme="dark"] .text-green-700,
+body.app-theme[data-theme="dark"] .text-green-600 { color: #6ee7b7 !important; }
+
+body.app-theme[data-theme="dark"] .text-amber-900,
+body.app-theme[data-theme="dark"] .text-amber-800,
+body.app-theme[data-theme="dark"] .text-amber-700,
+body.app-theme[data-theme="dark"] .text-amber-600,
+body.app-theme[data-theme="dark"] .text-yellow-900,
+body.app-theme[data-theme="dark"] .text-yellow-800,
+body.app-theme[data-theme="dark"] .text-yellow-700 { color: #fcd34d !important; }
+
+body.app-theme[data-theme="dark"] .text-rose-900,
+body.app-theme[data-theme="dark"] .text-rose-800,
+body.app-theme[data-theme="dark"] .text-rose-700,
+body.app-theme[data-theme="dark"] .text-rose-600,
+body.app-theme[data-theme="dark"] .text-pink-900,
+body.app-theme[data-theme="dark"] .text-pink-800,
+body.app-theme[data-theme="dark"] .text-pink-700,
+body.app-theme[data-theme="dark"] .text-red-700,
+body.app-theme[data-theme="dark"] .text-red-600 { color: #fda4af !important; }
+
+body.app-theme[data-theme="dark"] .text-sky-900,
+body.app-theme[data-theme="dark"] .text-sky-800,
+body.app-theme[data-theme="dark"] .text-sky-700,
+body.app-theme[data-theme="dark"] .text-sky-600,
+body.app-theme[data-theme="dark"] .text-cyan-700,
+body.app-theme[data-theme="dark"] .text-cyan-600,
+body.app-theme[data-theme="dark"] .text-teal-700,
+body.app-theme[data-theme="dark"] .text-teal-600 { color: #7dd3fc !important; }
+
+/* Tinted borders need to be visible on dark surfaces too */
+body.app-theme[data-theme="dark"] .border-blue-100,
+body.app-theme[data-theme="dark"] .border-indigo-100,
+body.app-theme[data-theme="dark"] .border-violet-100,
+body.app-theme[data-theme="dark"] .border-purple-100,
+body.app-theme[data-theme="dark"] .border-emerald-100,
+body.app-theme[data-theme="dark"] .border-sky-100,
+body.app-theme[data-theme="dark"] .border-amber-100,
+body.app-theme[data-theme="dark"] .border-rose-100,
+body.app-theme[data-theme="dark"] .border-pink-100,
+body.app-theme[data-theme="dark"] .border-green-100,
+body.app-theme[data-theme="dark"] .border-blue-200,
+body.app-theme[data-theme="dark"] .border-indigo-200,
+body.app-theme[data-theme="dark"] .border-violet-200,
+body.app-theme[data-theme="dark"] .border-purple-200,
+body.app-theme[data-theme="dark"] .border-emerald-200,
+body.app-theme[data-theme="dark"] .border-sky-200,
+body.app-theme[data-theme="dark"] .border-amber-200,
+body.app-theme[data-theme="dark"] .border-rose-200,
+body.app-theme[data-theme="dark"] .border-pink-200,
+body.app-theme[data-theme="dark"] .border-green-200 {
+  border-color: var(--border) !important;
+}
+
+/* Form inputs / placeholders on themed surfaces */
+body.app-theme input,
+body.app-theme textarea,
+body.app-theme select {
+  background-color: var(--surface) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+body.app-theme input::placeholder,
+body.app-theme textarea::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 1;
 }
 
 body.app-theme .glass-nav,

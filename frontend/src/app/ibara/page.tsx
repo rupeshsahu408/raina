@@ -15,8 +15,62 @@ export default function IbaraLanding() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white text-[#1d2226] overflow-x-hidden">
+    <div className="min-h-screen overflow-x-hidden ibara-dark-page" style={{ colorScheme: "dark", background: "#08070d", color: "#ffffff" }}>
       <style>{`
+        /* Neutralize global theme overrides — Ibara is a dark marketing surface, always */
+        .ibara-dark-page .bg-white,
+        .ibara-dark-page .bg-zinc-50,
+        .ibara-dark-page .bg-gray-50,
+        .ibara-dark-page .bg-slate-50,
+        .ibara-dark-page .bg-neutral-50,
+        .ibara-dark-page .bg-white\\/95,
+        .ibara-dark-page .bg-white\\/90,
+        .ibara-dark-page .bg-white\\/80,
+        .ibara-dark-page .bg-white\\/70,
+        .ibara-dark-page .bg-white\\/60,
+        .ibara-dark-page .bg-white\\/40,
+        .ibara-dark-page .bg-white\\/20,
+        .ibara-dark-page .bg-white\\/10,
+        .ibara-dark-page .bg-white\\/5 {
+          background-color: rgba(255,255,255,0.05) !important;
+        }
+        .ibara-dark-page .bg-white { background-color: #ffffff !important; }
+        .ibara-dark-page .text-zinc-900,
+        .ibara-dark-page .text-zinc-800,
+        .ibara-dark-page .text-slate-900,
+        .ibara-dark-page .text-gray-900,
+        .ibara-dark-page .text-neutral-900,
+        .ibara-dark-page .text-black,
+        .ibara-dark-page .text-\\[\\#1d2226\\],
+        .ibara-dark-page .text-\\[\\#09090b\\],
+        .ibara-dark-page .text-\\[\\#111827\\],
+        .ibara-dark-page .text-\\[\\#18181b\\] {
+          color: #ffffff !important;
+        }
+        .ibara-dark-page .text-zinc-700,
+        .ibara-dark-page .text-zinc-600,
+        .ibara-dark-page .text-slate-700,
+        .ibara-dark-page .text-slate-600,
+        .ibara-dark-page .text-gray-700,
+        .ibara-dark-page .text-gray-600 {
+          color: rgba(255,255,255,0.7) !important;
+        }
+        .ibara-dark-page .text-zinc-500,
+        .ibara-dark-page .text-zinc-400,
+        .ibara-dark-page .text-slate-500,
+        .ibara-dark-page .text-slate-400,
+        .ibara-dark-page .text-gray-500,
+        .ibara-dark-page .text-gray-400 {
+          color: rgba(255,255,255,0.55) !important;
+        }
+        .ibara-dark-page .border-zinc-100,
+        .ibara-dark-page .border-zinc-200,
+        .ibara-dark-page .border-slate-100,
+        .ibara-dark-page .border-slate-200,
+        .ibara-dark-page .border-gray-100,
+        .ibara-dark-page .border-gray-200 {
+          border-color: rgba(255,255,255,0.1) !important;
+        }
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
           50% { transform: translateY(-18px); }

@@ -36,6 +36,8 @@ function resolveTheme(theme: Theme): Exclude<Theme, "auto" | "light"> {
 function applyTheme(theme: Theme) {
   const resolved = resolveTheme(theme);
   document.documentElement.setAttribute("data-theme", resolved);
+  document.body.classList.add("app-theme");
+  document.body.setAttribute("data-theme", resolved);
   const themeColor = getComputedStyle(document.documentElement).getPropertyValue("--background").trim() || "#ffffff";
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor);
 }
