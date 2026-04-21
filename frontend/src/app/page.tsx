@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 import { DemoChatWidgetLazy, IntroVideoSectionLazy, FeedbackReportSectionLazy, PlyndroxAssistantLazy } from "@/components/LandingDynamicSections";
 import MarketingShowcase from "@/components/MarketingShowcase";
+import MarketingShowcaseLaptop from "@/components/MarketingShowcaseLaptop";
 
 const DemoChatWidget = DemoChatWidgetLazy;
 const IntroVideoSection = IntroVideoSectionLazy;
@@ -315,6 +316,8 @@ export default function Home() {
             </div>
           </div>
         </section>
+
+        <MarketingShowcaseLaptop />
 
         {/* ── Why Plyndrox — Value pillars ── */}
         <section className="border-y border-zinc-100 bg-zinc-50 py-20">
