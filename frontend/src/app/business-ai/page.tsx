@@ -60,6 +60,19 @@ function LedgerIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
+function TranslateIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m5 8 6 6" />
+      <path d="m4 14 6-6 2-3" />
+      <path d="M2 5h12" />
+      <path d="M7 2h1" />
+      <path d="m22 22-5-10-5 10" />
+      <path d="M14 18h6" />
+    </svg>
+  );
+}
+
 function PayablesIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -151,6 +164,22 @@ const products = [
     cta: "text-teal-700 hover:text-teal-800",
     hoverBorder: "hover:border-teal-200",
     hoverBg: "hover:bg-teal-50/30",
+  },
+  {
+    href: "/translate",
+    icon: <TranslateIcon className="h-5 w-5" />,
+    iconBg: "bg-sky-50 text-sky-600",
+    iconBorder: "border-sky-100",
+    badge: "New",
+    badgeColor: "text-sky-700 bg-sky-50 border-sky-200",
+    badgeDot: null,
+    title: "Plyndrox Translate AI",
+    description: "Translate documents, messages, and entire conversations across 100+ languages with AI-grade accuracy. Built for businesses working with global customers and partners.",
+    features: ["100+ languages", "Document translation", "Context-aware", "Instant results"],
+    featureDot: "bg-sky-500",
+    cta: "text-sky-700 hover:text-sky-800",
+    hoverBorder: "hover:border-sky-200",
+    hoverBg: "hover:bg-sky-50/30",
   },
   {
     href: "/payables",
