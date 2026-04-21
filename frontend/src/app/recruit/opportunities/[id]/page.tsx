@@ -4,6 +4,7 @@ import ApplyForm from "./ApplyForm";
 import RecruitHeader from "@/components/RecruitHeader";
 import ClientSaveButton from "../SaveButton";
 import ShareJobButton from "./ShareJobButton";
+import CopyJobButton from "./CopyJobButton";
 import RecentlyViewedTracker from "./RecentlyViewedTracker";
 import ReportJobButton from "./ReportJobButton";
 import JobMatchPanel from "./JobMatchPanel";
@@ -111,6 +112,33 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   const quality = computeJobQuality(job);
   const roleOverview = formatJobDescription(job.generatedJD);
 
+  const copyText = [
+    `${job.title}${job.companyName ? ` — ${job.companyName}` : ""}`,
+    "",
+    `Company: ${job.companyName || "—"}${job.companyType ? ` (${job.companyType})` : ""}`,
+    `Location: ${job.location || "India"}${job.workMode ? ` · ${job.workMode}` : ""}`,
+    `Job type: ${job.jobType || "Full-time"}`,
+    `Seniority: ${job.seniority || "Open level"}`,
+    `Experience: ${job.experienceMin ?? 0}${job.experienceMax ? `–${job.experienceMax}` : "+"} years`,
+    `Salary: ${salary(job)}`,
+    `Niche / Department: ${job.niche || job.department || "General"}`,
+    `Education: ${job.educationRequirement || "Flexible"}`,
+    `Notice period: ${job.noticePeriod || "Flexible"}`,
+    job.freshersAllowed ? "Freshers welcome: Yes" : "",
+    job.verifiedCompany ? "Verified company: Yes" : "",
+    "",
+    "── Role overview ──",
+    roleOverview || "The recruiter has not published a full job description yet.",
+    "",
+    mustHave.length ? `── Must-have skills ──\n${mustHave.map(s => `• ${s}`).join("\n")}` : "",
+    "",
+    niceToHave.length ? `── Good-to-have skills ──\n${niceToHave.map(s => `• ${s}`).join("\n")}` : "",
+    "",
+    `View job: https://www.plyndrox.app/recruit/opportunities/${id}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
   const tags = [
     { label: salary(job), color: "bg-slate-100 text-slate-700" },
     { label: job.jobType || "Full-time", color: "bg-slate-100 text-slate-700" },
@@ -178,6 +206,7 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
                   niche={job.niche}
                 />
                 <ShareJobButton title={job.title} companyName={job.companyName} />
+                <CopyJobButton text={copyText} />
               </div>
             </div>
             <div className="mt-4 flex flex-wrap gap-2">
