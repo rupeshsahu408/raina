@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import PayablesTools from "./PayablesTools";
 
 /* ─── Icons ─── */
 function LayoutDashboardIcon(p: React.SVGProps<SVGSVGElement>) {
@@ -38,10 +39,25 @@ function XIcon(p: React.SVGProps<SVGSVGElement>) {
 function ZapIcon(p: React.SVGProps<SVGSVGElement>) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
 }
+function SparklesIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9L12 3z"/><path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z"/></svg>;
+}
+function CalendarIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>;
+}
+function UploadIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>;
+}
+function MoreIcon(p: React.SVGProps<SVGSVGElement>) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>;
+}
 
 /* ─── Nav Items ─── */
 const PRIMARY_NAV = [
   { href: "/payables/dashboard", label: "Dashboard",    Icon: LayoutDashboardIcon },
+  { href: "/payables/upload",    label: "Upload",       Icon: UploadIcon },
+  { href: "/payables/analyze",   label: "Analyze",      Icon: SparklesIcon },
+  { href: "/payables/scheduler", label: "Schedule",     Icon: CalendarIcon },
   { href: "/payables/vendors",   label: "Vendors",      Icon: BuildingIcon },
   { href: "/payables/analytics", label: "Analytics",    Icon: BarChartIcon },
   { href: "/payables/emails",    label: "Email Inbox",  Icon: MailIcon },
@@ -51,6 +67,18 @@ const PRIMARY_NAV = [
 ];
 
 const BOTTOM_NAV = [
+  { href: "/payables/setup",     label: "Personalize", Icon: SparklesIcon },
+  { href: "/payables/settings",  label: "Settings",    Icon: SettingsIcon },
+];
+
+const MOBILE_MORE_ITEMS = [
+  { href: "/payables/vendors",   label: "Vendors",     Icon: BuildingIcon },
+  { href: "/payables/analytics", label: "Analytics",   Icon: BarChartIcon },
+  { href: "/payables/emails",    label: "Email Inbox", Icon: MailIcon },
+  { href: "/payables/payments",  label: "Payments",    Icon: CreditCardIcon },
+  { href: "/payables/rules",     label: "Rules",       Icon: ShieldIcon },
+  { href: "/payables/team",      label: "Team",        Icon: UsersIcon },
+  { href: "/payables/setup",     label: "Personalize", Icon: SparklesIcon },
   { href: "/payables/settings",  label: "Settings",    Icon: SettingsIcon },
 ];
 
@@ -126,34 +154,99 @@ function SidebarContent({ pathname, onClose }: { pathname: string; onClose?: () 
 
 /* ─── Mobile Bottom Tab Bar ─── */
 function MobileBottomBar({ pathname }: { pathname: string }) {
+  const [moreOpen, setMoreOpen] = useState(false);
   const mobileTabs = [
-    { href: "/payables/dashboard", label: "Dashboard", Icon: LayoutDashboardIcon },
-    { href: "/payables/vendors",   label: "Vendors",   Icon: BuildingIcon },
-    { href: "/payables/analytics", label: "Analytics", Icon: BarChartIcon },
-    { href: "/payables/emails",    label: "Inbox",     Icon: MailIcon },
-    { href: "/payables/settings",  label: "Settings",  Icon: SettingsIcon },
+    { href: "/payables/dashboard", label: "Home",     Icon: LayoutDashboardIcon },
+    { href: "/payables/analyze",   label: "Analyze",  Icon: SparklesIcon },
+    { href: "/payables/upload",    label: "Upload",   Icon: UploadIcon, prominent: true },
+    { href: "/payables/scheduler", label: "Schedule", Icon: CalendarIcon },
   ];
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const moreActive = MOBILE_MORE_ITEMS.some((i) => isActive(i.href));
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur-md md:hidden">
-      <div className="flex">
-        {mobileTabs.map(({ href, label, Icon }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold transition-colors ${
-                active ? "text-indigo-600" : "text-gray-400"
-              }`}
-            >
-              <Icon className={`h-5 w-5 ${active ? "text-indigo-600" : "text-gray-400"}`} />
-              {label}
-            </Link>
-          );
-        })}
+    <>
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white/95 backdrop-blur-md md:hidden">
+        <div className="flex items-end">
+          {mobileTabs.map(({ href, label, Icon, prominent }) => {
+            const active = isActive(href);
+            if (prominent) {
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className="flex flex-1 flex-col items-center gap-1 pb-2 pt-1"
+                >
+                  <span className={`flex h-12 w-12 -mt-5 items-center justify-center rounded-full shadow-lg shadow-indigo-600/30 transition ${
+                    active ? "bg-indigo-700" : "bg-indigo-600"
+                  }`}>
+                    <Icon className="h-5 w-5 text-white" />
+                  </span>
+                  <span className={`text-[10px] font-bold ${active ? "text-indigo-700" : "text-gray-500"}`}>{label}</span>
+                </Link>
+              );
+            }
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold transition-colors ${
+                  active ? "text-indigo-600" : "text-gray-400"
+                }`}
+              >
+                <Icon className={`h-5 w-5 ${active ? "text-indigo-600" : "text-gray-400"}`} />
+                {label}
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setMoreOpen(true)}
+            className={`flex flex-1 flex-col items-center gap-1 py-2.5 text-[10px] font-bold transition-colors ${
+              moreActive ? "text-indigo-600" : "text-gray-400"
+            }`}
+          >
+            <MoreIcon className={`h-5 w-5 ${moreActive ? "text-indigo-600" : "text-gray-400"}`} />
+            More
+          </button>
+        </div>
       </div>
-    </div>
+
+      {moreOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setMoreOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-3xl bg-white shadow-2xl">
+            <div className="flex justify-center pt-2">
+              <div className="h-1 w-10 rounded-full bg-gray-200" />
+            </div>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <h3 className="text-sm font-black text-gray-900">More</h3>
+              <button onClick={() => setMoreOpen(false)} className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+                <XIcon className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-2 p-3">
+              {MOBILE_MORE_ITEMS.map(({ href, label, Icon }) => {
+                const active = isActive(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setMoreOpen(false)}
+                    className={`flex flex-col items-center justify-center gap-2 rounded-2xl border p-3 text-center transition ${
+                      active ? "border-indigo-200 bg-indigo-50 text-indigo-700" : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className={`h-5 w-5 ${active ? "text-indigo-600" : "text-gray-500"}`} />
+                    <span className="text-[11px] font-bold leading-tight">{label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="h-4" />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -230,6 +323,9 @@ export default function PayablesShell({
 
       {/* Mobile bottom tab bar */}
       <MobileBottomBar pathname={pathname} />
+
+      {/* Floating quick tools (Calculator / Timer / Notes) */}
+      <PayablesTools />
     </div>
   );
 }
