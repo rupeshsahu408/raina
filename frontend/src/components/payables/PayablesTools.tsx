@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type Tab = "calculator" | "timer" | "notes";
+type Tab = "calculator" | "timer" | "notes" | "clock";
 
 const NOTES_STORAGE_KEY = "plyndrox_payables_notes_v1";
 const TIMER_STORAGE_KEY = "plyndrox_payables_timer_v1";
@@ -27,6 +27,14 @@ function TimerIcon(p: React.SVGProps<SVGSVGElement>) {
       <line x1="10" y1="2" x2="14" y2="2" />
       <line x1="12" y1="14" x2="15" y2="11" />
       <circle cx="12" cy="14" r="8" />
+    </svg>
+  );
+}
+function ClockIcon(p: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}>
+      <circle cx="12" cy="12" r="9" />
+      <polyline points="12 7 12 12 15 14" />
     </svg>
   );
 }
@@ -284,6 +292,229 @@ function TimerPanel() {
   );
 }
 
+/* ─── Clock (Analog + Digital) ─── */
+function ClockPanel() {
+  const [now, setNow] = useState<Date>(() => new Date());
+  const [tz, setTz] = useState<string>(() => {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch { return "UTC"; }
+  });
+  const [showSeconds, setShowSeconds] = useState(true);
+  const [hour12, setHour12] = useState(true);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Compute time in selected timezone
+  const parts = useMemo(() => {
+    try {
+      const fmt = new Intl.DateTimeFormat("en-US", {
+        timeZone: tz,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      });
+      const obj = Object.fromEntries(fmt.formatToParts(now).map((p) => [p.type, p.value]));
+      return {
+        h: Number(obj.hour ?? 0),
+        m: Number(obj.minute ?? 0),
+        s: Number(obj.second ?? 0),
+      };
+    } catch {
+      return { h: now.getHours(), m: now.getMinutes(), s: now.getSeconds() };
+    }
+  }, [now, tz]);
+
+  const dateStr = useMemo(() => {
+    try {
+      return new Intl.DateTimeFormat(undefined, {
+        timeZone: tz,
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }).format(now);
+    } catch {
+      return now.toDateString();
+    }
+  }, [now, tz]);
+
+  const { h, m, s } = parts;
+  const hourAngle = ((h % 12) + m / 60 + s / 3600) * 30;
+  const minAngle = (m + s / 60) * 6;
+  const secAngle = s * 6;
+
+  // Digital
+  const dispH = hour12 ? ((h % 12) || 12) : h;
+  const ampm = h >= 12 ? "PM" : "AM";
+
+  // Common timezones — the user's local first
+  const commonZones = useMemo(() => {
+    const userTz = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return ""; } })();
+    const base = [
+      "Asia/Kolkata", "UTC", "America/New_York", "America/Los_Angeles",
+      "Europe/London", "Europe/Berlin", "Asia/Dubai", "Asia/Singapore",
+      "Asia/Tokyo", "Australia/Sydney",
+    ];
+    const merged = userTz && !base.includes(userTz) ? [userTz, ...base] : base;
+    return Array.from(new Set(merged));
+  }, []);
+
+  // Tick marks (12 hours)
+  const ticks = Array.from({ length: 12 }, (_, i) => i);
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      {/* Analog clock */}
+      <div className="relative">
+        <svg viewBox="0 0 200 200" className="h-56 w-56 drop-shadow-xl">
+          {/* Outer ring with gradient */}
+          <defs>
+            <radialGradient id="faceGrad" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stopColor="#ffffff" />
+              <stop offset="100%" stopColor="#f1f5f9" />
+            </radialGradient>
+            <linearGradient id="bezelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#1e293b" />
+              <stop offset="50%" stopColor="#334155" />
+              <stop offset="100%" stopColor="#0f172a" />
+            </linearGradient>
+          </defs>
+          {/* Bezel */}
+          <circle cx="100" cy="100" r="98" fill="url(#bezelGrad)" />
+          <circle cx="100" cy="100" r="92" fill="url(#faceGrad)" stroke="#cbd5e1" strokeWidth="1" />
+
+          {/* Tick marks */}
+          {ticks.map((i) => {
+            const a = (i * 30 - 90) * (Math.PI / 180);
+            const isMajor = i % 3 === 0;
+            const r1 = isMajor ? 76 : 82;
+            const r2 = 88;
+            const x1 = 100 + r1 * Math.cos(a);
+            const y1 = 100 + r1 * Math.sin(a);
+            const x2 = 100 + r2 * Math.cos(a);
+            const y2 = 100 + r2 * Math.sin(a);
+            return (
+              <line
+                key={i}
+                x1={x1} y1={y1} x2={x2} y2={y2}
+                stroke={isMajor ? "#1e293b" : "#94a3b8"}
+                strokeWidth={isMajor ? 3 : 1.5}
+                strokeLinecap="round"
+              />
+            );
+          })}
+
+          {/* Hour numbers */}
+          {[12, 3, 6, 9].map((n, idx) => {
+            const a = (idx * 90 - 90) * (Math.PI / 180);
+            const r = 64;
+            const x = 100 + r * Math.cos(a);
+            const y = 100 + r * Math.sin(a);
+            return (
+              <text
+                key={n}
+                x={x} y={y}
+                textAnchor="middle"
+                dominantBaseline="central"
+                fontSize="14"
+                fontWeight="800"
+                fill="#0f172a"
+                fontFamily="ui-sans-serif, system-ui"
+              >
+                {n}
+              </text>
+            );
+          })}
+
+          {/* Brand mark */}
+          <text x="100" y="130" textAnchor="middle" fontSize="6" fontWeight="700" fill="#94a3b8" letterSpacing="2">
+            PLYNDROX
+          </text>
+
+          {/* Hour hand */}
+          <line
+            x1="100" y1="100"
+            x2={100 + 48 * Math.cos((hourAngle - 90) * Math.PI / 180)}
+            y2={100 + 48 * Math.sin((hourAngle - 90) * Math.PI / 180)}
+            stroke="#0f172a" strokeWidth="5" strokeLinecap="round"
+          />
+          {/* Minute hand */}
+          <line
+            x1="100" y1="100"
+            x2={100 + 70 * Math.cos((minAngle - 90) * Math.PI / 180)}
+            y2={100 + 70 * Math.sin((minAngle - 90) * Math.PI / 180)}
+            stroke="#1e293b" strokeWidth="3.5" strokeLinecap="round"
+          />
+          {/* Second hand */}
+          {showSeconds && (
+            <line
+              x1={100 - 14 * Math.cos((secAngle - 90) * Math.PI / 180)}
+              y1={100 - 14 * Math.sin((secAngle - 90) * Math.PI / 180)}
+              x2={100 + 78 * Math.cos((secAngle - 90) * Math.PI / 180)}
+              y2={100 + 78 * Math.sin((secAngle - 90) * Math.PI / 180)}
+              stroke="#6366f1" strokeWidth="1.5" strokeLinecap="round"
+            />
+          )}
+          {/* Center cap */}
+          <circle cx="100" cy="100" r="5" fill="#0f172a" />
+          <circle cx="100" cy="100" r="2" fill="#6366f1" />
+        </svg>
+      </div>
+
+      {/* Digital readout */}
+      <div className="w-full rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-900 px-4 py-3 text-center shadow-inner">
+        <div className="font-mono text-3xl font-black tabular-nums tracking-wider text-white">
+          {String(dispH).padStart(2, "0")}
+          <span className="animate-pulse">:</span>
+          {String(m).padStart(2, "0")}
+          {showSeconds && (
+            <>
+              <span className="text-indigo-300">:</span>
+              <span className="text-indigo-200">{String(s).padStart(2, "0")}</span>
+            </>
+          )}
+          {hour12 && <span className="ml-2 text-sm font-bold text-indigo-300">{ampm}</span>}
+        </div>
+        <div className="mt-1 text-[11px] font-semibold text-indigo-200/80">{dateStr}</div>
+      </div>
+
+      {/* Controls */}
+      <div className="w-full space-y-2">
+        <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400">Timezone</label>
+        <select
+          value={tz}
+          onChange={(e) => setTz(e.target.value)}
+          className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-semibold text-gray-800 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+        >
+          {commonZones.map((z) => <option key={z} value={z}>{z}</option>)}
+        </select>
+
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <button
+            onClick={() => setHour12((v) => !v)}
+            className={`rounded-xl px-3 py-2 text-xs font-bold transition ${
+              hour12 ? "bg-indigo-50 text-indigo-700" : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {hour12 ? "12-hour" : "24-hour"}
+          </button>
+          <button
+            onClick={() => setShowSeconds((v) => !v)}
+            className={`rounded-xl px-3 py-2 text-xs font-bold transition ${
+              showSeconds ? "bg-indigo-50 text-indigo-700" : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            Seconds {showSeconds ? "On" : "Off"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Notes ─── */
 function NotesPanel() {
   const [text, setText] = useState("");
@@ -384,8 +615,9 @@ export default function PayablesTools() {
             </div>
 
             {/* Tabs */}
-            <div className="grid grid-cols-3 gap-1 border-b border-gray-100 bg-gray-50 p-2">
+            <div className="grid grid-cols-4 gap-1 border-b border-gray-100 bg-gray-50 p-2">
               {([
+                { k: "clock" as const,      label: "Clock",      Icon: ClockIcon },
                 { k: "calculator" as const, label: "Calculator", Icon: CalculatorIcon },
                 { k: "timer" as const,      label: "Timer",      Icon: TimerIcon },
                 { k: "notes" as const,      label: "Notes",      Icon: NotesIcon },
@@ -405,6 +637,7 @@ export default function PayablesTools() {
 
             {/* Body */}
             <div className="overflow-y-auto px-4 py-4" style={{ maxHeight: "calc(88vh - 130px)" }}>
+              {tab === "clock" && <ClockPanel />}
               {tab === "calculator" && <CalculatorPanel />}
               {tab === "timer" && <TimerPanel />}
               {tab === "notes" && <NotesPanel />}
