@@ -2,6 +2,7 @@ import { AuthRedirect } from "@/components/AuthRedirect";
 import Link from "next/link";
 import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 import { DemoChatWidgetLazy, IntroVideoSectionLazy, FeedbackReportSectionLazy, PlyndroxAssistantLazy } from "@/components/LandingDynamicSections";
+import MarketingShowcase from "@/components/MarketingShowcase";
 
 const DemoChatWidget = DemoChatWidgetLazy;
 const IntroVideoSection = IntroVideoSectionLazy;
@@ -159,6 +160,8 @@ export default function Home() {
 
         <FeedbackReportSection />
         <IntroVideoSection />
+
+        <MarketingShowcase />
 
         {/* ── Product Suite ── */}
         <section className="py-24 bg-white">
