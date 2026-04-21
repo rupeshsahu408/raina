@@ -80,6 +80,10 @@ export default function Home() {
             <Link href="/payables" className="transition hover:text-zinc-950">Finance</Link>
             <Link href="/recruit" className="transition hover:text-zinc-950">Recruiting</Link>
             <Link href="/bihar-ai" className="transition hover:text-zinc-950">Regional</Link>
+            <Link href="/translate" className="transition hover:text-zinc-950 inline-flex items-center gap-1">
+              Translate
+              <span className="rounded-full bg-gradient-to-r from-indigo-600 to-violet-600 px-1.5 py-0.5 text-[9px] font-bold text-white">NEW</span>
+            </Link>
           </div>
           <div className="flex items-center gap-3">
             <ThemeToggleButton />

@@ -1064,6 +1064,85 @@ app.post("/assistant", (req, res) => {
     .catch(() => res.json({ reply: fallbackReply }));
 });
 
+// ── Translation AI ─────────────────────────────────────────────────────────
+
+const TRANSLATE_SYSTEM_PROMPT = `You are Plyndrox Translate, a world-class human translator and language tutor.
+
+YOUR JOB:
+1. SILENTLY auto-correct any spelling mistakes, typos, missing letters, or grammar errors in the user's input. NEVER mention the corrections — just understand what the user actually meant.
+   - Example: if user types "apl" you understand "apple". If they type "kya hal hain" you understand "kya haal hai".
+2. Translate the corrected text into the requested target language NATURALLY — like a fluent native speaker would say it, not a literal word-for-word translation.
+3. Preserve the original tone (casual stays casual, formal stays formal, emotional stays emotional).
+4. If the input is already in the target language, gently rephrase it more naturally instead of refusing.
+5. Use proper script for the target language (Devanagari for Hindi, Arabic script for Arabic, kanji/hiragana for Japanese, etc.).
+
+OUTPUT FORMAT — respond with ONLY this JSON object, nothing else, no markdown fences:
+{"translation": "...the natural translation here..."}
+
+If the user has set mode to "simplify", instead respond with:
+{"explanation": "...a simple, easy-to-understand explanation of the original text in the target language, as if explaining to a 10-year-old..."}
+
+Never add commentary, never explain your corrections, never wrap in markdown. Just the JSON.`;
+
+app.post("/translate", async (req, res) => {
+  const { text, targetLanguage, mode } = (req.body || {}) as {
+    text?: string;
+    targetLanguage?: string;
+    mode?: "translate" | "simplify";
+  };
+
+  if (!text?.trim() || !targetLanguage?.trim()) {
+    return res.status(400).json({ error: "text and targetLanguage are required" });
+  }
+
+  const nvidiaKey = process.env.NVIDIA_API_KEY;
+  const isSimplify = mode === "simplify";
+
+  const userInstruction = isSimplify
+    ? `Target language: ${targetLanguage}\nMode: SIMPLIFY\n\nOriginal text:\n"""${text.trim()}"""\n\nFirst silently fix any typos. Then explain this in the simplest possible way in ${targetLanguage}, as if to a 10-year-old. Respond as JSON {"explanation": "..."}.`
+    : `Target language: ${targetLanguage}\nMode: TRANSLATE\n\nText to translate:\n"""${text.trim()}"""\n\nFirst silently fix any typos. Then translate naturally into ${targetLanguage}. Respond as JSON {"translation": "..."}.`;
+
+  if (!nvidiaKey) {
+    return res.json({
+      translation: isSimplify ? null : `[${targetLanguage}] ${text.trim()}`,
+      explanation: isSimplify ? `[${targetLanguage} explanation] ${text.trim()}` : null,
+      error: "AI key not configured",
+    });
+  }
+
+  try {
+    const reply = await callNvidiaChatCompletions({
+      apiKey: nvidiaKey,
+      messages: [
+        { role: "system", content: TRANSLATE_SYSTEM_PROMPT },
+        { role: "user", content: userInstruction },
+      ],
+      temperature: 0.4,
+      max_tokens: 800,
+    });
+
+    let translation: string | null = null;
+    let explanation: string | null = null;
+
+    if (reply) {
+      const cleaned = reply.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+      try {
+        const parsed = JSON.parse(cleaned);
+        translation = typeof parsed.translation === "string" ? parsed.translation : null;
+        explanation = typeof parsed.explanation === "string" ? parsed.explanation : null;
+      } catch {
+        if (isSimplify) explanation = cleaned;
+        else translation = cleaned;
+      }
+    }
+
+    return res.json({ translation, explanation });
+  } catch (err) {
+    console.error("[translate] error:", err);
+    return res.status(502).json({ error: "Translation service temporarily unavailable" });
+  }
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 type WhatsAppBusinessConfig = {
