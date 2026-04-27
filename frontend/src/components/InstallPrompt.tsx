@@ -141,7 +141,7 @@ export function InstallPrompt({
 
             <div className="mt-3 rounded-2xl border border-zinc-800 bg-white/30 p-3 text-[11px] text-gray-500">
               After installation, Plyndrox opens in standalone full-screen style
-              (no browser bar) for a real app feel.
+              (no browser bar) for a real app feel😊 .
             </div>
           </div>
         </div>
