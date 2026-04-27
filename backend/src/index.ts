@@ -1715,11 +1715,15 @@ app.post("/v1/whatsapp/embedded-signup/exchange", async (req, res) => {
   }
 
   try {
-    // 1) Exchange short-lived code for long-lived business system-user token
+    // 1) Exchange short-lived code for long-lived business system-user token.
+    //    Embedded Signup REQUIRES an explicit empty redirect_uri to match the
+    //    one FB.login used internally; otherwise Meta returns
+    //    "Error validating verification code".
     const tokenResp = await fetch(
       `https://graph.facebook.com/${META_GRAPH_VERSION}/oauth/access_token?` +
         `client_id=${encodeURIComponent(appId)}` +
         `&client_secret=${encodeURIComponent(appSecret)}` +
+        `&redirect_uri=` +
         `&code=${encodeURIComponent(code)}`
     );
     const tokenText = await tokenResp.text().catch(() => "");
