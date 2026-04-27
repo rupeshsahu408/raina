@@ -1273,9 +1273,12 @@ async function createWhatsAppLog(args: {
   aiReply: string;
   language: string;
   source: "preview" | "whatsapp";
+  deliveryStatus?: "sent" | "failed" | "pending";
+  deliveryError?: string | null;
+  whatsappMessageId?: string | null;
 }) {
   await connectMongo();
-  await WhatsAppChatLog.create(args);
+  return WhatsAppChatLog.create(args);
 }
 
 type ResolvedWhatsAppCredentials = {
@@ -1477,7 +1480,11 @@ async function generateWhatsAppBusinessReply(config: WhatsAppBusinessConfig, cus
   return reply || fallback;
 }
 
-async function sendWhatsAppText(to: string, body: string, businessId = DEFAULT_WHATSAPP_BUSINESS_ID) {
+async function sendWhatsAppText(
+  to: string,
+  body: string,
+  businessId = DEFAULT_WHATSAPP_BUSINESS_ID
+): Promise<{ messageId: string | null }> {
   const credentials = await resolveWhatsAppCredentials(businessId);
   if (!credentials) {
     throw new Error("WhatsApp credentials not configured");
@@ -1497,10 +1504,22 @@ async function sendWhatsAppText(to: string, body: string, businessId = DEFAULT_W
     }),
   });
 
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new Error(`WhatsApp send failed (${response.status}): ${detail || response.statusText}`);
+  const text = await response.text().catch(() => "");
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
   }
+
+  if (!response.ok) {
+    const detail =
+      data?.error?.message || data?.error?.error_user_msg || text || response.statusText;
+    throw new Error(`WhatsApp send failed (${response.status}): ${detail}`);
+  }
+
+  const messageId = data?.messages?.[0]?.id || null;
+  return { messageId };
 }
 
 app.get("/v1/whatsapp/status", async (req, res) => {
@@ -1826,12 +1845,13 @@ app.post("/v1/whatsapp/embedded-signup/exchange", async (req, res) => {
     // 8) Mirror display info into business profile so dashboard shows it
     try {
       const current = await loadBusinessProfileConfig(businessId);
-      const merged = sanitizeBusinessConfig({
-        ...current,
-        whatsappNumber: displayPhoneNumber || current.whatsappNumber,
-        businessName: current.businessName || verifiedName || "",
-      });
-      await saveBusinessProfileConfig(businessId, merged);
+      if (!current.businessName && verifiedName) {
+        const merged = sanitizeBusinessConfig({
+          ...current,
+          businessName: verifiedName,
+        });
+        await saveBusinessProfileConfig(businessId, merged);
+      }
     } catch {}
 
     return res.json({
@@ -1853,6 +1873,239 @@ app.post("/v1/whatsapp/embedded-signup/exchange", async (req, res) => {
       err instanceof Error ? err.message : "Embedded Signup exchange failed";
     console.error("[whatsapp] embedded signup exchange failed:", message);
     return res.status(400).json({ ok: false, error: message });
+  }
+});
+
+// ── Connection Health (quality, tier, webhook delivery, alerts) ───────────
+
+const TIER_LIMITS: Record<string, number> = {
+  TIER_50: 50,
+  TIER_250: 250,
+  TIER_1K: 1_000,
+  TIER_10K: 10_000,
+  TIER_100K: 100_000,
+  TIER_UNLIMITED: -1,
+};
+
+const QUALITY_RANK: Record<string, number> = {
+  GREEN: 3,
+  YELLOW: 2,
+  RED: 1,
+  UNKNOWN: 0,
+};
+
+function tierLabel(tier: string | null | undefined): string {
+  if (!tier) return "Unknown";
+  const map: Record<string, string> = {
+    TIER_50: "50 / day",
+    TIER_250: "250 / day",
+    TIER_1K: "1,000 / day",
+    TIER_10K: "10,000 / day",
+    TIER_100K: "100,000 / day",
+    TIER_UNLIMITED: "Unlimited",
+  };
+  return map[tier] || tier;
+}
+
+app.get("/v1/whatsapp/health", async (req, res) => {
+  const businessId = sanitizeBusinessId(req.query.businessId);
+
+  try {
+    await connectMongo();
+    const credRecord = await WhatsAppCredential.findOne({ businessId });
+    const credentials = await resolveWhatsAppCredentials(businessId).catch(
+      () => null
+    );
+
+    // ─── Webhook delivery from last 100 messages
+    const recent = await WhatsAppChatLog.find({
+      businessId,
+      source: "whatsapp",
+    })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .lean()
+      .catch(() => [] as any[]);
+
+    const last100 = {
+      total: recent.length,
+      sent: recent.filter((r) => r.deliveryStatus === "sent").length,
+      failed: recent.filter((r) => r.deliveryStatus === "failed").length,
+      pending: recent.filter(
+        (r) => !r.deliveryStatus || r.deliveryStatus === "pending"
+      ).length,
+      successRate: 0,
+      recentErrors: recent
+        .filter((r) => r.deliveryStatus === "failed" && r.deliveryError)
+        .slice(0, 5)
+        .map((r) => ({
+          at: r.createdAt,
+          error: r.deliveryError,
+          to: r.from,
+        })),
+    };
+    const decided = last100.sent + last100.failed;
+    last100.successRate = decided
+      ? Math.round((last100.sent / decided) * 1000) / 10
+      : recent.length === 0
+      ? 100
+      : 0;
+
+    const lastInbound = recent[0]?.createdAt || null;
+    const lastSent = recent.find((r) => r.deliveryStatus === "sent");
+
+    // ─── Live data from Meta Graph (best-effort)
+    let liveNumber: any = null;
+    let liveError: string | null = null;
+    if (credentials) {
+      try {
+        liveNumber = await metaGraphGet(
+          `${credentials.phoneNumberId}?fields=id,display_phone_number,verified_name,quality_rating,messaging_limit_tier,name_status,code_verification_status,throughput,platform_type,is_official_business_account`,
+          credentials.apiToken
+        );
+      } catch (err) {
+        liveError = err instanceof Error ? err.message : String(err);
+      }
+    }
+
+    const qualityRating = (liveNumber?.quality_rating as string) || null;
+    const messagingTier = (liveNumber?.messaging_limit_tier as string) || null;
+
+    // ─── Detect drops vs previous snapshot
+    const alerts: Array<{
+      severity: "info" | "warning" | "critical";
+      title: string;
+      message: string;
+      action?: string;
+    }> = [];
+
+    if (!credentials) {
+      alerts.push({
+        severity: "critical",
+        title: "Not connected",
+        message:
+          "WhatsApp is not connected for this workspace yet. Connect it from the Setup tab.",
+        action: "Go to Setup",
+      });
+    }
+
+    if (qualityRating === "RED") {
+      alerts.push({
+        severity: "critical",
+        title: "Quality is RED",
+        message:
+          "Meta has marked your number as low quality. New messaging may be blocked. Reduce template sends, fix opt-in, and stop messages users mark as spam.",
+      });
+    } else if (qualityRating === "YELLOW") {
+      alerts.push({
+        severity: "warning",
+        title: "Quality dropped to YELLOW",
+        message:
+          "Your number's quality is at risk. Audit recent broadcasts and slow down outbound to non-opted-in users.",
+      });
+    }
+
+    const previousRating = credRecord?.lastQualityRating || null;
+    if (
+      previousRating &&
+      qualityRating &&
+      QUALITY_RANK[qualityRating] < QUALITY_RANK[previousRating]
+    ) {
+      alerts.push({
+        severity: "warning",
+        title: `Quality dropped: ${previousRating} → ${qualityRating}`,
+        message:
+          "Meta lowered your quality rating since the last check. Investigate recent campaigns.",
+      });
+    }
+
+    if (last100.total >= 10 && last100.successRate < 90) {
+      alerts.push({
+        severity: "warning",
+        title: `Webhook delivery low (${last100.successRate}%)`,
+        message:
+          "Several recent replies failed to send. Check token validity, phone registration, and Meta error messages below.",
+      });
+    }
+
+    if (
+      liveNumber?.code_verification_status &&
+      liveNumber.code_verification_status !== "VERIFIED"
+    ) {
+      alerts.push({
+        severity: "info",
+        title: "Phone not verified",
+        message: `code_verification_status is ${liveNumber.code_verification_status}. Re-verify to keep messaging working.`,
+      });
+    }
+
+    if (liveError) {
+      alerts.push({
+        severity: "warning",
+        title: "Could not fetch live status from Meta",
+        message: liveError,
+      });
+    }
+
+    // ─── Persist snapshot for next-time comparison
+    if (credRecord && (qualityRating || messagingTier)) {
+      const history = Array.isArray(credRecord.qualityHistory)
+        ? credRecord.qualityHistory
+        : [];
+      history.unshift({
+        at: new Date(),
+        qualityRating,
+        messagingTier,
+      });
+      while (history.length > 30) history.pop();
+      credRecord.qualityHistory = history;
+      credRecord.lastQualityRating = qualityRating;
+      credRecord.lastMessagingTier = messagingTier;
+      credRecord.lastHealthCheckAt = new Date();
+      await credRecord.save().catch(() => undefined);
+    }
+
+    return res.json({
+      businessId,
+      checkedAt: new Date().toISOString(),
+      connection: {
+        connected: Boolean(credRecord?.connected || credentials),
+        provider: credRecord?.provider || (credentials ? "env" : null),
+        displayPhoneNumber:
+          liveNumber?.display_phone_number || null,
+        verifiedName: liveNumber?.verified_name || null,
+        phoneNumberId: credentials?.phoneNumberId || null,
+        lastTestAt: credRecord?.lastTestAt || null,
+        lastError: credRecord?.lastError || null,
+        tokenLast4: credRecord?.tokenLast4 || null,
+      },
+      number: {
+        qualityRating,
+        previousQualityRating: previousRating,
+        messagingTier,
+        messagingTierLabel: tierLabel(messagingTier),
+        messagingTierLimit: messagingTier ? TIER_LIMITS[messagingTier] : null,
+        nameStatus: liveNumber?.name_status || null,
+        codeVerificationStatus: liveNumber?.code_verification_status || null,
+        throughputLevel: liveNumber?.throughput?.level || null,
+        platformType: liveNumber?.platform_type || null,
+        isOfficialBusinessAccount: Boolean(
+          liveNumber?.is_official_business_account
+        ),
+      },
+      webhook: {
+        callbackUrl: WHATSAPP_CALLBACK_URL,
+        lastInboundAt: lastInbound,
+        lastSuccessfulSendAt: lastSent?.createdAt || null,
+        last100,
+      },
+      qualityHistory: (credRecord?.qualityHistory || []).slice(0, 14),
+      alerts,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Health check failed";
+    console.error("[whatsapp] health check failed:", message);
+    return res.status(500).json({ error: message });
   }
 });
 
@@ -2002,7 +2255,7 @@ app.post("/v1/whatsapp/webhook", async (req, res) => {
           });
           if (whatsappLogs.length > 100) whatsappLogs.pop();
 
-          await createWhatsAppLog({
+          const logDoc = await createWhatsAppLog({
             businessId,
             from,
             customerName: from,
@@ -2010,8 +2263,39 @@ app.post("/v1/whatsapp/webhook", async (req, res) => {
             aiReply: reply,
             language,
             source: "whatsapp",
-          }).catch(() => undefined);
-          await sendWhatsAppText(from, reply, businessId);
+            deliveryStatus: "pending",
+          }).catch(() => null);
+
+          try {
+            const send = await sendWhatsAppText(from, reply, businessId);
+            if (logDoc?._id) {
+              await WhatsAppChatLog.updateOne(
+                { _id: logDoc._id },
+                {
+                  $set: {
+                    deliveryStatus: "sent",
+                    whatsappMessageId: send.messageId,
+                    deliveryError: null,
+                  },
+                }
+              ).catch(() => undefined);
+            }
+          } catch (sendErr) {
+            const errMsg =
+              sendErr instanceof Error ? sendErr.message : String(sendErr);
+            console.error("[whatsapp] send failed:", errMsg);
+            if (logDoc?._id) {
+              await WhatsAppChatLog.updateOne(
+                { _id: logDoc._id },
+                {
+                  $set: {
+                    deliveryStatus: "failed",
+                    deliveryError: errMsg.slice(0, 500),
+                  },
+                }
+              ).catch(() => undefined);
+            }
+          }
         }
       }
     }

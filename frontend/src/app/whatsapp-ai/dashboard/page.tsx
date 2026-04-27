@@ -6,6 +6,7 @@ import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { PlatformSwitcher } from "@/components/PlatformSwitcher";
 import { setLastActivePlatform } from "@/lib/platformSession";
 import EmbeddedSignupButton from "./EmbeddedSignupButton";
+import HealthPanel from "./HealthPanel";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 const STORAGE_KEY = "evara_whatsapp_business_setup_v1";
@@ -96,7 +97,7 @@ export default function DashboardPage() {
   const [toast, setToast] = useState("");
   const [testMessage, setTestMessage] = useState("Namaste, kya aap delivery aur pricing bata sakte ho?");
   const [logs, setLogs] = useState<LogItem[]>([]);
-  const [activeTab, setActiveTab] = useState<"setup" | "preview" | "logs">("setup");
+  const [activeTab, setActiveTab] = useState<"setup" | "preview" | "logs" | "health">("setup");
   useEffect(() => {
     const auth = getFirebaseAuth();
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -251,7 +252,7 @@ export default function DashboardPage() {
         {/* Desktop Sidebar / Mobile Tabs */}
         <aside className="md:col-span-3">
           <div className="sticky top-24 hidden md:block space-y-1">
-            {(["setup", "preview", "logs"] as const).map((tab) => (
+            {(["setup", "preview", "logs", "health"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -434,13 +435,19 @@ export default function DashboardPage() {
               </div>
             </div>
           )}
+
+          {activeTab === "health" && (
+            <div className="animate-in fade-in slide-in-from-bottom-2">
+              <HealthPanel businessId={businessId} />
+            </div>
+          )}
         </div>
       </main>
 
       {/* Mobile Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-zinc-200 bg-white/90 backdrop-blur-md md:hidden pb-safe">
         <div className="flex items-center justify-around p-2">
-          {(["setup", "preview", "logs"] as const).map((tab) => (
+          {(["setup", "preview", "logs", "health"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
