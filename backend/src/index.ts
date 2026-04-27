@@ -1596,6 +1596,266 @@ app.post("/v1/whatsapp/test-connection", async (req, res) => {
   }
 });
 
+// ── Meta Embedded Signup (1-click WhatsApp connect) ───────────────────────
+// Frontend opens FB.login() with config_id; on success it sends us the
+// short-lived `code`. We exchange it for a long-lived business token, find
+// the WABA + phone number, register the phone, save credentials, and
+// subscribe our app to the WABA's webhooks.
+
+const META_GRAPH_VERSION = process.env.META_GRAPH_VERSION || "v20.0";
+
+app.get("/v1/whatsapp/embedded-signup/config", (_req, res) => {
+  res.json({
+    appId: process.env.META_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID || null,
+    configId:
+      process.env.META_EMBEDDED_SIGNUP_CONFIG_ID ||
+      process.env.NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID ||
+      null,
+    graphVersion: META_GRAPH_VERSION,
+    callbackUrl: WHATSAPP_CALLBACK_URL,
+    ready: Boolean(
+      (process.env.META_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID) &&
+        process.env.META_APP_SECRET &&
+        (process.env.META_EMBEDDED_SIGNUP_CONFIG_ID ||
+          process.env.NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID)
+    ),
+  });
+});
+
+async function metaGraphGet(path: string, accessToken: string) {
+  const url = `https://graph.facebook.com/${META_GRAPH_VERSION}/${path}${
+    path.includes("?") ? "&" : "?"
+  }access_token=${encodeURIComponent(accessToken)}`;
+  const resp = await fetch(url);
+  const text = await resp.text().catch(() => "");
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
+  if (!resp.ok) {
+    const msg =
+      data?.error?.message ||
+      data?.error?.error_user_msg ||
+      text ||
+      `Graph ${resp.status}`;
+    throw new Error(String(msg).slice(0, 500));
+  }
+  return data;
+}
+
+async function metaGraphPost(path: string, accessToken: string, body: any) {
+  const resp = await fetch(
+    `https://graph.facebook.com/${META_GRAPH_VERSION}/${path}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }
+  );
+  const text = await resp.text().catch(() => "");
+  let data: any = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
+  if (!resp.ok) {
+    const msg =
+      data?.error?.message ||
+      data?.error?.error_user_msg ||
+      text ||
+      `Graph ${resp.status}`;
+    throw new Error(String(msg).slice(0, 500));
+  }
+  return data;
+}
+
+app.post("/v1/whatsapp/embedded-signup/exchange", async (req, res) => {
+  const businessId = sanitizeBusinessId(req.body?.businessId);
+  const code = String(req.body?.code || "").trim();
+  // These come back in the FB.login response on the frontend
+  const wabaIdHint = String(req.body?.wabaId || "").trim();
+  const phoneNumberIdHint = String(req.body?.phoneNumberId || "").trim();
+
+  const appId = process.env.META_APP_ID || process.env.NEXT_PUBLIC_META_APP_ID;
+  const appSecret = process.env.META_APP_SECRET;
+
+  if (!appId || !appSecret) {
+    return res.status(500).json({
+      error:
+        "Server is missing META_APP_ID / META_APP_SECRET. Set them in environment and retry.",
+    });
+  }
+  if (!code) {
+    return res.status(400).json({ error: "Missing signup code from Facebook" });
+  }
+
+  try {
+    // 1) Exchange short-lived code for long-lived business system-user token
+    const tokenResp = await fetch(
+      `https://graph.facebook.com/${META_GRAPH_VERSION}/oauth/access_token?` +
+        `client_id=${encodeURIComponent(appId)}` +
+        `&client_secret=${encodeURIComponent(appSecret)}` +
+        `&code=${encodeURIComponent(code)}`
+    );
+    const tokenText = await tokenResp.text().catch(() => "");
+    let tokenJson: any = null;
+    try {
+      tokenJson = tokenText ? JSON.parse(tokenText) : null;
+    } catch {
+      tokenJson = null;
+    }
+    if (!tokenResp.ok || !tokenJson?.access_token) {
+      const msg =
+        tokenJson?.error?.message ||
+        tokenJson?.error?.error_user_msg ||
+        tokenText ||
+        "Could not exchange code for access token";
+      return res.status(400).json({ error: String(msg).slice(0, 500) });
+    }
+    const accessToken: string = tokenJson.access_token;
+
+    // 2) Discover the WhatsApp Business Account ID (WABA) if not provided
+    let wabaId = wabaIdHint;
+    if (!wabaId) {
+      const debug = await metaGraphGet(
+        `debug_token?input_token=${encodeURIComponent(accessToken)}`,
+        accessToken
+      ).catch(() => null);
+      const scopes: string[] = debug?.data?.granular_scopes || [];
+      // Try to read WABA from granular scopes target_ids
+      for (const s of scopes as any[]) {
+        if (
+          s?.scope === "whatsapp_business_management" &&
+          Array.isArray(s.target_ids) &&
+          s.target_ids.length
+        ) {
+          wabaId = String(s.target_ids[0]);
+          break;
+        }
+      }
+    }
+    if (!wabaId) {
+      return res.status(400).json({
+        error:
+          "Could not determine WhatsApp Business Account ID. Make sure the user completed the embedded signup flow.",
+      });
+    }
+
+    // 3) Find a phone number on this WABA
+    let phoneNumberId = phoneNumberIdHint;
+    let displayPhoneNumber: string | null = null;
+    let verifiedName: string | null = null;
+    if (!phoneNumberId) {
+      const phones = await metaGraphGet(
+        `${wabaId}/phone_numbers?fields=id,display_phone_number,verified_name,quality_rating`,
+        accessToken
+      );
+      const list: any[] = Array.isArray(phones?.data) ? phones.data : [];
+      if (!list.length) {
+        return res.status(400).json({
+          error:
+            "No phone numbers found on this WhatsApp Business Account. Add a phone number in Meta dashboard and try again.",
+        });
+      }
+      phoneNumberId = String(list[0].id);
+      displayPhoneNumber = list[0].display_phone_number || null;
+      verifiedName = list[0].verified_name || null;
+    } else {
+      const info = await metaGraphGet(
+        `${phoneNumberId}?fields=id,display_phone_number,verified_name`,
+        accessToken
+      ).catch(() => null);
+      displayPhoneNumber = info?.display_phone_number || null;
+      verifiedName = info?.verified_name || null;
+    }
+
+    // 4) Register the phone number on the Cloud API (idempotent)
+    //    pin must be a 6-digit number; we generate one and store it
+    const sixDigitPin = String(Math.floor(100000 + Math.random() * 900000));
+    await metaGraphPost(`${phoneNumberId}/register`, accessToken, {
+      messaging_product: "whatsapp",
+      pin: sixDigitPin,
+    }).catch((err) => {
+      // Already-registered error is fine; surface anything else but don't block save
+      const msg = err instanceof Error ? err.message : String(err);
+      if (!/already.*register/i.test(msg)) {
+        console.warn("[whatsapp] phone register warning:", msg);
+      }
+    });
+
+    // 5) Subscribe our app to the WABA's webhooks
+    await metaGraphPost(
+      `${wabaId}/subscribed_apps`,
+      accessToken,
+      {}
+    ).catch((err) => {
+      console.warn(
+        "[whatsapp] subscribed_apps warning:",
+        err instanceof Error ? err.message : err
+      );
+    });
+
+    // 6) Generate a verify token for our /v1/whatsapp/webhook handshake
+    const verifyToken = crypto.randomBytes(24).toString("hex");
+
+    // 7) Save credentials (encrypted)
+    await connectMongo();
+    await WhatsAppCredential.findOneAndUpdate(
+      { businessId },
+      {
+        $set: {
+          apiTokenEncrypted: encryptCredential(accessToken),
+          phoneNumberId,
+          verifyTokenEncrypted: encryptCredential(verifyToken),
+          tokenLast4: accessToken.slice(-4),
+          connected: true,
+          lastTestAt: new Date(),
+          lastError: null,
+          provider: "oauth-ready",
+        },
+      },
+      { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
+    );
+
+    // 8) Mirror display info into business profile so dashboard shows it
+    try {
+      const current = await loadBusinessProfileConfig(businessId);
+      const merged = sanitizeBusinessConfig({
+        ...current,
+        whatsappNumber: displayPhoneNumber || current.whatsappNumber,
+        businessName: current.businessName || verifiedName || "",
+      });
+      await saveBusinessProfileConfig(businessId, merged);
+    } catch {}
+
+    return res.json({
+      ok: true,
+      connected: true,
+      wabaId,
+      phoneNumberId,
+      displayPhoneNumber,
+      verifiedName,
+      webhookCallbackUrl: WHATSAPP_CALLBACK_URL,
+      verifyToken, // shown once to the user; stored encrypted server-side
+      registrationPin: sixDigitPin,
+      message:
+        "WhatsApp connected. AI replies will start working as soon as Meta delivers the first message to your webhook.",
+      status: await getWhatsAppCredentialStatus(businessId),
+    });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Embedded Signup exchange failed";
+    console.error("[whatsapp] embedded signup exchange failed:", message);
+    return res.status(400).json({ ok: false, error: message });
+  }
+});
+
 app.get("/v1/whatsapp/config", async (req, res) => {
   const businessId = sanitizeBusinessId(req.query.businessId);
   try {

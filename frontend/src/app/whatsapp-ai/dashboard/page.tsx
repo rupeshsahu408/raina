@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { getFirebaseAuth } from "@/lib/firebaseClient";
 import { PlatformSwitcher } from "@/components/PlatformSwitcher";
 import { setLastActivePlatform } from "@/lib/platformSession";
+import EmbeddedSignupButton from "./EmbeddedSignupButton";
 
 const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 const STORAGE_KEY = "evara_whatsapp_business_setup_v1";
@@ -270,6 +271,10 @@ export default function DashboardPage() {
         <div className="md:col-span-9 mt-6 md:mt-0">
           {activeTab === "setup" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+              <EmbeddedSignupButton
+                businessId={businessId}
+                onConnected={() => loadPersistedSetup(businessId)}
+              />
               <div className="rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6 shadow-sm">
                 <div className="mb-6 flex items-center justify-between">
                   <div>
