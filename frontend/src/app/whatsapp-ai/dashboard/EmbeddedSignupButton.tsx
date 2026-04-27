@@ -139,20 +139,20 @@ export default function EmbeddedSignupButton({
     setLoading(true);
     sessionRef.current = {};
 
-    window.FB.login(
-      async (response: any) => {
-        try {
-          const code = response?.authResponse?.code;
-          if (!code) {
-            setError(
-              response?.status === "not_authorized"
-                ? "You closed the WhatsApp signup before finishing."
-                : "Could not get a signup code from Facebook."
-            );
-            setLoading(false);
-            return;
-          }
+    const handleResponse = (response: any) => {
+      const code = response?.authResponse?.code;
+      if (!code) {
+        setError(
+          response?.status === "not_authorized"
+            ? "You closed the WhatsApp signup before finishing."
+            : "Could not get a signup code from Facebook."
+        );
+        setLoading(false);
+        return;
+      }
 
+      void (async () => {
+        try {
           const r = await fetch(
             `${API}/v1/whatsapp/embedded-signup/exchange`,
             {
@@ -178,14 +178,15 @@ export default function EmbeddedSignupButton({
         } finally {
           setLoading(false);
         }
-      },
-      {
-        config_id: config.configId,
-        response_type: "code",
-        override_default_response_type: true,
-        extras: { version: "v3", featureType: "whatsapp_embedded_signup" },
-      }
-    );
+      })();
+    };
+
+    window.FB.login(handleResponse, {
+      config_id: config.configId,
+      response_type: "code",
+      override_default_response_type: true,
+      extras: { version: "v3", featureType: "whatsapp_embedded_signup" },
+    });
   }
 
   const disabled = loading || !sdkReady || !config?.ready;
