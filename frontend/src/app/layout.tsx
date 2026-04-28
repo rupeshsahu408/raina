@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { InstallBanner } from "@/components/InstallBanner";
 import "./globals.css";
 
 const inter = Inter({
@@ -90,6 +91,7 @@ export default function RootLayout({
         />
         <ThemeProvider>
           <div className="min-h-screen">{children}</div>
+          <InstallBanner />
         </ThemeProvider>
       </body>
     </html>
