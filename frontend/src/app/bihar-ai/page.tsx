@@ -188,7 +188,7 @@ function BiharAvatar() {
   return (
     <img
       src="/plyndrox-logo.svg"
-      alt="Plyndrox"
+      alt=""
       className="h-10 w-10 shrink-0 object-contain plyndrox-logo-img"
       draggable={false}
     />
@@ -470,7 +470,7 @@ export default function BiharAiPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#111111]">
         <div className="flex flex-col items-center gap-4">
-          <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
+          <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
           <p className="text-[13px] text-zinc-500">Loading…</p>
         </div>
       </div>

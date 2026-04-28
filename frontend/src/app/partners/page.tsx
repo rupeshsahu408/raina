@@ -216,7 +216,7 @@ export default function PartnersPage() {
       <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3 group">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
+            <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226] transition group-hover:text-white">Plyndrox AI</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -348,7 +348,7 @@ export default function PartnersPage() {
                     <div className="relative flex h-44 w-44 items-center justify-center rounded-[1.75rem] border border-gray-200 bg-white p-4 shadow-2xl">
                       <img
                         src="/plyndrox-logo.svg"
-                        alt="Plyndrox AI"
+                        alt=""
                         className="h-full w-full object-contain"
                         draggable={false}
                       />

@@ -207,7 +207,7 @@ export default function BusinessAIPage() {
       <nav className="sticky top-0 z-20 border-b border-gray-200 bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
           <Link href="/" className="flex items-center gap-2.5">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
+            <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -288,7 +288,7 @@ export default function BusinessAIPage() {
       <footer className="border-t border-gray-200 bg-white py-7 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <Link href="/" className="flex items-center gap-2.5 text-gray-400 hover:text-[#1d2226] transition">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
+            <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" />
             <span className="text-xs font-bold uppercase tracking-[0.18em]">Plyndrox AI</span>
           </Link>
           <p className="text-xs text-gray-400">© {new Date().getFullYear()} Plyndrox AI. All rights reserved.</p>

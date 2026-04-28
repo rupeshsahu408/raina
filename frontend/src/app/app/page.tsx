@@ -145,7 +145,7 @@ export default function AppPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 shrink-0">
-              <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-9 w-9 object-contain plyndrox-logo-img" />
+              <img src="/plyndrox-logo.svg" alt="" className="h-9 w-9 object-contain plyndrox-logo-img" />
             </div>
             <span className="text-sm font-bold uppercase tracking-widest text-white">Plyndrox</span>
           </Link>
@@ -220,7 +220,7 @@ export default function AppPage() {
                   <div className="flex flex-col bg-gray-50 px-4 pb-6">
                     {/* App header */}
                     <div className="flex items-center gap-2 py-3 border-b border-gray-100">
-                      <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
+                      <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" />
                       <span className="text-xs font-bold tracking-widest uppercase text-white">Plyndrox AI</span>
                     </div>
                     {/* Chat bubbles */}
@@ -379,7 +379,7 @@ export default function AppPage() {
                       {/* Install banner */}
                       <div className="mt-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-3">
                         <div className="flex items-center gap-2">
-                          <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain rounded-xl plyndrox-logo-img" />
+                          <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain rounded-xl plyndrox-logo-img" />
                           <div>
                             <p className="text-[10px] font-bold text-white">Plyndrox AI</p>
                             <p className="text-[9px] text-gray-500">Add to Home Screen</p>
@@ -640,7 +640,7 @@ export default function AppPage() {
               <div className="space-y-6">
                 <Link href="/" className="group inline-flex items-center gap-3">
                   <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white/10 shadow-lg shadow-purple-500/10 transition group-hover:scale-105 group-hover:border-purple-300/50">
-                    <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
+                    <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" />
                   </span>
                   <span>
                     <span className="block text-base font-bold uppercase tracking-[0.22em] text-white">Plyndrox AI</span>

@@ -134,7 +134,7 @@ function ConnectContent() {
           <span className="text-sm">Plyndrox Inbox AI</span>
         </Link>
         <div className="flex items-center gap-2">
-          <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
+          <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" />
           <span className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Plyndrox</span>
         </div>
       </nav>

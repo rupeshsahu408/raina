@@ -11,7 +11,7 @@ export default function WhatsAppAILandingPage() {
         <header className="flex items-center justify-between rounded-full px-5 py-4 shadow-sm backdrop-blur-xl" style={{ border: "1px solid var(--border)", background: "var(--surface)" }}>
           <a href="/" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 shrink-0">
-              <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-9 w-9 object-contain plyndrox-logo-img" draggable={false} />
+              <img src="/plyndrox-logo.svg" alt="" className="h-9 w-9 object-contain plyndrox-logo-img" draggable={false} />
             </div>
             <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Plyndrox Business</span>
           </a>
@@ -96,7 +96,7 @@ export default function WhatsAppAILandingPage() {
             <div>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 shrink-0">
-                  <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-9 w-9 object-contain plyndrox-logo-img" draggable={false} />
+                  <img src="/plyndrox-logo.svg" alt="" className="h-9 w-9 object-contain plyndrox-logo-img" draggable={false} />
                 </div>
                 <span className="text-sm font-bold tracking-widest text-emerald-700 uppercase">Plyndrox AI</span>
               </div>

@@ -114,7 +114,7 @@ export default function Home() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 transition-transform group-hover:scale-105">
-              <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-9 w-9 object-contain plyndrox-logo-img" width="36" height="36" />
+              <img src="/plyndrox-logo.svg" alt="" className="h-9 w-9 object-contain plyndrox-logo-img" width="36" height="36" />
             </div>
             <span className="text-base font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
           </Link>
@@ -562,7 +562,7 @@ export default function Home() {
             <div className="lg:col-span-2">
               <Link href="/" className="flex items-center gap-2.5 mb-5 group">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 transition-transform group-hover:scale-105">
-                  <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-9 w-9 object-contain plyndrox-logo-img" width="36" height="36" />
+                  <img src="/plyndrox-logo.svg" alt="" className="h-9 w-9 object-contain plyndrox-logo-img" width="36" height="36" />
                 </div>
                 <span className="text-lg font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
               </Link>

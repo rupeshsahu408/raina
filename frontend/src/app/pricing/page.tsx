@@ -187,7 +187,7 @@ export default function PricingPage() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 transition-transform group-hover:scale-105">
-              <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-9 w-9 object-contain" width="36" height="36" />
+              <img src="/plyndrox-logo.svg" alt="" className="h-9 w-9 object-contain" width="36" height="36" />
             </div>
             <span className="text-base font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
           </Link>
@@ -521,7 +521,7 @@ export default function PricingPage() {
       <footer className="border-t border-zinc-100 bg-white py-10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 text-sm text-zinc-500 sm:flex-row sm:px-6 lg:px-8">
           <div className="flex items-center gap-2">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-6 w-6" />
+            <img src="/plyndrox-logo.svg" alt="" className="h-6 w-6" />
             <span className="font-semibold text-zinc-700">Plyndrox AI</span>
             <span>· © {new Date().getFullYear()}</span>
           </div>

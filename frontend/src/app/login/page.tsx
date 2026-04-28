@@ -23,7 +23,7 @@ function LoginForm() {
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-10" style={{ background: "var(--surface-muted)", borderRight: "1px solid var(--border)" }}>
         <Link href="/" className="flex items-center gap-2.5">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-950 shrink-0">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" />
+            <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" />
           </div>
           <span className="text-sm font-black uppercase tracking-[0.24em]" style={{ color: "var(--foreground)" }}>Plyndrox AI</span>
         </Link>
@@ -43,7 +43,7 @@ function LoginForm() {
         <div className="flex items-center justify-between mb-8 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 shrink-0">
-              <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-9 w-9 object-contain plyndrox-logo-img" />
+              <img src="/plyndrox-logo.svg" alt="" className="h-9 w-9 object-contain plyndrox-logo-img" />
             </div>
             <span className="text-sm font-black uppercase tracking-[0.2em]" style={{ color: "var(--foreground)" }}>Plyndrox AI</span>
           </Link>

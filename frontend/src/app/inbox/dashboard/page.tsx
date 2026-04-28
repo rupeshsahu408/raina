@@ -1565,7 +1565,7 @@ export default function InboxDashboard() {
         <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-white/[0.06] shrink-0">
           <Link href="/" className="flex items-center gap-3 min-w-0">
             <div className="h-6 w-6 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg,#5c4ff6 0%,#7c3aed 100%)", boxShadow: "0 4px 12px rgba(92,79,246,0.45)" }}>
-              <img src="/plyndrox-logo.svg" alt="Plyndrox" className="h-10 w-10 object-contain plyndrox-logo-img" />
+              <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-black tracking-tight text-white leading-none">Plyndrox</p>

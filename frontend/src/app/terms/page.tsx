@@ -52,7 +52,7 @@ export default function TermsOfServicePage() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="group flex items-center gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-gray-200 bg-white/10 transition group-hover:border-purple-300/40">
-              <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
+              <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
             </span>
             <span>
               <span className="block text-sm font-black uppercase tracking-[0.24em] text-[#1d2226]">Plyndrox AI</span>

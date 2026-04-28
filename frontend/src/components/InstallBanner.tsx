@@ -117,7 +117,7 @@ export function InstallBanner() {
         >
           <Image
             src="/icons/plyndrox-192.png"
-            alt="Plyndrox AI"
+            alt=""
             width={52}
             height={52}
             style={{ borderRadius: 13, flexShrink: 0 }}
@@ -206,7 +206,7 @@ export function InstallBanner() {
             <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
               <Image
                 src="/icons/plyndrox-192.png"
-                alt="Plyndrox AI"
+                alt=""
                 width={48}
                 height={48}
                 style={{ borderRadius: 12, flexShrink: 0 }}

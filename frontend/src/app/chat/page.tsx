@@ -306,7 +306,7 @@ function PlyndroxAvatar(_: { personality: Personality }) {
   return (
     <img
       src="/plyndrox-logo.svg"
-      alt="Plyndrox"
+      alt=""
       className="h-10 w-10 shrink-0 object-contain plyndrox-logo-img"
       draggable={false}
     />
@@ -933,7 +933,7 @@ export default function ChatPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-3 pb-3 pt-4">
           <div className="flex items-center gap-2.5">
-            <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 shrink-0 object-contain plyndrox-logo-img" draggable={false} />
+            <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 shrink-0 object-contain plyndrox-logo-img" draggable={false} />
             <span className="text-[14px] font-black tracking-tight text-[#1d2226]">Plyndrox AI</span>
           </div>
           <button
@@ -1254,7 +1254,7 @@ export default function ChatPage() {
         {loading ? (
           <div className="flex flex-1 items-center justify-center">
             <div className="flex flex-col items-center gap-4">
-              <img src="/plyndrox-logo.svg" alt="Plyndrox AI" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
+              <img src="/plyndrox-logo.svg" alt="" className="h-10 w-10 object-contain plyndrox-logo-img" draggable={false} />
               <p className="text-[13px] text-gray-400">
                 {historyLoading ? "Loading chat history…" : "Loading…"}
               </p>

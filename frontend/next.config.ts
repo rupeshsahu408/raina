@@ -30,8 +30,13 @@ const nextConfig: NextConfig = {
   compress: true,
   productionBrowserSourceMaps: false,
   reactStrictMode: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production"
+      ? { exclude: ["error", "warn"] }
+      : false,
+  },
   experimental: {
-    optimizePackageImports: ["recharts", "react-markdown", "remark-gfm"],
+    optimizePackageImports: ["recharts", "react-markdown", "remark-gfm", "firebase", "@firebase/auth", "@firebase/app", "@firebase/firestore"],
   },
   transpilePackages: [
     "firebase",
