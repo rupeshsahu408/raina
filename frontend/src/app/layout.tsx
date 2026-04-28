@@ -17,7 +17,7 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   preload: true,
-  weight: ["400", "500", "600", "700", "800", "900"],
+  adjustFontFallback: true,
   fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
 });
 

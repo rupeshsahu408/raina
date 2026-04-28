@@ -1,7 +1,12 @@
-import { AuthRedirect } from "@/components/AuthRedirect";
 import Link from "next/link";
-import { ThemeToggleButton } from "@/components/ThemeToggleButton";
-import { DemoChatWidgetLazy, IntroVideoSectionLazy, FeedbackReportSectionLazy, PlyndroxAssistantLazy } from "@/components/LandingDynamicSections";
+import {
+  AuthRedirectLazy,
+  ThemeToggleButtonLazy,
+  DemoChatWidgetLazy,
+  IntroVideoSectionLazy,
+  FeedbackReportSectionLazy,
+  PlyndroxAssistantLazy,
+} from "@/components/LandingDynamicSections";
 import MarketingShowcase from "@/components/MarketingShowcase";
 import MarketingShowcaseLaptop from "@/components/MarketingShowcaseLaptop";
 import { JsonLd } from "@/components/JsonLd";
@@ -102,7 +107,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen bg-white text-zinc-950 font-sans">
       <JsonLd id="ld-home-faq" data={faqJsonLd(homepageFaqs)} />
-      <AuthRedirect />
+      <AuthRedirectLazy />
 
       {/* Navigation */}
       <nav className="fixed inset-x-0 top-0 z-50 glass-nav transition-all duration-300">
@@ -113,7 +118,7 @@ export default function Home() {
             </div>
             <span className="text-base font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
           </Link>
-          <div className="hidden items-center gap-7 text-sm font-medium text-zinc-500 md:flex">
+          <div className="hidden items-center gap-7 text-sm font-medium text-zinc-700 md:flex">
             <Link href="/chat" className="transition hover:text-zinc-950">Personal</Link>
             <Link href="/business-ai" className="transition hover:text-zinc-950">Business</Link>
             <Link href="/payables" className="transition hover:text-zinc-950">Finance</Link>
@@ -125,7 +130,7 @@ export default function Home() {
             </Link>
           </div>
           <div className="flex items-center gap-3">
-            <ThemeToggleButton />
+            <ThemeToggleButtonLazy />
             <Link href="/login" className="hidden text-sm font-semibold text-zinc-600 transition hover:text-zinc-950 sm:block">
               Log in
             </Link>
@@ -174,7 +179,7 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-zinc-500 mb-14">
+              <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-zinc-600 mb-14">
                 {["No credit card", "No hidden fees", "No expiry", "Works in Hindi, English & Hinglish"].map((item) => (
                   <span key={item} className="flex items-center gap-1.5 font-medium">
                     <CheckIcon className="h-3.5 w-3.5 text-emerald-500" />
@@ -193,7 +198,7 @@ export default function Home() {
                 ].map(({ stat, label }) => (
                   <div key={label} className="rounded-2xl border border-zinc-100 bg-white/80 px-4 py-4 text-center shadow-sm backdrop-blur-sm">
                     <p className="text-2xl font-black text-zinc-950 tracking-tight">{stat}</p>
-                    <p className="text-xs font-medium text-zinc-500 mt-1">{label}</p>
+                    <p className="text-xs font-medium text-zinc-600 mt-1">{label}</p>
                   </div>
                 ))}
               </div>
@@ -214,7 +219,7 @@ export default function Home() {
               <h2 className="text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl mb-4">
                 One platform.<br />Every workflow you'll ever need.
               </h2>
-              <p className="text-lg text-zinc-500 leading-7">
+              <p className="text-lg text-zinc-600 leading-7">
                 We didn't build a single chatbot. We built 7 focused AI workspaces — each solving a specific problem, each completely free, all connected under one login.
               </p>
             </div>
@@ -365,7 +370,7 @@ export default function Home() {
               <h2 className="text-3xl font-black tracking-tight text-zinc-950 sm:text-4xl mb-4">
                 Built different. For everyone.
               </h2>
-              <p className="max-w-xl mx-auto text-zinc-500 text-base leading-7">
+              <p className="max-w-xl mx-auto text-zinc-600 text-base leading-7">
                 There are thousands of AI tools. Most are expensive, complicated, or only useful if you speak English and live in a major city. Plyndrox was built for the rest of the world.
               </p>
             </div>
@@ -399,7 +404,7 @@ export default function Home() {
                 <div key={title} className="rounded-2xl border border-zinc-200 bg-white p-7 shadow-sm">
                   <div className="text-3xl mb-4">{icon}</div>
                   <h3 className="text-base font-black text-zinc-950 mb-2">{title}</h3>
-                  <p className="text-sm leading-6 text-zinc-500">{desc}</p>
+                  <p className="text-sm leading-6 text-zinc-600">{desc}</p>
                 </div>
               ))}
             </div>
@@ -482,7 +487,7 @@ export default function Home() {
         {/* ── Social proof / credibility ── */}
         <section className="py-20 bg-white">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-400 mb-10">Used by people across India and beyond</p>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-zinc-600 mb-10">Used by people across India and beyond</p>
             <div className="grid gap-5 sm:grid-cols-3">
               {[
                 {
@@ -512,7 +517,7 @@ export default function Home() {
                   <p className="text-sm leading-7 text-zinc-700 mb-5">"{quote}"</p>
                   <div>
                     <p className="text-sm font-bold text-zinc-950">{name}</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">{role}</p>
+                    <p className="text-xs text-zinc-600 mt-0.5">{role}</p>
                   </div>
                 </div>
               ))}
@@ -561,10 +566,10 @@ export default function Home() {
                 </div>
                 <span className="text-lg font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
               </Link>
-              <p className="text-sm text-zinc-500 max-w-xs mb-2 leading-6">
+              <p className="text-sm text-zinc-600 max-w-xs mb-2 leading-6">
                 7 AI workspaces in one platform. Free for individuals and businesses across the world.
               </p>
-              <p className="text-xs text-zinc-400">Built in India · Serving the world · Free forever</p>
+              <p className="text-xs text-zinc-600">Built in India · Serving the world · Free forever</p>
             </div>
 
             {footerColumns.map((col) => (
@@ -573,7 +578,7 @@ export default function Home() {
                 <ul className="space-y-3">
                   {col.links.map(([label, href]) => (
                     <li key={href}>
-                      <Link href={href} className="text-sm text-zinc-500 hover:text-indigo-600 transition-colors font-medium">
+                      <Link href={href} className="inline-block py-1.5 text-sm text-zinc-700 hover:text-indigo-600 transition-colors font-medium">
                         {label}
                       </Link>
                     </li>
@@ -584,10 +589,10 @@ export default function Home() {
           </div>
 
           <div className="border-t border-zinc-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-zinc-600">
               © {new Date().getFullYear()} Plyndrox AI. All rights reserved. Built with ♥ in India.
             </p>
-            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-500 bg-zinc-50 px-3 py-1.5 rounded-full border border-zinc-100">
+            <div className="flex items-center gap-2 text-xs font-semibold text-zinc-700 bg-zinc-50 px-3 py-1.5 rounded-full border border-zinc-100">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />

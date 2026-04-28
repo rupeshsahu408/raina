@@ -2,6 +2,19 @@
 
 import dynamic from "next/dynamic";
 
+export const AuthRedirectLazy = dynamic(
+  () => import("@/components/AuthRedirect").then((m) => ({ default: m.AuthRedirect })),
+  { ssr: false, loading: () => null }
+);
+
+export const ThemeToggleButtonLazy = dynamic(
+  () => import("@/components/ThemeToggleButton").then((m) => ({ default: m.ThemeToggleButton })),
+  {
+    ssr: false,
+    loading: () => <div className="h-9 w-9" aria-hidden="true" />,
+  }
+);
+
 export const DemoChatWidgetLazy = dynamic(
   () => import("@/components/DemoChatWidget").then((m) => ({ default: m.DemoChatWidget })),
   {
