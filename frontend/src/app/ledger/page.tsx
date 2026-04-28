@@ -190,7 +190,7 @@ const pricingPlans = [
     period: "forever",
     desc: "Perfect to get started",
     features: [
-      "10 satti uploads per month",
+      "50 satti uploads per month",
       "All 3 output views",
       "Hindi + English OCR",
       "Editable entries",

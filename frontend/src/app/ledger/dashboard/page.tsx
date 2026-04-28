@@ -1197,10 +1197,10 @@ export default function LedgerDashboard() {
           </div>
           <div className="text-right">
             <div className="w-32 h-2 bg-gray-100 rounded-full overflow-hidden mb-1">
-              <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${Math.min((sessions.length / 10) * 100, 100)}%` }} />
+              <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${Math.min((sessions.length / 50) * 100, 100)}%` }} />
             </div>
             <span className="text-xs text-emerald-600 font-semibold">
-              {Math.max(10 - sessions.length, 0)} remaining
+              {Math.max(50 - sessions.length, 0)} remaining
             </span>
           </div>
         </div>

@@ -120,7 +120,7 @@ function SignupForm() {
               <span className="text-white font-black text-base">SL</span>
             </div>
             <h1 className="text-2xl font-black text-[#1d2226] mb-1">Create your account</h1>
-            <p className="text-sm text-gray-500">Start with 10 free uploads — no credit card needed</p>
+            <p className="text-sm text-gray-500">Start with 50 free uploads — no credit card needed</p>
           </div>
 
           {/* Benefits */}
@@ -128,7 +128,7 @@ function SignupForm() {
             <p className="text-xs font-semibold text-emerald-700 mb-2">What you get for free:</p>
             <div className="space-y-1.5">
               {[
-                "10 satti uploads per month",
+                "50 satti uploads per month",
                 "Hindi + English OCR",
                 "All 3 analytics views",
                 "Editable entries",
