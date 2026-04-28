@@ -3,25 +3,32 @@ import { posts, categories } from "@/lib/blog";
 import { SOLUTIONS } from "@/lib/solutions";
 import { SITE_URL } from "@/lib/seo";
 
-const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
-  { path: "/", priority: 1.0, changeFrequency: "daily" },
-  { path: "/about", priority: 0.8, changeFrequency: "monthly" },
-  { path: "/features", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/pricing", priority: 0.95, changeFrequency: "weekly" },
-  { path: "/blog", priority: 0.9, changeFrequency: "daily" },
+type SitemapEntry = MetadataRoute.Sitemap[number];
+
+const STATIC_ROUTES: {
+  path: string;
+  priority: number;
+  changeFrequency: SitemapEntry["changeFrequency"];
+  images?: string[];
+}[] = [
+  { path: "/", priority: 1.0, changeFrequency: "daily", images: ["/opengraph-image", "/icons/plyndrox-512.png"] },
+  { path: "/about", priority: 0.8, changeFrequency: "monthly", images: ["/opengraph-image"] },
+  { path: "/features", priority: 0.9, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/pricing", priority: 0.95, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/blog", priority: 0.9, changeFrequency: "daily", images: ["/opengraph-image"] },
   { path: "/contact", priority: 0.7, changeFrequency: "monthly" },
   { path: "/partners", priority: 0.6, changeFrequency: "monthly" },
   { path: "/help", priority: 0.6, changeFrequency: "monthly" },
   // Product / marketing pages
-  { path: "/chat", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/business-ai", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/whatsapp-ai", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/bihar-ai", priority: 0.85, changeFrequency: "weekly" },
-  { path: "/ibara", priority: 0.85, changeFrequency: "weekly" },
-  { path: "/inbox", priority: 0.85, changeFrequency: "weekly" },
-  { path: "/payables", priority: 0.85, changeFrequency: "weekly" },
-  { path: "/recruit", priority: 0.85, changeFrequency: "weekly" },
-  { path: "/ledger", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/chat", priority: 0.9, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/business-ai", priority: 0.9, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/whatsapp-ai", priority: 0.9, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/bihar-ai", priority: 0.85, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/ibara", priority: 0.85, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/inbox", priority: 0.85, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/payables", priority: 0.85, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/recruit", priority: 0.85, changeFrequency: "weekly", images: ["/opengraph-image"] },
+  { path: "/ledger", priority: 0.8, changeFrequency: "weekly", images: ["/opengraph-image"] },
   { path: "/translate", priority: 0.7, changeFrequency: "monthly" },
   // Legal
   { path: "/privacy-policy", priority: 0.4, changeFrequency: "yearly" },
@@ -39,6 +46,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: now,
     changeFrequency: route.changeFrequency,
     priority: route.priority,
+    ...(route.images?.length
+      ? { images: route.images.map((img) => `${SITE_URL}${img}`) }
+      : {}),
   }));
 
   const blogEntries: MetadataRoute.Sitemap = posts.map((post) => ({
@@ -46,6 +56,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: new Date(post.publishedAt),
     changeFrequency: "monthly" as const,
     priority: post.featured ? 0.85 : 0.7,
+    images: [post.image ? `${SITE_URL}${post.image}` : `${SITE_URL}/opengraph-image`],
   }));
 
   const categoryEntries: MetadataRoute.Sitemap = categories.map((cat) => ({
@@ -61,6 +72,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: "weekly" as const,
       priority: 0.9,
+      images: [`${SITE_URL}/opengraph-image`],
     },
   ];
 
@@ -69,6 +81,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: 0.75,
+    images: [`${SITE_URL}/opengraph-image`],
   }));
 
   return [

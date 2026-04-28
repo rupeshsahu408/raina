@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { posts, categories, getFeaturedPost, formatDate } from "@/lib/blog";
-import { buildMetadata } from "@/lib/seo";
+import {
+  buildMetadata,
+  breadcrumbJsonLd,
+  collectionPageJsonLd,
+  itemListJsonLd,
+} from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = buildMetadata({
   title: "Blog — AI Guides, WhatsApp Automation & Business Growth",
@@ -55,8 +61,33 @@ const featuredPost = getFeaturedPost();
 const regularPosts = posts.filter((p) => !p.featured);
 
 export default function BlogPage() {
+  const blogList = itemListJsonLd({
+    name: "Plyndrox AI Blog Posts",
+    items: posts.map((p) => ({
+      name: p.title,
+      url: `/blog/${p.slug}`,
+      description: p.excerpt,
+      image: p.image,
+    })),
+  });
+  const blogCollection = collectionPageJsonLd({
+    url: "/blog",
+    name: "Plyndrox AI Blog",
+    description:
+      "Expert guides, tutorials, and insights from the Plyndrox AI team — AI automation, WhatsApp Business API, regional AI, prompt engineering, and AI strategies for business.",
+    itemList: blogList,
+  });
   return (
     <div className="min-h-screen bg-white text-[#1d2226] ">
+      <JsonLd id="ld-blog-collection" data={blogCollection} />
+      <JsonLd id="ld-blog-list" data={blogList} />
+      <JsonLd
+        id="ld-breadcrumb-blog"
+        data={breadcrumbJsonLd([
+          { name: "Home", url: "/" },
+          { name: "Blog", url: "/blog" },
+        ])}
+      />
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.12),transparent_55%)]" />
         <div className="absolute top-[-10%] left-[-5%] w-[40%] h-[40%] rounded-full bg-purple-900/10 blur-[130px]" />

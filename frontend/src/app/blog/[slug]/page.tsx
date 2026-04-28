@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost, getCategory, posts, categories, formatDate } from "@/lib/blog";
-import { buildMetadata, articleJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { buildMetadata, articleJsonLd, breadcrumbJsonLd, webPageJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -171,6 +171,21 @@ export default async function BlogPostPage({ params }: Props) {
           { name: "Blog", url: "/blog" },
           { name: post.title, url: `/blog/${post.slug}` },
         ])}
+      />
+      <JsonLd
+        id="ld-webpage-post"
+        data={webPageJsonLd({
+          url: `/blog/${post.slug}`,
+          name: post.title,
+          description: post.excerpt,
+          speakable: true,
+          primaryImage: post.image,
+          breadcrumb: [
+            { name: "Home", url: "/" },
+            { name: "Blog", url: "/blog" },
+            { name: post.title, url: `/blog/${post.slug}` },
+          ],
+        })}
       />
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.10),transparent_55%)]" />

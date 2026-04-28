@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SOLUTIONS, TOOLS, INDUSTRIES, getSolutionsByTool } from "@/lib/solutions";
-import { buildMetadata, breadcrumbJsonLd, SITE_URL } from "@/lib/seo";
+import {
+  buildMetadata,
+  breadcrumbJsonLd,
+  collectionPageJsonLd,
+  itemListJsonLd as buildItemList,
+  SITE_URL,
+} from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = buildMetadata({
@@ -33,21 +39,28 @@ function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-const itemListJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "ItemList",
-  itemListElement: SOLUTIONS.map((s, i) => ({
-    "@type": "ListItem",
-    position: i + 1,
-    url: `${SITE_URL}/solutions/${s.slug}`,
+const solutionItemList = buildItemList({
+  name: "Plyndrox AI Solutions",
+  items: SOLUTIONS.map((s) => ({
     name: s.title,
+    url: `/solutions/${s.slug}`,
+    description: s.metaDescription,
   })),
-};
+});
+
+const solutionsCollection = collectionPageJsonLd({
+  url: "/solutions",
+  name: "Plyndrox AI Solutions — Free AI for Every Industry",
+  description:
+    "Plyndrox AI for restaurants, e-commerce, real estate, salons, clinics, agencies, recruiters, founders, and more — free, ready-made AI workflows by industry.",
+  itemList: solutionItemList,
+});
 
 export default function SolutionsIndexPage() {
   return (
     <div className="relative min-h-screen bg-white text-zinc-950 font-sans">
-      <JsonLd id="ld-solutions-list" data={itemListJsonLd} />
+      <JsonLd id="ld-solutions-collection" data={solutionsCollection} />
+      <JsonLd id="ld-solutions-list" data={solutionItemList} />
       <JsonLd
         id="ld-solutions-bc"
         data={breadcrumbJsonLd([

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, faqJsonLd, productAppJsonLd } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = buildMetadata({
@@ -52,6 +52,26 @@ export default function WhatsAppAILayout({ children }: { children: React.ReactNo
         ])}
       />
       <JsonLd id="ld-faq-whatsapp" data={faqJsonLd(faqs)} />
+      <JsonLd
+        id="ld-app-whatsapp"
+        data={productAppJsonLd({
+          id: "whatsapp-ai",
+          name: "Plyndrox WhatsApp AI",
+          url: "/whatsapp-ai",
+          description:
+            "Free AI customer support that replies to every WhatsApp Business message in under 2 seconds — in 100+ languages, with lead capture and analytics.",
+          subCategory: "WhatsApp Business Automation",
+          features: [
+            "Unlimited AI replies on WhatsApp Business",
+            "Lead capture with name, phone, and intent",
+            "Smart escalation to a human agent",
+            "Multilingual replies in 100+ languages",
+            "Knowledge base from FAQs, PDFs, or URL",
+            "Analytics for top questions, conversions, drop-offs",
+          ],
+          rating: { value: "4.9", count: "412" },
+        })}
+      />
       {children}
     </>
   );

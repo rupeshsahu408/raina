@@ -25,7 +25,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const sol = getSolutionBySlug(slug);
-  if (!sol) return buildMetadata({ title: "Solution not found", path: `/solutions/${slug}` });
+  if (!sol)
+    return buildMetadata({
+      title: "Solution not found",
+      description: "This Plyndrox AI solution could not be found.",
+      path: `/solutions/${slug}`,
+      noIndex: true,
+    });
   const tool = TOOLS[sol.toolId];
   const industry = INDUSTRIES[sol.industryId];
   return buildMetadata({
