@@ -79,6 +79,7 @@ const footerColumns = [
     links: [
       ["About Us", "/about"],
       ["Features", "/features"],
+      ["Pricing", "/pricing"],
       ["Blog", "/blog"],
       ["Partners", "/partners"],
       ["Contact", "/contact"],
