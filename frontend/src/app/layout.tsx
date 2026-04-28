@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   description: siteConfig.defaultDescription,
   applicationName: siteConfig.name,
   generator: "Next.js",
-  keywords: siteConfig.defaultKeywords,
+  keywords: [...siteConfig.defaultKeywords],
   authors: [{ name: siteConfig.organization.legalName, url: SITE_URL }],
   creator: siteConfig.organization.legalName,
   publisher: siteConfig.organization.legalName,
