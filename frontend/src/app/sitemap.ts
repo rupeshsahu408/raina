@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { posts, categories } from "@/lib/blog";
+import { SOLUTIONS } from "@/lib/solutions";
 import { SITE_URL } from "@/lib/seo";
 
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
@@ -54,5 +55,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
-  return [...staticEntries, ...blogEntries, ...categoryEntries];
+  const solutionsHubEntry: MetadataRoute.Sitemap = [
+    {
+      url: `${SITE_URL}/solutions`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.9,
+    },
+  ];
+
+  const solutionEntries: MetadataRoute.Sitemap = SOLUTIONS.map((s) => ({
+    url: `${SITE_URL}/solutions/${s.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.75,
+  }));
+
+  return [
+    ...staticEntries,
+    ...solutionsHubEntry,
+    ...solutionEntries,
+    ...blogEntries,
+    ...categoryEntries,
+  ];
 }
