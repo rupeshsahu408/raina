@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Partners — Plyndrox AI",
+export const metadata: Metadata = buildMetadata({
+  title: "Partners — Trusted Collaborators of Plyndrox AI",
   description:
-    "Discover the trusted partnerships that power Plyndrox AI — including Plyndrox AI — and learn how we collaborate to build scalable, reliable AI infrastructure.",
-};
+    "Discover the trusted partnerships that power Plyndrox AI and learn how we collaborate with infrastructure providers, integrators, and resellers to build scalable, reliable AI for everyone.",
+  path: "/partners",
+  keywords: ["Plyndrox partners", "AI partnerships", "Plyndrox reseller", "AI integrators"],
+});
 
 function SparklesIcon(props: React.SVGProps<SVGSVGElement>) {
   return (

@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { posts, categories, getFeaturedPost, formatDate } from "@/lib/blog";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Blog — Plyndrox AI | AI Guides, WhatsApp Automation & Business Growth",
+export const metadata: Metadata = buildMetadata({
+  title: "Blog — AI Guides, WhatsApp Automation & Business Growth",
   description:
-    "Explore Plyndrox AI's blog for expert guides on AI automation, WhatsApp Business API, Plyndrox AI tips, regional AI, and strategies to grow your business with artificial intelligence.",
-  openGraph: {
-    title: "Plyndrox AI Blog — AI Guides, WhatsApp Automation & Business Growth",
-    description: "Expert guides, tutorials, and insights from the Plyndrox AI team to help you get the most from AI automation.",
-    type: "website",
-  },
-};
+    "Expert guides, tutorials, and insights from the Plyndrox AI team — covering AI automation, WhatsApp Business API, regional AI, prompt engineering, and strategies to grow your business with AI.",
+  path: "/blog",
+  keywords: [
+    "AI blog",
+    "Plyndrox blog",
+    "WhatsApp AI guides",
+    "AI tutorials",
+    "AI automation tips",
+    "AI prompt guides",
+    "business AI strategies",
+  ],
+});
 
 function ClockIcon(props: React.SVGProps<SVGSVGElement>) {
   return (

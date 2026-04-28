@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Privacy Policy — Plyndrox AI",
   description:
-    "Comprehensive Privacy Policy for Plyndrox AI, including Plyndrox AI, Plyndrox WhatsApp AI, and Plyndrox Inbox AI data handling practices.",
-};
+    "Comprehensive Privacy Policy for Plyndrox AI, including Plyndrox WhatsApp AI, Inbox AI, Recruit AI, Payable AI, and Smart Ledger data handling practices.",
+  path: "/privacy-policy",
+  keywords: ["Plyndrox privacy policy", "AI privacy", "data handling", "GDPR"],
+});
 
 const tableOfContents = [
   ["Introduction", "introduction"],

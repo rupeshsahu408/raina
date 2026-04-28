@@ -1,3 +1,14 @@
+import type { Metadata } from "next";
+import { buildMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = buildMetadata({
+  title: "Data Deletion Instructions — Plyndrox AI",
+  description:
+    "Step-by-step instructions to request deletion of your personal data from Plyndrox AI, including WhatsApp AI, Inbox AI, Recruit AI, Payable AI, and Smart Ledger.",
+  path: "/data-deletion",
+  keywords: ["delete my data", "Plyndrox data deletion", "GDPR deletion"],
+});
+
 export default function DataDeletionPage() {
   return (
     <div className="min-h-screen bg-white text-zinc-800">

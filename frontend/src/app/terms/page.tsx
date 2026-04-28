@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Terms of Service — Plyndrox AI",
   description:
-    "Comprehensive Terms of Service for Plyndrox AI, including Plyndrox AI, Plyndrox WhatsApp AI, and Plyndrox Inbox AI platform usage terms.",
-};
+    "Comprehensive Terms of Service for Plyndrox AI, covering Plyndrox WhatsApp AI, Inbox AI, Recruit AI, Payable AI, and Smart Ledger platform usage terms.",
+  path: "/terms",
+  keywords: ["Plyndrox terms", "terms of service", "AI platform terms"],
+});
 
 const tableOfContents = [
   ["Introduction and Agreement", "introduction"],

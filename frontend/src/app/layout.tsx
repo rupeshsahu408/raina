@@ -1,7 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { InstallBanner } from "@/components/InstallBanner";
+import { JsonLd } from "@/components/JsonLd";
+import {
+  SITE_URL,
+  siteConfig,
+  organizationJsonLd,
+  websiteJsonLd,
+  softwareApplicationJsonLd,
+} from "@/lib/seo";
 import "./globals.css";
 
 const inter = Inter({
@@ -14,22 +22,99 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Plyndrox AI — Every AI Tool You Need. Free for Everyone.",
-  description:
-    "7 powerful AI workspaces in one platform — personal companion, WhatsApp automation, email intelligence, invoice processing, hiring pipeline, regional AI, and smart ledger. Free for individuals and businesses worldwide.",
-  keywords: "AI platform, business automation, WhatsApp AI, invoice AI, email AI, recruiting AI, personal AI, free AI tools",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: siteConfig.defaultTitle,
+    template: siteConfig.titleTemplate,
+  },
+  description: siteConfig.defaultDescription,
+  applicationName: siteConfig.name,
+  generator: "Next.js",
+  keywords: siteConfig.defaultKeywords,
+  authors: [{ name: siteConfig.organization.legalName, url: SITE_URL }],
+  creator: siteConfig.organization.legalName,
+  publisher: siteConfig.organization.legalName,
+  referrer: "origin-when-cross-origin",
+  category: "technology",
+  alternates: {
+    canonical: SITE_URL,
+  },
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    nocache: false,
+    googleBot: {
+      index: true,
+      follow: true,
+      noimageindex: false,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   openGraph: {
-    title: "Plyndrox AI — Every AI Tool You Need. Free for Everyone.",
-    description:
-      "7 AI workspaces. No paywalls. No subscriptions. Built for individuals and businesses across the world.",
-    siteName: "Plyndrox AI",
     type: "website",
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+    url: SITE_URL,
+    title: siteConfig.defaultTitle,
+    description: siteConfig.defaultDescription,
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Plyndrox AI — Every AI Tool You Need. Free for Everyone.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Plyndrox AI — Every AI Tool You Need. Free for Everyone.",
-    description: "7 AI workspaces. No paywalls. Free for everyone, everywhere.",
+    site: siteConfig.twitterHandle,
+    creator: siteConfig.twitterHandle,
+    title: siteConfig.defaultTitle,
+    description: siteConfig.defaultDescription,
+    images: ["/opengraph-image"],
   },
+  icons: {
+    icon: [
+      { url: "/icons/plyndrox-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icons/plyndrox-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/icons/plyndrox-180.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Plyndrox AI",
+    statusBarStyle: "default",
+  },
+  verification: {
+    // Replace these with the actual verification tokens issued by each search engine
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION,
+    yandex: process.env.NEXT_PUBLIC_YANDEX_SITE_VERIFICATION,
+    other: {
+      "msvalidate.01": process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION ?? "",
+    },
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+  ],
 };
 
 export default function RootLayout({
@@ -45,24 +130,24 @@ export default function RootLayout({
             __html: `(() => { try { const allowed = new Set(["white","dark","green","reading","ocean","rose","auto","light"]); let theme = localStorage.getItem("plyndrox_theme") || localStorage.getItem("evara_theme") || "white"; if (!allowed.has(theme)) theme = "white"; if (theme === "light") theme = "white"; const resolved = theme === "auto" ? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "white") : theme; document.documentElement.setAttribute("data-theme", resolved); localStorage.setItem("plyndrox_theme", theme); } catch (_) {} })();`,
           }}
         />
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-        <meta name="theme-color" content="#09090b" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Plyndrox AI" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="Plyndrox AI" />
         <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="/splashscreens/apple-splash-2048-2732.png" />
         <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="/splashscreens/apple-splash-1668-2388.png" />
         <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="/splashscreens/apple-splash-1290-2796.png" />
         <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="/splashscreens/apple-splash-1170-2532.png" />
         <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="/splashscreens/apple-splash-750-1334.png" />
         <link rel="apple-touch-startup-image" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" href="/splashscreens/apple-splash-640-1136.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icons/plyndrox-32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icons/plyndrox-16.png" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icons/plyndrox-180.png" />
-        <link rel="manifest" href="/manifest.webmanifest" />
         <link rel="dns-prefetch" href="https://raina-1.onrender.com" />
         <link rel="preconnect" href="https://raina-1.onrender.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <JsonLd id="ld-organization" data={organizationJsonLd()} />
+        <JsonLd id="ld-website" data={websiteJsonLd()} />
+        <JsonLd id="ld-application" data={softwareApplicationJsonLd()} />
       </head>
       <body className="app-theme min-h-screen antialiased" suppressHydrationWarning>
         <script

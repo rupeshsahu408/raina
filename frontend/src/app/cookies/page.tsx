@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Cookie Policy — Plyndrox AI",
   description:
-    "Comprehensive Cookie Policy for Plyndrox AI, including Plyndrox AI and Plyndrox WhatsApp AI cookie and tracking technology practices.",
-};
+    "Comprehensive Cookie Policy for Plyndrox AI, covering essential, analytics, and preference cookies used across the Plyndrox AI platform and embeddable widgets.",
+  path: "/cookies",
+  keywords: ["Plyndrox cookies", "cookie policy", "tracking technologies"],
+});
 
 const tableOfContents = [
   ["Introduction", "introduction"],

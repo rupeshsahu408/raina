@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { buildMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Disclaimer — Plyndrox AI",
+export const metadata: Metadata = buildMetadata({
+  title: "Disclaimer & Trust — Plyndrox AI",
   description:
-    "Legal Disclaimer for Plyndrox AI, covering AI output limitations, professional advice disclaimers, Plyndrox WhatsApp AI integration responsibilities, and liability limitations.",
-};
+    "Legal Disclaimer for Plyndrox AI, covering AI output limitations, professional advice disclaimers, WhatsApp AI integration responsibilities, and liability limitations.",
+  path: "/disclaimer",
+  keywords: ["Plyndrox disclaimer", "AI disclaimer", "trust and safety AI"],
+});
 
 const tableOfContents = [
   ["General Disclaimer", "general-disclaimer"],

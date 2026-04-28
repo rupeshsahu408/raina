@@ -2,24 +2,32 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPost, getCategory, posts, categories, formatDate } from "@/lib/blog";
+import { buildMetadata, articleJsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = getPost(slug);
-  if (!post) return { title: "Post Not Found — Plyndrox AI Blog" };
-  return {
-    title: `${post.title} — Plyndrox AI Blog`,
+  if (!post) {
+    return buildMetadata({
+      title: "Post Not Found",
+      description: "This blog post could not be found on Plyndrox AI.",
+      path: `/blog/${slug}`,
+      noIndex: true,
+    });
+  }
+  return buildMetadata({
+    title: post.title,
     description: post.excerpt,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt,
-      type: "article",
-      publishedTime: post.publishedAt,
-      authors: [post.author],
-    },
-  };
+    path: `/blog/${post.slug}`,
+    keywords: post.tags,
+    ogType: "article",
+    publishedTime: post.publishedAt,
+    authors: [post.author],
+    ogImage: post.image ?? "/opengraph-image",
+  });
 }
 
 export function generateStaticParams() {
@@ -143,6 +151,27 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-white text-[#1d2226] ">
+      <JsonLd
+        id="ld-article"
+        data={articleJsonLd({
+          title: post.title,
+          description: post.excerpt,
+          slug: post.slug,
+          publishedAt: post.publishedAt,
+          author: post.author,
+          image: post.image,
+          category: cat?.label,
+          tags: post.tags,
+        })}
+      />
+      <JsonLd
+        id="ld-breadcrumb-post"
+        data={breadcrumbJsonLd([
+          { name: "Home", url: "/" },
+          { name: "Blog", url: "/blog" },
+          { name: post.title, url: `/blog/${post.slug}` },
+        ])}
+      />
       <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.10),transparent_55%)]" />
         <div className="absolute top-[-10%] right-[-5%] w-[35%] h-[35%] rounded-full bg-purple-900/10 blur-[130px]" />

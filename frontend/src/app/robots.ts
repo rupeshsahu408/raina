@@ -1,0 +1,85 @@
+import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/seo";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: [
+          "/api/",
+          "/login",
+          "/signup",
+          "/settings",
+          "/inbox/dashboard",
+          "/inbox/analyze",
+          "/inbox/connect",
+          "/inbox/followups",
+          "/inbox/health",
+          "/inbox/leads",
+          "/inbox/smart-digest",
+          "/payables/dashboard",
+          "/payables/analytics",
+          "/payables/analyze",
+          "/payables/emails",
+          "/payables/invite",
+          "/payables/onboarding",
+          "/payables/payments",
+          "/payables/rules",
+          "/payables/scheduler",
+          "/payables/settings",
+          "/payables/setup",
+          "/payables/team",
+          "/payables/upload",
+          "/payables/vendors",
+          "/recruit/dashboard",
+          "/recruit/analytics",
+          "/recruit/company-profile",
+          "/recruit/diagnostics",
+          "/recruit/job-alerts",
+          "/recruit/login",
+          "/recruit/my-applications",
+          "/recruit/profile",
+          "/recruit/saved-jobs",
+          "/recruit/signup",
+          "/recruit/talent-pool",
+          "/ledger/dashboard",
+          "/ledger/login",
+          "/ledger/signup",
+          "/ledger/session",
+          "/ibara/auth",
+          "/ibara/dashboard",
+          "/ibara/onboarding",
+          "/whatsapp-ai/dashboard",
+        ],
+      },
+      {
+        userAgent: "GPTBot",
+        allow: "/",
+      },
+      {
+        userAgent: "ChatGPT-User",
+        allow: "/",
+      },
+      {
+        userAgent: "PerplexityBot",
+        allow: "/",
+      },
+      {
+        userAgent: "Google-Extended",
+        allow: "/",
+      },
+      {
+        userAgent: "ClaudeBot",
+        allow: "/",
+      },
+      {
+        userAgent: "anthropic-ai",
+        allow: "/",
+      },
+    ],
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    host: SITE_URL,
+  };
+}

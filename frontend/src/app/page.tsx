@@ -4,6 +4,41 @@ import { ThemeToggleButton } from "@/components/ThemeToggleButton";
 import { DemoChatWidgetLazy, IntroVideoSectionLazy, FeedbackReportSectionLazy, PlyndroxAssistantLazy } from "@/components/LandingDynamicSections";
 import MarketingShowcase from "@/components/MarketingShowcase";
 import MarketingShowcaseLaptop from "@/components/MarketingShowcaseLaptop";
+import { JsonLd } from "@/components/JsonLd";
+import { faqJsonLd } from "@/lib/seo";
+
+const homepageFaqs = [
+  {
+    question: "What is Plyndrox AI?",
+    answer:
+      "Plyndrox AI is a free all-in-one AI platform that combines seven workspaces — Personal AI, WhatsApp AI, Inbox AI, Payable AI, Recruit AI, Bihar regional AI, and Smart Ledger — for individuals and businesses worldwide.",
+  },
+  {
+    question: "Is Plyndrox AI really free?",
+    answer:
+      "Yes. Every workspace inside Plyndrox AI is free for individuals and businesses. There are no subscriptions, no paywalls, and no credit card required to start.",
+  },
+  {
+    question: "Which AI tools are included?",
+    answer:
+      "Personal AI for chat and emotional support, WhatsApp AI for customer automation, Inbox AI for email triage, Payable AI for invoice and accounts payable, Recruit AI for hiring and ATS, Bihar AI for regional Indian languages, and Smart Ledger for handwritten satti accounting.",
+  },
+  {
+    question: "Does Plyndrox AI work on mobile?",
+    answer:
+      "Yes. Plyndrox AI is a Progressive Web App (PWA) that installs on iOS and Android, plus native Android and iOS builds via Capacitor.",
+  },
+  {
+    question: "Is my data secure on Plyndrox AI?",
+    answer:
+      "Plyndrox uses Firebase Authentication, encrypted data transit, and stores conversations only with your permission. You can request full data deletion at any time from /data-deletion.",
+  },
+  {
+    question: "Can I add the Plyndrox chat widget to my website?",
+    answer:
+      "Yes. Ibara is the embeddable Plyndrox AI chat widget — paste a single script tag and you have a multilingual AI assistant on your site in under 60 seconds.",
+  },
+];
 
 const DemoChatWidget = DemoChatWidgetLazy;
 const IntroVideoSection = IntroVideoSectionLazy;
@@ -64,6 +99,7 @@ const footerColumns = [
 export default function Home() {
   return (
     <div className="relative min-h-screen bg-white text-zinc-950 font-sans">
+      <JsonLd id="ld-home-faq" data={faqJsonLd(homepageFaqs)} />
       <AuthRedirect />
 
       {/* Navigation */}
