@@ -49,10 +49,11 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Plyndrox AI" />
-        <link rel="icon" href="/plyndrox-logo.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/icons/plyndrox-192.svg" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/plyndrox-32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icons/plyndrox-16.png" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/plyndrox-180.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
-        <link rel="preload" href="/plyndrox-logo.svg" as="image" type="image/svg+xml" />
         <link rel="dns-prefetch" href="https://raina-1.onrender.com" />
         <link rel="preconnect" href="https://raina-1.onrender.com" crossOrigin="anonymous" />
       </head>
