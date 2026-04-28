@@ -26,6 +26,13 @@ if (process.env.REPLIT_DOMAINS) {
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  poweredByHeader: false,
+  compress: true,
+  productionBrowserSourceMaps: false,
+  reactStrictMode: true,
+  experimental: {
+    optimizePackageImports: ["recharts", "react-markdown", "remark-gfm"],
+  },
   transpilePackages: [
     "firebase",
     "@firebase/app",
@@ -45,10 +52,16 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: allowedDevOrigins.size > 0 ? Array.from(allowedDevOrigins) : undefined,
   ...(isCapacitorExport
     ? {
-        output: "export",
+        output: "export" as const,
         images: { unoptimized: true },
       }
     : {
+        images: {
+          formats: ["image/avif" as const, "image/webp" as const],
+          minimumCacheTTL: 31536000,
+          deviceSizes: [360, 480, 640, 750, 828, 1080, 1200, 1440, 1920, 2560],
+          imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+        },
         async headers() {
           return [
             {
@@ -66,11 +79,16 @@ const nextConfig: NextConfig = {
               ],
             },
             {
-              // Medium cache for HTML (allow revalidation)
+              // Security + privacy headers on all routes
               source: "/(.*)",
               headers: [
                 { key: "X-Content-Type-Options", value: "nosniff" },
                 { key: "X-Frame-Options", value: "SAMEORIGIN" },
+                { key: "X-DNS-Prefetch-Control", value: "on" },
+                { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+                { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+                { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+                { key: "Permissions-Policy", value: "camera=(self), microphone=(self), geolocation=(self), interest-cohort=(), browsing-topics=()" },
               ],
             },
             {

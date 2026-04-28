@@ -331,7 +331,7 @@ function CompanyProfileContent() {
           <div className="flex items-start gap-5 p-4 rounded-2xl bg-slate-50 border border-slate-100">
             <div className="relative shrink-0">
               {profile.photoUrl ? (
-                <img src={profile.photoUrl} alt="Your photo" className="h-20 w-20 rounded-full object-cover border-2 border-white shadow-md" />
+                <img src={profile.photoUrl} alt="" aria-hidden="true" className="h-20 w-20 rounded-full object-cover border-2 border-white shadow-md" />
               ) : (
                 <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-[#0a66c2] to-[#004182] text-2xl font-black text-white border-2 border-white shadow-md">
                   {profile.companyName?.slice(0, 1).toUpperCase() || "R"}

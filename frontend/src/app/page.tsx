@@ -445,7 +445,7 @@ export default function Home() {
                         {String(i + 1).padStart(2, "0")}
                       </div>
                       <div>
-                        <h4 className="font-black text-white text-base mb-1">{title}</h4>
+                        <h3 className="font-black text-white text-base mb-1">{title}</h3>
                         <p className="text-sm text-zinc-400 leading-6">{desc}</p>
                       </div>
                     </div>

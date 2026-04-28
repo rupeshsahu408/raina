@@ -153,13 +153,18 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){
+  try {
+    var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+    if (!isStandalone) return;
+  } catch(_) { return; }
   var s=document.createElement('div');
   s.id='pwa-splash';
   s.setAttribute('aria-hidden','true');
-  s.style.cssText='position:fixed;inset:0;z-index:99999;background:#09090b;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.45s ease;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
+  s.style.cssText='position:fixed;inset:0;z-index:99999;background:#09090b;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.35s ease;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
   var img=document.createElement('img');
   img.src='/icons/plyndrox-192.png';
-  img.alt='Plyndrox AI';
+  img.alt='';
+  img.setAttribute('aria-hidden','true');
   img.style.cssText='width:96px;height:96px;border-radius:22px;margin-bottom:24px;box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 8px 32px rgba(0,0,0,0.6);';
   var t1=document.createElement('span');
   t1.textContent='Plyndrox AI';
@@ -169,8 +174,8 @@ export default function RootLayout({
   t2.style.cssText='color:rgba(255,255,255,0.42);font-size:14px;margin-top:8px;letter-spacing:0.2px;';
   s.appendChild(img);s.appendChild(t1);s.appendChild(t2);
   document.body.appendChild(s);
-  function hide(){s.style.opacity='0';setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},500);}
-  if(document.readyState==='complete'){hide();}else{window.addEventListener('load',hide);}
+  function hide(){s.style.opacity='0';setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},400);}
+  if(document.readyState==='complete'){setTimeout(hide,150);}else{window.addEventListener('DOMContentLoaded',function(){setTimeout(hide,150);});}
 })();`,
           }}
         />

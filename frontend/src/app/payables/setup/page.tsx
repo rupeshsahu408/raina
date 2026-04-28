@@ -356,7 +356,7 @@ export default function PayablesSetupPage() {
             <div className="flex items-center justify-between border-b border-gray-100 bg-white px-5 py-3">
               <div className="flex items-center gap-3">
                 {logoPreview ? (
-                  <img src={logoPreview} alt="logo" className="h-5 w-5 rounded-lg object-cover" />
+                  <img src={logoPreview} alt="" aria-hidden="true" className="h-5 w-5 rounded-lg object-cover" />
                 ) : (
                   <div className="h-5 w-5 animate-pulse rounded-lg bg-gray-100" />
                 )}
