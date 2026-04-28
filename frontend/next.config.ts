@@ -138,6 +138,9 @@ const withPwaConfig = withPWA({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === "development" || isCapacitorExport,
+  fallbacks: {
+    document: "/offline.html",
+  },
 });
 
 export default withPwaConfig(nextConfig) as NextConfig;

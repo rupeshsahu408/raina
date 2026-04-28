@@ -49,6 +49,12 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Plyndrox AI" />
+        <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2)" href="/splashscreens/apple-splash-2048-2732.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2)" href="/splashscreens/apple-splash-1668-2388.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="/splashscreens/apple-splash-1290-2796.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="/splashscreens/apple-splash-1170-2532.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" href="/splashscreens/apple-splash-750-1334.png" />
+        <link rel="apple-touch-startup-image" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" href="/splashscreens/apple-splash-640-1136.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/plyndrox-32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/plyndrox-16.png" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -58,6 +64,30 @@ export default function RootLayout({
         <link rel="preconnect" href="https://raina-1.onrender.com" crossOrigin="anonymous" />
       </head>
       <body className="app-theme min-h-screen antialiased" suppressHydrationWarning>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){
+  var s=document.createElement('div');
+  s.id='pwa-splash';
+  s.setAttribute('aria-hidden','true');
+  s.style.cssText='position:fixed;inset:0;z-index:99999;background:#09090b;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.45s ease;pointer-events:none;font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
+  var img=document.createElement('img');
+  img.src='/icons/plyndrox-192.png';
+  img.alt='Plyndrox AI';
+  img.style.cssText='width:96px;height:96px;border-radius:22px;margin-bottom:24px;box-shadow:0 0 0 1px rgba(255,255,255,0.08),0 8px 32px rgba(0,0,0,0.6);';
+  var t1=document.createElement('span');
+  t1.textContent='Plyndrox AI';
+  t1.style.cssText='color:#f8fafc;font-size:26px;font-weight:700;letter-spacing:-0.5px;';
+  var t2=document.createElement('span');
+  t2.textContent='Every AI tool you need';
+  t2.style.cssText='color:rgba(255,255,255,0.42);font-size:14px;margin-top:8px;letter-spacing:0.2px;';
+  s.appendChild(img);s.appendChild(t1);s.appendChild(t2);
+  document.body.appendChild(s);
+  function hide(){s.style.opacity='0';setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},500);}
+  if(document.readyState==='complete'){hide();}else{window.addEventListener('load',hide);}
+})();`,
+          }}
+        />
         <ThemeProvider>
           <div className="min-h-screen">{children}</div>
         </ThemeProvider>
