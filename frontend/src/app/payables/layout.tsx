@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd, productKeywords } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 const payablesFaqs = [
@@ -30,15 +30,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Plyndrox Payable AI extracts invoice data, matches POs, schedules payments, and tracks vendor performance — automating your accounts payable workflow end-to-end.",
   path: "/payables",
-  keywords: [
-    "AI invoice processing",
-    "accounts payable automation",
-    "AP automation",
-    "invoice OCR",
-    "AI vendor management",
-    "free invoice AI",
-    "payables AI",
-  ],
+  keywords: [...productKeywords.payables],
 });
 
 export default function PayablesLayout({ children }: { children: React.ReactNode }) {

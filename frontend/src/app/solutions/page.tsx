@@ -6,6 +6,7 @@ import {
   breadcrumbJsonLd,
   collectionPageJsonLd,
   itemListJsonLd as buildItemList,
+  productKeywords,
   SITE_URL,
 } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
@@ -15,18 +16,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Plyndrox AI for restaurants, e-commerce, real estate, salons, clinics, agencies, recruiters, founders, and more. Free, ready-made AI workflows for every business.",
   path: "/solutions",
-  keywords: [
-    "AI for business",
-    "AI for restaurants",
-    "AI for e-commerce",
-    "AI for real estate",
-    "AI for clinics",
-    "AI for salons",
-    "AI for recruiters",
-    "AI for founders",
-    "free AI by industry",
-    "Plyndrox solutions",
-  ],
+  keywords: [...productKeywords.solutions],
 });
 
 const toolOrder = ["whatsapp", "inbox", "payable", "recruit", "ibara", "translate", "ledger", "chat", "bihar"];

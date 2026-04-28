@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata, breadcrumbJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, productKeywords } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = buildMetadata({
@@ -7,15 +7,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Chat with Plyndrox Personal AI — your free, private AI companion for thinking out loud, planning your day, learning new things, and getting honest emotional support, anytime.",
   path: "/chat",
-  keywords: [
-    "personal AI",
-    "AI companion",
-    "free AI chat",
-    "emotional AI",
-    "AI assistant chat",
-    "Plyndrox chat",
-    "AI therapist alternative",
-  ],
+  keywords: [...productKeywords.chat],
 });
 
 export default function ChatLayout({ children }: { children: React.ReactNode }) {

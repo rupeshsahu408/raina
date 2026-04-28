@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd, productKeywords } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 const businessFaqs = [
@@ -25,15 +25,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Plyndrox Business AI brings WhatsApp automation, AI email triage, invoice processing, AI hiring, and a smart ledger into one free platform built for small and medium businesses.",
   path: "/business-ai",
-  keywords: [
-    "AI for business",
-    "small business AI",
-    "AI suite",
-    "free business automation",
-    "AI sales",
-    "AI customer support",
-    "AI operations",
-  ],
+  keywords: [...productKeywords.business],
 });
 
 export default function BusinessAILayout({ children }: { children: React.ReactNode }) {

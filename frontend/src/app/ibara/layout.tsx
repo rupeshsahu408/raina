@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd, productKeywords } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 const ibaraFaqs = [
@@ -29,15 +29,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Add a powerful AI chat widget to your website in 60 seconds. Ibara by Plyndrox answers visitor questions, captures leads, and works in 100+ languages — completely free.",
   path: "/ibara",
-  keywords: [
-    "Ibara",
-    "AI chat widget",
-    "embeddable AI chatbot",
-    "free chatbot for website",
-    "AI website assistant",
-    "chatbot widget",
-    "lead capture chatbot",
-  ],
+  keywords: [...productKeywords.ibara],
 });
 
 export default function IbaraLayout({ children }: { children: React.ReactNode }) {

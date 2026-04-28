@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd, productKeywords } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 const biharFaqs = [
@@ -25,16 +25,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Bihar AI is the first AI assistant built for Bihar — fluent in Hindi, Bhojpuri, Maithili, and Magahi. Get answers about local schemes, jobs, education, agriculture, and culture.",
   path: "/bihar-ai",
-  keywords: [
-    "Bihar AI",
-    "Hindi AI assistant",
-    "Bhojpuri AI",
-    "Maithili AI",
-    "regional AI India",
-    "AI for Bihar",
-    "AI in Hindi",
-    "Bihar government schemes AI",
-  ],
+  keywords: [...productKeywords.bihar],
 });
 
 export default function BiharAILayout({ children }: { children: React.ReactNode }) {

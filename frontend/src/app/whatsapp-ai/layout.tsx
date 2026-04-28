@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata, breadcrumbJsonLd, faqJsonLd, productAppJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, faqJsonLd, productAppJsonLd, productKeywords } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = buildMetadata({
@@ -7,15 +7,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Automate customer conversations on WhatsApp with Plyndrox WhatsApp AI. 24/7 multilingual replies, lead capture, smart routing, and zero monthly fees — set up in minutes.",
   path: "/whatsapp-ai",
-  keywords: [
-    "WhatsApp AI",
-    "WhatsApp chatbot",
-    "WhatsApp Business API",
-    "free WhatsApp automation",
-    "WhatsApp AI agent",
-    "AI for WhatsApp business",
-    "WhatsApp customer support AI",
-  ],
+  keywords: [...productKeywords.whatsapp],
 });
 
 const faqs = [

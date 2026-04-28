@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { LedgerAuthProvider } from "@/contexts/LedgerAuthContext";
-import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd, productKeywords } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 const ledgerFaqs = [
@@ -26,15 +26,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Upload your handwritten satti (account book). Smart Ledger by Plyndrox extracts, groups, and analyzes your grain trading records instantly using AI — free for traders.",
   path: "/ledger",
-  keywords: [
-    "smart ledger",
-    "AI accounting",
-    "grain trader accounting",
-    "satti AI",
-    "handwritten ledger OCR",
-    "AI bookkeeping India",
-    "free accounting AI",
-  ],
+  keywords: [...productKeywords.ledger],
 });
 
 export default function LedgerLayout({ children }: { children: React.ReactNode }) {

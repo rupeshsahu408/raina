@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, productAppJsonLd, faqJsonLd, productKeywords } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 const inboxFaqs = [
@@ -29,15 +29,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Plyndrox Inbox AI reads, summarizes, prioritizes, and replies to your emails for you. Auto-detect leads, draft follow-ups, and clear your inbox in minutes — free forever.",
   path: "/inbox",
-  keywords: [
-    "AI email assistant",
-    "Inbox AI",
-    "Gmail AI",
-    "AI email automation",
-    "AI email reply",
-    "AI inbox zero",
-    "lead detection email",
-  ],
+  keywords: [...productKeywords.inbox],
 });
 
 export default function InboxLayout({ children }: { children: React.ReactNode }) {

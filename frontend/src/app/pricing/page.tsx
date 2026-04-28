@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { buildMetadata, breadcrumbJsonLd, faqJsonLd, SITE_URL, siteConfig } from "@/lib/seo";
+import { buildMetadata, breadcrumbJsonLd, faqJsonLd, SITE_URL, siteConfig, productKeywords } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = buildMetadata({
@@ -8,16 +8,7 @@ export const metadata: Metadata = buildMetadata({
   description:
     "Plyndrox AI pricing is simple: every workspace — Personal AI, WhatsApp AI, Inbox AI, Payable AI, Recruit AI, Bihar AI, Smart Ledger, Translate, and Ibara — is free forever. No credit card, no per-message fees, no caps.",
   path: "/pricing",
-  keywords: [
-    "Plyndrox pricing",
-    "free AI platform pricing",
-    "free AI tools pricing",
-    "AI subscription free",
-    "WhatsApp AI pricing",
-    "AI invoice automation pricing",
-    "AI recruiting pricing",
-    "no credit card AI",
-  ],
+  keywords: [...productKeywords.pricing],
 });
 
 const pricingFaqs = [

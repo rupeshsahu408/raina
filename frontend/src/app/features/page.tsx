@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { buildMetadata } from "@/lib/seo";
+import { buildMetadata, productKeywords } from "@/lib/seo";
 
 export const metadata: Metadata = buildMetadata({
   title: "Features — All 7 Plyndrox AI Workspaces in One Free Platform",
   description:
     "Explore every capability of the Plyndrox AI platform — Personal AI, WhatsApp AI, Inbox AI, Payable AI, Recruit AI, Bihar regional AI, Smart Ledger, voice interaction, and more.",
   path: "/features",
-  keywords: ["Plyndrox features", "AI features", "AI capabilities", "Plyndrox AI tools list"],
+  keywords: [...productKeywords.features],
 });
 
 function ArrowRightIcon(props: React.SVGProps<SVGSVGElement>) {
