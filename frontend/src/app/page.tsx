@@ -590,7 +590,7 @@ export default function Home() {
 
           <div className="border-t border-zinc-100 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-zinc-600">
-              © {new Date().getFullYear()} Plyndrox AI. All rights reserved. Built with ♥ in India.
+              © {new Date().getFullYear()} Plyndrox AI. All rights reserved. Crafted in India.
             </p>
             <div className="flex items-center gap-2 text-xs font-semibold text-zinc-700 bg-zinc-50 px-3 py-1.5 rounded-full border border-zinc-100">
               <span className="relative flex h-2 w-2">

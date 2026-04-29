@@ -54,23 +54,41 @@ export default async function OpengraphImage() {
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
           <div
             style={{
-              width: 72,
-              height: 72,
-              borderRadius: 18,
-              background: "#fff",
+              width: 84,
+              height: 84,
+              borderRadius: 22,
+              background:
+                "linear-gradient(135deg, #0B0B14 0%, #15132B 55%, #1F0F2E 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#09090b",
-              fontSize: 40,
+              color: "#FFFFFF",
+              fontSize: 52,
               fontWeight: 800,
+              letterSpacing: "-0.04em",
+              position: "relative",
+              boxShadow: "0 10px 40px rgba(124,58,237,0.35)",
+              border: "1px solid rgba(167,139,250,0.25)",
             }}
           >
             P
+            <div
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                width: 16,
+                height: 16,
+                borderRadius: "100%",
+                background:
+                  "linear-gradient(135deg, #FFB1E5 0%, #C084FC 50%, #7C3AED 100%)",
+                display: "flex",
+              }}
+            />
           </div>
           <div
             style={{
-              fontSize: 36,
+              fontSize: 38,
               fontWeight: 700,
               letterSpacing: "-0.02em",
             }}
