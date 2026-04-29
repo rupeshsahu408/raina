@@ -85,10 +85,31 @@ const nextConfig: NextConfig = {
               ],
             },
             {
-              // Long-lived cache for public static assets (SVG, fonts, icons)
-              source: "/:path((?!_next).*)\\.(?:svg|png|jpg|jpeg|webp|avif|ico|woff|woff2|ttf|otf|eot)$",
+              // Long-lived cache for public static asset folders (icons, marketing, splashscreens, fonts)
+              source: "/:folder(icons|marketing|splashscreens|fonts)/:path*",
               headers: [
                 { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+              ],
+            },
+            {
+              // Cache the brand logo aggressively — content-addressed by filename
+              source: "/plyndrox-logo.svg",
+              headers: [
+                { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+              ],
+            },
+            {
+              // Favicon — long cache, but allow occasional refresh
+              source: "/favicon.ico",
+              headers: [
+                { key: "Cache-Control", value: "public, max-age=604800" },
+              ],
+            },
+            {
+              // Web app manifest — short cache so PWA updates propagate quickly
+              source: "/manifest.webmanifest",
+              headers: [
+                { key: "Cache-Control", value: "public, max-age=3600" },
               ],
             },
             {
