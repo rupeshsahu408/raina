@@ -114,9 +114,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
       `}>
         {/* Logo */}
         <div className="flex items-center gap-2 px-5 py-5 border-b border-gray-200">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center shrink-0">
-            <span className="text-[#1d2226] font-bold text-xs">I</span>
-          </div>
+          <img src="/plyndrox-logo.svg" alt="" className="w-7 h-7 rounded-lg object-contain shrink-0 plyndrox-logo-img" draggable={false} />
           <span className="font-bold text-sm">Plyndrox Web AI</span>
         </div>
 

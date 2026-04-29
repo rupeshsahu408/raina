@@ -112,7 +112,7 @@ export default function MarketingShowcase() {
 
               <div className="pointer-events-none absolute -left-2 top-1/3 hidden rounded-2xl border border-white/60 bg-white/90 px-3 py-2 shadow-xl backdrop-blur md:block">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-black text-sm">P</div>
+                  <img src="/plyndrox-logo.svg" alt="" className="h-8 w-8 rounded-lg object-contain plyndrox-logo-img" draggable={false} />
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">Live now</p>
                     <p className="text-xs font-bold text-zinc-900">7 AI workspaces</p>

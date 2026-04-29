@@ -109,9 +109,7 @@ export default function IbaraOnboarding() {
 
       <header className="relative z-10 flex items-center px-6 py-5 border-b border-gray-200">
         <button onClick={() => router.push("/ibara")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
-            <span className="text-[#1d2226] font-bold text-xs">I</span>
-          </div>
+          <img src="/plyndrox-logo.svg" alt="" className="w-7 h-7 rounded-lg object-contain plyndrox-logo-img" draggable={false} />
           <span className="font-bold text-sm">Plyndrox Web AI</span>
         </button>
       </header>

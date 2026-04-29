@@ -134,9 +134,7 @@ export default function IbaraLanding() {
       >
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
-              <span className="text-[#1d2226] font-bold text-sm">I</span>
-            </div>
+            <img src="/plyndrox-logo.svg" alt="" className="w-8 h-8 rounded-lg object-contain plyndrox-logo-img" draggable={false} />
             <span className="font-bold text-lg tracking-tight">Plyndrox Web AI</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
@@ -357,9 +355,7 @@ export default function IbaraLanding() {
       <footer className="border-t border-gray-200 py-10 px-6">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
-              <span className="text-[#1d2226] font-bold text-xs">I</span>
-            </div>
+            <img src="/plyndrox-logo.svg" alt="" className="w-6 h-6 rounded-md object-contain plyndrox-logo-img" draggable={false} />
             <span className="font-bold text-sm">Plyndrox Web AI</span>
           </div>
           <p className="text-white/20 text-xs">© {new Date().getFullYear()} Plyndrox Web AI. All rights reserved.</p>

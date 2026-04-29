@@ -107,9 +107,7 @@ function AuthForm() {
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between px-6 py-5">
         <button onClick={() => router.push("/ibara")} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center">
-            <span className="text-[#1d2226] font-bold text-xs">I</span>
-          </div>
+          <img src="/plyndrox-logo.svg" alt="" className="w-7 h-7 rounded-lg object-contain plyndrox-logo-img" draggable={false} />
           <span className="font-bold text-sm">Plyndrox Web AI</span>
         </button>
         <button
@@ -125,9 +123,8 @@ function AuthForm() {
         <div className="w-full max-w-md">
           <div className="card-glass rounded-3xl p-8">
             <div className="text-center mb-8">
-              <div className="inline-flex w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-600 to-cyan-500 items-center justify-center mb-4 mx-auto">
-                <span className="text-2xl font-black text-[#1d2226]">I</span>
-              </div>
+              <img src="/plyndrox-logo.svg" alt="" className="inline-block w-14 h-14 rounded-2xl object-contain mb-4 mx-auto plyndrox-logo-img" draggable={false} />
+              
               <h1 className="text-2xl font-black mb-1">
                 {mode === "login" ? "Welcome back" : "Get started free"}
               </h1>
