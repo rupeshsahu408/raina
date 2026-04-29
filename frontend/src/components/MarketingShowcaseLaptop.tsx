@@ -19,7 +19,7 @@ export default function MarketingShowcaseLaptop() {
             <div className="absolute inset-0 -z-10 translate-y-10 scale-[0.92] rounded-[3rem] bg-gradient-to-br from-amber-400/30 via-rose-400/20 to-indigo-500/30 blur-3xl" />
             <div className="relative">
               <Image
-                src="/marketing/boy-with-laptop.png"
+                src="/marketing/boy-with-laptop.webp"
                 alt="A delighted Plyndrox user excitedly showing the Plyndrox dashboard on his laptop"
                 width={720}
                 height={1024}

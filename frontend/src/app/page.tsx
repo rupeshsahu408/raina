@@ -114,7 +114,7 @@ export default function Home() {
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-950 transition-transform group-hover:scale-105">
-              <img src="/plyndrox-logo.svg" alt="" className="h-9 w-9 object-contain plyndrox-logo-img" width="36" height="36" />
+              <img src="/plyndrox-logo.svg" alt="" className="h-9 w-9 object-contain plyndrox-logo-img" width="36" height="36" decoding="async" fetchPriority="high" />
             </div>
             <span className="text-base font-bold tracking-tight text-zinc-950">Plyndrox AI</span>
           </Link>
@@ -256,9 +256,9 @@ export default function Home() {
                     </div>
                     <span className="rounded-full bg-zinc-800 text-zinc-300 px-3 py-1 text-xs font-bold border border-zinc-700">Regional AI</span>
                   </div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-2">Bihar AI</p>
+                  <p className="text-xs font-bold uppercase tracking-widest text-zinc-300 mb-2">Bihar AI</p>
                   <h3 className="text-xl font-black text-white mb-2 group-hover:text-amber-400 transition-colors">Built for 130 million people.</h3>
-                  <p className="text-zinc-400 text-sm leading-6">
+                  <p className="text-zinc-200 text-sm leading-6">
                     Local news, education, jobs, culture — AI that speaks your language and understands your world.
                   </p>
                 </div>

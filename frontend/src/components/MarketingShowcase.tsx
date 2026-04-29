@@ -86,7 +86,7 @@ export default function MarketingShowcase() {
             <div className="absolute inset-0 -z-10 translate-y-8 scale-95 rounded-[3rem] bg-gradient-to-br from-indigo-200 via-violet-200 to-pink-200 opacity-60 blur-2xl" />
             <div className="relative">
               <Image
-                src="/marketing/girl-with-phone.png"
+                src="/marketing/girl-with-phone.webp"
                 alt="A friendly Plyndrox user showing the Plyndrox AI app on her smartphone"
                 width={720}
                 height={1024}
