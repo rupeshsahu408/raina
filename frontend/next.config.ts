@@ -77,6 +77,14 @@ const nextConfig: NextConfig = {
               ],
             },
             {
+              // Long-lived cache for Next.js optimized images (/_next/image?url=...&w=...&q=...).
+              // The optimizer URL is content-addressed by query, so output is effectively immutable.
+              source: "/_next/image(.*)",
+              headers: [
+                { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+              ],
+            },
+            {
               // Long-lived cache for public static assets (SVG, fonts, icons)
               source: "/:path((?!_next).*)\\.(?:svg|png|jpg|jpeg|webp|avif|ico|woff|woff2|ttf|otf|eot)$",
               headers: [
