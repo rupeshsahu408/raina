@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { InstallBanner } from "@/components/InstallBanner";
+import { InstallBannerLazy } from "@/components/InstallBannerLazy";
 import { JsonLd } from "@/components/JsonLd";
 import {
   SITE_URL,
@@ -181,7 +181,7 @@ export default function RootLayout({
         />
         <ThemeProvider>
           <div className="min-h-screen">{children}</div>
-          <InstallBanner />
+          <InstallBannerLazy />
         </ThemeProvider>
       </body>
     </html>

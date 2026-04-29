@@ -51,7 +51,7 @@ export function ThemeToggleButton() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-9 w-9 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
+        className="flex h-11 w-11 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm transition hover:border-[var(--accent)] hover:text-[var(--accent)]"
         aria-expanded={open}
         aria-label="Change theme"
         title="Change theme"

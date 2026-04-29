@@ -11,7 +11,7 @@ export const ThemeToggleButtonLazy = dynamic(
   () => import("@/components/ThemeToggleButton").then((m) => ({ default: m.ThemeToggleButton })),
   {
     ssr: false,
-    loading: () => <div className="h-9 w-9" aria-hidden="true" />,
+    loading: () => <div className="h-11 w-11" aria-hidden="true" />,
   }
 );
 

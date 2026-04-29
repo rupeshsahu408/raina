@@ -468,14 +468,14 @@ export default function Home() {
                       <div className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
                       <div className="h-2.5 w-2.5 rounded-full bg-zinc-700" />
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-zinc-500 font-medium">
+                    <div className="flex items-center gap-2 text-xs text-zinc-300 font-medium">
                       <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                       </span>
                       Plyndrox Personal AI
                     </div>
-                    <div className="text-xs text-zinc-600">Live demo</div>
+                    <div className="text-xs text-zinc-400">Live demo</div>
                   </div>
                   <DemoChatWidget />
                 </div>
