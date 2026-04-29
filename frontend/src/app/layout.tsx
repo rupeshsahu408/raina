@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { InstallBannerLazy } from "@/components/InstallBannerLazy";
 import { JsonLd } from "@/components/JsonLd";
@@ -12,12 +12,23 @@ import {
 } from "@/lib/seo";
 import "./globals.css";
 
-const inter = Inter({
+const inter = localFont({
+  src: [
+    {
+      path: "./fonts/InterVariable.woff2",
+      weight: "100 900",
+      style: "normal",
+    },
+    {
+      path: "./fonts/InterVariable-Italic.woff2",
+      weight: "100 900",
+      style: "italic",
+    },
+  ],
   variable: "--font-geist-sans",
-  subsets: ["latin"],
   display: "swap",
   preload: true,
-  adjustFontFallback: true,
+  adjustFontFallback: "Arial",
   fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
 });
 
