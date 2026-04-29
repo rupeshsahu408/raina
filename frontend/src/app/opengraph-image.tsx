@@ -51,44 +51,82 @@ export default async function OpengraphImage() {
             display: "flex",
           }}
         />
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           <div
             style={{
-              width: 84,
-              height: 84,
-              borderRadius: 22,
+              width: 96,
+              height: 96,
+              borderRadius: 24,
               background:
-                "linear-gradient(135deg, #0B0B14 0%, #15132B 55%, #1F0F2E 100%)",
+                "linear-gradient(135deg, #0A0815 0%, #1A1140 55%, #2A0E4A 100%)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#FFFFFF",
-              fontSize: 52,
-              fontWeight: 800,
-              letterSpacing: "-0.04em",
               position: "relative",
-              boxShadow: "0 10px 40px rgba(124,58,237,0.35)",
-              border: "1px solid rgba(167,139,250,0.25)",
+              boxShadow: "0 12px 48px rgba(124,58,237,0.45)",
+              border: "1px solid rgba(167,139,250,0.28)",
+              overflow: "hidden",
             }}
           >
-            P
             <div
               style={{
                 position: "absolute",
-                top: 12,
-                right: 12,
-                width: 16,
-                height: 16,
-                borderRadius: "100%",
+                width: 28,
+                height: 64,
+                borderRadius: "50%",
+                top: 8,
+                left: 28,
                 background:
-                  "linear-gradient(135deg, #FFB1E5 0%, #C084FC 50%, #7C3AED 100%)",
+                  "linear-gradient(180deg, #FFE3F3 0%, #F472B6 45%, #9D174D 100%)",
+                transform: "rotate(-30deg)",
+                display: "flex",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                width: 28,
+                height: 64,
+                borderRadius: "50%",
+                top: 24,
+                left: 40,
+                background:
+                  "linear-gradient(180deg, #CFFAFE 0%, #22D3EE 45%, #1E3A8A 100%)",
+                transform: "rotate(90deg)",
+                display: "flex",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                width: 28,
+                height: 64,
+                borderRadius: "50%",
+                top: 32,
+                left: 28,
+                background:
+                  "linear-gradient(180deg, #EDE9FE 0%, #A78BFA 45%, #4C1D95 100%)",
+                transform: "rotate(210deg)",
+                display: "flex",
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                width: 22,
+                height: 22,
+                borderRadius: "100%",
+                top: 37,
+                left: 37,
+                background: "#FFFFFF",
+                boxShadow: "0 0 24px rgba(255,255,255,0.85)",
                 display: "flex",
               }}
             />
           </div>
           <div
             style={{
-              fontSize: 38,
+              fontSize: 40,
               fontWeight: 700,
               letterSpacing: "-0.02em",
             }}

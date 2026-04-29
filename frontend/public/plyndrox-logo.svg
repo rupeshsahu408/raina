@@ -1,35 +1,58 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Plyndrox AI logo">
   <defs>
     <linearGradient id="plyBg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0B0B14"/>
-      <stop offset="55%" stop-color="#15132B"/>
-      <stop offset="100%" stop-color="#1F0F2E"/>
+      <stop offset="0%" stop-color="#0A0815"/>
+      <stop offset="55%" stop-color="#1A1140"/>
+      <stop offset="100%" stop-color="#2A0E4A"/>
     </linearGradient>
-    <linearGradient id="plyMark" x1="0.15" y1="0.05" x2="0.9" y2="1">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="55%" stop-color="#F4E9FF"/>
-      <stop offset="100%" stop-color="#E9CFFF"/>
-    </linearGradient>
-    <linearGradient id="plySpark" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FFB1E5"/>
-      <stop offset="50%" stop-color="#C084FC"/>
-      <stop offset="100%" stop-color="#7C3AED"/>
-    </linearGradient>
-    <radialGradient id="plyGlow" cx="0.7" cy="0.25" r="0.7">
-      <stop offset="0%" stop-color="#A78BFA" stop-opacity="0.45"/>
-      <stop offset="60%" stop-color="#7C3AED" stop-opacity="0.05"/>
+    <radialGradient id="plyGlow" cx="0.72" cy="0.22" r="0.78">
+      <stop offset="0%" stop-color="#C4B5FD" stop-opacity="0.42"/>
+      <stop offset="55%" stop-color="#7C3AED" stop-opacity="0.08"/>
       <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
     </radialGradient>
-    <filter id="plyShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feGaussianBlur stdDeviation="6" />
-    </filter>
+    <radialGradient id="plyGlow2" cx="0.25" cy="0.85" r="0.7">
+      <stop offset="0%" stop-color="#EC4899" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="petalWarm" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#FFE3F3"/>
+      <stop offset="45%" stop-color="#F472B6"/>
+      <stop offset="100%" stop-color="#9D174D"/>
+    </linearGradient>
+    <linearGradient id="petalCool" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#CFFAFE"/>
+      <stop offset="45%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </linearGradient>
+    <linearGradient id="petalViolet" x1="0.5" y1="0" x2="0.5" y2="1">
+      <stop offset="0%" stop-color="#EDE9FE"/>
+      <stop offset="45%" stop-color="#A78BFA"/>
+      <stop offset="100%" stop-color="#4C1D95"/>
+    </linearGradient>
+    <radialGradient id="plyCore" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="35%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="75%" stop-color="#F4E9FF" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#F4E9FF" stop-opacity="0"/>
+    </radialGradient>
   </defs>
   <rect width="512" height="512" rx="116" fill="url(#plyBg)"/>
   <rect width="512" height="512" rx="116" fill="url(#plyGlow)"/>
-  <g>
-    <path fill="url(#plyMark)" d="M158 396V116h126c46 0 80 11 102 33 22 22 33 51 33 84 0 36-13 65-37 86-23 21-56 31-95 31h-71v46h-58Zm58-104h66c25 0 44-6 56-18 12-12 19-29 19-50 0-21-7-37-19-49-12-12-31-18-56-18h-66v135Z"/>
-    <circle cx="368" cy="148" r="34" fill="url(#plyShadow)" opacity="0.55"/>
-    <circle cx="368" cy="148" r="26" fill="url(#plySpark)"/>
-    <circle cx="362" cy="142" r="8" fill="#FFFFFF" opacity="0.85"/>
+  <rect width="512" height="512" rx="116" fill="url(#plyGlow2)"/>
+  <g transform="translate(256 256)">
+    <g style="mix-blend-mode: screen">
+      <g transform="rotate(-30)">
+        <ellipse cx="0" cy="-92" rx="58" ry="128" fill="url(#petalWarm)" opacity="0.92"/>
+      </g>
+      <g transform="rotate(90)">
+        <ellipse cx="0" cy="-92" rx="58" ry="128" fill="url(#petalCool)" opacity="0.92"/>
+      </g>
+      <g transform="rotate(210)">
+        <ellipse cx="0" cy="-92" rx="58" ry="128" fill="url(#petalViolet)" opacity="0.92"/>
+      </g>
+    </g>
+    <circle cx="0" cy="0" r="62" fill="url(#plyCore)"/>
+    <circle cx="0" cy="0" r="22" fill="#FFFFFF"/>
+    <circle cx="-7" cy="-7" r="7" fill="#FFFFFF" opacity="0.85"/>
   </g>
 </svg>
