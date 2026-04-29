@@ -51,8 +51,15 @@
         <ellipse cx="0" cy="-92" rx="58" ry="128" fill="url(#petalViolet)" opacity="0.92"/>
       </g>
     </g>
-    <circle cx="0" cy="0" r="62" fill="url(#plyCore)"/>
-    <circle cx="0" cy="0" r="22" fill="#FFFFFF"/>
-    <circle cx="-7" cy="-7" r="7" fill="#FFFFFF" opacity="0.85"/>
+    <circle cx="0" cy="0" r="62" fill="url(#plyCore)">
+      <animate attributeName="r" values="58;76;58" dur="3.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1" keyTimes="0; 0.5; 1"/>
+      <animate attributeName="opacity" values="0.95;0.6;0.95" dur="3.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1" keyTimes="0; 0.5; 1"/>
+    </circle>
+    <circle cx="0" cy="0" r="22" fill="#FFFFFF">
+      <animate attributeName="r" values="22;25;22" dur="3.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1" keyTimes="0; 0.5; 1"/>
+    </circle>
+    <circle cx="-7" cy="-7" r="7" fill="#FFFFFF" opacity="0.85">
+      <animate attributeName="opacity" values="0.85;1;0.85" dur="3.4s" repeatCount="indefinite" calcMode="spline" keySplines="0.4 0 0.2 1; 0.4 0 0.2 1" keyTimes="0; 0.5; 1"/>
+    </circle>
   </g>
 </svg>
